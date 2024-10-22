@@ -160,6 +160,7 @@ def topics_divisions(chemin):
     top = top.assign(destination_code=np.nan)
     for i in ['SESAR', 'CLEAN-AVIATION', 'IHI', 'KDT', 'CBE', 'EDCTP3', 'EUROHPC', 'SNS', 'ER', 'Chips']:  
         pattern=str(i+"-")
+        print(f"{i}, {pattern}\n")
         mask = (top.thema_code=='JU-JTI')&(top.destination_code.isnull())&(top.topicCode.str.contains(pattern))
         top.loc[mask, 'destination_code'] = i
 

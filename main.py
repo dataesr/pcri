@@ -7,6 +7,7 @@ from step1_mainData.proj_merged_clean import *
 from step1_mainData.url_fix import *
 from step1_mainData.panels import *
 from step1_mainData.topics import *
+from step1_mainData.actions import *
 
 ################################
 ## data load / adjustements
@@ -58,3 +59,4 @@ if any(merged.loc[merged.stage=='successful', 'project_id'].value_counts()[merge
 
 merged = merged_panels(merged)
 merged = merged_topics(merged)
+merged = merged_actions(merged)

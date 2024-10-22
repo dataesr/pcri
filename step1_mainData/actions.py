@@ -64,7 +64,7 @@ def action(chemin, act_list:list):
     data.loc[data.typeOfActionCode.str.contains('KIC'), 'action_code'] = 'KICS'
     data.loc[data.typeOfActionCode.str.contains('KIC'), 'action_name'] = 'Knowledge and Innovation Communities'
     
-    data = data.applymap(lambda x: x.strip() if isinstance(x, str) else x)
+    data = data.map(lambda x: x.strip() if isinstance(x, str) else x)
     
     return data
 
