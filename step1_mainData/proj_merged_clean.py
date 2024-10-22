@@ -33,3 +33,4 @@ def empty_str_to_none(df):
     for x in df.columns:
         if pd.api.types.infer_dtype(df[x])=='string':
             df[x]=np.where(df[x].isnull(), None, df[x])
+    return df
