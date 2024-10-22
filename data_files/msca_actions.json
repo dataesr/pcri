@@ -1,0 +1,54 @@
+[
+    {
+        "EsCodeL": "COFUND",
+        "EsNameL": "Co-funding of regional, national and international programmes"
+    },
+    {
+        "EsCodeL": "DN",
+        "EsNameL": "Doctoral Networks"
+    },
+    {
+        "EsCodeL": "PF",
+        "EsNameL": "Postdoctoral Fellowships"
+    },
+    {
+        "EsCodeL": "SE",
+        "EsNameL": "Staff Exchanges"
+    },
+    {
+        "EsCodeL": "COFUND-D",
+        "EsNameL": "Cofund Doctoral programme"
+    },
+    {
+        "EsCodeL": "COFUND-P",
+        "EsNameL": "Cofund Postdoctoral programme"
+    },
+    {
+        "EsCodeL": "DN",
+        "EsNameL": "Doctoral Networks"
+    },
+    {
+        "EsCodeL": "DN-ID",
+        "EsNameL": "Doctoral Networks - Industrial Doctorates"
+    },
+    {
+        "EsCodeL": "DN-JD",
+        "EsNameL": "Doctoral Networks - Joint Doctorates"
+    },
+    {
+        "EsCodeL": "PF-EF",
+        "EsNameL": "Postdoctoral Fellowships - European Fellowships"
+    },
+    {
+        "EsCodeL": "PF-GF",
+        "EsNameL": "Postdoctoral Fellowships - Global Fellowships"
+    },
+        {
+        "EsCodeL": "CITIZENS",
+        "EsNameL": "European Researchers' Night"
+    },
+            {
+        "EsCodeL": "MSCA-OTHERS",
+        "EsNameL": "Others MSCA"
+    }
+]
