@@ -17,3 +17,15 @@ def del_list_in_col(df, var_old:str, var_new:str):
         if row[var_old]!=[]:
             df.at[i, var_new] = "|".join(str(e) for e in row[var_old] if e is not None)
     return df.drop(var_old, axis=1)
+
+def work_csv(df, file_csv_name):
+    from config_path import PATH_WORK
+    name = file_csv_name
+    return df.to_csv(f"{PATH_WORK}{name}.csv", sep=';', na_rep='', encoding='utf-8', index=False)
+
+def website_to_clean(web_var: str):
+    import re
+    pat=re.compile(r"((((https|http)://)?(www\.)?)([\w\d#@%;$()~_?=&]+\.)+([a-z]{2,3}){1}([\w\d:#@%/;$()~_?\+-=\\\.&]+))")
+    y= re.search(pat, str(web_var))
+    if y is not None:
+        return y.group()
