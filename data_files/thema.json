@@ -1,0 +1,107 @@
+[
+    {
+        "thema_code": "JU-JTI",
+        "thema_name_fr": "Partenariats public-privé",
+        "thema_name_en": "Public-private partnerships"
+    },
+    {
+        "thema_code": "EUSPA",
+        "thema_name_fr": "EU Espace",
+        "thema_name_en": "EU Space"
+    },
+    {
+        "thema_code": "SESAR",
+        "thema_name_fr": "Entreprise commune SESAR",
+        "thema_name_en": "Joint undertaking SESAR"
+    },
+    {
+        "thema_code": "THEMA-OTHERS",
+        "thema_name_fr": "Autres thématiques",
+        "thema_name_en": "Others topics"
+    },
+    {
+        "thema_code": "JTI",
+        "thema_name_fr": "Initiatives technologiques conjointes",
+        "thema_name_en": "Joint Technology Initiative"
+    },
+        {
+        "thema_code": "MISSION",
+        "thema_name_fr": "Mission",
+        "thema_name_en": "Mission"
+    },
+        {
+        "thema_code": "CLUSTER 4-Industry",
+        "thema_name_fr": "Industrie",
+        "thema_name_en": "Industry"
+    },
+        {
+        "thema_code": "CLUSTER 4-Digital",
+        "thema_name_fr": "Numérique",
+        "thema_name_en": "Digital"
+    },
+        {
+        "thema_code": "CLUSTER 4-Space",
+        "thema_name_fr": "Espace",
+        "thema_name_en": "Space"
+    },
+            {
+        "thema_code": "CLUSTER 4",
+        "thema_name_fr": "Cluster 4 autre",
+        "thema_name_en": "Cluster 4 other"
+    },
+        {
+        "thema_code": "CLUSTER 5-Mobility",
+        "thema_name_fr": "Mobilité",
+        "thema_name_en": "Mobility"
+    },          
+        {
+        "thema_code": "CLUSTER 5-Climate",
+        "thema_name_fr": "Climat",
+        "thema_name_en": "Climate"
+    },
+            {
+        "thema_code": "CLUSTER 5-Energy",
+        "thema_name_fr": "Energie",
+        "thema_name_en": "Energy"
+    },
+            {
+        "thema_code": "CLUSTER 5",
+        "thema_name_fr": "Cluster 5 autre",
+        "thema_name_en": "Cluster 5 other"
+    },
+                {
+        "thema_code": "CLUSTER 6",
+        "thema_name_fr": "Bio-Environnement",
+        "thema_name_en": "Bio-Environment"
+    },
+        {
+        "thema_code": "ERC",
+        "thema_name_fr": "Conseil européen de la recherche",
+        "thema_name_en": "European research council"
+    },
+        {
+        "thema_code": "INFRA",
+        "thema_name_fr": "Infrastructures de recherche",
+        "thema_name_en": "Research infrastructures"
+    },    
+       {
+        "thema_code": "MSCA",
+        "thema_name_fr": "Marie Skłodowska-Curie",
+        "thema_name_en": "Marie Skłodowska-Curie"
+    }, 
+        {
+        "thema_code": "EIC",
+        "thema_name_fr": "Conseil européen de l'innovation",
+        "thema_name_en": "European Innovation Council"
+    }, 
+       {
+        "thema_code": "EIT",
+        "thema_name_fr": "Institut européen d'innovation et de technologie",
+        "thema_name_en": "European Institute of Innovation and Technology"
+    },
+       {
+        "thema_code": "EIE",
+        "thema_name_fr": "Ecosystèmes européens d'innovation",
+        "thema_name_en": "European Innovation Ecosystems"
+    }
+]
