@@ -5,6 +5,7 @@ from step1_mainData.projects_fix import *
 from step1_mainData.proposals_fix import *
 from step1_mainData.proj_merged_clean import *
 from step1_mainData.url_fix import *
+from step1_mainData.merged_nomenclatures import *
 
 ################################
 ## data load / adjustements
@@ -53,3 +54,5 @@ merged.rename(columns={
 
 if any(merged.loc[merged.stage=='successful', 'project_id'].value_counts()[merged.loc[merged.stage=='successful', 'project_id'].value_counts()> 1]):
     print(merged.loc[merged.stage=='successful', 'project_id'].value_counts()[merged.loc[merged.stage=='successful', 'project_id'].value_counts()> 1])
+
+merged = merged_panels(merged)
