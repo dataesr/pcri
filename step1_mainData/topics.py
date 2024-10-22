@@ -29,9 +29,7 @@ def topics_divisions(chemin):
 
     divisions = df[['lvl2Code', 'lvl2Description', 'lvl3Code', 'lvl3Description', 'lvl4Code', 'lvl4Description']].drop_duplicates()
 
-#     with open(f"data_json/destination.json", 'r+', encoding='UTF-8') as fp:
-#         data = json.load(fp)
-    destination = pd.read_json(open('data_json/destination.json', 'r+', encoding='utf-8'))
+    destination = pd.read_json(open('data_files/destination.json', 'r+', encoding='utf-8'))
     destination = pd.DataFrame(destination).drop(columns='dest_h20')
 
     ########################################################
@@ -273,18 +271,14 @@ def topics_divisions(chemin):
     tab = pd.concat([tab, reste], ignore_index=True) 
     tab.loc[tab.thema_code.isnull(), 'thema_code'] = 'THEMA-OTHERS'
 
-#     with open(f"data_json/thema.json", 'r+', encoding='UTF-8') as fp:
-#         data = json.load(fp)
-    thema_lib = pd.read_json(open('data_json/thema.json', 'r+', encoding='utf-8'))
+    thema_lib = pd.read_json(open('data_files/thema.json', 'r+', encoding='utf-8'))
     thema_lib = pd.DataFrame(thema_lib)
 
     tab = tab.merge(thema_lib, how='left', on='thema_code')
     tab.loc[tab.thema_name_en.isnull(), 'thema_name_en'] = tab.programme_name_en
     tab = tab.merge(destination, how='left', on='destination_code')
 
-#     with open('data_json/programme_fr.json', 'r+', encoding='UTF-8') as fp:
-#                 data = json.load(fp)
-    data = pd.read_json(open('data_json/programme_fr.json', 'r+', encoding='utf-8'))
+    data = pd.read_json(open('data_files/programme_fr.json', 'r+', encoding='utf-8'))
     data=pd.DataFrame(data)
 
 

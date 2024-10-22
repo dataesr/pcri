@@ -1,0 +1,599 @@
+[
+     {
+   "destination_lib": "Health others",
+   "destination_code": "HEALTH-OTHERS",
+   "destination_name_fr": "Autres destinations en Santé",
+   "destination_name_en": "Other health destinations"
+ },
+ {
+   "destination_lib": "Destination 1",
+   "destination_code": "STAYHLTH",
+   "destination_name_fr": "La santé tout au long de la vie",
+   "destination_name_en": "Staying Healthy in a rapidly changing society"
+ },
+ {
+   "destination_lib": "Destination 2",
+   "destination_code": "ENVHLTH",
+   "destination_name_fr": "Les déterminants en matière de santé environnementale et sociale",
+   "destination_name_en": "Living and working in a health promoting environment"
+ },
+ {
+   "destination_lib": "Destination 3",
+   "destination_code": "DISEASE",
+   "destination_name_fr": "Les maladies rares et non transmissibles",
+   "destination_name_en": "Tackling diseases and reducing disease burden"
+ },
+ {
+   "destination_lib": "Destination 6",
+   "destination_code": "IND",
+   "destination_name_fr": "Les systèmes de soins de santé",
+   "destination_name_en": "Maintaining an innovative, sustainable and globally competitive health industry"
+ },
+ {
+   "destination_lib": "Destination 5",
+   "destination_code": "TOOL",
+   "destination_name_fr": "Les outils, technologies et solutions numériques pour la santé et les soins, y compris la médecine personnalisée",
+   "destination_name_en": "Unlocking the full potential of new tools, technologies and digital solutions for a healthy society"
+ },
+ {
+   "destination_lib": "Destination 4",
+   "destination_code": "CARE",
+   "destination_name_fr": "Les maladies infectieuses, y compris les maladies liées à la pauvreté et les maladies négligées",
+   "destination_name_en": "Ensuring access to innovative, sustainable and high-quality health-care"
+ },
+    {
+   "destination_lib": "CCSI others",
+   "destination_code": "CCSI-OTHERS",
+   "destination_name_fr": "Autres destinations en Culture, créativité et société inclusive",
+   "destination_name_en": "Others Culture, creativity and inclusive society destinations"
+ },
+ {
+   "destination_lib": "Destination 3",
+   "destination_code": "TRANSFORMATIONS",
+   "destination_name_fr": "Transformations économiques et sociales",
+   "destination_name_en": "Innovative Research on Social and Economic Transformations"
+ },
+ {
+   "destination_lib": "Destination 2",
+   "destination_code": "HERITAGE",
+   "destination_name_fr": "Patrimoine culturel européen et industries culturelles et créatives",
+   "destination_name_en": "Innovative Research on the European Cultural Heritage and the Cultural and Creative Industries"
+ },
+ {
+   "destination_lib": "Destination 1",
+   "destination_code": "DEMOCRACY",
+   "destination_name_fr": "Démocratie et gouvernance",
+   "destination_name_en": "Innovative Research on Democracy and Governance"
+ },
+     {
+   "destination_lib": "CSS others",
+   "destination_code": "CSS-OTHERS",
+   "destination_name_fr": "",
+   "destination_name_en": "Others Civil Security for Society destinations"
+ },
+ {
+   "destination_lib": "Destination 5",
+   "destination_code": "DRS",
+   "destination_name_fr": "",
+   "destination_name_en": "Disaster-Resilient Society for Europe"
+ },
+ {
+   "destination_lib": "Destination 6",
+   "destination_code": "SSRI",
+   "destination_name_fr": "",
+   "destination_name_en": "Strengthened Security Research and Innovation"
+ },
+ {
+   "destination_lib": "Destination 1",
+   "destination_code": "FCT",
+   "destination_name_fr": "",
+   "destination_name_en": "Fighting Crime and Terrorism"
+ },
+ {
+   "destination_lib": "Destination 2",
+   "destination_code": "BM",
+   "destination_name_fr": "",
+   "destination_name_en": "Border Management"
+ },
+ {
+   "destination_lib": "Destination 3",
+   "destination_code": "INFRA",
+   "destination_name_fr": "",
+   "destination_name_en": "Resilient Infrastructure"
+ },
+ {
+   "destination_lib": "Destination 4",
+   "destination_code": "CS",
+   "destination_name_fr": "",
+   "destination_name_en": "Increased Cybersecurity"
+ },
+     {
+   "destination_lib": "DIS others",
+   "destination_code": "DIS-OTHERS",
+   "destination_name_fr": "Autres destinations en Numérique, industrie et espace",
+   "destination_name_en": "Others Digital, Industry and Space destinations"
+ },
+ {
+   "destination_lib": "Destination 6",
+   "destination_code": "HUMAN",
+   "destination_name_fr": "Un développement éthique et centré sur l’homme des technologies numériques et industrielles",
+   "destination_name_en": "A human-centred and ethical development of digital and industrial technologies"
+ },
+ {
+   "destination_lib": "Destination 2",
+   "destination_code": "RESILIENCE",
+   "destination_name_fr": "Autonomie accrue dans les chaînes de valeurs stratégiques pour une industrie résiliente",
+   "destination_name_en": "Increased Autonomy in Key Strategic Value Chains for Resilient Industry"
+ },
+ {
+   "destination_lib": "Destination 4",
+   "destination_code": "DIGITAL",
+   "destination_name_fr": "Les technologies numériques et émergentes aux services de la compétitivité et du pacte vert",
+   "destination_name_en": "Digital & Emerging Technologies for Competitiveness and Fit for the Green Deal"
+ },
+ {
+   "destination_lib": "Destination 1",
+   "destination_code": "TWIN",
+   "destination_name_fr": "Production climatiquement neutre, circulaire et numérisé",
+   "destination_name_en": "Climate neutral, Circular and Digitised Production"
+ },
+ {
+   "destination_lib": "Destination 5",
+   "destination_code": "SPACE",
+   "destination_name_fr": "Une autonomie ouverte dans le développement, le déploiement et l’utilisation des infrastructures, services, applications et données mondiales de l’Espace",
+   "destination_name_en": "Open Strategic Autonomy in Developing, Deploying and Using Global Space-Based Infrastructures, Services, Applications and Data"
+ },
+ {
+   "destination_lib": "Destination 3",
+   "destination_code": "DATA",
+   "destination_name_fr": "Technologies des données et du calcul",
+   "destination_name_en": "World-leading Data and Computing Technologies"
+ },
+    {
+   "destination_lib": "CEM others",
+   "destination_code": "CEM-OTHERS",
+   "destination_name_fr": "",
+   "destination_name_en": "Others Climate, Energy and Mobility destinations"
+ },
+ {
+   "destination_lib": "Destination 5",
+   "destination_code": "D5",
+   "destination_name_fr": "",
+   "destination_name_en": "Clean and competitive solutions for all transport modes"
+ },
+ {
+   "destination_lib": "Destination 2",
+   "destination_code": "D2",
+   "destination_name_fr": "",
+   "destination_name_en": "Cross-sectoral solutions for the climate transition"
+ },
+ {
+   "destination_lib": "Destination 3",
+   "destination_code": "D3",
+   "destination_name_fr": "",
+   "destination_name_en": "Sustainable, secure and competitive energy supply"
+ },
+ {
+   "destination_lib": "Destination 1",
+   "destination_code": "D1",
+   "destination_name_fr": "",
+   "destination_name_en": "Climate sciences and responses for the transformation towards climate neutrality"
+ },
+ {
+   "destination_lib": "Destination 4",
+   "destination_code": "D4",
+   "destination_name_fr": "",
+   "destination_name_en": "Efficient, sustainable and inclusive energy use"
+ },
+ {
+   "destination_lib": "Destination 6",
+   "destination_code": "D6",
+   "destination_name_fr": "",
+   "destination_name_en": "Safe, Resilient Transport and Smart Mobility services for passengers and goods"
+ },
+    {
+   "destination_lib": "BIOENV Others",
+   "destination_code": "BIOENV-OTHERS",
+   "destination_name_fr": "Autres destinations en Bio-environnement",
+   "destination_name_en": "Others Bio-environnement destinations"
+ },
+ {
+   "destination_lib": "Destination 2",
+   "destination_code": "FARM2FORK",
+   "destination_name_fr": "Systèmes d'alimentation justes, sains, et respectueux de l'environnement, depuis la production primaire jusqu'à la consommation",
+   "destination_name_en": "Fair, healthy and environmentally-friendly food systems from primary production to consumption"
+ },
+ {
+   "destination_lib": "Destination 7",
+   "destination_code": "GOVERNANCE",
+   "destination_name_fr": "Gouvernance innovante, observations environnementales et solutions numériques en soutien au Pacte Vert",
+   "destination_name_en": "Innovative governance, environmental observations and digital solutions in support of the Green Deal"
+ },
+ {
+   "destination_lib": "Destination 3",
+   "destination_code": "CIRCBIO",
+   "destination_name_fr": "Économie circulaire et secteurs de la bioéconomie",
+   "destination_name_en": "Circular economy and bioeconomy sectors"
+ },
+ {
+   "destination_lib": "Destination 6",
+   "destination_code": "COMMUNITIES",
+   "destination_name_fr": "Communautés rurales, littorales et urbaines, résilientes, inclusives, saines et vertes",
+   "destination_name_en": "Resilient, inclusive, healthy and green rural, coastal and urban communities"
+ },
+ {
+   "destination_lib": "Destination 1",
+   "destination_code": "BIODIV",
+   "destination_name_fr": "Biodiversité et services écosystémiques",
+   "destination_name_en": "Biodiversity and Ecosystem Services"
+ },
+ {
+   "destination_lib": "Destination 5",
+   "destination_code": "CLIMATE",
+   "destination_name_fr": "Les terres, les océans et l'eau pour l'action climatique",
+   "destination_name_en": "Land, ocean and water for climate action"
+ },
+ {
+   "destination_lib": "Destination 4",
+   "destination_code": "ZEROPOLLUTION",
+   "destination_name_fr": "Un environnement propre et zéro pollution",
+   "destination_name_en": "Clean Environment and zero pollution"
+ },
+{
+   "destination_code": "SESAR",
+   "destination_name_fr": "Recherche sur la gestion du trafic aérien dans le ciel unique européen",
+   "destination_name_en": "Single European Sky Air Traffic Management Research"
+ },
+ {
+   "destination_code": "CLEAN-AVIATION",
+   "destination_name_fr": "Clean Aviation",
+   "destination_name_en": "Clean Aviation"
+ },
+{
+   "destination_code": "IHI",
+   "destination_name_fr": "Initiative en matière de santé innovante",
+   "destination_name_en": "Innovative Health Initiative"
+ },
+{
+   "destination_code": "KDT",
+   "destination_name_fr": "Technologies numériques clés",
+   "destination_name_en": "Key Digital Technologies"
+ },
+ {
+   "destination_code": "Chips",
+   "destination_name_fr": "Semi-conducteurs pour l'Europe",
+   "destination_name_en": "Chips for Europe Initiative"
+ },   
+{
+   "destination_code": "CBE",
+   "destination_name_fr": "Une Europe fondée sur la bioéconomie circulaire",
+   "destination_name_en": "Circular Bio-based Europe"
+ },
+    
+{
+   "destination_code": "EDCTP3",
+   "destination_name_fr": "EDCTP3 pour la santé mondiale",
+   "destination_name_en": "Global Health EDCTP3"
+ },
+{
+   "destination_code": "EUROHPC",
+   "destination_name_fr": "Calcul à haute performance européen",
+   "destination_name_en": "European High Performance Computing"
+ },
+{
+   "destination_code": "SNS",
+   "destination_name_fr": "Réseaux et services intelligents",
+   "destination_name_en": "Smart Networks and Services"
+ },
+{
+   "destination_code": "ER",
+   "destination_name_fr": "EU-Rail",
+   "destination_name_en": "EU-Rail"
+ },
+{
+   "destination_code": "CLEANH2",
+   "destination_name_fr": "Clean Hydrogen",
+   "destination_name_en": "Clean Hydrogen"
+ },
+ {
+   "destination_code": "OCEAN",
+   "destination_name_fr": "océan, mers et eaux",
+   "destination_name_en": "Ocean, seas and waters"
+ },
+{
+   "destination_code": "SOIL",
+   "destination_name_fr": "Santé des sols et alimentation",
+   "destination_name_en": "Soil health and food"
+ },
+{
+   "destination_code": "CIT",
+   "destination_name_fr": "Villes neutres pour le climat et intelligentes",
+   "destination_name_en": "Climate neutral and smart cities"
+ },
+    {
+   "destination_code": "CLIMA",
+   "destination_name_fr": "Adaptation aux changements climatiques",
+   "destination_name_en": "Adaptation to climate change"
+ },
+     {
+   "destination_code": "CANCER",
+   "destination_name_fr": "Cancer",
+   "destination_name_en": "Cancer"
+ },
+{
+   "destination_code": "UNCAN",
+   "destination_name_fr": "Cancer",
+   "destination_name_en": "Cancer"
+ },      
+{
+   "destination_code": "OCEANCLIMA",
+   "destination_name_fr": "Climat et océan",
+   "destination_name_en": "Climate adaptation and Ocean and waters"
+ },      
+{
+   "destination_code": "MISS-OTHERS",
+   "destination_name_fr": "Autres missions",
+   "destination_name_en": "Others missions"
+ },      
+{
+   "destination_code": "DESTINATION-OTHERS",
+   "destination_name_fr": "Autres destinations",
+   "destination_name_en": "Others destinations"
+ },      
+{
+   "destination_code": "INFRAEOSC",
+   "destination_name_fr": "Ecosystème EOSC",
+   "destination_name_en": "EOSC ecosystem"
+ },      
+{
+   "destination_code": "INFRASERV",
+   "destination_name_fr": "Infrastructures et services",
+   "destination_name_en": "Services and infrastructures"
+ },      
+{
+   "destination_code": "INFRADEV",
+   "destination_name_fr": "Infrastructures et développement",
+   "destination_name_en": "Development and infrastructures"
+ },      
+{
+   "destination_code": "INFRATECH",
+   "destination_name_fr": "Infrastructures et technologies",
+   "destination_name_en": "Technology and infrastructures"
+ },      
+{
+   "destination_code": "INFRANET",
+   "destination_name_fr": "Infrastructures et réseaux",
+   "destination_name_en": "Networks and infrastructures"
+ },
+    {
+   "destination_code": "EINFRA",
+   "destination_name_fr": "e-Infrastructures",
+   "destination_name_en": "e-Infrastructures"
+ },
+    {
+   "destination_code": "INFRAINNOV",
+   "destination_name_fr": "Infrastructures et innovation",
+   "destination_name_en": "Innovation and infrastructures"
+ },
+        {
+   "destination_code": "INFRASUPP",
+   "destination_name_fr": "Infrastructures et support",
+   "destination_name_en": "Support and infrastructures"
+ },   
+        {
+   "destination_code": "INFRAIA",
+   "destination_name_fr": "Infrastructures et activités intégrées",
+   "destination_name_en": "Integrating activities and infrastructures"
+ },
+        {
+   "destination_code": "INFRAEDI",
+   "destination_name_fr": "Infrastructure européenne de données",
+   "destination_name_en": "European Data Infrastructure"
+ },
+    {
+        "destination_code": "EUSPA",
+        "destination_name_fr": "EU Espace",
+        "destination_name_en": "EU Space"
+    },
+    {
+        "destination_code": "PATHFINDER",
+        "destination_name_fr": "EIC Pathfinder",
+        "destination_name_en": "EIC Pathfinder"
+    },
+    {
+        "destination_code": "ACCELERATOR",
+        "destination_name_fr": "EIC Accelerator",
+        "destination_name_en": "EIC Accelerator"
+    },
+    {
+        "destination_code": "TRANSITION",
+        "destination_name_fr": "EIC Transition",
+        "destination_name_en": "EIC Transition"
+    },
+    {
+        "destination_code": "CONNECT",
+        "destination_name_fr": "Ecosystèmes d'innovation interconnectés",
+        "destination_name_en": "Interconnected Innovation Ecosystems"
+    },
+    {
+        "destination_code": "SCALEUP",
+        "destination_name_fr": "Soutien à la compétitivité et le scaleup des écosystèmes innovants",
+        "destination_name_en": "Elevating the scalability potential of European business"
+    },
+    {
+        "destination_code": "INNOVSMES",
+        "destination_name_fr": "partenariat pour une PME innovante",
+        "destination_name_en": "Partnership on Innovative SMEs"
+    },
+    {
+        "destination_code": "KIC-CLIMATE",
+        "destination_name_fr": "EIT Climate-KIC",
+        "destination_name_en": "EIT Climate-KIC",
+        "dest_h20":"EIT-Climate-KIC"
+    },
+    {
+        "destination_code": "KIC-DIGITAL",
+        "destination_name_fr": "EIT Digital",
+        "destination_name_en": "EIT Digital",
+        "dest_h20":"EIT-Digital"
+    },
+    {
+        "destination_code": "KIC-HEALTH",
+        "destination_name_fr": "EIT Health",
+        "destination_name_en": "EIT Health",
+        "dest_h20":"EIT-Health"
+    },
+    {
+        "destination_code": "KIC-FOOD",
+        "destination_name_fr": "EIT Food",
+        "destination_name_en": "EIT Food",
+        "dest_h20":"EIT-Food"
+    },
+    {
+        "destination_code": "KIC-MANUFACTURING",
+        "destination_name_fr": "EIT Manufacturing",
+        "destination_name_en": "EIT Manufacturing",
+        "dest_h20":"EIT-Manufacturing"
+    },
+    {
+        "destination_code": "KIC-URBANMOBILITY",
+        "destination_name_fr": "EIT Urban Mobility",
+        "destination_name_en": "EIT Urban Mobility",
+        "dest_h20":"EIT-Urban-Mobility"
+    },
+    {
+        "destination_code": "KIC-RAWMATERIALS",
+        "destination_name_fr": "EIT Raw Materials",
+        "destination_name_en": "EIT Raw Materials",
+        "dest_h20":"EIT-Raw-Material"
+    },
+    {
+        "destination_code": "KIC-INNOENERGY",
+        "destination_name_fr": "EIT InnoEnergy",
+        "destination_name_en": "EIT InnoEnergy",
+        "dest_h20":"EIT-InnoEnergy"
+    },
+        {
+        "destination_code": "KIC-CCSI",
+        "destination_name_fr": "EIT CCSI",
+        "destination_name_en": "EIT CCSI"
+    },
+    {
+        "destination_code": "STG", 
+     "destination_name_en": "Starting grants"
+    },
+     {
+         "destination_code": "ADG", 
+      "destination_name_en": "Advanced grants"
+     },
+     {
+         "destination_code": "SyG", 
+      "destination_name_en": "Synergy grants"
+     },
+     {
+         "destination_code": "COG", 
+      "destination_name_en": "Consolidator grants"
+     },
+     {
+         "destination_code": "POC",
+      "destination_name_en": "Proof of concept grants"
+     },
+     {
+         "destination_code": "ERC", 
+      "destination_name_en": "Frontier science"
+     },
+     {
+         "destination_code": "SJI",
+      "destination_name_en": "Science journalism initiative"
+     },
+     {
+         "destination_code": "PERA",
+      "destination_name_en": "Public Engagement with Research Award"
+     },
+     {
+         "destination_code": "POC-LS",
+      "destination_name_en": "Proof of concept lump sum pilot"
+     },
+     {
+        "destination_code": "LVG",
+      "destination_name_en": "Low value grant"
+     },
+
+    
+    {
+        "destination_code": "ERC-OTHERS",
+        "destination_name_fr": "Autres ERC",
+        "destination_name_en": "ERC others"
+    },
+    
+    
+     {
+        "destination_code": "COFUND",
+        "destination_name_en": "Co-funding of regional, national and international programmes"
+    },
+    {
+        "destination_code": "DN",
+        "destination_name_en": "Doctoral Networks"
+    },
+    {
+        "destination_code": "PF",
+        "destination_name_en": "Postdoctoral Fellowships"
+    },
+    {
+        "destination_code": "SE",
+        "destination_name_en": "Staff Exchanges"
+    },
+    {
+        "destination_code": "COFUND-D",
+        "destination_name_en": "Cofund Doctoral programme"
+    },
+    {
+        "destination_code": "COFUND-P",
+        "destination_name_en": "Cofund Postdoctoral programme"
+    },
+    {
+        "destination_code": "DN",
+        "destination_name_en": "Doctoral Networks"
+    },
+    {
+        "destination_code": "DN-ID",
+        "destination_name_en": "Doctoral Networks - Industrial Doctorates"
+    },
+    {
+        "destination_code": "DN-JD",
+        "destination_name_en": "Doctoral Networks - Joint Doctorates"
+    },
+    {
+        "destination_code": "PF-EF",
+        "destination_name_en": "Postdoctoral Fellowships - European Fellowships"
+    },
+    {
+        "destination_code": "PF-GF",
+        "destination_name_en": "Postdoctoral Fellowships - Global Fellowships"
+    },
+        {
+        "destination_code": "CITIZENS",
+        "destination_name_en": "European Researchers' Night"
+    },
+    
+    {
+        "destination_code": "MSCA-OTHERS",
+        "destination_name_fr": "Autres MSCA",
+        "destination_name_en": "MSCA others"
+    },
+    {
+        "destination_code": "ACCESS",
+        "destination_name_fr": "Améliorer l'accès à l'excellence",
+        "destination_name_en": "Improved access to Excellence"
+    },
+    {
+        "destination_code": "TALENTS",
+        "destination_name_fr": "Attirer et mobiliser les meilleurs talents",
+        "destination_name_en": "Attracting and mobilising the best talents"
+    },
+    {
+        "destination_code": "COST",
+        "destination_name_fr": "Coopération européenne en science et technologie",
+        "destination_name_en": "European Cooperation in Science and Technology"
+    }
+]
