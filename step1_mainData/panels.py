@@ -1,8 +1,8 @@
 # table panels'''
 def merged_panels(df):
-    import json
+    import json, pandas as pd
 
-    with open('data_json/panels.json', 'r', encoding='UTF-8') as pl:
+    with open('data_files/panels.json', 'r', encoding='UTF-8') as pl:
         panels = json.load(pl)
         
     panels_proj=list(filter(None, df['panel_code'].unique()))
