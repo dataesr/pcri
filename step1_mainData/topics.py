@@ -2,11 +2,10 @@
 
 from constant_vars import ZIPNAME, FRAMEWORK
 from config_path import PATH_SOURCE
-import pandas as pd
+from functions_shared import unzip_zip
+import pandas as pd, numpy as np
 
 def topics_divisions(chemin):
-    from functions_shared import unzip_zip
-    import pandas as pd
 
     data = unzip_zip(ZIPNAME, chemin, 'topics.json', 'utf8')
     print(f'1 - topics -> {len(data)}')
