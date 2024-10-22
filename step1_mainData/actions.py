@@ -100,3 +100,11 @@ def merged_actions(df):
         print(f"ATTENTION ! il reste des calls sans actions: {df.loc[df['typeOfActionCode'].isnull(), ['stage','call_id']].drop_duplicates()}")
 
     # actions.to_csv(f"{PATH_CLEAN}actions_current.csv", index=False, encoding="UTF-8", sep=";", na_rep='')
+
+    act = pd.read_json(open("data_files/actions_name.json", 'r', encoding='utf-8'))
+
+    df = df.drop(columns='action_name').merge(act, how='left', on='action_code')
+    if any(df.action_name.isnull()):
+        print(f"attention manque un libellé dans action_name.json -> {df[df.action_name.isnull()].action_code.unique()}")
+    return df
+    
