@@ -1,5 +1,5 @@
 import pandas as pd, numpy as np
-from functions_shared import unzip_zip, del_list_in_col
+from functions_shared import unzip_zip, del_list_in_col, columns_comparison
 from constant_vars import ZIPNAME, FRAMEWORK
 from config_path import PATH_SOURCE, PATH_CONNECT, PATH_CLEAN
 
@@ -17,6 +17,10 @@ def proj_load():
     if proj is not None:
     #     # liste de projects pour verif dans proposals (project_liste.json)
         proj = pd.DataFrame(proj)
+
+        # new columns 
+        columns_comparison(proj, 'projects_columns')
+
         tot_pid = proj.projectNbr.nunique()
         proj.rename(columns={"projectNbr": "project_id", "projectStatus":"status_code",'numberOfParticipants':'number_involved',
                             'totalCost':'total_cost', 'euContribution':'eu_reqrec_grant'}, inplace=True)
@@ -50,6 +54,10 @@ def prop_load(proj_id_signed):
 
     if prop is not None:
         prop = pd.json_normalize(prop)
+
+        # new columns 
+        columns_comparison(prop, 'proposals_columns')
+
         tot_ppid = prop.proposalNbr.nunique()
         prop = prop.rename(columns={"proposalNbr": "project_id", "stage":"stage_call"})
         keep_eval = ['project_id','expertScore.total', 'expertScore.excellence', 'expertScore.impact', 'expertScore.quality', 'isEligibile', 'rank', 'stageExitStatus', 'isProject', 'isAboveTreshold']

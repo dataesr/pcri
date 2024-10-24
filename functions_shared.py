@@ -29,3 +29,9 @@ def website_to_clean(web_var: str):
     y= re.search(pat, str(web_var))
     if y is not None:
         return y.group()
+    
+def columns_comparison(df, namefile):
+    import numpy as np
+    old_cols = np.load(f"data_files/{namefile}.npy").tolist()
+    new_cols = df.columns.to_list()
+    return f"- new cols: {new_cols - old_cols}"
