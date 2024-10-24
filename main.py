@@ -74,3 +74,6 @@ else:
     print(f"2 - CALL_ID de merged -> nb call+deadline: {len(call_id)}, nb call unique: {call_id.call_id.nunique()} ")
 
 calls = calls_to_check(calls, call_id)
+
+
+projects = projects_complete_cleaned(merged, extractDate)
