@@ -1,16 +1,17 @@
 def dates_year(df):
+    print("### DATES and YEAR")
     # création var commune de statut/ call
     df['call_year'] = df['callId'].str.extract('(\d{4})')
 
     # traitement YEAR
     if any(df['call_year'].isnull()):
-        print(f"1 - si year none : \n{df['call_year'].value_counts(dropna=False)}")
+        print(f"- si year none : \n{df['call_year'].value_counts(dropna=False)}")
     else:
-        print(f"2 - calldeadline OK -> year:\n{df[['stage','call_year']].value_counts(dropna=False)}")
+        print(f"- calldeadline OK -> year:\n{df[['stage','call_year']].value_counts(dropna=False)}\n")
 
     # test call continu -> call open until 2027
     if any(df['call_year'][df['call_year']>'2026']):
-        print(f"3 - CALL continu ; utiliser la date de calldeadline:\n{df['callId'][df['call_year']>'2021'].unique()}")
+        print(f"- CALL continu ; utiliser la date de calldeadline:\n{df['callId'][df['call_year']>'2021'].unique()}\n")
 
     for d in ['callDeadlineDate',  'startDate', 'endDate', 'ecSignatureDate', 'submissionDate']:
         df[d] = df[d].astype('datetime64[ns]')

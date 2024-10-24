@@ -34,4 +34,7 @@ def columns_comparison(df, namefile):
     import numpy as np
     old_cols = np.load(f"data_files/{namefile}.npy").tolist()
     new_cols = df.columns.to_list()
-    return f"- new cols: {new_cols - old_cols}"
+    if any(set(new_cols) - set(old_cols)):
+        print(f"- new cols: {set(new_cols) - set(old_cols)}")
+    else:
+        print("- no new columns")
