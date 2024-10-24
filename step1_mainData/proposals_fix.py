@@ -11,10 +11,9 @@ def proposals_id_missing(prop1, proj, extractDate):
         call_miss = proj[~proj['project_id'].isin(prop1.project_id.unique())].callId.unique()
         print(f"- missing proposals by callId:\n{proj[~proj['project_id'].isin(prop1.project_id.unique())].callId.value_counts()}\n")
         
-        with pd.ExcelWriter(f"{PATH_WORK}missing_proposals_{extractDate}.xlsx", mode='w') as writer:
+        with pd.ExcelWriter(f"{PATH_WORK}missing_proposals_{extractDate}.xlsx") as writer:
             for i in call_miss:
-                sheetname = f'{i}'
-                prop1[prop1['callId']==i].to_excel(writer, sheet_name=sheetname, index=False)
+                proj[(proj['callId']==i)&(~proj['project_id'].isin(prop1.project_id.unique()))].to_excel(writer, sheet_name=f'{i}', index=False)
 
         # extraction des projets absents des propositions création des vars proposals manquantes pour ajout à MERGED
         print(f"- callId already in proposals: {prop1[prop1['callId'].isin(call_miss)].callId.value_counts()}\n")
