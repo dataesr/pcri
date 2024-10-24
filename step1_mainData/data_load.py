@@ -7,11 +7,12 @@ def date_load():
     # creation de extractDate avec la date d'extraction d'ecorda format -> '2022-12-11'
     date = unzip_zip(ZIPNAME, f"{PATH_SOURCE}{FRAMEWORK}/", 'extractionDate.json', 'utf8')
     extractDate = list(set([i['extraction_date'] for i in date if i['framework']==FRAMEWORK]))[0]
-    print([i for i in date if i['framework']==FRAMEWORK]) 
+    print(f"### LAST DATE of EXTRACTED DATA\n{[i for i in date if i['framework']==FRAMEWORK]}\n") 
     pd.DataFrame([i for i in date if i['framework']==FRAMEWORK]).to_json(f"{PATH_CONNECT}extractionDate.json", orient='records')
     return extractDate
 
 def proj_load():
+    print('### LOADING PROJECTS DATA')
     proj = unzip_zip(ZIPNAME, f"{PATH_SOURCE}{FRAMEWORK}/", 'projects.json', 'utf8')
     if proj is not None:
     #     # liste de projects pour verif dans proposals (project_liste.json)
@@ -32,17 +33,18 @@ def proj_load():
         
         proj.drop(columns=['comL2LocalKey', 'linkedFpaProjectNbr', 'contractVersion', 'masterCallId', 'ecHiearchyResp', 'uniqueProgrammePart'], inplace=True)
         
-        print(f'2 - extraction des projets:{tot_pid}, proj:{len(proj)}, pb:{tot_pid-len(proj)}\n\nliste des colonnes conservées: {proj.columns}\n')
+        print(f'result - dowloaded projects:{tot_pid}, retained projects:{len(proj)}, pb:{tot_pid-len(proj)}\n- liste des colonnes conservées: {proj.columns}\n')
         return proj
     
 
 def prop_load(proj_id_signed):
+    print('### LOADING PROPOSALS DATA')
     prop = unzip_zip(ZIPNAME, f"{PATH_SOURCE}{FRAMEWORK}/", 'proposals.json', 'utf8')
 
     def status_test(nb_status):
         if len(prop.stageExitStatus.unique()) != nb_status:
             stat =  ['REJECTED' ,'NO_MONEY' ,'MAIN', 'RESERVE', 'INELIGIBLE', 'WITHDRAWN', 'INADMISSIBLE', None]
-            return print(f"2 - {len(prop.stageExitStatus.unique())-nb_status} statut de proposition a été ajouté à stageExitStatus ;\n vérifier s'il faut l'intégrer aux projets ELIGIBLE {prop.loc[~prop.stageExitStatus.isin(stat), 'stageExitStatus']}\n")
+            return print(f"STATUS - {len(prop.stageExitStatus.unique())-nb_status} statut de proposition a été ajouté à stageExitStatus ;\n vérifier s'il faut l'intégrer aux projets ELIGIBLE {prop.loc[~prop.stageExitStatus.isin(stat), 'stageExitStatus']}\n")
         else:
             pass
 
@@ -59,7 +61,7 @@ def prop_load(proj_id_signed):
         prop.loc[:, "eic_panels"] = prop.loc[:, "eic_panels"].str.replace(' / ', '|')
         
         prop = prop.drop_duplicates()
-        print(f'1 - extraction des propositions:{tot_ppid}, prop:{len(prop)}, pb:{tot_ppid-len(prop)}\n')
+        print(f'result - dowloaded proposals:{tot_ppid}, retained proposals:{len(prop)}, pb:{tot_ppid-len(prop)}\n')
         
         status_test(8)
         prop.loc[prop.project_id.isin(proj_id_signed), 'proposalStatus'] = 'MAIN'
@@ -82,5 +84,5 @@ def prop_load(proj_id_signed):
         elif empty_cols!=[col for col in prop1.columns if prop1[col].isnull().all()]:
             print(f"3 - Attention ! vérifier les variables manquantes->{[col for col in prop1.columns if prop1[col].isnull().all()]}\n")
         
-    print(f"4 - size prop1 without inadmissible/inegible/etc : {len(prop1)}\n")
+    print(f"CLEANED PROPOSALS - size prop1 without inadmissible/inegible/etc : {len(prop1)}\n")
     return prop, prop1

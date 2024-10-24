@@ -12,9 +12,8 @@ from step1_mainData.actions import *
 ################################
 ## data load / adjustements
 extractDate = date_load()
-print(extractDate)
-proj = proj_load()
 
+proj = proj_load()
 proj_id_signed = proj.project_id.unique()
 stage_l =  ['REJECTED' ,'NO_MONEY' ,'MAIN', 'RESERVE', 'INELIGIBLE', 'WITHDRAWN', 'INADMISSIBLE', None]
 
