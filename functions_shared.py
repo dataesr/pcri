@@ -38,3 +38,11 @@ def columns_comparison(df, namefile):
         print(f"- new cols: {set(new_cols) - set(old_cols)}")
     else:
         print("- no new columns")
+
+def gps_col(df):
+    import re
+    df=df.assign(gps_loc=None)
+    for i,row in df.iterrows():
+        if row.loc['location'].get('latitude') is not None:
+            df.at[i, 'gps_loc'] = re.search(r'^-?\d+\.?\d{,5}', str(row.loc['location'].get('latitude')))[0]+ "," +re.search(r'^-?\d+\.?\d{,5}', str(row.loc['location'].get('longitude')))[0]
+    return df.drop('location', axis=1).drop_duplicates()  

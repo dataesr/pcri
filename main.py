@@ -9,7 +9,7 @@ from step1_mainData.panels import *
 from step1_mainData.topics import *
 from step1_mainData.actions import *
 from step1_mainData.calls import *
-
+from step2_participations.participant import *
 
 ################################
 ## data load / adjustements
@@ -75,5 +75,8 @@ else:
 
 calls = calls_to_check(calls, call_id)
 
-
 projects = projects_complete_cleaned(merged, extractDate)
+
+##### PARTICIPANTS
+
+part1 = participant_load(projects)
