@@ -13,7 +13,7 @@ def proposals_id_missing(prop1, proj, extractDate):
         
         for i in call_miss:
             sheetname = f'{i}'
-            with pd.ExcelWriter(f"{PATH_WORK}missing_proposals_{extractDate}.xlsx", mode='a') as writer:
+            with pd.ExcelWriter(f"{PATH_WORK}missing_proposals_{extractDate}.xlsx", mode='w') as writer:
                 prop1[prop1['callId']==i].to_excel(writer, sheet_name=sheetname, index=False)
 
         # extraction des projets absents des propositions création des vars proposals manquantes pour ajout à MERGED
