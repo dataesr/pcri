@@ -22,12 +22,12 @@ prop, prop1 = prop_load(proj_id_signed)
 proj = proj_add_cols(prop1, proj)
 
 ###########################################
-# proposals fix FIX
+# proposals fix
 # projects missing from proposals
-integrate_call = poj_id_missing(prop1, proj)
+call_to_integrate = proposals_id_missing(prop1, proj, extractDate)
 
 # if call already in proposals then add missing projects
-proj1 = proj_id_miss_fixed(prop1, proj, integrate_call)
+proj1 = proj_id_miss_fixed(prop1, proj, call_to_integrate)
 
 
 # merge proj + prop
