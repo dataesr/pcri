@@ -1,4 +1,5 @@
-from config_path import PATH_CONNECT
+from config_path import PATH_WORK
+import pandas as pd
 
 def poj_id_missing(prop1, proj):
     # verification que tous les projets de proj sont aussi dans prop -> prefix des colonnes
@@ -7,10 +8,14 @@ def poj_id_missing(prop1, proj):
     else:    
         print(f"5 - {len(proj[~proj['project_id'].isin(prop1.project_id.unique())].project_id.unique())} projets signés absents de la table des propositions")
         call_miss = proj[~proj['project_id'].isin(prop1.project_id.unique())].callId.unique()
-        print(f"{call_miss}")
+        # print(f"{call_miss}")
         print(prop1[prop1['callId'].isin(call_miss)].callId.value_counts())
+        for i in call_miss:
+            sheetname = f'{i}'
+            with pd.ExcelWriter(f"{PATH_WORK}missing_proposals_{extractDate}.xlsx") as writer:
+                prop1[prop1['callId']==i].to_excel(writer, sheet_name=sheetname, index=False)
         # extraction des projets absents des propositions création des vars proposals manquantes pour ajout à MERGED
-        proj[~proj['project_id'].isin(prop1.project_id.unique())].groupby('callId')['project_id'].nunique().to_csv(f"{PATH_CONNECT}proj_no_proposals.csv", sep=';')
+        proj[~proj['project_id'].isin(prop1.project_id.unique())].groupby('callId')['project_id'].nunique().to_csv(f"{PATH_WORK}proj_no_proposals.csv", sep=';')
         return prop1[prop1['callId'].isin(call_miss)].callId.unique()
 
 def proj_id_miss_fixed(prop1, proj, integrate_call):
