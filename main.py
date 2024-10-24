@@ -30,13 +30,14 @@ proj1 = proj_id_miss_fixed(prop1, proj, call_to_integrate)
 
 
 # merge proj + prop
+print('### MERGED PROPOSLS/PROJECTS')
 if len(proj1)==0:
     prop2=pd.concat([proj,prop1], ignore_index= True)
 else:
     prop2 = pd.concat([prop1, proj1, proj], ignore_index = True)
 
 prop2 = prop2.loc[~((prop2.status_code=='REJECTED')&(prop2.stage=='successful'))]
-print(f"3 - merged prop2: {len(prop2)}, {prop2[['stage','status_code']].value_counts()}")
+print(f"result - merged all: {len(prop2)}, {prop2[['stage','status_code']].value_counts()}\n")
 
 merged = copy.deepcopy(prop2)
 merged = dates_year(merged)

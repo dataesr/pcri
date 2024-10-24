@@ -294,47 +294,7 @@
    "destination_code": "CLEANH2",
    "destination_name_fr": "Clean Hydrogen",
    "destination_name_en": "Clean Hydrogen"
- },
- {
-   "destination_code": "OCEAN",
-   "destination_name_fr": "océan, mers et eaux",
-   "destination_name_en": "Ocean, seas and waters"
- },
-{
-   "destination_code": "SOIL",
-   "destination_name_fr": "Santé des sols et alimentation",
-   "destination_name_en": "Soil health and food"
- },
-{
-   "destination_code": "CIT",
-   "destination_name_fr": "Villes neutres pour le climat et intelligentes",
-   "destination_name_en": "Climate neutral and smart cities"
- },
-    {
-   "destination_code": "CLIMA",
-   "destination_name_fr": "Adaptation aux changements climatiques",
-   "destination_name_en": "Adaptation to climate change"
- },
-     {
-   "destination_code": "CANCER",
-   "destination_name_fr": "Cancer",
-   "destination_name_en": "Cancer"
- },
-{
-   "destination_code": "UNCAN",
-   "destination_name_fr": "Cancer",
-   "destination_name_en": "Cancer"
- },      
-{
-   "destination_code": "OCEANCLIMA",
-   "destination_name_fr": "Climat et océan",
-   "destination_name_en": "Climate adaptation and Ocean and waters"
- },      
-{
-   "destination_code": "MISS-OTHERS",
-   "destination_name_fr": "Autres missions",
-   "destination_name_en": "Others missions"
- },      
+ }, 
 {
    "destination_code": "DESTINATION-OTHERS",
    "destination_name_fr": "Autres destinations",

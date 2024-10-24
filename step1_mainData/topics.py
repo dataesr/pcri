@@ -1,12 +1,12 @@
 # table topics'''
 
 from constant_vars import ZIPNAME, FRAMEWORK
-from config_path import PATH_SOURCE
+from config_path import PATH_SOURCE, PATH_CLEAN
 from functions_shared import unzip_zip
 import pandas as pd, numpy as np
 
 def topics_divisions(chemin):
-
+    print("### TOPICS")
     data = unzip_zip(ZIPNAME, chemin, 'topics.json', 'utf8')
     print(f'1 - topics -> {len(data)}')
     topics = pd.DataFrame(data)[["topicCode","topicDescription"]].drop_duplicates() 
@@ -117,28 +117,29 @@ def topics_divisions(chemin):
 
     # MISSION
     miss = (topics_divisions
-            .loc[(topics_divisions.lvl2Code=='HORIZON.2')&(topics_divisions.topicCode.str.contains('MISS')),
-                 ['topicCode','lvl3Code']]
-            .assign(thema_code='MISSION'))
+        .loc[(topics_divisions.lvl2Code=='HORIZON.2')&(topics_divisions.topicCode.str.contains('MISS')),
+                ['topicCode','lvl3Code']]
+        .assign(programme_code='MISSION'))
 
-    m={"OCEAN":"HORIZON.2.6",
-       "SOIL":"HORIZON.2.6",
-       "CIT":"HORIZON.2.5",
-       "CLIMA":"HORIZON.2.5",
-       "CANCER":"HORIZON.2.1",
-       "UNCAN":"HORIZON.2.1"}
+    m=["OCEAN",
+        "SOIL",
+        "CIT",
+        "CLIMA",
+        "CANCER",
+        "UNCAN"]
 
-    for k,v in m.items():
+
+    for k in m:
         pattern=str("^"+k)
         mask = (miss.topicCode.str.split('-').str[3].str.contains(pattern, na=True))
-        miss.loc[mask, 'destination_code'] = k
-        miss.loc[mask, 'programme_code'] = v
+        miss.loc[mask, 'thema_code'] = k
+        # miss.loc[mask, 'programme_code'] = v
 
-    miss.loc[miss.destination_code=="UNCAN", 'destination_code'] = "CANCER"
+    miss.loc[miss.thema_code=="UNCAN", 'thema_code'] = "CANCER"
 
-    if any((miss.thema_code=='MISSION')&(miss.destination_code.isnull())):
-        miss.loc[miss.destination_code.isnull(), 'destination_code'] = 'MISS-OTHERS' 
-        miss.loc[miss.programme_code.isnull(), 'programme_code'] = miss.lvl3Code 
+    if any((miss.programme_code=='MISSION')&(miss.thema_code.isnull())):
+        miss.loc[miss.thema_code.isnull(), 'thema_code'] = 'MISS-OTHERS'  
+        # miss.loc[miss.programme_code.isnull(), 'programme_code'] = miss.lvl3Code 
 
     ########################################################################
 
@@ -257,12 +258,11 @@ def topics_divisions(chemin):
 
     # traitement niveau programme pour les MISSIONS
     miss = (miss
-            .merge(horizon[['topicCode', 'topic_name']], how='left', on='topicCode')
-            .merge(horizon[['pilier_code', 'pilier_name_en', 'programme_code', 'programme_name_en']], 
-                   how='left', on='programme_code')
-            .drop(columns='lvl3Code')
-            .drop_duplicates())
-
+        .merge(horizon[['pilier_code', 'pilier_name_en', 'topicCode', 'topic_name']], how='left', on='topicCode')
+        .assign(programme_name_en='Mission')
+        .drop(columns='lvl3Code')
+        .drop_duplicates())
+    
     tab = pd.concat([tab, miss], ignore_index=True)  
     tab = tab.mask(tab == '')
 
@@ -331,6 +331,7 @@ def merged_topics(df):
 
     if len(df[df['programme_code'].isnull()])>0:
         print(f"ATTENTION ! programme_code manquant")
+    topics.to_csv(f"{PATH_CLEAN}topics_current.csv", index=False, encoding="UTF-8", sep=";", na_rep='')
 
     return df
-    # topics.to_csv(f"{PATH_CONNECT}topics_current.csv", index=False, encoding="UTF-8", sep=";", na_rep='')
+    

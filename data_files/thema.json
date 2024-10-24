@@ -103,5 +103,45 @@
         "thema_code": "EIE",
         "thema_name_fr": "Ecosystèmes européens d'innovation",
         "thema_name_en": "European Innovation Ecosystems"
-    }
+    },
+    {
+        "thema_code": "OCEAN",
+        "thema_name_fr": "océan, mers et eaux",
+        "thema_name_en": "Ocean, seas and waters"
+      },
+     {
+        "thema_code": "SOIL",
+        "thema_name_fr": "Santé des sols et alimentation",
+        "thema_name_en": "Soil health and food"
+      },
+     {
+        "thema_code": "CIT",
+        "thema_name_fr": "Villes neutres pour le climat et intelligentes",
+        "thema_name_en": "Climate neutral and smart cities"
+      },
+         {
+        "thema_code": "CLIMA",
+        "thema_name_fr": "Adaptation aux changements climatiques",
+        "thema_name_en": "Adaptation to climate change"
+      },
+          {
+        "thema_code": "CANCER",
+        "thema_name_fr": "Cancer",
+        "thema_name_en": "Cancer"
+      },
+     {
+        "thema_code": "UNCAN",
+        "thema_name_fr": "Cancer",
+        "thema_name_en": "Cancer"
+      },      
+     {
+        "thema_code": "OCEANCLIMA",
+        "thema_name_fr": "Climat et océan",
+        "thema_name_en": "Climate adaptation and Ocean and waters"
+      },      
+     {
+        "thema_code": "MISS-OTHERS",
+        "thema_name_fr": "Autres missions",
+        "thema_name_en": "Others missions"
+      }
 ]
