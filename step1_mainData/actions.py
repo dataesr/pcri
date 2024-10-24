@@ -5,7 +5,6 @@ import pandas as pd, re, requests
 
 
 def action(chemin, act_list:list):
-    
     requests.packages.urllib3.disable_warnings(requests.packages.urllib3.exceptions.InsecureRequestWarning)
 
     
@@ -71,12 +70,12 @@ def action(chemin, act_list:list):
 
 
 def merged_actions(df):
-    ''' table action '''
+    print("### ACTIONS")
     # création de la liste des TOA présents dans propasals et projects
 
     if len(df[df['typeOfActionCode'].isnull()])>0:
         if any(df[df['typeOfActionCode'].isnull()][['call_id']].drop_duplicates()=='HORIZON-HLTH-2022-DISEASE-06-two-stage'):
-            print(f"1 - call sans action:{df[df['typeOfActionCode'].isnull()][['call_id']].drop_duplicates()}")
+            print(f"1 - call sans action:\n{df[df['typeOfActionCode'].isnull()][['call_id']].drop_duplicates()}\n")
             df.loc[df['call_id']=='HORIZON-HLTH-2022-DISEASE-06-two-stage', 'typeOfActionCode'] = 'HORIZON-RIA'
 
     df.loc[:,'typeOfActionCode']=df.loc[:,'typeOfActionCode'].str.split('\\').str[0]
@@ -94,10 +93,10 @@ def merged_actions(df):
     df = (df
             .merge(pd.DataFrame(actions), how='left', on='typeOfActionCode')
             .drop_duplicates())
-    print(f"size merged after add actions: {len(df)}")
+    print(f"- size merged after add actions: {len(df)}\n")
 
     if len(df[df['typeOfActionCode'].isnull()])>0:
-        print(f"ATTENTION ! il reste des calls sans actions: {df.loc[df['typeOfActionCode'].isnull(), ['stage','call_id']].drop_duplicates()}")
+        print(f"ATTENTION ! il reste des calls sans actions: {df.loc[df['typeOfActionCode'].isnull(), ['stage','call_id']].drop_duplicates()}\n")
 
     # actions.to_csv(f"{PATH_CLEAN}actions_current.csv", index=False, encoding="UTF-8", sep=";", na_rep='')
 
@@ -105,6 +104,6 @@ def merged_actions(df):
 
     df = df.drop(columns='action_name').merge(act, how='left', on='action_code')
     if any(df.action_name.isnull()):
-        print(f"attention manque un libellé dans action_name.json -> {df[df.action_name.isnull()].action_code.unique()}")
+        print(f"attention manque un libellé dans action_name.json -> {df[df.action_name.isnull()].action_code.unique()}\n")
     return df
     

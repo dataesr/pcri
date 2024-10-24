@@ -8,6 +8,8 @@ from step1_mainData.url_fix import *
 from step1_mainData.panels import *
 from step1_mainData.topics import *
 from step1_mainData.actions import *
+from step1_mainData.calls import *
+
 
 ################################
 ## data load / adjustements
@@ -60,3 +62,15 @@ if any(merged.loc[merged.stage=='successful', 'project_id'].value_counts()[merge
 merged = merged_panels(merged)
 merged = merged_topics(merged)
 merged = merged_actions(merged)
+
+# calls list
+calls = call(PATH_SOURCE+FRAMEWORK+'/')
+
+print("### CALLS+MERGED")
+if len(merged.loc[merged.call_id.isnull()])>0:
+        print(f"1 - ATTENTION : manque des call_id: {merged.loc[merged.call_id.isnull(), 'project_id']}")
+else:
+    call_id = merged[['call_id', 'call_deadline']].drop_duplicates()
+    print(f"2 - CALL_ID de merged -> nb call+deadline: {len(call_id)}, nb call unique: {call_id.call_id.nunique()} ")
+
+calls = calls_to_check(calls, call_id)
