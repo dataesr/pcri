@@ -2,14 +2,15 @@ from config_path import PATH_WORK
 import pandas as pd
 
 def proposals_id_missing(prop1, proj, extractDate):
+    print('### MISSING PROPOSALS')
     # verification que tous les projets de proj sont aussi dans prop -> prefix des colonnes
     if proj[~proj['project_id'].isin(prop1.project_id.unique())].empty:
-        print('4 - ok pas de projets manquants dans proposals') 
+        print('- ok pas de projets manquants dans proposals') 
     else:    
-        print(f"5 - {len(proj[~proj['project_id'].isin(prop1.project_id.unique())].project_id.unique())} projets signés absents de la table des propositions")
+        print(f"result missing proposals - {len(proj[~proj['project_id'].isin(prop1.project_id.unique())].project_id.unique())} projets signés absents de la table des propositions")
         call_miss = proj[~proj['project_id'].isin(prop1.project_id.unique())].callId.unique()
-        # print(f"{call_miss}")
-        print(prop1[prop1['callId'].isin(call_miss)].callId.value_counts())
+        print(f"{call_miss}")
+        print(f"- missing proposals by call: {prop1[prop1['callId'].isin(call_miss)].callId.value_counts()}\n")
         for i in call_miss:
             sheetname = f'{i}'
             with pd.ExcelWriter(f"{PATH_WORK}missing_proposals_{extractDate}.xlsx") as writer:
