@@ -61,7 +61,7 @@ def prop_load(proj_id_signed):
         prop.loc[:, "eic_panels"] = prop.loc[:, "eic_panels"].str.replace(' / ', '|')
         
         prop = prop.drop_duplicates()
-        print(f'result - dowloaded proposals:{tot_ppid}, retained proposals:{len(prop)}, pb:{tot_ppid-len(prop)}\n')
+        print(f'result - dowloaded proposals:{tot_ppid}, retained proposals:{len(prop)}, pb:{tot_ppid-len(prop)}')
         
         status_test(8)
         prop.loc[prop.project_id.isin(proj_id_signed), 'proposalStatus'] = 'MAIN'
@@ -82,7 +82,7 @@ def prop_load(proj_id_signed):
         if empty_cols==[col for col in prop1.columns if prop1[col].isnull().all()]:
             prop1.drop(empty_cols, axis=1, inplace=True)
         elif empty_cols!=[col for col in prop1.columns if prop1[col].isnull().all()]:
-            print(f"3 - Attention ! vérifier les variables manquantes->{[col for col in prop1.columns if prop1[col].isnull().all()]}\n")
+            print(f"empty cols - Attention ! vérifier les variables manquantes->{[col for col in prop1.columns if prop1[col].isnull().all()]}")
         
-    print(f"CLEANED PROPOSALS - size prop1 without inadmissible/inegible/etc : {len(prop1)}\n")
+    print(f"after cleaning - size prop1 without inadmissible/inegible/etc : {len(prop1)}\n")
     return prop, prop1
