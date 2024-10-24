@@ -1,7 +1,7 @@
 from config_path import PATH_WORK
 import pandas as pd
 
-def poj_id_missing(prop1, proj):
+def proposals_id_missing(prop1, proj, extractDate):
     # verification que tous les projets de proj sont aussi dans prop -> prefix des colonnes
     if proj[~proj['project_id'].isin(prop1.project_id.unique())].empty:
         print('4 - ok pas de projets manquants dans proposals') 
@@ -18,8 +18,8 @@ def poj_id_missing(prop1, proj):
         proj[~proj['project_id'].isin(prop1.project_id.unique())].groupby('callId')['project_id'].nunique().to_csv(f"{PATH_WORK}proj_no_proposals.csv", sep=';')
         return prop1[prop1['callId'].isin(call_miss)].callId.unique()
 
-def proj_id_miss_fixed(prop1, proj, integrate_call):
+def proj_id_miss_fixed(prop1, proj, call_to_integrate):
     if len(proj[~proj['project_id'].isin(prop1.project_id.unique())])>0:
-        return (proj[(~proj['project_id'].isin(prop1.project_id.unique()))&(proj['callId'].isin(integrate_call))]
+        return (proj[(~proj['project_id'].isin(prop1.project_id.unique()))&(proj['callId'].isin(call_to_integrate))]
             .assign(status_code='MAIN', stage='evaluated')
             .drop(columns=['otherContribution', 'totalGrant', 'ecSignatureDate', 'nationalContribution', 'startDate', 'endDate', 'url']))
