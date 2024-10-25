@@ -57,39 +57,19 @@ from constant_vars import ZIPNAME, FRAMEWORK
 
 
 
-# proj = unzip_zip('HE_2024-06-07.json.zip', f"{PATH_SOURCE}{FRAMEWORK}/", 'projects_participants.json', 'utf8')
-# proj=pd.DataFrame(proj)
-# proj_cols= proj.columns.to_list()
-# #
+proj = unzip_zip(ZIPNAME, f"{PATH_SOURCE}{FRAMEWORK}/", 'projects.json', 'utf8')
+proj=pd.DataFrame(proj)
+
+prop = unzip_zip(ZIPNAME, f"{PATH_SOURCE}{FRAMEWORK}/", 'proposals.json', 'utf8')
+prop = pd.json_normalize(prop)
 
 
-# np.save("data_files/participants_columns.npy", proj_cols)
-# # np.load("data_files/columns.npy").tolist()
-
-# app = unzip_zip('HE_2024-06-07.json.zip', f"{PATH_SOURCE}{FRAMEWORK}/", 'proposals_applicants.json', 'utf8')
-# app = pd.json_normalize(app)
-# prop_cols= app.columns.to_list()
-
-
-# np.save("data_files/applicants_columns.npy", prop_cols)
-
-from constant_vars import ZIPNAME, FRAMEWORK
-from config_path import PATH_SOURCE
-from functions_shared import unzip_zip, columns_comparison, gps_col
-import pandas as pd, numpy as np
+app = unzip_zip(ZIPNAME, f"{PATH_SOURCE}{FRAMEWORK}/", 'proposals_applicants.json', 'utf8')
+app = pd.json_normalize(app)
 
 
 
-
-print("### PARTICIPANT")
 part = unzip_zip(ZIPNAME, f"{PATH_SOURCE}{FRAMEWORK}/", "projects_participants.json", 'utf8')
-    
-if part:
-    part = pd.DataFrame(part)
+part = pd.DataFrame(part)
 
-def num_to_string(var):
-    try:
-        float(var)
-        return var.astype(int, errors='ignore').astype(str).replace('.0', '')
-    except:
-        return str(var).replace('.0', '')
+topics = pd.read_csv(f"{PATH_CLEAN}topics_current.csv", sep=';')

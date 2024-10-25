@@ -1,8 +1,9 @@
 
 import copy
+from functions_shared import *
 from step1_mainData.data_load import *
-from step1_mainData.projects_fix import *
-from step1_mainData.proposals_fix import *
+from step1_mainData.projects import *
+from step1_mainData.proposals import *
 from step1_mainData.merged_clean import *
 from step1_mainData.url_fix import *
 from step1_mainData.panels import *
@@ -10,7 +11,7 @@ from step1_mainData.topics import *
 from step1_mainData.actions import *
 from step1_mainData.calls import *
 from step1_mainData.participants import *
-
+from step1_mainData.applicants import *
 ################################
 ## data load / adjustements
 extractDate = date_load()
@@ -18,28 +19,24 @@ extractDate = date_load()
 proj = projects_load()
 proj_id_signed = proj.project_id.unique()
 
-prop = proposals_load()
-stage_p =  ['REJECTED' ,'NO_MONEY' ,'MAIN', 'RESERVE', 'INELIGIBLE', 'WITHDRAWN', 'INADMISSIBLE', None]
-prop1 = proposals_status(prop, proj_id_signed, stage_p)   
-      
-      
-      
-        # l = ['INELIGIBLE', 'INADMISSIBLE', 'DUPLICATE','WITHDRAWN']
-        # mask = (~prop.stageExitStatus.isin(l))&(~prop.stageExitStatus.isnull())
+prop = proposals_load()   
+proj = proj_add_cols(prop, proj)
 
-proj = proj_add_cols(prop1, proj)
+# np.save("data_files/applicants_columns.npy", prop_cols)
 
 ###########################################
 # proposals fix
 # projects missing from proposals
-call_to_integrate = proposals_id_missing(prop1, proj, extractDate)
+call_to_integrate = proposals_id_missing(prop, proj, extractDate)
 
 # if call already in proposals then add missing projects
-proj1 = proj_id_miss_fixed(prop1, proj, call_to_integrate)
+proj1 = proj_id_miss_fixed(prop, proj, call_to_integrate)
 
+stage_p =  ['REJECTED' ,'NO_MONEY' ,'MAIN', 'RESERVE', 'INELIGIBLE', 'WITHDRAWN', 'INADMISSIBLE', None]
+prop1 = proposals_status(prop, proj_id_signed, stage_p)  
 
 # merge proj + prop
-print('### MERGED PROPOSLS/PROJECTS')
+print('### MERGED PROPOSALS/PROJECTS')
 if len(proj1)==0:
     prop2=pd.concat([proj,prop1], ignore_index= True)
 else:
@@ -84,16 +81,17 @@ calls = calls_to_check(calls, call_id)
 
 projects = projects_complete_cleaned(merged, extractDate)
 
-##### PARTICIPANTS
-
-part = participants_load(projects)
-part = role_type(part)
-
-proj_erc = projects.loc[(projects.stage=='successful')&(projects.thema_code=='ERC'), ['project_id', 'destination_code', 'action_code']]
-part = erc_role(part, proj_erc)
-
 #### APPLICANTS
-app = applicants_load(projects)
+app = applicants_load(prop)
 # conserve uniquement les projets présents dans proposals et applicants
 app1 = app.loc[app.project_id.isin(projects.project_id.unique())] 
 print(f"0 - size df sans les exclus: {len(app1)}")
+app1 = role(app1)
+app1 = erc_role(app1, projects)
+
+##### PARTICIPANTS
+
+part = participants_load(proj)
+part = role_type(part)
+part = erc_role(part, projects)
+

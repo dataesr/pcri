@@ -3,6 +3,22 @@ from config_path import PATH_SOURCE
 import pandas as pd, numpy as np
 
 
+
+def proj_part_link():
+    # controle des projets entre projects et participants
+    tmp=(part[['project_id']].drop_duplicates()
+        .merge(projects.loc[projects.stage=='successful', ['project_id', 'call_id', 'acronym']], how='outer', on='project_id', indicator=True))
+    if not tmp.query('_merge == "right_only"').empty:
+        print("- projets dans projects sans participants")   
+        with pd.ExcelWriter(f"{PATH_SOURCE}bugs_found.xlsx",  mode='a',  if_sheet_exists='replace') as writer:  
+            tmp.query('_merge == "right_only"').drop(columns='_merge').to_excel(writer, sheet_name='proj_without_part')
+        
+    elif not tmp.query('_merge == "left_only"').empty:
+        print("- projets dans participants et pas dans projects")    
+        with pd.ExcelWriter(f"{PATH_SOURCE}bugs_found.xlsx",  mode='a',  if_sheet_exists='replace') as writer:  
+            tmp.query('_merge == "left_only"').drop(columns='_merge').to_excel(writer, sheet_name='part_without_info_proj')        
+    
+
 def role_type(df):
     print("### Participants ROLE")
 
@@ -22,13 +38,3 @@ def role_type(df):
     return df
 
 
-def erc_role(df, proj_erc):    
-    #création de erc_role
-    print("### Participants ERC")
-    df = df.merge(proj_erc, how='left', on='project_id').drop_duplicates()
-    df = df.assign(erc_role='partner')
-    df.loc[(df.destination_code=='SyG')&(df.partnerType=='beneficiary')&(pd.to_numeric(df.orderNumber, errors='coerce')<5.), 'erc_role'] = 'PI'
-    df.loc[(df.destination_code!='SyG')&(df.role=='coordinator'), 'erc_role'] = 'PI'
-    df.loc[(df.destination_code=='ERC-OTHERS'), 'erc_role'] = np.nan
-    df = df.drop(columns=['destination_code','action_code']).drop_duplicates()
-    return df
