@@ -184,4 +184,9 @@ def applicants_load(projects):
                 
         
         app = gps_col(app)
+
+        app_sum = '{:,.1f}'.format(app['requestedGrant'].sum())
+
+        print(f"- result - dowloaded:{tot_pid}, retained app:{len(app)}, pb:{tot_pid-len(app)}, , somme requestedGrant:{app_sum}")
+        print(f"- montant des subv_dem (suite lien avec projects propres): {'{:,.1f}'.format(app.loc[app.project_id.isin(projects.loc[projects.stage=='evaluated'].project_id.unique()), 'requestedGrant'].sum())}")
         return app
