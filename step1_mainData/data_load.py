@@ -14,7 +14,7 @@ def date_load():
 def projects_load():
     print('### LOADING PROJECTS DATA')
     proj = unzip_zip(ZIPNAME, f"{PATH_SOURCE}{FRAMEWORK}/", 'projects.json', 'utf8')
-    
+
     if proj is not None:
         proj = pd.DataFrame(proj)
 
@@ -41,16 +41,9 @@ def projects_load():
         return proj
     
 
-def proposals_load(proj_id_signed):
+def proposals_load():
     print('### LOADING PROPOSALS DATA')
     prop = unzip_zip(ZIPNAME, f"{PATH_SOURCE}{FRAMEWORK}/", 'proposals.json', 'utf8')
-
-    def status_test(nb_status):
-        if len(prop.stageExitStatus.unique()) != nb_status:
-            stat =  ['REJECTED' ,'NO_MONEY' ,'MAIN', 'RESERVE', 'INELIGIBLE', 'WITHDRAWN', 'INADMISSIBLE', None]
-            return print(f"STATUS - {len(prop.stageExitStatus.unique())-nb_status} statut de proposition a été ajouté à stageExitStatus ;\n vérifier s'il faut l'intégrer aux projets ELIGIBLE {prop.loc[~prop.stageExitStatus.isin(stat), 'stageExitStatus']}\n")
-        else:
-            pass
 
     if prop is not None:
         prop = pd.json_normalize(prop)
@@ -68,32 +61,24 @@ def proposals_load(proj_id_signed):
         prop = del_list_in_col(prop, 'eicPanels', 'eic_panels')
         prop.loc[:, "eic_panels"] = prop.loc[:, "eic_panels"].str.replace(' / ', '|')
         
-        prop = prop.drop_duplicates()
-        print(f'result - dowloaded proposals:{tot_ppid}, retained proposals:{len(prop)}, pb:{tot_ppid-len(prop)}')
-        
-        status_test(8)
-        prop.loc[prop.project_id.isin(proj_id_signed), 'proposalStatus'] = 'MAIN'
-        prop.loc[(prop.stageExitStatus=="MAIN")&(prop.proposalStatus!='MAIN'), 'proposalStatus'] = 'MAIN'
-        l = ['INELIGIBLE', 'INADMISSIBLE', 'DUPLICATE','WITHDRAWN']
-        prop1 = prop.loc[(~prop.stageExitStatus.isin(l))&(~prop.stageExitStatus.isnull())]
-        prop1.loc[prop1.proposalStatus.isnull(), 'proposalStatus'] = prop1.stageExitStatus
-        prop1 = prop1.assign(stage='evaluated')
-        
-        prop1.rename(columns={'proposalStatus':'status_code', 'scientificPanel':'panel_code', 'budget':'total_cost', 
+        prop.rename(columns={'proposalStatus':'status_code', 'scientificPanel':'panel_code', 'budget':'total_cost', 
                             'requestedGrant':'eu_reqrec_grant', 'numberOfApplicants':'number_involved'}, inplace=True)
         
-        prop1=prop1.drop(columns=['isAboveTreshold','mgaTypeDescription','isSeoDuplicate','mgaTypeCode','stageExitStatus',
+        prop=prop.drop(columns=['isAboveTreshold','mgaTypeDescription','isSeoDuplicate','mgaTypeCode','stageExitStatus',
                                 'stage_call', 'ecHiearchyResp', 'masterCallId', 'uniqueProgrammePart', 'score'])
         
         empty_cols=['isSeo']
         
-        if empty_cols==[col for col in prop1.columns if prop1[col].isnull().all()]:
-            prop1.drop(empty_cols, axis=1, inplace=True)
-        elif empty_cols!=[col for col in prop1.columns if prop1[col].isnull().all()]:
-            print(f"empty cols - Attention ! vérifier les variables manquantes->{[col for col in prop1.columns if prop1[col].isnull().all()]}")
+        if empty_cols==[col for col in prop.columns if prop[col].isnull().all()]:
+            prop.drop(empty_cols, axis=1, inplace=True)
+        elif empty_cols!=[col for col in prop.columns if prop[col].isnull().all()]:
+            print(f"empty cols - Attention ! vérifier les variables manquantes->{[col for col in prop.columns if prop[col].isnull().all()]}")
         
-    print(f"after cleaning - size prop1 without inadmissible/inegible/etc : {len(prop1)}\n")
-    return prop, prop1
+        prop = prop.drop_duplicates()
+
+        print(f'result - dowloaded proposals:{tot_ppid}, retained proposals:{len(prop)}, pb:{tot_ppid-len(prop)}')
+        
+        return prop
 
 def participants_load(projects):
 

@@ -17,11 +17,15 @@ extractDate = date_load()
 
 proj = projects_load()
 proj_id_signed = proj.project_id.unique()
-stage_l =  ['REJECTED' ,'NO_MONEY' ,'MAIN', 'RESERVE', 'INELIGIBLE', 'WITHDRAWN', 'INADMISSIBLE', None]
 
 prop = proposals_load()
-        l = ['INELIGIBLE', 'INADMISSIBLE', 'DUPLICATE','WITHDRAWN']
-        mask = (~prop.stageExitStatus.isin(l))&(~prop.stageExitStatus.isnull())
+stage_p =  ['REJECTED' ,'NO_MONEY' ,'MAIN', 'RESERVE', 'INELIGIBLE', 'WITHDRAWN', 'INADMISSIBLE', None]
+prop1 = proposals_status(prop, proj_id_signed, stage_p)   
+      
+      
+      
+        # l = ['INELIGIBLE', 'INADMISSIBLE', 'DUPLICATE','WITHDRAWN']
+        # mask = (~prop.stageExitStatus.isin(l))&(~prop.stageExitStatus.isnull())
 
 proj = proj_add_cols(prop1, proj)
 
