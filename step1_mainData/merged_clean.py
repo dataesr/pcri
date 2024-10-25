@@ -40,7 +40,7 @@ def empty_str_to_none(df):
 
 
 def projects_complete_cleaned(df, extractDate):
-    print("### CREATING FINAL PROJECTS")
+    print(f"### CREATING FINAL PROJECTS\nsize:{len(df)}")
     df = df.assign(framework='Horizon Europe', ecorda_date=pd.to_datetime(extractDate))
     df = df.reindex(sorted(df.columns), axis=1)
 

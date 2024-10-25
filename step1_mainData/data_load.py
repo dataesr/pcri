@@ -174,11 +174,11 @@ def applicants_load(projects):
             # controle des projets entre projects et participants
         tmp = app[['project_id']].drop_duplicates().merge(projects.loc[projects.stage=='evaluated',['project_id', 'call_id']], how='outer', on='project_id', indicator=True)
         if not tmp.query('_merge == "right_only"').empty:
-            print("0 - project_id dans proposals sans applicants")
+            print("- project_id dans proposals sans applicants")
             with pd.ExcelWriter(f"{PATH_SOURCE}bugs_found.xlsx",  mode='a',  if_sheet_exists='replace') as writer:  
                 tmp.query('_merge == "right_only"').drop(columns='_merge').to_excel(writer, sheet_name='prop_without_app')
         elif not tmp.query('_merge == "left_only"').empty:
-            print(f"0 - project_id uniques dans applicants et pas dans proposals")  
+            print(f"- project_id uniques dans applicants et pas dans proposals")  
             with pd.ExcelWriter(f"{PATH_SOURCE}bugs_found.xlsx",  mode='a',  if_sheet_exists='replace') as writer:  
                 tmp.query('_merge == "left_only"').drop(columns='_merge').to_excel(writer, sheet_name='app_without_info_prop')        
                 
