@@ -25,10 +25,10 @@ def strings_v(df):
     for i in ['title','abstract', 'freekw', 'eic_panels', 'url']:
         df[i]=df[i].str.replace('\\n|\\t|\\r|\\s+', ' ', regex=True).str.strip()
 
-    for c in ['project_id']:
-        df[c] = df[c].astype(str)
-        if any(df['project_id'].str.contains('.')):
-            df[c] = df[c].str.replace('.0', '', regex=False)
+    # for c in ['project_id']:
+    #     df[c] = df[c].astype(str)
+    #     if any(df['project_id'].str.contains('.')):
+    #         df[c] = df[c].str.replace('.0', '', regex=False)
     
     return df
 

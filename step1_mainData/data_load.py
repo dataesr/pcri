@@ -37,6 +37,8 @@ def projects_load():
         
         proj.drop(columns=['comL2LocalKey', 'linkedFpaProjectNbr', 'contractVersion', 'masterCallId', 'ecHiearchyResp', 'uniqueProgrammePart'], inplace=True)
         
+        proj['project_id'] = proj['project_id'].map(num_to_string)
+
         print(f'result - dowloaded projects:{tot_pid}, retained projects:{len(proj)}, pb:{tot_pid-len(proj)}\n- liste des colonnes conservées: {proj.columns}\n')
         return proj
     
@@ -64,7 +66,7 @@ def proposals_load():
         prop.rename(columns={'proposalStatus':'status_code', 'scientificPanel':'panel_code', 'budget':'total_cost', 
                             'requestedGrant':'eu_reqrec_grant', 'numberOfApplicants':'number_involved'}, inplace=True)
         
-        prop=prop.drop(columns=['isAboveTreshold','mgaTypeDescription','isSeoDuplicate','mgaTypeCode','stageExitStatus',
+        prop=prop.drop(columns=['isAboveTreshold','mgaTypeDescription','isSeoDuplicate','mgaTypeCode',
                                 'stage_call', 'ecHiearchyResp', 'masterCallId', 'uniqueProgrammePart', 'score'])
         
         empty_cols=['isSeo']
@@ -74,6 +76,7 @@ def proposals_load():
         elif empty_cols!=[col for col in prop.columns if prop[col].isnull().all()]:
             print(f"empty cols - Attention ! vérifier les variables manquantes->{[col for col in prop.columns if prop[col].isnull().all()]}")
         
+        prop['project_id'] = prop['project_id'].map(num_to_string)
         prop = prop.drop_duplicates()
 
         print(f'result - dowloaded proposals:{tot_ppid}, retained proposals:{len(prop)}, pb:{tot_ppid-len(prop)}')
@@ -110,38 +113,18 @@ def participants_load(projects):
         
         c = ['project_id', 'orderNumber', 'generalPic', 'participant_pic', 'parentPic']
         part[c] = part[c].map(num_to_string)
-        # for i in c:
-        #     if part[i].dtype == 'float64':
-        #         part[i] = part[i].astype(int, errors='ignore').astype(str) 
-        #     else:
-        #         part[i] = part[i].astype(str) 
-        
-        # controle des projets entre projects et participants
-        tmp=(part[['project_id']].drop_duplicates()
-            .merge(projects.loc[projects.stage=='successful', ['project_id', 'call_id', 'acronym']], how='outer', on='project_id', indicator=True))
-        if not tmp.query('_merge == "right_only"').empty:
-            print("- projets dans projects sans participants")   
-            with pd.ExcelWriter(f"{PATH_SOURCE}bugs_found.xlsx",  mode='a',  if_sheet_exists='replace') as writer:  
-                tmp.query('_merge == "right_only"').drop(columns='_merge').to_excel(writer, sheet_name='proj_without_part')
-            
-        elif not tmp.query('_merge == "left_only"').empty:
-            print("- projets dans participants et pas dans projects")    
-            with pd.ExcelWriter(f"{PATH_SOURCE}bugs_found.xlsx",  mode='a',  if_sheet_exists='replace') as writer:  
-                tmp.query('_merge == "left_only"').drop(columns='_merge').to_excel(writer, sheet_name='part_without_info_proj')        
         
         part = gps_col(part)
 
-
         cont_sum = '{:,.1f}'.format(part['euContribution'].sum())
         net_cont_sum = '{:,.1f}'.format(part['netEuContribution'].sum())
-        
         
         print(f"- result - dowloaded:{tot_pid}, retained part:{len(part)}, pb:{tot_pid-len(part)}, somme euContribution:{cont_sum}, somme netEuContribution:{net_cont_sum}")
         print(f"- montant normalement définif des subv_net (suite lien avec projects propres): {'{:,.1f}'.format(part.loc[part.project_id.isin(projects.loc[projects.stage=='successful'].project_id.unique()), 'netEuContribution'].sum())}")
         return part
     
 
-def applicants_load(projects):
+def applicants_load(prop):
     print("### LOADING APPLICANTS DATA")
     app = unzip_zip(ZIPNAME, f"{PATH_SOURCE}{FRAMEWORK}/", "proposals_applicants.json", 'utf8')
 
@@ -157,7 +140,7 @@ def applicants_load(projects):
         app[c] = app[c].map(num_to_string)     
         
             # controle des projets entre projects et participants
-        tmp = app[['project_id']].drop_duplicates().merge(projects.loc[projects.stage=='evaluated',['project_id', 'call_id']], how='outer', on='project_id', indicator=True)
+        tmp = app[['project_id']].drop_duplicates().merge(prop[['project_id', 'callId']], how='outer', on='project_id', indicator=True)
         if not tmp.query('_merge == "right_only"').empty:
             print("- project_id dans proposals sans applicants")
             with pd.ExcelWriter(f"{PATH_SOURCE}bugs_found.xlsx",  mode='a',  if_sheet_exists='replace') as writer:  
@@ -167,11 +150,10 @@ def applicants_load(projects):
             with pd.ExcelWriter(f"{PATH_SOURCE}bugs_found.xlsx",  mode='a',  if_sheet_exists='replace') as writer:  
                 tmp.query('_merge == "left_only"').drop(columns='_merge').to_excel(writer, sheet_name='app_without_info_prop')        
                 
-        
         app = gps_col(app)
 
         app_sum = '{:,.1f}'.format(app['requestedGrant'].sum())
 
         print(f"- result - dowloaded:{tot_pid}, retained app:{len(app)}, pb:{tot_pid-len(app)}, , somme requestedGrant:{app_sum}")
-        print(f"- montant des subv_dem (suite lien avec projects propres): {'{:,.1f}'.format(app.loc[app.project_id.isin(projects.loc[projects.stage=='evaluated'].project_id.unique()), 'requestedGrant'].sum())}")
+        # print(f"- montant des subv_dem (suite lien avec projects propres): {'{:,.1f}'.format(app.loc[app.project_id.isin(projects.loc[projects.stage=='evaluated'].project_id.unique()), 'requestedGrant'].sum())}")
         return app
