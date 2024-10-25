@@ -9,17 +9,17 @@ from step1_mainData.panels import *
 from step1_mainData.topics import *
 from step1_mainData.actions import *
 from step1_mainData.calls import *
-from step2_participations.participant import *
+from step1_mainData.participants import *
 
 ################################
 ## data load / adjustements
 extractDate = date_load()
 
-proj = proj_load()
+proj = projects_load()
 proj_id_signed = proj.project_id.unique()
 stage_l =  ['REJECTED' ,'NO_MONEY' ,'MAIN', 'RESERVE', 'INELIGIBLE', 'WITHDRAWN', 'INADMISSIBLE', None]
 
-prop, prop1 = prop_load(proj_id_signed)
+prop, prop1 = proposals_load(proj_id_signed)
 proj = proj_add_cols(prop1, proj)
 
 ###########################################
@@ -79,4 +79,11 @@ projects = projects_complete_cleaned(merged, extractDate)
 
 ##### PARTICIPANTS
 
-part1 = participant_load(projects)
+part = participants_load(projects)
+part = role_type(part)
+
+proj_erc = projects.loc[(projects.stage=='successful')&(projects.thema_code=='ERC'), ['project_id', 'destination_code', 'action_code']]
+part = erc_role(part, proj_erc)
+
+#### APPLICANTS
+app = applicants_load(projects)
