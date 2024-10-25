@@ -19,7 +19,10 @@ proj = projects_load()
 proj_id_signed = proj.project_id.unique()
 stage_l =  ['REJECTED' ,'NO_MONEY' ,'MAIN', 'RESERVE', 'INELIGIBLE', 'WITHDRAWN', 'INADMISSIBLE', None]
 
-prop, prop1 = proposals_load(proj_id_signed)
+prop = proposals_load()
+        l = ['INELIGIBLE', 'INADMISSIBLE', 'DUPLICATE','WITHDRAWN']
+        mask = (~prop.stageExitStatus.isin(l))&(~prop.stageExitStatus.isnull())
+
 proj = proj_add_cols(prop1, proj)
 
 ###########################################
@@ -87,3 +90,6 @@ part = erc_role(part, proj_erc)
 
 #### APPLICANTS
 app = applicants_load(projects)
+# conserve uniquement les projets présents dans proposals et applicants
+app1 = app.loc[app.project_id.isin(projects.project_id.unique())] 
+print(f"0 - size df sans les exclus: {len(app1)}")
