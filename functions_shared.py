@@ -46,3 +46,10 @@ def gps_col(df):
         if row.loc['location'].get('latitude') is not None:
             df.at[i, 'gps_loc'] = re.search(r'^-?\d+\.?\d{,5}', str(row.loc['location'].get('latitude')))[0]+ "," +re.search(r'^-?\d+\.?\d{,5}', str(row.loc['location'].get('longitude')))[0]
     return df.drop('location', axis=1).drop_duplicates()  
+
+def num_to_string(var):
+    try:
+        float(var)
+        return var.astype(int, errors='ignore').astype(str) 
+    except:
+        return str(var)
