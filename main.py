@@ -3,7 +3,7 @@ import copy
 from step1_mainData.data_load import *
 from step1_mainData.projects_fix import *
 from step1_mainData.proposals_fix import *
-from step1_mainData.proj_merged_clean import *
+from step1_mainData.merged_clean import *
 from step1_mainData.url_fix import *
 from step1_mainData.panels import *
 from step1_mainData.topics import *
