@@ -90,7 +90,6 @@ app1 = role(app1)
 app1 = erc_role(app1, projects)
 
 ##### PARTICIPANTS
-
 part = participants_load(proj)
 part = role_type(part)
 part = erc_role(part, projects)
