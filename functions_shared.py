@@ -50,6 +50,6 @@ def gps_col(df):
 def num_to_string(var):
     try:
         float(var)
-        return var.astype(int, errors='ignore').astype(str) 
+        return var.astype(int, errors='ignore').astype(str).replace('.0', '')
     except:
-        return str(var)
+        return str(var).replace('.0', '')
