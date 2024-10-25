@@ -1,6 +1,30 @@
 from config_path import PATH_WORK
 import pandas as pd
 
+
+def proposals_status(df, proj_id_signed, stage_p):   
+
+    if len(df.stageExitStatus.unique()) != len(stage_p):
+        return print(f"STATUS - {len(df.stageExitStatus.unique())-len(stage_p)} statut de proposition a été ajouté à stageExitStatus ;\n vérifier s'il faut l'intégrer aux projets ELIGIBLE {df.loc[~df.stageExitStatus.isin(stage_p), 'stageExitStatus']}\n")
+    else:
+        pass
+
+    df.loc[df.project_id.isin(proj_id_signed), 'proposalStatus'] = 'MAIN'
+    df.loc[(df.stageExitStatus=="MAIN")&(df.proposalStatus!='MAIN'), 'proposalStatus'] = 'MAIN'
+
+    l = ['INELIGIBLE', 'INADMISSIBLE', 'DUPLICATE','WITHDRAWN']
+    df = df.loc[(~df.stageExitStatus.isin(l))&(~df.stageExitStatus.isnull())]
+    df.loc[df.proposalStatus.isnull(), 'proposalStatus'] = df.stageExitStatus
+    df = df.assign(stage='evaluated')
+
+    print(f"after cleaning - size prop1 without inadmissible/inegible/etc : {len(df)}\n")
+
+
+
+
+
+
+
 def proposals_id_missing(prop1, proj, extractDate):
     print('### MISSING PROPOSALS')
     # verification que tous les projets de proj sont aussi dans prop -> prefix des colonnes
