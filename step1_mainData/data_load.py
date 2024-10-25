@@ -14,8 +14,8 @@ def date_load():
 def projects_load():
     print('### LOADING PROJECTS DATA')
     proj = unzip_zip(ZIPNAME, f"{PATH_SOURCE}{FRAMEWORK}/", 'projects.json', 'utf8')
+    
     if proj is not None:
-    #     # liste de projects pour verif dans proposals (project_liste.json)
         proj = pd.DataFrame(proj)
 
         # new columns 
