@@ -61,15 +61,37 @@ proj = unzip_zip(ZIPNAME, f"{PATH_SOURCE}{FRAMEWORK}/", 'projects.json', 'utf8')
 proj=pd.DataFrame(proj)
 
 prop = unzip_zip(ZIPNAME, f"{PATH_SOURCE}{FRAMEWORK}/", 'proposals.json', 'utf8')
-prop = pd.json_normalize(prop)
-
+prop = pd.json_normalize(prop)   
 
 app = unzip_zip(ZIPNAME, f"{PATH_SOURCE}{FRAMEWORK}/", 'proposals_applicants.json', 'utf8')
 app = pd.json_normalize(app)
-
-
 
 part = unzip_zip(ZIPNAME, f"{PATH_SOURCE}{FRAMEWORK}/", "projects_participants.json", 'utf8')
 part = pd.DataFrame(part)
 
 topics = pd.read_csv(f"{PATH_CLEAN}topics_current.csv", sep=';')
+top=topics.loc[topics.thema_code=='EIC']
+
+pp = (prop.loc[prop.topicCode.str.contains('EIC-'),['topicCode', 'callDeadlineDate', 'typeOfActionCode', 'proposalNbr', 'acronym', 'stageExitStatus', 'eicPanels', 'scientificPanel']]
+.merge(app[['proposalNbr', 'orderNumber', 'generalPic', 'applicantPic',
+       'applicantPicLegalName', 'role', 'countryCode', 
+       'requestedGrant']], how='inner', on='proposalNbr')
+       .assign(stage='evaluated'))
+pp.rename(columns={'proposalNbr':'project_id','stageExitStatus':'status_code', 'scientificPanel':'panel_code', 
+    'requestedGrant':'fund', 'applicantPic':'pic', 'applicantPicLegalName':'name'}, inplace=True)
+     
+
+pt = (proj.loc[proj.topicCode.str.contains('EIC-'),['topicCode', 'callDeadlineDate',
+        'typeOfActionCode', 'projectNbr', 'acronym', 'projectStatus']]
+    .merge(part[['projectNbr', 'orderNumber', 'generalPic', 'participantPic', 
+             'partnerRemovalStatus',
+       'participantLegalName', 'partnerType', 'partnerRole', 'countryCode', 
+       'netEuContribution']], how='inner', on='projectNbr')
+       .assign(stage='laureat'))
+pt.rename(columns={"projectNbr": "project_id",  "projectStatus":"status_code",
+                    'participantPic':'pic', 'participantLegalName':'name', 
+                    'partnerRole':'role', 'netEuContribution':'fund'}, inplace=True)
+
+x=pd.concat([pp, pt], ignore_index=True)
+x=x.merge(topics, how='left', on='topicCode')
+x.to_csv(f"{PATH_WORK}eic_ecorda.csv", sep=';', encoding='utf-8', na_rep='')
