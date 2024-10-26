@@ -32,8 +32,13 @@ def part_role_type(df):
     if (df['partnerType'].nunique(dropna=False)==3)|any(df['partnerType'].isnull()):
         df['partnerType'] = df['partnerType'].str.lower().str.replace('_', ' ')
         if any(df['partnerType'].isnull()):
-            print(f"- Attention il y a {len(df[df['partnerType'].isnull()])} participants sans partnerType\n")
-            print(len(df[df['partnerType'].isnull()].fundAgencyName.value_counts()))
+            print(f"- Attention ! sans partnerType: {len(df[df['partnerType'].isnull()])} participants pour {'{:,.1f}'.format(df.loc[df['partnerType'].isnull(), 'netEuContribution'].sum())} de financement\n")
+            print(df.loc[df['partnerType'].isnull()][['role','fundAgencyName']].value_counts())
+            fund_l = ['CLIMATE-KIC HOLDING BV', 'EIT DIGITAL', 'EIT HEALTH EV', 'KIC INNOENERGY SE', 'EIT RAW MATERIALS GMBH', 'EIT FOOD', 'EIT MANUFACTURING ASBL', 'EIT KIC URBAN MOBILITY SL']
+            new=df.loc[df['partnerType'].isnull()].fundAgencyName.unique()
+            if list(set(new)-set(fund_l)):
+                print(f"- Attention a traiter ->  nouveau participant sans partnerType: {list(set(new)-set(fund_l))}")
+            df.loc[(df.partnerType.isnull())&(df.fundAgencyName.isin(fund_l)), 'partnerType'] = 'beneficiary'
     else:
         print(f"- Attention ! il existe une modalité en plus dans la var partnerType des participants {df.loc[~df['partnerType'].isnull()].partnerType.value_counts()}")
     return df
