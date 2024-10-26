@@ -1,5 +1,5 @@
-import pandas as pd, numpy as np
-from functions_shared import unzip_zip, del_list_in_col, columns_comparison, gps_col, num_to_string
+import pandas as pd, numpy as np, os
+from functions_shared import unzip_zip, del_list_in_col, columns_comparison, gps_col, num_to_string, bugs_excel
 from constant_vars import ZIPNAME, FRAMEWORK
 from config_path import PATH_SOURCE, PATH_CONNECT, PATH_CLEAN
 
@@ -12,7 +12,7 @@ def date_load():
     return extractDate
 
 def projects_load():
-    print('### LOADING PROJECTS DATA')
+    print('### LOADING PROJECTS data')
     proj = unzip_zip(ZIPNAME, f"{PATH_SOURCE}{FRAMEWORK}/", 'projects.json', 'utf8')
 
     if proj is not None:
@@ -44,7 +44,7 @@ def projects_load():
     
 
 def proposals_load():
-    print('### LOADING PROPOSALS DATA')
+    print('### LOADING PROPOSALS data')
     prop = unzip_zip(ZIPNAME, f"{PATH_SOURCE}{FRAMEWORK}/", 'proposals.json', 'utf8')
 
     if prop is not None:
@@ -82,9 +82,8 @@ def proposals_load():
         print(f'result - dowloaded proposals:{tot_ppid}, retained proposals:{len(prop)}, pb:{tot_ppid-len(prop)}')
         return prop
 
-def participants_load(projects):
-
-    print("### LOADING PARTICIPANTS DATA")
+def participants_load(proj):
+    print("### LOADING PARTICIPANTS data")
     part = unzip_zip(ZIPNAME, f"{PATH_SOURCE}{FRAMEWORK}/", "projects_participants.json", 'utf8')
         
     if part:
@@ -100,13 +99,11 @@ def participants_load(projects):
         else:
             print(f"Attention ! vérifier les variables manquantes->{[col for col in part.columns if part[col].isnull().all()]}")
        
-
         tot_pid = len(part[['projectNbr','orderNumber', 'generalPic', 'participantPic', 'partnerRole', 'partnerType']].drop_duplicates())
         part = part.rename(columns={"projectNbr": "project_id", "participantPic": "participant_pic", 
                                     'partnerRole': 'role', 'participantLegalName': 'name'})
         part = part.assign(stage='successful')  
     
-
         # remove participant with partnerRemovalStatus not null
         print(f"- subv_net avant traitement: {'{:,.1f}'.format(part['netEuContribution'].sum())}")
         length_removalstatus=len(part[~part['partnerRemovalStatus'].isnull()])
@@ -117,22 +114,39 @@ def participants_load(projects):
             print(f"- Nouvelle modalité dans partnerRemovalStatus : {part['partnerRemovalStatus'].unique()}")
             part = part[part['partnerRemovalStatus'].isnull()]
 
-        
         c = ['project_id', 'orderNumber', 'generalPic', 'participant_pic', 'parentPic']
         part[c] = part[c].map(num_to_string)
         
+        # controle des projets entre projects et participants
+        tmp=(part[['project_id']].drop_duplicates()
+            .merge(proj[['project_id', 'callId', 'acronym']], how='outer', on='project_id', indicator=True))
+        if not tmp.query('_merge == "right_only"').empty:
+            print("- projets dans projects sans participants") 
+            t=tmp.query('_merge == "right_only"').drop(columns='_merge')
+            bugs_excel(t, PATH_SOURCE, 'proj_without_part')
+            # if not os.path.exists(f"{PATH_SOURCE}bugs_found.xlsx"):
+            #     with pd.ExcelWriter(f"{PATH_SOURCE}bugs_found.xlsx") as writer:
+            #         tmp.query('_merge == "right_only"').drop(columns='_merge').to_excel(writer, sheet_name='proj_without_part')
+            
+        elif not tmp.query('_merge == "left_only"').empty:
+            print("- projets dans participants et pas dans projects")
+            t=tmp.query('_merge == "left_only"').drop(columns='_merge')
+            bugs_excel(t, PATH_SOURCE, 'part_without_info_proj')
+            # with pd.ExcelWriter(f"{PATH_SOURCE}bugs_found.xlsx") as writer:  
+            #     tmp.query('_merge == "left_only"').drop(columns='_merge').to_excel(writer, sheet_name='part_without_info_proj')  
+
         part = gps_col(part)
 
         cont_sum = '{:,.1f}'.format(part['euContribution'].sum())
         net_cont_sum = '{:,.1f}'.format(part['netEuContribution'].sum())
         
         print(f"- result - dowloaded:{tot_pid}, retained part:{len(part)}, pb:{tot_pid-len(part)}, somme euContribution:{cont_sum}, somme netEuContribution:{net_cont_sum}")
-        print(f"- montant normalement définif des subv_net (suite lien avec projects propres): {'{:,.1f}'.format(part.loc[part.project_id.isin(projects.loc[projects.stage=='successful'].project_id.unique()), 'netEuContribution'].sum())}")
+        # print(f"- montant normalement définif des subv_net (suite lien avec projects propres): {'{:,.1f}'.format(part.loc[part.project_id.isin(projects.loc[projects.stage=='successful'].project_id.unique()), 'netEuContribution'].sum())}")
         return part
     
 
 def applicants_load(prop):
-    print("### LOADING APPLICANTS DATA")
+    print("### LOADING APPLICANTS data")
     app = unzip_zip(ZIPNAME, f"{PATH_SOURCE}{FRAMEWORK}/", "proposals_applicants.json", 'utf8')
 
     print(f"- size app au chargement: {len(app)}")
@@ -153,16 +167,20 @@ def applicants_load(prop):
         c = ['project_id', 'orderNumber', 'generalPic', 'participant_pic']
         app[c] = app[c].map(num_to_string)     
         
-            # controle des projets entre projects et participants
+        # controle des projets entre projects et applicants
         tmp = app[['project_id']].drop_duplicates().merge(prop[['project_id', 'callId']], how='outer', on='project_id', indicator=True)
         if not tmp.query('_merge == "right_only"').empty:
             print("- project_id dans proposals sans applicants")
-            with pd.ExcelWriter(f"{PATH_SOURCE}bugs_found.xlsx",  mode='a',  if_sheet_exists='replace') as writer:  
-                tmp.query('_merge == "right_only"').drop(columns='_merge').to_excel(writer, sheet_name='prop_without_app')
+            t=tmp.query('_merge == "right_only"').drop(columns='_merge')
+            bugs_excel(t, PATH_SOURCE, 'prop_without_app')
+            # with pd.ExcelWriter(f"{PATH_SOURCE}bugs_found.xlsx") as writer:  
+            #     tmp.query('_merge == "right_only"').drop(columns='_merge').to_excel(writer, sheet_name='prop_without_app')
         elif not tmp.query('_merge == "left_only"').empty:
-            print(f"- project_id uniques dans applicants et pas dans proposals")  
-            with pd.ExcelWriter(f"{PATH_SOURCE}bugs_found.xlsx",  mode='a',  if_sheet_exists='replace') as writer:  
-                tmp.query('_merge == "left_only"').drop(columns='_merge').to_excel(writer, sheet_name='app_without_info_prop')        
+            print(f"- project_id uniques dans applicants et pas dans proposals")
+            t=tmp.query('_merge == "left_only"').drop(columns='_merge')
+            bugs_excel(t, PATH_SOURCE, 'app_without_info_prop')
+            # with pd.ExcelWriter(f"{PATH_SOURCE}bugs_found.xlsx") as writer:  
+            #     tmp.query('_merge == "left_only"').drop(columns='_merge').to_excel(writer, sheet_name='app_without_info_prop')        
                 
         app = gps_col(app)
 

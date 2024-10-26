@@ -1,11 +1,11 @@
 
 from constant_vars import ZIPNAME, FRAMEWORK
 from config_path import PATH_SOURCE
+import numpy as np, pandas as pd
+from functions_shared import bugs_excel
 
 def app_role_type (df):
     print("### applicants ROLE")
-    import numpy as np
-    
     df.loc[:,'role'] = df.loc[:,'role'].str.lower() 
   
     if df['role'].nunique()==5:  
@@ -18,7 +18,6 @@ def app_role_type (df):
     return df
 
 def part_miss_app(tmp, df):
-    import pandas as pd
     if len(tmp)>0:
         print(f"ATTENTION ! vont être ajoutés les participants absents de proposals applicants {len(tmp)}")
         
@@ -43,3 +42,14 @@ def part_miss_app(tmp, df):
         print(f"- size app1 after add missing part1: {len(df)}, subv: {'{:,.1f}'.format(df['requestedGrant'].sum())}")
         # print(f"4 - montant definitif des subv_dem (suite lien avec projects propres): {'{:,.1f}'.format(app1.loc[app1.project_id.isin(projects.project_id.unique()), 'requestedGrant'].sum())}")
         return df
+    
+def check_multiA_by_proj(df):
+    print("### check unicité des applicants/projets")
+    df = df.assign(n_app = 1)
+    df['n_app'] = df.groupby(['project_id', 'generalPic', 'participant_pic'], dropna = False).pipe(lambda x: x.n_app.transform('sum'))
+    verif=pd.DataFrame(df[['project_id', 'orderNumber', 'generalPic', 'participant_pic', 'role', 'partnerType', 'name', 'requestedGrant', 'budget', 'countryCode']])[df['n_app']>1]
+    # with pd.ExcelWriter(f"{PATH_SOURCE}bugs_found.xlsx") as writer:  
+    #     verif.to_excel(writer, sheet_name='double_app_prop+pic')
+    bugs_excel(verif, PATH_SOURCE, 'double_app_prop+pic')
+    print(f"ATTENTION ! {len(verif)} lignes problématiques, voire fichier bugs_found")
+    return df
