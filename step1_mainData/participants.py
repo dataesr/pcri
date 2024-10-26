@@ -19,9 +19,9 @@ def proj_part_link():
             tmp.query('_merge == "left_only"').drop(columns='_merge').to_excel(writer, sheet_name='part_without_info_proj')        
     
 
-def role_type(df):
+def part_role_type(df):
     print("### Participants ROLE")
-
+    df.loc[:,'role'] = df.loc[:,'role'].str.lower()
 # traitement ROLE
     if df['role'].nunique()==2:
         df['role'] = df['role'].str.lower()
@@ -32,7 +32,8 @@ def role_type(df):
     if (df['partnerType'].nunique(dropna=False)==3)|any(df['partnerType'].isnull()):
         df['partnerType'] = df['partnerType'].str.lower().str.replace('_', ' ')
         if any(df['partnerType'].isnull()):
-            print(f"- Attention il y a {len(df[df['partnerType'].isnull()])} participants sans partnerType")
+            print(f"- Attention il y a {len(df[df['partnerType'].isnull()])} participants sans partnerType\n")
+            print(len(df[df['partnerType'].isnull()].fundAgencyName.value_counts()))
     else:
         print(f"- Attention ! il existe une modalité en plus dans la var partnerType des participants {df.loc[~df['partnerType'].isnull()].partnerType.value_counts()}")
     return df

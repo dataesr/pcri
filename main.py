@@ -85,12 +85,11 @@ projects = projects_complete_cleaned(merged, extractDate)
 app = applicants_load(prop)
 # conserve uniquement les projets présents dans proposals et applicants
 app1 = app.loc[app.project_id.isin(projects.project_id.unique())] 
-print(f"0 - size df sans les exclus: {len(app1)}")
-app1 = role(app1)
+print(f"- size app hors proj exclus: {len(app1)}")
+app1 = app_role_type(app1)
 app1 = erc_role(app1, projects)
 
 ##### PARTICIPANTS
 part = participants_load(proj)
-part = role_type(part)
+part = part_role_type(part)
 part = erc_role(part, projects)
-
