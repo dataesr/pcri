@@ -80,7 +80,6 @@ def proposals_load():
         prop = prop.drop_duplicates()
 
         print(f'result - dowloaded proposals:{tot_ppid}, retained proposals:{len(prop)}, pb:{tot_ppid-len(prop)}')
-        
         return prop
 
 def participants_load(projects):
@@ -93,6 +92,14 @@ def participants_load(projects):
         
         # new columns 
         columns_comparison(part, 'participants_columns')    
+
+        empty_cols=['partnershipName', 'partnerSgaStatus']
+    
+        if empty_cols==[col for col in part.columns if part[col].isnull().all()]:
+            part.drop(empty_cols, axis=1, inplace=True)
+        else:
+            print(f"Attention ! vérifier les variables manquantes->{[col for col in part.columns if part[col].isnull().all()]}")
+       
 
         tot_pid = len(part[['projectNbr','orderNumber', 'generalPic', 'participantPic', 'partnerRole', 'partnerType']].drop_duplicates())
         part = part.rename(columns={"projectNbr": "project_id", "participantPic": "participant_pic", 
@@ -132,6 +139,13 @@ def applicants_load(prop):
 
     if app is not None:
         app = pd.DataFrame(app)
+
+        # new columns 
+        columns_comparison(app, 'applicants_columns')  
+
+        if len([col for col in app.columns if app[col].isnull().all()])>0:
+            print(f"- Attention colonnes vides dans applicants ; faire code: {[col for col in app.columns if app[col].isnull().all()]}")
+
         tot_pid = len(app[['proposalNbr','orderNumber', 'generalPic', 'applicantPic', 'role']].drop_duplicates())
         app = app.rename(columns={"proposalNbr": "project_id", "applicantPic": "participant_pic", 
                                 'applicantPicLegalName': 'name'})
