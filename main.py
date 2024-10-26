@@ -12,8 +12,8 @@ from step1_mainData.actions import *
 from step1_mainData.calls import *
 from step1_mainData.participants import *
 from step1_mainData.applicants import *
-
-
+from step1_mainData.merged_participations import *
+from step1_mainData.nuts import *
 ################################
 ## data load / adjustements*
 extractDate = date_load()
@@ -106,3 +106,6 @@ app1 = erc_role(app1, projects)
 checking_unique_part(part)
 part = check_multiP_by_proj(part)
 app1 = check_multiA_by_proj(app1)
+
+lien = merged_partApp(app1, part)
+nuts_lien(app1, part, lien)
