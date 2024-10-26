@@ -81,15 +81,20 @@ calls = calls_to_check(calls, call_id)
 
 projects = projects_complete_cleaned(merged, extractDate)
 
+#############################################################
+##### PARTICIPANTS
+part = participants_load(proj)
+part = part_role_type(part)
+part = erc_role(part, projects)
+
 #### APPLICANTS
 app = applicants_load(prop)
 # conserve uniquement les projets présents dans proposals et applicants
 app1 = app.loc[app.project_id.isin(projects.project_id.unique())] 
 print(f"- size app hors proj exclus: {len(app1)}")
+app_missing_pid = projects.loc[(projects.stage=='evaluated')&(~projects.project_id.isin(app1.project_id.unique())), 'project_id'].unique()
+tmp = part[part.project_id.isin(app_missing_pid)]
+app1 = part_miss_app(tmp, app1)
+
 app1 = app_role_type(app1)
 app1 = erc_role(app1, projects)
-
-##### PARTICIPANTS
-part = participants_load(proj)
-part = part_role_type(part)
-part = erc_role(part, projects)

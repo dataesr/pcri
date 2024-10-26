@@ -16,3 +16,30 @@ def app_role_type (df):
     else:
         print(f"- Attention ! il existe une modalité en plus dans la var ROLE dans les applicants {df['role'].unique()}")
     return df
+
+def part_miss_app(tmp, df):
+    import pandas as pd
+    if len(tmp)>0:
+        print(f"ATTENTION ! vont être ajoutés les participants absents de proposals applicants {len(tmp)}")
+        
+        selector_d=[
+            'project_id',
+            'orderNumber', 
+            'generalPic',
+            'participant_pic',
+            'name',
+            'role',
+            'countryCode',
+            'nutsCode',
+            'gps_loc',
+            'legalEntityTypeCode',
+            'isSme',
+            'totalCosts',
+            'netEuContribution']
+        
+        tmp = tmp[selector_d].rename(columns={'totalCosts':'budget', 'netEuContribution':'requestedGrant'}) 
+        # tmp.loc[tmp.partnerType=='beneficiary', 'partnerType'] = 'applicant'
+        df = pd.concat([df, tmp], ignore_index = True)
+        print(f"- size app1 after add missing part1: {len(df)}, subv: {'{:,.1f}'.format(df['requestedGrant'].sum())}")
+        # print(f"4 - montant definitif des subv_dem (suite lien avec projects propres): {'{:,.1f}'.format(app1.loc[app1.project_id.isin(projects.project_id.unique()), 'requestedGrant'].sum())}")
+        return df
