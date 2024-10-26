@@ -1,23 +1,7 @@
 from constant_vars import ZIPNAME, FRAMEWORK
 from config_path import PATH_SOURCE
+from functions_shared import bugs_excel
 import pandas as pd, numpy as np
-
-
-
-def proj_part_link():
-    # controle des projets entre projects et participants
-    tmp=(part[['project_id']].drop_duplicates()
-        .merge(projects.loc[projects.stage=='successful', ['project_id', 'call_id', 'acronym']], how='outer', on='project_id', indicator=True))
-    if not tmp.query('_merge == "right_only"').empty:
-        print("- projets dans projects sans participants")   
-        with pd.ExcelWriter(f"{PATH_SOURCE}bugs_found.xlsx",  mode='a',  if_sheet_exists='replace') as writer:  
-            tmp.query('_merge == "right_only"').drop(columns='_merge').to_excel(writer, sheet_name='proj_without_part')
-        
-    elif not tmp.query('_merge == "left_only"').empty:
-        print("- projets dans participants et pas dans projects")    
-        with pd.ExcelWriter(f"{PATH_SOURCE}bugs_found.xlsx",  mode='a',  if_sheet_exists='replace') as writer:  
-            tmp.query('_merge == "left_only"').drop(columns='_merge').to_excel(writer, sheet_name='part_without_info_proj')        
-    
 
 def part_role_type(df):
     print("### Participants ROLE")
@@ -44,3 +28,28 @@ def part_role_type(df):
     return df
 
 
+def checking_unique_part(df):
+    print("### check unicité de chaque participant")
+    #unicité de ['project_id', 'orderNumber', 'generalPic', 'participant_pic']
+    vl = ['project_id', 'orderNumber', 'generalPic', 'participant_pic']   
+    df = df.assign(n_pogp = 1)
+    df['n_pogp'] = df.groupby(vl, dropna = False).pipe(lambda x: x.n_pogp.transform('sum'))
+    if len(df[df['n_pogp']>1])>0:
+        print("- ATTENTION ! doublon dans part1 avec project_id', 'orderNumber', 'generalPic', 'participant_pic -> Intégrer la var partnerType")
+
+        vl = ['project_id', 'orderNumber', 'generalPic', 'participant_pic', 'partnerType']   
+        df = df.assign(n_pogpp = 1)
+        df['n_pogpp'] = df.groupby(vl, dropna = False).pipe(lambda x: x.n_pogpp.transform('sum'))
+        if len(df[df['n_pogpp']>1])>0:
+            print("- ATTENTION ! doublon dans part1 avec project_id', 'orderNumber', 'generalPic', 'participant_pic, 'partnerType'")
+            
+def check_multiP_by_proj(df):
+    print("### check unicité des participants/projets")
+    df = df.assign(n_part = 1)
+    df['n_part'] = df.groupby(['project_id', 'generalPic', 'participant_pic'], dropna = False).pipe(lambda x: x.n_part.transform('sum'))
+    verif=pd.DataFrame(df[['project_id', 'orderNumber', 'generalPic', 'participant_pic', 'role', 'partnerType', 'name', 'euContribution', 'netEuContribution', 'countryCode']])[df['n_part']>1]
+    # with pd.ExcelWriter(f"{PATH_SOURCE}bugs_found.xlsx") as writer:  
+    #     verif.to_excel(writer, sheet_name='double_part_proj+pic')
+    bugs_excel(verif, PATH_SOURCE, 'double_part_proj+pic')
+    print(f"- ATTENTION ! {len(verif)} lignes problématiques voire fichier bugs_found")
+    return df

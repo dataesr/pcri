@@ -70,3 +70,14 @@ def erc_role(df, projects):
     df.loc[(df.destination_code=='ERC-OTHERS'), 'erc_role'] = np.nan
     df = df.drop(columns=['destination_code', 'action_code']).drop_duplicates()       
     return df
+
+def bugs_excel(df, chemin, name_sheet):
+    import os, pandas as pd
+    chemin=f"{chemin}bugs_found.xlsx"
+    if not os.path.exists(chemin):
+        with pd.ExcelWriter(chemin) as writer:
+            df.to_excel(writer, sheet_name=name_sheet)
+    else:
+        with pd.ExcelWriter(chemin, mode='a', if_sheet_exists='replace') as writer:
+            df.to_excel(writer, sheet_name=name_sheet)
+  

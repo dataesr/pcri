@@ -12,8 +12,10 @@ from step1_mainData.actions import *
 from step1_mainData.calls import *
 from step1_mainData.participants import *
 from step1_mainData.applicants import *
+
+
 ################################
-## data load / adjustements
+## data load / adjustements*
 extractDate = date_load()
 
 proj = projects_load()
@@ -98,3 +100,9 @@ app1 = part_miss_app(tmp, app1)
 
 app1 = app_role_type(app1)
 app1 = erc_role(app1, projects)
+
+####
+# verification Etat des participations
+checking_unique_part(part)
+part = check_multiP_by_proj(part)
+app1 = check_multiA_by_proj(app1)
