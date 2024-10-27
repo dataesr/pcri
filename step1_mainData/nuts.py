@@ -4,7 +4,6 @@ from functions_shared import unzip_zip
 import pandas as pd
 
 def nuts_department():
-
         # bosser les nuts en amont pour récupérer le max d'infos sans attendre traitement departments
         pp_app = unzip_zip(ZIPNAME, f"{PATH_SOURCE}{FRAMEWORK}/", 'proposals_applicants_departments.json', 'utf8')
         pp_app = pd.DataFrame(pp_app)
