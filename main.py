@@ -1,5 +1,6 @@
 
 from main_library import *
+
 ################################
 ## data load / adjustements*
 extractDate = date_load()
@@ -94,4 +95,4 @@ part = check_multiP_by_proj(part)
 app1 = check_multiA_by_proj(app1)
 
 lien = merged_partApp(app1, part)
-nuts_lien(app1, part, lien)
+lien = nuts_lien(app1, part, lien)
