@@ -87,6 +87,7 @@ app1 = part_miss_app(tmp, app1)
 
 app1 = app_role_type(app1)
 app1 = erc_role(app1, projects)
+del app
 
 ####
 # verification Etat des participations
@@ -94,5 +95,17 @@ checking_unique_part(part)
 part = check_multiP_by_proj(part)
 app1 = check_multiA_by_proj(app1)
 
+
+# STEP2
 lien = merged_partApp(app1, part)
 lien = nuts_lien(app1, part, lien)
+lien.to_pickle(f"{PATH_CLEAN}lien.pkl")
+
+entities = entities_load(lien)
+entities_single = entities_single(entities, lien, part, app1)
+entities_info = entities_info(entities_single, lien, app1, part)
+
+list_codeCountry = entities_info.countryCode.unique()
+countries = country_load(FRAMEWORK, list_codeCountry)
+
+ref_source = ref_source_load('ref')
