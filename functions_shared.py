@@ -1,7 +1,9 @@
+import zipfile, json, re, os
+import pandas as pd, numpy as np
+from config_path import PATH_WORK, PATH_REF
+
 # load json file in a zipfile
 def unzip_zip(namezip, path, data, encode):
-    import zipfile, json
-    import pandas as pd
     if 'json' in data:
         with zipfile.ZipFile(f"{path}{namezip}", 'r', metadata_encoding=encode) as z:
             return json.load(z.open(data, 'r'))
@@ -19,19 +21,16 @@ def del_list_in_col(df, var_old:str, var_new:str):
     return df.drop(var_old, axis=1)
 
 def work_csv(df, file_csv_name):
-    from config_path import PATH_WORK
     name = file_csv_name
     return df.to_csv(f"{PATH_WORK}{name}.csv", sep=';', na_rep='', encoding='utf-8', index=False)
 
 def website_to_clean(web_var: str):
-    import re
     pat=re.compile(r"((((https|http)://)?(www\.)?)([\w\d#@%;$()~_?=&]+\.)+([a-z]{2,3}){1}([\w\d:#@%/;$()~_?\+-=\\\.&]+))")
     y= re.search(pat, str(web_var))
     if y is not None:
         return y.group()
     
 def columns_comparison(df, namefile):
-    import numpy as np
     old_cols = np.load(f"data_files/{namefile}.npy").tolist()
     new_cols = df.columns.to_list()
     if any(set(new_cols) - set(old_cols)):
@@ -40,7 +39,6 @@ def columns_comparison(df, namefile):
         print("- no new columns")
 
 def gps_col(df):
-    import re
     df=df.assign(gps_loc=None)
     for i,row in df.iterrows():
         if row.loc['location'].get('latitude') is not None:
@@ -55,7 +53,6 @@ def num_to_string(var):
         return str(var).replace('.0', '')
     
 def erc_role(df, projects):
-    import pandas as pd, numpy as np
     print("### ERC ROLE")
     proj_erc = projects.loc[projects.thema_code=='ERC', ['project_id', 'destination_code', 'action_code']]
     df = df.merge(proj_erc, how='left', on='project_id').drop_duplicates()
@@ -72,7 +69,6 @@ def erc_role(df, projects):
     return df
 
 def bugs_excel(df, chemin, name_sheet):
-    import os, pandas as pd
     chemin=f"{chemin}bugs_found.xlsx"
     if not os.path.exists(chemin):
         with pd.ExcelWriter(chemin) as writer:
@@ -80,4 +76,3 @@ def bugs_excel(df, chemin, name_sheet):
     else:
         with pd.ExcelWriter(chemin, mode='a', if_sheet_exists='replace') as writer:
             df.to_excel(writer, sheet_name=name_sheet)
-  

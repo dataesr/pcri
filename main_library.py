@@ -11,5 +11,8 @@ from step1_mainData.actions import *
 from step1_mainData.calls import *
 from step1_mainData.participants import *
 from step1_mainData.applicants import *
-from step1_mainData.merged_participations import *
-from step1_mainData.nuts import *
+from step2_participations.merged_app_part import *
+from step2_participations.nuts import *
+from step2_participations.entities import *
+from step2_participations.countries import *
+from step3_entities.references import *
