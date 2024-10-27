@@ -108,7 +108,7 @@ def merged_partApp(app1, part):
     lien.loc[lien['projNlien']==0, 'projNlien']=1
     lien.loc[lien['propNlien']==0, 'propNlien']=1
 
-    print(f'lien_final: {len(lien)}') 
+    print(f'- size lien: {len(lien)}') 
     length_lien=len(lien)
     # print(lien[lien['n_lien']>1])
 
