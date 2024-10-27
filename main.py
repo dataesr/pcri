@@ -109,3 +109,13 @@ list_codeCountry = entities_info.countryCode.unique()
 countries = country_load(FRAMEWORK, list_codeCountry)
 
 ref_source = ref_source_load('ref')
+ref = ref_source_1ere_select(ref_source)
+entities_tmp = entities_tmp_create(entities_info, countries, ref)
+identification = legal_id_clean(entities_tmp)
+multiple = entities_link(entities_tmp)
+identificaton = identification.merge(multiple, how='left', on="generalPic")
+identificaton['legalName'] = identificaton['legalName'].str.strip()
+print(f"Size tmp:{len(identification)}, size entities_tmp:{len(entities_tmp)}")
+check_id_liste = list_to_check(identificaton)
+
+# entities_tmp_create(entities_info, countries, ref)
