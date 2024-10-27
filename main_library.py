@@ -16,3 +16,5 @@ from step2_participations.nuts import *
 from step2_participations.entities import *
 from step2_participations.countries import *
 from step3_entities.references import *
+from step3_entities.entities_select import *
+from step3_entities.legal_id_cleaning import *
