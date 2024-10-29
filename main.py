@@ -108,9 +108,11 @@ entities_info = entities_info(entities_single, lien, app1, part)
 list_codeCountry = entities_info.countryCode.unique()
 countries = country_load(FRAMEWORK, list_codeCountry)
 
+# step3
 ref_source = ref_source_load('ref')
 ref = ref_source_1ere_select(ref_source)
 entities_tmp = entities_tmp_create(entities_info, countries, ref)
+print(f"size entities_tmp: {len(entities_tmp)}")
 identification = legal_id_clean(entities_tmp)
 multiple = entities_link(entities_tmp)
 identificaton = identification.merge(multiple, how='left', on="generalPic")
@@ -118,4 +120,23 @@ identificaton['legalName'] = identificaton['legalName'].str.strip()
 print(f"Size tmp:{len(identification)}, size entities_tmp:{len(entities_tmp)}")
 check_id_liste = list_to_check(identificaton)
 
-# entities_tmp_create(entities_info, countries, ref)
+#####################
+# SI BESOIN DE checker les ID de PIC
+# get_token('474333')
+liste=list(set(check_id_liste.loc[check_id_liste.check_id!='', 'check_id'].unique()))
+print(time.strftime("%H:%M:%S"))  
+result = check_id(liste)
+print(time.strftime("%H:%M:%S"))
+
+IDchecking_results(result, check_id_liste, identification)
+id_verified = ID_resultChecked()
+new_ref_source(id_verified,ref_source,extractDate,part,app1,entities_single,countries)
+
+########################
+# chargement du nouveau ref_source
+ref_source = ref_source_load('ref')
+ref = ref_source_2d_select(ref_source, 'HE')
+entities_tmp = entities_tmp_create(entities_info, countries, ref)
+print(f"size entities_tmp: {len(entities_tmp)}")
+entities_tmp = entities_and_ref(ref, entities_tmp)
+lid_source = ID_entities_list(ref_source)

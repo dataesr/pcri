@@ -2,6 +2,7 @@
 config_path.py
 config_url.py
 test.py
+tok/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
