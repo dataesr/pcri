@@ -140,3 +140,5 @@ entities_tmp = entities_tmp_create(entities_info, countries, ref)
 print(f"size entities_tmp: {len(entities_tmp)}")
 entities_tmp = entities_and_ref(ref, entities_tmp)
 lid_source = ID_entities_list(ref_source)
+
+ror, paysage, sirene= ID_getRefInfo(lid_source)
