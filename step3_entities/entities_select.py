@@ -13,12 +13,9 @@ def entities_tmp_create(entities_info, countries, ref):
     tmp = tab.merge(tmp1[['generalPic','country_code_mapping']], how='left',on=['generalPic','country_code_mapping'], indicator=True).query('_merge=="left_only"').drop(columns=['_merge'])
     return pd.concat([tmp1, tmp], ignore_index=True)
 
-def entities_and_ref(ref, entities_tmp):
-    entities_tmp = entities_tmp[['generalPic', 'legalName', 'businessName', 'country_code_mapping', 'countryCode_parent']]
-
-    # a verifier puisque ref déjà ajouté dans entities_tmp_create()
-    entities_tmp = entities_tmp.merge(ref, how='left', on = ['generalPic', 'country_code_mapping'])
-    entities_tmp['id'] = entities_tmp.id.replace('', np.nan, regex = True)
+def entities_for_merge(entities_tmp):
+    entities_tmp = entities_tmp[['generalPic', 'legalName', 'businessName', 'id', 'id_secondaire', 'ZONAGE', 'country_code_mapping', 'countryCode_parent']]
+    entities_tmp = entities_tmp.mask(entities_tmp=='')
     print(f"1 - After add ref to entities: {len(entities_tmp)}\n\n{entities_tmp.columns}")
 
     if any(entities_tmp.id.str.contains(';')):

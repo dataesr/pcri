@@ -1,6 +1,6 @@
 import time, requests, pandas as pd, copy
 from config_api import paysage_headers
-from config_path import PATH_SOURCE, PATH_REF
+from config_path import PATH_SOURCE, PATH_REF, PATH_WORK
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -269,74 +269,6 @@ def get_paysage(lid_source, siren_siret, paysage_old=None):
         return paysage
 ###############################################
 
-    def IDpaysage_category(paysage):
-        print("## IDpaysage category")
-        paysage_liste=paysage['id_clean'].dropna().astype(str).unique().tolist()
-        paysage_category=pd.DataFrame()
-        n=0
-        print(f"- size paysage id à catégoriser:{len(paysage_liste)}")
-
-        for i in paysage_liste:
-            time.sleep(0.2)
-            n=n+1
-            if n % 100 == 0: 
-                print(f"{n}", end=',')  
-            
-            try:
-                url2=f'https://api.paysage.dataesr.ovh/relations?filters[relationTag]=structure-categorie&filters[resourceId]={str(i)}&limit=100&sort=-endDate'
-                rinit = requests.get(url2, headers=paysage_headers, verify=False)
-                r = rinit.json()['data']
-                if r:
-                    temp = pd.json_normalize(r)
-                    temp = (temp[['resourceId','relatedObject.id','relatedObject.displayName', 'relatedObject.priority', 'active', 'endDate']]
-                            .rename(columns={'resourceId':'id_clean','relatedObject.id':'category_id',
-                                            'relatedObject.displayName':'category_name', 'endDate':'category_end',
-                                            'relatedObject.priority':'category_priority'})
-                        .drop_duplicates())
-                    paysage_category=pd.concat([paysage_category, temp], ignore_index=True)
-
-            except requests.exceptions.HTTPError as http_err:
-                print(f"\n{i} -> HTTP error occurred: {http_err}")
-                response = pd.json_normalize({'id_clean': i, 'status': 'http_error'})
-                paysage_category=pd.concat([paysage_category, response], ignore_index=True)
-                paysage_liste.append(str(i))
-            except requests.exceptions.RequestException as err:
-                print(f"\n{i} -> Error occurred: {err}")
-                response = pd.json_normalize({'id_clean': i, 'status': 'request_error'})
-                paysage_category=pd.concat([paysage_category, response], ignore_index=True)
-                paysage_liste.append(str(i))
-            except Exception as e:
-                print(f"{i} -> An unexpected error occurred: {e}")
-                response = pd.json_normalize({'id_clean': i, 'status': 'unexpected_error'})
-                paysage_category=pd.concat([paysage_category, response], ignore_index=True)
-
-        if len(paysage_category)>0:
-            if 'status' in paysage_category.columns:   
-                err=paysage_category.loc[~paysage_category.status.isnull()].id_clean.unique()
-                print(err)
-                print(f"{paysage_category.loc[paysage_category.id_clean.isin(err), ['id_clean', 'category_id']]}")
-            
-                paysage_category=paysage_category.loc[paysage_category.status.isnull()]
-            print(f"\n- size resultat paysage_category:{len(paysage_category)}")
-            
-            paysage_category=paysage_category.sort_values(['id_clean', 'category_id', 'category_priority', 'category_end'], ascending=False)
-            paysage_category['category_end'] = pd.to_datetime(paysage_category['category_end'], format='mixed', errors='ignore')
-
-            paysage_category = paysage_category.loc[~(paysage_category.category_end<pd.Timestamp("today"))]
-
-            paysage_category=paysage_category.groupby(['id_clean', 'category_id', 'category_priority']).first().reset_index()
-
-            paysage_category=paysage_category[['id_clean', 'category_id', 'category_name', 'category_priority']].sort_values(['id_clean', 'category_priority', 'category_id']).drop_duplicates()
-            paysage_category=paysage_category.drop_duplicates().groupby('id_clean', as_index=False).agg(lambda x: ';'.join(x.astype(str)))
-
-            paysage = paysage.merge(paysage_category, how='left',on='id_clean')  
-
-            if len(paysage.loc[paysage.category_id.isnull()])>0:
-                print(f"SANS CATEGORY -> à compléter dans paysage\n{paysage.loc[paysage.category_id.isnull()].id_clean.unique()}")
-            return paysage
-
-################################################
-
     def IDpaysage_cj(paysage):
         print("## IDpaysage CJ")
         paysage_liste=paysage['id_clean'].dropna().astype(str).unique().tolist()
@@ -542,16 +474,90 @@ def get_paysage(lid_source, siren_siret, paysage_old=None):
 
 ################################################
 
+    def IDpaysage_category(paysage):
+        print("## IDpaysage category")
+        paysage_liste=paysage['id_clean'].dropna().astype(str).unique().tolist()
+        paysage_category=pd.DataFrame()
+        n=0
+        print(f"- size paysage id à catégoriser:{len(paysage_liste)}")
+
+        for i in paysage_liste:
+            time.sleep(0.2)
+            n=n+1
+            if n % 100 == 0: 
+                print(f"{n}", end=',')  
+            
+            try:
+                url2=f'https://api.paysage.dataesr.ovh/relations?filters[relationTag]=structure-categorie&filters[resourceId]={str(i)}&limit=100&sort=-endDate'
+                rinit = requests.get(url2, headers=paysage_headers, verify=False)
+                r = rinit.json()['data']
+                if r:
+                    temp = pd.json_normalize(r)
+                    temp = (temp[['resourceId','relatedObject.id','relatedObject.displayName', 'relatedObject.priority', 'active', 'endDate']]
+                            .rename(columns={'resourceId':'id_clean','relatedObject.id':'category_id',
+                                            'relatedObject.displayName':'category_name', 'endDate':'category_end',
+                                            'relatedObject.priority':'category_priority'})
+                        .drop_duplicates())
+                    paysage_category=pd.concat([paysage_category, temp], ignore_index=True)
+
+            except requests.exceptions.HTTPError as http_err:
+                print(f"\n{i} -> HTTP error occurred: {http_err}")
+                response = pd.json_normalize({'id_clean': i, 'status': 'http_error'})
+                paysage_category=pd.concat([paysage_category, response], ignore_index=True)
+                paysage_liste.append(str(i))
+            except requests.exceptions.RequestException as err:
+                print(f"\n{i} -> Error occurred: {err}")
+                response = pd.json_normalize({'id_clean': i, 'status': 'request_error'})
+                paysage_category=pd.concat([paysage_category, response], ignore_index=True)
+                paysage_liste.append(str(i))
+            except Exception as e:
+                print(f"{i} -> An unexpected error occurred: {e}")
+                response = pd.json_normalize({'id_clean': i, 'status': 'unexpected_error'})
+                paysage_category=pd.concat([paysage_category, response], ignore_index=True)
+
+        if len(paysage_category)>0:
+            if 'status' in paysage_category.columns:   
+                err=paysage_category.loc[~paysage_category.status.isnull()].id_clean.unique()
+                print(err)
+                print(f"{paysage_category.loc[paysage_category.id_clean.isin(err), ['id_clean', 'category_id']]}")
+            
+                paysage_category=paysage_category.loc[paysage_category.status.isnull()]
+            print(f"\n- size resultat paysage_category:{len(paysage_category)}")
+
+            paysage_category=paysage_category.sort_values(['id_clean', 'category_id', 'category_priority', 'category_end'], ascending=False)
+            paysage_category['category_end'] = pd.to_datetime(paysage_category['category_end'], format='mixed', errors='ignore')
+
+            paysage_category = paysage_category.loc[~(paysage_category.category_end<pd.Timestamp("today"))]
+
+            paysage_category=paysage_category.groupby(['id_clean', 'category_id', 'category_priority']).first().reset_index()
+
+            paysage_category=paysage_category[['id_clean', 'category_id', 'category_name', 'category_priority']].sort_values(['id_clean', 'category_priority', 'category_id']).drop_duplicates()
+            # paysage_category=paysage_category.drop_duplicates().groupby('id_clean', as_index=False).agg(lambda x: ';'.join(x.astype(str)))
+
+            # paysage = paysage.merge(paysage_category, how='left',on='id_clean') 
+
+            # if len(paysage.merge(paysage_category, how='left',on='id_clean').loc[paysage.category_id.isnull()])>0:
+            #     print(f"SANS CATEGORY -> à compléter dans paysage\n{paysage.loc[paysage.category_id.isnull()].id_clean.unique()}")
+            return paysage_category
+
+################################################
+
+
     print("### PAYSAGE")
     paysage_id=ID_to_IDpaysage(lid_source, siren_siret)
     paysage_id, doublon=IDpaysage_status(lid_source, paysage_id)
     paysage=IDpaysage_successor(paysage_id)
     paysage=IDpaysage_parent(paysage)
-    paysage=IDpaysage_category(paysage)
     paysage=IDpaysage_cj(paysage)
     paysage=IDpaysage_name(paysage)
     paysage=IDpaysage_siret(paysage)
     check_var_null(paysage)
+    paysage_category=IDpaysage_category(paysage)
+
+    x=paysage.loc[~paysage.id_clean.isin(paysage.id.unique())]
+    x.loc[:,'id']=x.loc[:,'id_clean']
+    x=x.drop_duplicates()
+    paysage = pd.concat([paysage, x], ignore_index=True)
 
     if 'paysage_old' in globals() or 'paysage_old' in locals():
         tmp=pd.concat([paysage, paysage_old], ignore_index=True).drop_duplicates()
@@ -565,4 +571,4 @@ def get_paysage(lid_source, siren_siret, paysage_old=None):
         with open(file_name, 'wb') as file:
             pd.to_pickle(paysage, file)
     
-    return paysage
+    return paysage, paysage_category
