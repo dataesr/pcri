@@ -9,12 +9,12 @@ def proposals_status(df, proj_id_signed, stage_p):
     else:
         pass
 
-    df.loc[df.project_id.isin(proj_id_signed), 'proposalStatus'] = 'MAIN'
-    df.loc[(df.stageExitStatus=="MAIN")&(df.proposalStatus!='MAIN'), 'proposalStatus'] = 'MAIN'
+    df.loc[df.project_id.isin(proj_id_signed), 'status_code'] = 'MAIN'
+    df.loc[(df.stageExitStatus=="MAIN")&(df.status_code!='MAIN'), 'status_code'] = 'MAIN'
 
     l = ['INELIGIBLE', 'INADMISSIBLE', 'DUPLICATE','WITHDRAWN']
     df = df.loc[(~df.stageExitStatus.isin(l))&(~df.stageExitStatus.isnull())]
-    df.loc[df.proposalStatus.isnull(), 'proposalStatus'] = df.stageExitStatus
+    df.loc[df.status_code.isnull(), 'status_code'] = df.stageExitStatus
     df = df.assign(stage='evaluated').drop(columns='stageExitStatus')
 
     print(f"after cleaning - size prop1 without inadmissible/inegible/etc : {len(df)}\n")

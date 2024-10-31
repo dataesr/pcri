@@ -63,7 +63,7 @@ def proposals_load():
         prop = del_list_in_col(prop, 'eicPanels', 'eic_panels')
         prop.loc[:, "eic_panels"] = prop.loc[:, "eic_panels"].str.replace(' / ', '|')
         
-        prop.rename(columns={'proposalStatus':'status_code', 'scientificPanel':'panel_code', 'budget':'total_cost', 
+        prop.rename(columns={'scientificPanel':'panel_code', 'budget':'total_cost', 
                             'requestedGrant':'eu_reqrec_grant', 'numberOfApplicants':'number_involved'}, inplace=True)
         
         prop=prop.drop(columns=['isAboveTreshold','mgaTypeDescription','isSeoDuplicate','mgaTypeCode',

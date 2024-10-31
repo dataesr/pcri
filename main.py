@@ -8,9 +8,11 @@ extractDate = date_load()
 proj = projects_load()
 proj_id_signed = proj.project_id.unique()
 
-prop = proposals_load()   
+prop = proposals_load()
 proj = proj_add_cols(prop, proj)
 
+stage_p =  ['REJECTED' ,'NO_MONEY' ,'MAIN', 'RESERVE', 'INELIGIBLE', 'WITHDRAWN', 'INADMISSIBLE', None]
+prop1 = proposals_status(prop, proj_id_signed, stage_p)  
 # np.save("data_files/applicants_columns.npy", prop_cols)
 
 ###########################################
@@ -20,9 +22,6 @@ call_to_integrate = proposals_id_missing(prop, proj, extractDate)
 
 # if call already in proposals then add missing projects
 proj1 = proj_id_miss_fixed(prop, proj, call_to_integrate)
-
-stage_p =  ['REJECTED' ,'NO_MONEY' ,'MAIN', 'RESERVE', 'INELIGIBLE', 'WITHDRAWN', 'INADMISSIBLE', None]
-prop1 = proposals_status(prop, proj_id_signed, stage_p)  
 
 # merge proj + prop
 print('### MERGED PROPOSALS/PROJECTS')
@@ -138,7 +137,18 @@ ref_source = ref_source_load('ref')
 ref = ref_source_2d_select(ref_source, 'HE')
 entities_tmp = entities_tmp_create(entities_info, countries, ref)
 print(f"size entities_tmp: {len(entities_tmp)}")
-entities_tmp = entities_and_ref(ref, entities_tmp)
-lid_source = ID_entities_list(ref_source)
+entities_tmp = entities_for_merge(entities_tmp)
 
-ror, paysage, sirene= ID_getRefInfo(lid_source)
+### Executer uniquement si besoin
+lid_source = ID_entities_list(ref_source)
+# ror, paysage, paysage_category, sirene = ID_getRefInfo(lid_source) 
+
+### merge entities_tmp + referentiel
+# ROR
+### si besoin de charger ror pickle
+# ror = pd.read_pickle(f"{PATH_REF}ror_df.pkl")
+entities_tmp = merge_ror(entities_tmp, ror)
+
+# PAYSAGE
+### si besoin de charger paysage pickle
+# paysage = pd.read_pickle(f"{PATH_REF}paysage_df.pkl")

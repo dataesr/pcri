@@ -37,7 +37,6 @@ def part_miss_app(tmp, df):
             'netEuContribution']
         
         tmp = tmp[selector_d].rename(columns={'totalCosts':'budget', 'netEuContribution':'requestedGrant'}) 
-        # tmp.loc[tmp.partnerType=='beneficiary', 'partnerType'] = 'applicant'
         df = pd.concat([df, tmp], ignore_index = True)
         print(f"- size app1 after add missing part1: {len(df)}, subv: {'{:,.1f}'.format(df['requestedGrant'].sum())}")
         # print(f"4 - montant definitif des subv_dem (suite lien avec projects propres): {'{:,.1f}'.format(app1.loc[app1.project_id.isin(projects.project_id.unique()), 'requestedGrant'].sum())}")

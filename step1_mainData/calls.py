@@ -26,12 +26,9 @@ def call(chemin):
     for w in ['^HORIZON(-?)', '(-?)HORIZONTAL(-?)']: 
         calls.loc[calls['workProg_new'].str.contains('HORIZON'), 'workProg_new'] = calls['workProg_new'].str.replace(w,'', regex=True)
     
-#     calls.to_csv('C:/Users/zfriant/Documents/OneDrive/PCRI/eCorda_datas/.test.csv', sep=';', index=False)
-    
     calls.loc[calls['callId_new'].str.contains('MSCA'),'workProg_new'] = 'MSCA'
     calls.rename(columns={'callId':'call_id', 'callDeadlineDate':'call_deadline', 'callFunding':'call_budget'}, inplace=True)
     calls['call_deadline'] = calls['call_deadline'].astype('datetime64[ns]')
-
     return calls
 
 
