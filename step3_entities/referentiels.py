@@ -1,5 +1,6 @@
 import pandas as pd
 from config_path import PATH_WORK
+
 def merge_ror(entities_tmp, ror):
     print("### merge ROR")
     entities_tmp = (entities_tmp
@@ -11,25 +12,28 @@ def merge_ror(entities_tmp, ror):
         entities_tmp[entities_tmp.groupby('generalPic')['generalPic'].transform('count')>1]
     return entities_tmp
 
-def merge_paysage(entities_tmp, paysage):
-    print("### merge PAYSAGE")
 
-    def category_paysage(paysage):
-        x = (paysage[['id_clean','category_id', 'category_name', 'category_priority']]
-             .assign(category_id=paysage.category_id.str.split(';'), 
-                     category_name=paysage.category_name.str.split(';'), 
-                     category_priority=paysage.category_priority.str.split(';')))
-        x = x.groupby('id_clean').explode('category_id').explode('category_name').explode( 'category_priority').loc[~x.category_id.isnull()]
-        pc = pd.read_csv("data_files/categories_paysage.csv", sep=';', encoding='utf-8').rename(columns={'usualNameFr':'paysage_category', 'id':'paysage_category_id'})
-        x = x.loc[~x.category_id.isin(pc.paysage_category_id.unique())]
-        try:
-            if len(x)>0:
-                print(f"- nouvelles catégories à intégrer à la liste de categories dans data_files")
-                x[['category_id', 'category_name']].drop_duplicates().to_csv(f"{PATH_WORK}new_cat.csv", sep=';', encoding='utf-8', index=False)
-                exit()
-        except:
+def category_paysage(paysage):
+    print("### CATEGORY paysage")
+    x = (paysage[['id_clean','category_id', 'category_name', 'category_priority']]
+            .assign(category_id=paysage.category_id.str.split(';'), 
+                    category_name=paysage.category_name.str.split(';'), 
+                    category_priority=paysage.category_priority.str.split(';')))
+    x = (x.explode(['category_id','category_name','category_priority'])
+         .loc[~x.category_id.isnull()]
+         .drop_duplicates())
+    x['category_priority'] = x.category_priority.str.replace('.0','', regex=False)
+    pc = pd.read_csv("data_files/categories_paysage.csv", sep=';', encoding='utf-8').rename(columns={'usualNameFr':'paysage_category', 'id':'paysage_category_id'})
+    miss_x = x.loc[~x.category_id.isin(pc.paysage_category_id.unique())]
+    if len(miss_x)>0:
+        print(f"- nouvelles catégories à intégrer à la liste de categories dans data_files")
+        miss_x[['category_id', 'category_name']].drop_duplicates().to_csv(f"{PATH_WORK}new_cat.csv", sep=';', encoding='utf-8', index=False)
+        exit()
+    else:
+        return x.loc[x.category_id.isin(pc.loc[pc.non!='n'].paysage_category_id.unique())].groupby('id_clean').agg(lambda x: ';'.join(x)).reset_index()
 
-            
+def merge_paysage(entities_tmp, paysage, cat_filter):
+    print("### merge PAYSAGE")            
 
     paysage = (paysage
             .rename(columns={'id':'id_extend',
@@ -61,7 +65,7 @@ def merge_paysage(entities_tmp, paysage):
     entities_tmp = entities_tmp.drop(['id_clean','name_clean','acronym_clean'], axis=1).drop_duplicates()
 
     if any(entities_tmp.groupby('generalPic')['generalPic'].transform('count')>1):
-        print(entities_tmp[entities_tmp.groupby('generalPic')['generalPic'].transform('count')>1])
+        print(f"- doublons PIC{entities_tmp[entities_tmp.groupby('generalPic')['generalPic'].transform('count')>1]}")
         
     print(f"size entities_tmp after add paysage_info: {len(entities_tmp)}")
     return entities_tmp
