@@ -108,30 +108,20 @@ list_codeCountry = entities_info.countryCode.unique()
 countries = country_load(FRAMEWORK, list_codeCountry)
 
 # step3
+
+##################################
+# nouvelle actualisation ; à executer UNE FOIS
 ref_source = ref_source_load('ref')
-ref = ref_source_1ere_select(ref_source)
-entities_tmp = entities_tmp_create(entities_info, countries, ref)
-print(f"size entities_tmp: {len(entities_tmp)}")
-identification = legal_id_clean(entities_tmp)
-multiple = entities_link(entities_tmp)
-identificaton = identification.merge(multiple, how='left', on="generalPic")
-identificaton['legalName'] = identificaton['legalName'].str.strip()
-print(f"Size tmp:{len(identification)}, size entities_tmp:{len(entities_tmp)}")
-check_id_liste = list_to_check(identificaton)
+result, check_id_liste, identification = first_update(ref_source, entities_info, countries)
 
-#####################
-# SI BESOIN DE checker les ID de PIC
-# get_token('474333')
-liste=list(set(check_id_liste.loc[check_id_liste.check_id!='', 'check_id'].unique()))
-print(time.strftime("%H:%M:%S"))  
-result = check_id(liste)
-print(time.strftime("%H:%M:%S"))
-
+# vérifier dans excel les nouveaux ID PATH_WORK/_check_id_result.xlsx
 IDchecking_results(result, check_id_liste, identification)
+
 id_verified = ID_resultChecked()
-new_ref_source(id_verified,ref_source,extractDate,part,app1,entities_single,countries)
+new_ref_source(id_verified, ref_source, extractDate, part,app1, entities_single, countries)
 
 ########################
+
 # chargement du nouveau ref_source
 ref_source = ref_source_load('ref')
 ref = ref_source_2d_select(ref_source, 'HE')
@@ -140,15 +130,17 @@ print(f"size entities_tmp: {len(entities_tmp)}")
 entities_tmp = entities_for_merge(entities_tmp)
 
 ### Executer uniquement si besoin
-lid_source = ID_entities_list(ref_source)
+lid_source, unknow_list = ID_entities_list(ref_source)
 # ror, paysage, paysage_category, sirene = ID_getRefInfo(lid_source) 
 
 ### merge entities_tmp + referentiel
 # ROR
 ### si besoin de charger ror pickle
-# ror = pd.read_pickle(f"{PATH_REF}ror_df.pkl")
+ror = pd.read_pickle(f"{PATH_REF}ror_df.pkl")
 entities_tmp = merge_ror(entities_tmp, ror)
 
 # PAYSAGE
 ### si besoin de charger paysage pickle
-# paysage = pd.read_pickle(f"{PATH_REF}paysage_df.pkl")
+paysage = pd.read_pickle(f"{PATH_REF}paysage_df.pkl")
+cat_filter = category_paysage(paysage)
+entities_tmp=merge_paysage(entities_tmp, paysage, cat_filter)

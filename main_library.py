@@ -17,7 +17,7 @@ from step2_participations.entities import *
 from step2_participations.countries import *
 from step3_entities.references import *
 from step3_entities.entities_select import *
-from step3_entities.IDlegal_cleaning import *
-from step3_entities.ID_checkingRefExist import *
+from step3_entities.actualisation import *
 from step3_entities.ID_checkingResult import *
 from step3_entities.ID_getRefInformations import *
+from step3_entities.referentiels import *
