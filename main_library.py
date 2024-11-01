@@ -20,4 +20,8 @@ from step3_entities.entities_select import *
 from step3_entities.actualisation import *
 from step3_entities.ID_checkingResult import *
 from step3_entities.ID_getRefInformations import *
-from step3_entities.referentiels import *
+from step3_entities.merge_referentiels import *
+from step3_entities.groupes import *
+from step3_entities.ID_pic_group import *
+from step3_entities.entities_cleaning import *
+from step3_entities.categories import *

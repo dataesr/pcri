@@ -112,7 +112,8 @@ def get_sirene(lid_source, sirene_old=None):
             print(f"\n{i} -> Error occurred: {err}")
             sirene_liste.append(str(i))
         except Exception as e:
-            print(f"\n{i} -> An unexpected error occurred: {e}") 
+            print(f"\n{i} -> An unexpected error occurred: {e}")
+            sirene_liste.append(str(i)) 
         n+=1
         print(n, end=',')
 
