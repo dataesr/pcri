@@ -529,9 +529,9 @@ def get_paysage(lid_source, siren_siret, paysage_old=None):
 
             paysage_category = paysage_category.loc[~(paysage_category.category_end<pd.Timestamp("today"))]
 
-            paysage_category=paysage_category.groupby(['id_clean', 'category_id', 'category_priority']).first().reset_index()
+            paysage_category = paysage_category.groupby(['id_clean', 'category_id', 'category_priority']).first().reset_index()
 
-            paysage_category=paysage_category[['id_clean', 'category_id', 'category_name', 'category_priority']].sort_values(['id_clean', 'category_priority', 'category_id']).drop_duplicates()
+            paysage_category = paysage_category[['id_clean', 'category_id', 'category_name', 'category_priority']].sort_values(['id_clean', 'category_priority', 'category_id']).drop_duplicates()
             # paysage_category=paysage_category.drop_duplicates().groupby('id_clean', as_index=False).agg(lambda x: ';'.join(x.astype(str)))
 
             # paysage = paysage.merge(paysage_category, how='left',on='id_clean') 
@@ -553,6 +553,7 @@ def get_paysage(lid_source, siren_siret, paysage_old=None):
     paysage=IDpaysage_siret(paysage)
     check_var_null(paysage)
     paysage_category=IDpaysage_category(paysage)
+    paysage_mires=get_mires()
 
     x=paysage.loc[~paysage.id_clean.isin(paysage.id.unique())]
     x.loc[:,'id']=x.loc[:,'id_clean']
@@ -571,4 +572,4 @@ def get_paysage(lid_source, siren_siret, paysage_old=None):
         with open(file_name, 'wb') as file:
             pd.to_pickle(paysage, file)
     
-    return paysage, paysage_category
+    return paysage, paysage_category, paysage_mires

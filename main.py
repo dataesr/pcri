@@ -109,18 +109,18 @@ countries = country_load(FRAMEWORK, list_codeCountry)
 
 # step3
 
-##################################
-# nouvelle actualisation ; à executer UNE FOIS
-ref_source = ref_source_load('ref')
-result, check_id_liste, identification = first_update(ref_source, entities_info, countries)
+# ##################################
+# # nouvelle actualisation ; à executer UNE FOIS
+# ref_source = ref_source_load('ref')
+# result, check_id_liste, identification = first_update(ref_source, entities_info, countries)
 
-# vérifier dans excel les nouveaux ID PATH_WORK/_check_id_result.xlsx
-IDchecking_results(result, check_id_liste, identification)
+# # vérifier dans excel les nouveaux ID PATH_WORK/_check_id_result.xlsx
+# IDchecking_results(result, check_id_liste, identification)
 
-id_verified = ID_resultChecked()
-new_ref_source(id_verified, ref_source, extractDate, part,app1, entities_single, countries)
+# id_verified = ID_resultChecked()
+# new_ref_source(id_verified, ref_source, extractDate, part,app1, entities_single, countries)
 
-########################
+# ########################
 
 # chargement du nouveau ref_source
 ref_source = ref_source_load('ref')
@@ -131,7 +131,7 @@ entities_tmp = entities_for_merge(entities_tmp)
 
 ### Executer uniquement si besoin
 lid_source, unknow_list = ID_entities_list(ref_source)
-# ror, paysage, paysage_category, sirene = ID_getRefInfo(lid_source) 
+# ror, paysage, paysage_category, paysage_mires, sirene = ID_getRefInfo(lid_source) 
 
 ### merge entities_tmp + referentiel
 # ROR
@@ -149,3 +149,42 @@ entities_tmp = merge_paysage(entities_tmp, paysage, cat_filter)
 ### si besoin de charger paysage pickle
 sirene = pd.read_pickle(f"{PATH_REF}sirene_df.pkl")
 entities_tmp = merge_sirene(entities_tmp, sirene)
+
+entities_tmp.loc[(~entities_tmp.id.isnull())&(entities_tmp.entities_id.isnull()), 'entities_id'] = entities_tmp.id
+
+### groupe entreprises
+# groupe = groupe_treatment('groupe_prov', 'groupe')
+# wb=openpyxl.load_workbook(f"{PATH_REF}groupe_prov.xlsm").sheetnames[1:]
+if any(entities_tmp.siren.str.contains(';', na=False)):
+    print("ATTENTION faire code pour traiter deux siren différents -> ce qui serait bizarre qu'il y ait 2 siren")
+
+### si besoin de charger groupe 
+groupe = pd.read_pickle(f"{PATH_REF}groupe.pkl")
+print(f"taille de entities_tmp avant groupe:{len(entities_tmp)}")
+entities_tmp = merge_groupe(entities_tmp, groupe)
+
+# IDENT with '-' : traitement des identifiants avec '-' pour regrouper multi-pic non identifiés
+entities_tmp = IDpic(entities_tmp)
+
+entities_tmp = entities_clean(entities_tmp)
+entities_check_null(entities_tmp)
+
+# traitement catégorie
+entities_tmp = category_cleaning(entities_tmp, sirene)
+entities_tmp = category_woven(entities_tmp)
+
+entities_info = entities_info_add(entities_tmp,entities_info)
+entities_info = cordis_type(entities_info)
+entities_info = add_fix_countries(entities_info, countries)
+
+### si besoin de charger groupe 
+entities_info = mires(entities_info)
+
+#check entities with pic_id
+print("### check enties fr avec id commençant par pic")
+pd.set_option("display.max_rows", None, "display.max_columns", None)
+print(entities_info[(entities_info.country_code=='FRA')&(entities_info.entities_id.str.contains('pic'))][['entities_id', 'entities_name']])
+
+file_name = f"{PATH_CLEAN}entities_info_current2.pkl"
+with open(file_name, 'wb') as file:
+    pd.to_pickle(entities_info, file)

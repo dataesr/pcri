@@ -15,8 +15,8 @@ def ID_getRefInfo(lid_source):
     with open(file_name, 'wb') as file:
         pd.to_pickle(ror, file)
 
-    siren_siret=get_siret_siege(lid_source)
-    paysage, paysage_category=get_paysage(lid_source, siren_siret, paysage_old=None)
-    sirene=get_sirene(lid_source, sirene_old=None)
+    siren_siret = get_siret_siege(lid_source)
+    paysage, paysage_category, paysage_mires = get_paysage(lid_source, siren_siret, paysage_old=None)
+    sirene = get_sirene(lid_source, sirene_old=None)
 
-    return ror, paysage, paysage_category, sirene
+    return ror, paysage, paysage_category, paysage_mires, sirene
