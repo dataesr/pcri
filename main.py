@@ -18,10 +18,10 @@ prop1 = proposals_status(prop, proj_id_signed, stage_p)
 ###########################################
 # proposals fix
 # projects missing from proposals
-call_to_integrate = proposals_id_missing(prop, proj, extractDate)
+call_to_integrate = proposals_id_missing(prop1, proj, extractDate)
 
-# if call already in proposals then add missing projects
-proj1 = proj_id_miss_fixed(prop, proj, call_to_integrate)
+# project data missing in proposals if call already in proposals then add this
+proj1 = proj_id_miss_fixed(prop1, proj, call_to_integrate)
 
 # merge proj + prop
 print('### MERGED PROPOSALS/PROJECTS')
