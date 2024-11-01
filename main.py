@@ -143,4 +143,9 @@ entities_tmp = merge_ror(entities_tmp, ror)
 ### si besoin de charger paysage pickle
 paysage = pd.read_pickle(f"{PATH_REF}paysage_df.pkl")
 cat_filter = category_paysage(paysage)
-entities_tmp=merge_paysage(entities_tmp, paysage, cat_filter)
+entities_tmp = merge_paysage(entities_tmp, paysage, cat_filter)
+
+# SIRENE
+### si besoin de charger paysage pickle
+sirene = pd.read_pickle(f"{PATH_REF}sirene_df.pkl")
+entities_tmp = merge_sirene(entities_tmp, sirene)

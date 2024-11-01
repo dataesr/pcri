@@ -82,8 +82,6 @@ def get_paysage(lid_source, siren_siret, paysage_old=None):
 
         paysage_id = pd.DataFrame(paysage_id)
         paysage_id = paysage_id[~paysage_id.id_paysage.isnull()]
-
-        paysage_id=paysage_id[~paysage_id.id_paysage.isnull()]
         return paysage_id
     ###############################
 
@@ -153,7 +151,8 @@ def get_paysage(lid_source, siren_siret, paysage_old=None):
                 paysage_relat.append(str(i))
             except Exception as e:
                 print(f"\n{i} -> An unexpected error occurred: {e}")
-            
+                paysage_relat.append(str(i))
+
         if paysage_successor:
             print(f"\n- size de resultat paysage successor {len(paysage_successor)}")
             paysage_successor = pd.DataFrame.from_records(paysage_successor).drop_duplicates()
@@ -225,7 +224,8 @@ def get_paysage(lid_source, siren_siret, paysage_old=None):
                 paysage_relat.append(str(i))
             except Exception as e:
                 print(f"\n{i} -> An unexpected error occurred: {e}")
-  
+                paysage_relat.append(str(i))
+
         file_name = f"{PATH_SOURCE}paysage_parent.pkl"
         with open(file_name, 'wb') as file:
             pd.to_pickle(paysage_relation, file)

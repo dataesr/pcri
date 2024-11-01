@@ -69,3 +69,75 @@ def merge_paysage(entities_tmp, paysage, cat_filter):
         
     print(f"size entities_tmp after add paysage_info: {len(entities_tmp)}")
     return entities_tmp
+
+
+def merge_sirene(entities_tmp, sirene):
+    print("### merge SIRENE")
+    sirene = sirene.drop_duplicates()
+    print(f"1 - size sirene : {len(sirene)}")
+
+    sirene=sirene.loc[~sirene.siren.isin(['889664413'])]
+
+    # si doublon siren/siret
+    sirene['nb']=sirene.groupby(['siren', 'siret'], as_index=False)['siret'].transform('count')
+    sirene=sirene.loc[~((sirene.nb>1)&(sirene.etat_ul=='C'))]
+    sirene['nb']=sirene.groupby(['siren', 'siret'], as_index=False)['siret'].transform('count')
+    sirene=sirene.sort_values(['siren', 'siret','date_debut'], ascending=False)
+    sirene=sirene.groupby(['siren', 'siret']).first().reset_index()
+
+    print(f"2 - size sirene : {len(sirene)}")
+
+
+    sirene=sirene.rename(columns={'date_debut':"siret_closeDate"})
+    sirene.loc[sirene.etat_ul=='A', 'siren_closeDate']=np.nan
+
+    sirene=sirene.assign(ens=sirene[['ens1', 'ens2', 'ens3']].fillna('').agg(' '.join, axis=1).str.strip()).drop(columns=['ens1', 'ens2', 'ens3'])
+    sirene=sirene.assign(nom_perso=sirene[['nom_pp', 'prenom']].fillna('').agg(' '.join, axis=1).str.strip()).drop(columns=['nom_pp', 'prenom'])
+
+    sirene.mask(sirene=='', inplace=True)
+
+    df = (entities_tmp.loc[~entities_tmp.id_extend.isnull(), ['id_extend']]
+        .merge(sirene, how='inner', left_on='id_extend', right_on='siret')
+        .drop_duplicates().assign(orig="siret"))
+
+    s = sirene.loc[sirene.siege==True]
+    df1 = (entities_tmp.loc[~entities_tmp.id_extend.isnull(), ['id_extend']]
+        .merge(s, how='inner', left_on='id_extend', right_on='rna')
+        .drop_duplicates()
+        .assign(orig="rna"))
+    df2 = (entities_tmp.loc[~entities_tmp.id_extend.isnull(), ['id_extend']]
+        .merge(s, how='inner', left_on='id_extend', right_on='siren')
+        .drop_duplicates().assign(orig="siren"))
+    df = pd.concat([df, df1, df2], ignore_index=True).drop_duplicates()
+
+    if any(df.loc[df.orig=='siret']):
+        print(f"3 - A vérifier -> liste des noms à traiter:\n {df.loc[df.orig=='siret', ['ens', 'denom_us', 'nom_ul']]}\n#####")
+
+    df=df.assign(nom=np.where((df.orig=='siret')&(df.denom_us.isnull()), df.ens, df.denom_us))
+    df.loc[df.nom.isnull(), 'nom']=df['nom_ul']
+    df.loc[df.nom.isnull(), 'nom']=df['nom_perso']
+
+    if df.loc[df.nom.isnull()].empty:
+        pass
+    else:
+        print(f"4 - compléter code pour récupérer une valeur pour nom manquant - {df.loc[df.nom.isnull()]}")
+        
+    df['nom']= df.nom.str.capitalize()
+    df=df.assign(id_m=np.where(df.orig.isin(['siret', 'rna']), df.siren.fillna('')+' '+df.rna.fillna(''), df.rna))
+
+    df=df[['id_extend', 'nom', 'sigle', 'siret_closeDate', 'id_m', 'siren', 'orig', 'siege']].drop_duplicates()
+
+    entities_tmp = entities_tmp.merge(df, how='left', on='id_extend').drop_duplicates()
+    entities_tmp.loc[~(entities_tmp.sigle.isnull())&(entities_tmp.entities_acronym.isnull()), 'entities_acronym'] = entities_tmp['sigle']
+    entities_tmp.loc[~(entities_tmp.nom.isnull())&(entities_tmp.entities_name.isnull()), 'entities_name'] = entities_tmp['nom']
+    entities_tmp.loc[(entities_tmp.entities_id.isnull())&(entities_tmp.orig=='siret'), 'entities_id'] = entities_tmp['id_extend']
+    entities_tmp.loc[~(entities_tmp.siren.isnull())&(entities_tmp.entities_id.isnull()), 'entities_id'] = entities_tmp['siren']
+
+
+    entities_tmp.drop(columns=['nom','sigle', 'orig'], inplace=True)
+
+    if any(entities_tmp.groupby('generalPic')['generalPic'].transform('count')>1):
+        print(f"5 - si ++ lignes / pics : {entities_tmp[entities_tmp.groupby('generalPic')['generalPic'].transform('count')>1]}")
+
+    print(f"after sirene: {len(entities_tmp)}")
+    return entities_tmp
