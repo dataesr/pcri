@@ -1,27 +1,106 @@
-[{"programme_code":"HORIZON.2.1","programme_name_fr":"Santé"},
-{"programme_code":"HORIZON.2.2","programme_name_fr":"Culture, créativité et société inclusive"},
-{"programme_code":"HORIZON.2.3","programme_name_fr":"Sécurité civile pour la société"},
-{"programme_code":"HORIZON.2.4","programme_name_fr":"Numérique, industrie et espace"},
-{"programme_code":"HORIZON.2.5","programme_name_fr":"Climat, énergie et mobilité"},
-{"programme_code":"HORIZON.2.6","programme_name_fr":"Bio-Environnement"},
-{"programme_code":"CANCER","programme_name_fr":"Cancer"},
-{"programme_code":"CIT","programme_name_fr":"Villes intelligentes et climatiquement neutres"},
-{"programme_code":"CLIMA","programme_name_fr":"Adaptation aux changements climatiques"},
-{"programme_code":"COOR","programme_name_fr":"Coordination d'actions complémentaires pour les missions"},
-{"programme_code":"HORIZON.1.1","programme_name_fr":"Conseil européen de la recherche (ERC)"},
-{"programme_code":"HORIZON.1.2","programme_name_fr":"Marie Sklodowska-Curie Actions (MSCA)"},
-{"programme_code":"HORIZON.1.3","programme_name_fr":"Infrastructures de recherche"},
-{"programme_code":"HORIZON.3.1","programme_name_fr":"Conseil européen de l'innovation (EIC)"},
-{"programme_code":"HORIZON.3.2","programme_name_fr":"Écosystèmes européens de l'innovation (EIE)"},
-{"programme_code":"HORIZON.3.3","programme_name_fr":"Institut européen d'innovation et de technologie (EIT)"},
-{"programme_code":"HORIZON.4.1","programme_name_fr":"Élargir la participation et diffuser l'excellence"},
-{"programme_code":"HORIZON.4.2","programme_name_fr":"Réformer et renforcer le système européen de la R&I"},
-{"programme_code":"OCEAN","programme_name_fr":"Océan, mers et eaux"},
-{"programme_code":"SOIL","programme_name_fr":"Santé des sols et alimentation"},
-{"programme_code":"UNCAN","programme_name_fr":"Cancer"},
-{"pilier_code":"HORIZON.1","pilier_name_fr":"Excellence scientifique"},
-{"pilier_code":"HORIZON.2","pilier_name_fr":"Problématiques mondiales et compétitivité industrielle européenne"},
-{"pilier_code":"HORIZON.3","pilier_name_fr":"Europe plus innovante"},
-{"pilier_code":"HORIZON.4","pilier_name_fr":"Élargir la participation et renforcer l'espace européen de la recherche"},
-{"programme_code":"MISSION","programme_name_fr":"Mission"}
+[
+	{
+		"programme_code": "HORIZON.2.1",
+		"programme_name_fr": "Santé"
+	},
+	{
+		"programme_code": "HORIZON.2.2",
+		"programme_name_fr": "Culture, créativité et société inclusive"
+	},
+	{
+		"programme_code": "HORIZON.2.3",
+		"programme_name_fr": "Sécurité civile pour la société"
+	},
+	{
+		"programme_code": "HORIZON.2.4",
+		"programme_name_fr": "Numérique, industrie et espace"
+	},
+	{
+		"programme_code": "HORIZON.2.5",
+		"programme_name_fr": "Climat, énergie et mobilité"
+	},
+	{
+		"programme_code": "HORIZON.2.6",
+		"programme_name_fr": "Bio-Environnement"
+	},
+	{
+		"programme_code": "CANCER",
+		"programme_name_fr": "Cancer"
+	},
+	{
+		"programme_code": "CIT",
+		"programme_name_fr": "Villes intelligentes et climatiquement neutres"
+	},
+	{
+		"programme_code": "CLIMA",
+		"programme_name_fr": "Adaptation aux changements climatiques"
+	},
+	{
+		"programme_code": "COOR",
+		"programme_name_fr": "Coordination d'actions complémentaires pour les missions"
+	},
+	{
+		"programme_code": "HORIZON.1.1",
+		"programme_name_fr": "Conseil européen de la recherche (ERC)"
+	},
+	{
+		"programme_code": "HORIZON.1.2",
+		"programme_name_fr": "Marie Sklodowska-Curie Actions (MSCA)"
+	},
+	{
+		"programme_code": "HORIZON.1.3",
+		"programme_name_fr": "Infrastructures de recherche"
+	},
+	{
+		"programme_code": "HORIZON.3.1",
+		"programme_name_fr": "Conseil européen de l'innovation (EIC)"
+	},
+	{
+		"programme_code": "HORIZON.3.2",
+		"programme_name_fr": "Écosystèmes européens de l'innovation (EIE)"
+	},
+	{
+		"programme_code": "HORIZON.3.3",
+		"programme_name_fr": "Institut européen d'innovation et de technologie (EIT)"
+	},
+	{
+		"programme_code": "HORIZON.4.1",
+		"programme_name_fr": "Élargir la participation et diffuser l'excellence"
+	},
+	{
+		"programme_code": "HORIZON.4.2",
+		"programme_name_fr": "Réformer et renforcer le système européen de la R&I"
+	},
+	{
+		"programme_code": "OCEAN",
+		"programme_name_fr": "Océan, mers et eaux"
+	},
+	{
+		"programme_code": "SOIL",
+		"programme_name_fr": "Santé des sols et alimentation"
+	},
+	{
+		"programme_code": "UNCAN",
+		"programme_name_fr": "Cancer"
+	},
+	{
+		"pilier_code": "HORIZON.1",
+		"pilier_name_fr": "Excellence scientifique"
+	},
+	{
+		"pilier_code": "HORIZON.2",
+		"pilier_name_fr": "Problématiques mondiales et compétitivité industrielle européenne"
+	},
+	{
+		"pilier_code": "HORIZON.3",
+		"pilier_name_fr": "Europe plus innovante"
+	},
+	{
+		"pilier_code": "HORIZON.4",
+		"pilier_name_fr": "Élargir la participation et renforcer l'espace européen de la recherche"
+	},
+	{
+		"programme_code": "MISSION",
+		"programme_name_fr": "Mission"
+	}
 ]

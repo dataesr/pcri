@@ -29,8 +29,14 @@ def topics_divisions(chemin):
 
     divisions = df[['lvl2Code', 'lvl2Description', 'lvl3Code', 'lvl3Description', 'lvl4Code', 'lvl4Description']].drop_duplicates()
 
+    # add niveau prog pilier
+    horizon = (topics_divisions
+               .rename(columns={"lvl2Code": "pilier_code", "lvl2Description": "pilier_name_en", "lvl3Code": "programme_code", 
+                                "lvl3Description": "programme_name_en",'topicDescription': 'topic_name'})
+              .drop(columns=['lvl4Code','lvl4Description', 'divisionAbbreviation', 'divisionDescription', 'framework'])) 
+
     destination = pd.read_json(open('data_files/destination.json', 'r+', encoding='utf-8'))
-    destination = pd.DataFrame(destination).drop(columns='dest_h20')
+    destination = pd.DataFrame(destination)
 
     ########################################################
 
@@ -43,7 +49,7 @@ def topics_divisions(chemin):
 
     if any(pd.isna(ERC.destination_code.unique())):
         print(f'erc : destination_code à null après traitement\n{ERC[ERC.destination_code.isnull()].topicCode.unique()}')
-        ERC.loc[ERC.destination_code.isnull(), 'destination_code'] = 'ERC-OTHERS'
+        ERC.loc[ERC.destination_code.isnull(), 'destination_code'] = 'ERC-OTHER'
 
     ############################################################################
     # MSCA
@@ -55,7 +61,7 @@ def topics_divisions(chemin):
 
     if any(pd.isna(MSCA.destination_code.unique())):
         print(f'MSCA : destination_code à null après traitement\n{MSCA[MSCA.destination_code.isnull()].topicCode.unique()}')
-        MSCA.loc[MSCA.destination_code.isnull(), 'destination_code'] = 'MSCA-OTHERS'  
+        MSCA.loc[MSCA.destination_code.isnull(), 'destination_code'] = 'MSCA-OTHER'  
 
     #######################################################################################################""
     #INFRA
@@ -71,11 +77,9 @@ def topics_divisions(chemin):
         INFRA.loc[INFRA.topicCode.str.contains(k), 'destination_code'] = v
     if any(pd.isna(INFRA.destination_code.unique())):
         print(f'INFRA : destination_code à null après traitement\n{INFRA[INFRA.destination_code.isnull()].topicCode.unique()}')
-        INFRA.loc[INFRA.destination_code.isnull(), 'destination_code'] = 'DESTINATION-OTHERS'
+        INFRA.loc[INFRA.destination_code.isnull(), 'destination_code'] = 'DESTINATION-OTHER'
 
     # ####################################################################################
-
-
     # # CLUSTER
 
     CLUSTER = topics_divisions.loc[(topics_divisions.lvl2Code=='HORIZON.2')&(topics_divisions.topicCode.str.contains('-CL\\d{1}-|-HLTH-', regex=True))]
@@ -84,12 +88,12 @@ def topics_divisions(chemin):
     CLUSTER['destination_code'] = CLUSTER['topicCode'].str.split('-').str.get(3)
     CLUSTER.loc[~CLUSTER.destination_code.isin(destination.destination_code.unique()), 'destination_code'] = np.nan
 
-    cl={'-HLTH-':'HEALTH-OTHERS',
-    '-CL2-':'CCSI-OTHERS',
-    '-CL3-':'CSS-OTHERS',
-    '-CL4-':'DIS-OTHERS',
-    '-CL5-':'CEM-OTHERS',
-    '-CL6-':'BIOENV-OTHERS'
+    cl={'-HLTH-':'HEALTH-OTHER',
+    '-CL2-':'CCSI-OTHER',
+    '-CL3-':'CSS-OTHER',
+    '-CL4-':'DIS-OTHER',
+    '-CL5-':'CEM-OTHER',
+    '-CL6-':'BIOENV-OTHER'
     }
     for k,v in cl.items():
         CLUSTER.loc[(CLUSTER.destination_code.isnull())&(CLUSTER.topicCode.str.contains(k)), 'destination_code'] = v
@@ -113,8 +117,6 @@ def topics_divisions(chemin):
 
     ################################################################
     #### autres pilier 2
-
-
     # MISSION
     miss = (topics_divisions
         .loc[(topics_divisions.lvl2Code=='HORIZON.2')&(topics_divisions.topicCode.str.contains('MISS')),
@@ -138,9 +140,13 @@ def topics_divisions(chemin):
     miss.loc[miss.thema_code=="UNCAN", 'thema_code'] = "CANCER"
 
     if any((miss.programme_code=='MISSION')&(miss.thema_code.isnull())):
-        miss.loc[miss.thema_code.isnull(), 'thema_code'] = 'MISS-OTHERS'  
+        miss.loc[miss.thema_code.isnull(), 'thema_code'] = 'MISS-OTHER'  
         # miss.loc[miss.programme_code.isnull(), 'programme_code'] = miss.lvl3Code 
-
+    # traitement niveau programme pour les MISSIONS
+    miss = (miss
+        .merge(horizon[['pilier_code', 'pilier_name_en', 'topicCode', 'topic_name']], how='left', on='topicCode')
+        .assign(programme_name_en='Mission')
+        .drop_duplicates())
     ########################################################################
 
     # JU-JTI
@@ -176,16 +182,15 @@ def topics_divisions(chemin):
 
     if any(pd.isna(top.destination_code.unique())):
         print(f'top_hor2 : destination_code à null après traitement\n{top[top.destination_code.isnull()]}')
-        top.loc[top.destination_code.isnull(), 'destination_code'] = 'DESTINATION-OTHERS'
+        top.loc[top.destination_code.isnull(), 'destination_code'] = 'DESTINATION-OTHER'
 
     # #############################################################################################################
     # horizon 3
     HOR3 = topics_divisions.loc[topics_divisions.lvl2Code=='HORIZON.3', ['topicCode', 'lvl3Code']]
 
     spec={'PATHFINDER':'PATHFINDER',
-    'BOOSTER':'TRANSITION',
     'TRANSITION':'TRANSITION',
-    'ACCELERATOR':'ACCELERATOR',   
+    'ACCELERATOR':'ACCELERATOR',  
     'CONNECT':'CONNECT',
     'SCALEUP':'SCALEUP',
     'INNOVSMES':'INNOVSMES',   
@@ -197,15 +202,40 @@ def topics_divisions(chemin):
     'URBANMOBILITY':'KIC-URBANMOBILITY',
     'RAWMATERIALS':'KIC-RAWMATERIALS',
     'INNOENERGY':'KIC-INNOENERGY',
-    'CCSI':'KIC-CCSI'
+    'CCSI':'KIC-CCSI',
+    'PRIZE':'PRIZE',
+    'EITWOMENLEADERSHIP':'PRIZE'
     }
 
-
     for k,v in spec.items():
-        HOR3.loc[HOR3.topicCode.str.contains(k), 'destination_code'] = v
+        HOR3.loc[HOR3.topicCode.str.upper().str.contains(k), 'thema_code'] = v   
+    if any(pd.isna(HOR3.thema_code.unique())):
+        print(f"HOR3 : thema_code à null après traitement\n{HOR3[HOR3.thema_code.isnull()].sort_values('topicCode').topicCode.unique()}")
+        HOR3.loc[(HOR3.lvl3Code=='HORIZON.3.1')&(HOR3.thema_code.isnull()), 'thema_code'] = 'EIC-OTHER'
+        HOR3.loc[(HOR3.lvl3Code=='HORIZON.3.2')&(HOR3.thema_code.isnull()), 'thema_code'] = 'EIE-OTHER'
+        HOR3.loc[(HOR3.lvl3Code=='HORIZON.3.3')&(HOR3.thema_code.isnull()), 'thema_code'] = 'EIT-OTHER'
+        
+
+    spec={'CHALLENGE':'CHALLENGES',
+    'OPEN':'OPEN',
+    'EITWOMENLEADERSHIP':'EPWI',
+    'RISINGINNOVATOR':'EPWI',
+    'WOMENINNOVATOR':'EPWI',   
+    'EPWI':'EPWI',
+    'INNOVATIONPROCUREMENT':'EUIPA',
+    'EIPA':'EUIPA',
+    'EUIPA':'EUIPA',
+    'EUSIC':'EUSIC',
+    'SOCIALINNOVATION':'EUSIC',
+    'HUMANITARIAN':'HUMANITARIAN',
+    'ICAPITAL':'ICAPITAL'
+    }
+    for k,v in spec.items():
+        HOR3.loc[(HOR3.thema_code=='PRIZE')&(HOR3.topicCode.str.upper().str.contains(k)), 'destination_code'] = v
+        HOR3.loc[(HOR3.destination_code.isnull())&(HOR3.topicCode.str.upper().str.contains(k)), 'destination_code'] = v
     if any(pd.isna(HOR3.destination_code.unique())):
-        print(f"HOR3 : destination_code à null après traitement\n{HOR3[HOR3.destination_code.isnull()].sort_values('topicCode').topicCode.unique()}")
-        HOR3.loc[HOR3.destination_code.isnull(), 'destination_code'] = 'DESTINATION-OTHERS'
+        HOR3.loc[(HOR3.lvl3Code=='HORIZON.3.1')&(HOR3.destination_code.isnull()), 'destination_code'] = 'DESTINATION-OTHER'
+        HOR3.loc[(HOR3.destination_code.isnull()), 'destination_code'] = HOR3.thema_code
      #####################################################################################
 
     # horizon 4
@@ -215,72 +245,56 @@ def topics_divisions(chemin):
     'TALENTS':'TALENTS',
     'TECH':'INFRATECH',
     'COST':'COST',
-    'EURATOM':'EURATOM',
     'GENDER':'GENDER',
-    '-ERA-':'ERA'
+    '-ERA-':'ERA',
+    'PRIZE':'PRIZE'
     }
 
     for k,v in spec.items():
-        HOR4.loc[HOR4.topicCode.str.contains(k), 'destination_code'] = v
-    if any(pd.isna(HOR4.destination_code.unique())):
-        print(f"HOR4 : destination_code à null après traitement\n{HOR4[HOR4.destination_code.isnull()].sort_values('topicCode').topicCode.unique()}")
-        HOR4.loc[HOR4.destination_code.isnull(), 'destination_code'] = 'DESTINATION-OTHERS'
-
-    # ########
-    #thema_code pour HOR3 et 4
-    tab = pd.concat([HOR3, HOR4], ignore_index=True)
-
-    # autres themas que horizon 2
-    thema_other={'HORIZON.1.3':'INFRA',
-            'HORIZON.3.1':'EIC',
-            'HORIZON.3.2':'EIE',
-            'HORIZON.3.3':'EIT',
-            'HORIZON.4.1':'Widening',
-            'HORIZON.4.2':'ERA'}
-
-    # remplir thema
-    for k,v in thema_other.items():
-        tab.loc[tab.lvl3Code==k, 'thema_code'] = v
-    tab.drop(columns='lvl3Code', inplace=True)
+        HOR4.loc[HOR4.topicCode.str.upper().str.contains(k), 'thema_code'] = v
+    if any(pd.isna(HOR4.thema_code.unique())):
+        print(f"HOR4 : thema_code à null après traitement\n{HOR4[HOR4.thema_code.isnull()].sort_values('topicCode').topicCode.unique()}")
+        HOR4.loc[(HOR4.lvl3Code=='HORIZON.4.1')&(HOR4.thema_code.isnull()), 'thema_code'] = 'WIDENING-OTHER'
+        HOR4.loc[(HOR4.lvl3Code=='HORIZON.4.2')&(HOR4.thema_code.isnull()), 'thema_code'] = 'ERA-OTHER'
+    
+    spec={
+    'GENDER':'GENDER',
+    'IMPACT':'IMPACT'
+    }
+    for k,v in spec.items():
+        HOR4.loc[(HOR4.thema_code=='PRIZE')&(HOR4.topicCode.str.upper().str.contains(k)), 'destination_code'] = v
+    
+    HOR4.loc[(HOR4.destination_code.isnull()), 'destination_code'] = HOR4.thema_code 
     ##############################################################################
 
-    # add niveau prog pilier
-    horizon = (topics_divisions
-               .rename(columns={"lvl2Code": "pilier_code", "lvl2Description": "pilier_name_en", "lvl3Code": "programme_code", 
-                                "lvl3Description": "programme_name_en",'topicDescription': 'topic_name'})
-              .drop(columns=['lvl4Code','lvl4Description', 'divisionAbbreviation', 'divisionDescription', 'framework'])) 
-
-
     #traitement des programmes hors mission
-    tab = pd.concat([tab, CLUSTER, top, INFRA, ERC, MSCA], ignore_index=True)
+    tab = pd.concat([HOR3, HOR4, CLUSTER, top, INFRA, ERC, MSCA], ignore_index=True)
     tab = tab.merge(horizon, how='inner', on='topicCode')
     tab = tab.mask(tab == '')
-
-    # traitement niveau programme pour les MISSIONS
-    miss = (miss
-        .merge(horizon[['pilier_code', 'pilier_name_en', 'topicCode', 'topic_name']], how='left', on='topicCode')
-        .assign(programme_name_en='Mission')
-        .drop(columns='lvl3Code')
-        .drop_duplicates())
     
-    tab = pd.concat([tab, miss], ignore_index=True)  
+    #add mission
+    tab = pd.concat([tab, miss], ignore_index=True).drop(columns=['lvl3Code'])
     tab = tab.mask(tab == '')
 
     # traitement thema_code -> null
     reste = horizon.loc[~horizon.topicCode.isin(tab.topicCode.unique())]
-    tab = pd.concat([tab, reste], ignore_index=True) 
-    tab.loc[tab.thema_code.isnull(), 'thema_code'] = 'THEMA-OTHERS'
+    tab = pd.concat([tab, reste], ignore_index=True)
+
+    tab.loc[tab.destination_code.isnull(), 'destination_code'] = tab.thema_code
+    tab.loc[tab.thema_code.isnull(), 'thema_code'] = 'THEMA-OTHER'
+    tab.loc[tab.destination_code.isnull(), 'destination_code'] = 'DESTINATION-OTHER'
 
     thema_lib = pd.read_json(open('data_files/thema.json', 'r+', encoding='utf-8'))
     thema_lib = pd.DataFrame(thema_lib)
-
-    tab = tab.merge(thema_lib, how='left', on='thema_code')
-    tab.loc[tab.thema_name_en.isnull(), 'thema_name_en'] = tab.programme_name_en
+    tab = tab.merge(thema_lib, how='left', on='thema_code').drop(columns='dest_h20')
+    # tab.loc[tab.thema_name_en.isnull(), 'thema_name_en'] = tab.programme_name_en
     tab = tab.merge(destination, how='left', on='destination_code')
+    tab = tab.mask(tab == '')
+
+    tab.loc[(tab.destination_name_en.isnull())&(tab.thema_code==tab.destination_code), 'destination_name_en'] = tab.thema_name_en
 
     data = pd.read_json(open('data_files/programme_fr.json', 'r+', encoding='utf-8'))
     data=pd.DataFrame(data)
-
 
     tab = tab.merge(data[['programme_code','programme_name_fr']], how='left',on='programme_code')
     tab = tab.merge(data[['pilier_code','pilier_name_fr']], how='left', on='pilier_code')
@@ -288,7 +302,7 @@ def topics_divisions(chemin):
     tab.loc[(tab.thema_name_fr.isnull()), 'thema_name_fr'] = tab['programme_name_fr']
 
     if not tab.columns[tab.isnull().any()].empty:
-        print(f"attention des cellules sont vides dans horizon: {tab.columns[tab.isnull().any()]}")
+        print(f"- attention des cellules sont vides dans tab: {tab.columns[tab.isnull().any()]}")
 
 
     for i in tab.columns:

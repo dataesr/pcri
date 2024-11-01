@@ -1,147 +1,290 @@
 [
-    {
-        "thema_code": "JU-JTI",
-        "thema_name_fr": "Partenariats public-privé",
-        "thema_name_en": "Public-private partnerships"
-    },
-    {
-        "thema_code": "EUSPA",
-        "thema_name_fr": "EU Espace",
-        "thema_name_en": "EU Space"
-    },
-    {
-        "thema_code": "SESAR",
-        "thema_name_fr": "Entreprise commune SESAR",
-        "thema_name_en": "Joint undertaking SESAR"
-    },
-    {
-        "thema_code": "THEMA-OTHERS",
-        "thema_name_fr": "Autres thématiques",
-        "thema_name_en": "Others topics"
-    },
-    {
-        "thema_code": "JTI",
-        "thema_name_fr": "Initiatives technologiques conjointes",
-        "thema_name_en": "Joint Technology Initiative"
-    },
-        {
-        "thema_code": "MISSION",
-        "thema_name_fr": "Mission",
-        "thema_name_en": "Mission"
-    },
-        {
-        "thema_code": "CLUSTER 4-Industry",
-        "thema_name_fr": "Industrie",
-        "thema_name_en": "Industry"
-    },
-        {
-        "thema_code": "CLUSTER 4-Digital",
-        "thema_name_fr": "Numérique",
-        "thema_name_en": "Digital"
-    },
-        {
-        "thema_code": "CLUSTER 4-Space",
-        "thema_name_fr": "Espace",
-        "thema_name_en": "Space"
-    },
-            {
-        "thema_code": "CLUSTER 4",
-        "thema_name_fr": "Cluster 4 autre",
-        "thema_name_en": "Cluster 4 other"
-    },
-        {
-        "thema_code": "CLUSTER 5-Mobility",
-        "thema_name_fr": "Mobilité",
-        "thema_name_en": "Mobility"
-    },          
-        {
-        "thema_code": "CLUSTER 5-Climate",
-        "thema_name_fr": "Climat",
-        "thema_name_en": "Climate"
-    },
-            {
-        "thema_code": "CLUSTER 5-Energy",
-        "thema_name_fr": "Energie",
-        "thema_name_en": "Energy"
-    },
-            {
-        "thema_code": "CLUSTER 5",
-        "thema_name_fr": "Cluster 5 autre",
-        "thema_name_en": "Cluster 5 other"
-    },
-                {
-        "thema_code": "CLUSTER 6",
-        "thema_name_fr": "Bio-Environnement",
-        "thema_name_en": "Bio-Environment"
-    },
-        {
-        "thema_code": "ERC",
-        "thema_name_fr": "Conseil européen de la recherche",
-        "thema_name_en": "European research council"
-    },
-        {
-        "thema_code": "INFRA",
-        "thema_name_fr": "Infrastructures de recherche",
-        "thema_name_en": "Research infrastructures"
-    },    
-       {
-        "thema_code": "MSCA",
-        "thema_name_fr": "Marie Skłodowska-Curie",
-        "thema_name_en": "Marie Skłodowska-Curie"
-    }, 
-        {
-        "thema_code": "EIC",
-        "thema_name_fr": "Conseil européen de l'innovation",
-        "thema_name_en": "European Innovation Council"
-    }, 
-       {
-        "thema_code": "EIT",
-        "thema_name_fr": "Institut européen d'innovation et de technologie",
-        "thema_name_en": "European Institute of Innovation and Technology"
-    },
-       {
-        "thema_code": "EIE",
-        "thema_name_fr": "Ecosystèmes européens d'innovation",
-        "thema_name_en": "European Innovation Ecosystems"
-    },
-    {
-        "thema_code": "OCEAN",
-        "thema_name_fr": "océan, mers et eaux",
-        "thema_name_en": "Ocean, seas and waters"
-      },
-     {
-        "thema_code": "SOIL",
-        "thema_name_fr": "Santé des sols et alimentation",
-        "thema_name_en": "Soil health and food"
-      },
-     {
-        "thema_code": "CIT",
-        "thema_name_fr": "Villes neutres pour le climat et intelligentes",
-        "thema_name_en": "Climate neutral and smart cities"
-      },
-         {
-        "thema_code": "CLIMA",
-        "thema_name_fr": "Adaptation aux changements climatiques",
-        "thema_name_en": "Adaptation to climate change"
-      },
-          {
-        "thema_code": "CANCER",
-        "thema_name_fr": "Cancer",
-        "thema_name_en": "Cancer"
-      },
-     {
-        "thema_code": "UNCAN",
-        "thema_name_fr": "Cancer",
-        "thema_name_en": "Cancer"
-      },      
-     {
-        "thema_code": "OCEANCLIMA",
-        "thema_name_fr": "Climat et océan",
-        "thema_name_en": "Climate adaptation and Ocean and waters"
-      },      
-     {
-        "thema_code": "MISS-OTHERS",
-        "thema_name_fr": "Autres missions",
-        "thema_name_en": "Others missions"
-      }
+	{
+		"thema_code": "JU-JTI",
+		"thema_name_fr": "Partenariats public-privé",
+		"thema_name_en": "Public-private partnerships"
+	},
+	{
+		"thema_code": "EUSPA",
+		"thema_name_fr": "EU Espace",
+		"thema_name_en": "EU Space"
+	},
+	{
+		"thema_code": "SESAR",
+		"thema_name_fr": "Entreprise commune SESAR",
+		"thema_name_en": "Joint undertaking SESAR"
+	},
+	{
+		"thema_code": "THEMA-OTHER",
+		"thema_name_fr": "Autres thématiques",
+		"thema_name_en": "Other topics"
+	},
+	{
+		"thema_code": "JTI",
+		"thema_name_fr": "Initiatives technologiques conjointes",
+		"thema_name_en": "Joint Technology Initiative"
+	},
+	{
+		"thema_code": "MISSION",
+		"thema_name_fr": "Mission",
+		"thema_name_en": "Mission"
+	},
+	{
+		"thema_code": "CLUSTER 1",
+		"thema_name_fr": "Santé",
+		"thema_name_en": "Health"
+	},
+	{
+		"thema_code": "CLUSTER 2",
+		"thema_name_fr": "Culture, créativité et société inclusive",
+		"thema_name_en": "Culture, creativity and inclusive society"
+	},
+	{
+		"thema_code": "CLUSTER 3",
+		"thema_name_fr": "Sécurité civile pour la société",
+		"thema_name_en": "Civil Security for Society"
+	},
+	{
+		"thema_code": "CLUSTER 4-Industry",
+		"thema_name_fr": "Industrie",
+		"thema_name_en": "Industry"
+	},
+	{
+		"thema_code": "CLUSTER 4-Digital",
+		"thema_name_fr": "Numérique",
+		"thema_name_en": "Digital"
+	},
+	{
+		"thema_code": "CLUSTER 4-Space",
+		"thema_name_fr": "Espace",
+		"thema_name_en": "Space"
+	},
+	{
+		"thema_code": "CLUSTER 4",
+		"thema_name_fr": "Cluster 4 autre",
+		"thema_name_en": "Cluster 4 other"
+	},
+	{
+		"thema_code": "CLUSTER 5-Mobility",
+		"thema_name_fr": "Mobilité",
+		"thema_name_en": "Mobility"
+	},
+	{
+		"thema_code": "CLUSTER 5-Climate",
+		"thema_name_fr": "Climat",
+		"thema_name_en": "Climate"
+	},
+	{
+		"thema_code": "CLUSTER 5-Energy",
+		"thema_name_fr": "Energie",
+		"thema_name_en": "Energy"
+	},
+	{
+		"thema_code": "CLUSTER 5",
+		"thema_name_fr": "Cluster 5 autre",
+		"thema_name_en": "Cluster 5 other"
+	},
+	{
+		"thema_code": "CLUSTER 6",
+		"thema_name_fr": "Bio-Environnement",
+		"thema_name_en": "Bio-Environment"
+	},
+	{
+		"thema_code": "ERC",
+		"thema_name_fr": "Conseil européen de la recherche",
+		"thema_name_en": "European research council"
+	},
+	{
+		"thema_code": "INFRA",
+		"thema_name_fr": "Infrastructures de recherche",
+		"thema_name_en": "Research infrastructures"
+	},
+	{
+		"thema_code": "MSCA",
+		"thema_name_fr": "Marie Skłodowska-Curie",
+		"thema_name_en": "Marie Skłodowska-Curie"
+	},
+	{
+		"thema_code": "EIC",
+		"thema_name_fr": "Conseil européen de l'innovation",
+		"thema_name_en": "European Innovation Council"
+	},
+	{
+		"thema_code": "EIT",
+		"thema_name_fr": "Institut européen d'innovation et de technologie",
+		"thema_name_en": "European Institute of Innovation and Technology"
+	},
+	{
+		"thema_code": "EIE",
+		"thema_name_fr": "Ecosystèmes européens d'innovation",
+		"thema_name_en": "European Innovation Ecosystems"
+	},
+	{
+		"thema_code": "OCEAN",
+		"thema_name_fr": "océan, mers et eaux",
+		"thema_name_en": "Ocean, seas and waters"
+	},
+	{
+		"thema_code": "SOIL",
+		"thema_name_fr": "Santé des sols et alimentation",
+		"thema_name_en": "Soil health and food"
+	},
+	{
+		"thema_code": "CIT",
+		"thema_name_fr": "Villes neutres pour le climat et intelligentes",
+		"thema_name_en": "Climate neutral and smart cities"
+	},
+	{
+		"thema_code": "CLIMA",
+		"thema_name_fr": "Adaptation aux changements climatiques",
+		"thema_name_en": "Adaptation to climate change"
+	},
+	{
+		"thema_code": "CANCER",
+		"thema_name_fr": "Cancer",
+		"thema_name_en": "Cancer"
+	},
+	{
+		"thema_code": "UNCAN",
+		"thema_name_fr": "Cancer",
+		"thema_name_en": "Cancer"
+	},
+	{
+		"thema_code": "OCEANCLIMA",
+		"thema_name_fr": "Climat et océan",
+		"thema_name_en": "Climate adaptation and Ocean and waters"
+	},
+	{
+		"thema_code": "MISS-OTHER",
+		"thema_name_fr": "Autres missions",
+		"thema_name_en": "Other missions"
+	},
+	{
+		"thema_code": "PATHFINDER",
+		"thema_name_fr": "EIC Pathfinder",
+		"thema_name_en": "EIC Pathfinder"
+	},
+	{
+		"thema_code": "ACCELERATOR",
+		"thema_name_fr": "EIC Accelerator",
+		"thema_name_en": "EIC Accelerator"
+	},
+	{
+		"thema_code": "TRANSITION",
+		"thema_name_fr": "EIC Transition",
+		"thema_name_en": "EIC Transition"
+	},
+	{
+		"thema_code": "SCALEUP",
+		"thema_name_fr": "Soutien à la compétitivité et le scaleup des écosystèmes innovants",
+		"thema_name_en": "Elevating the scalability potential of European business"
+	},
+	{
+		"thema_code": "PRIZE",
+		"thema_name_fr": "Prix européens",
+		"thema_name_en": "EU prize"
+	},
+	{
+		"thema_code": "EIC-OTHER",
+		"thema_name_fr": "autres EIC",
+		"thema_name_en": "others EIC"
+	},
+	{
+		"thema_code": "ACCESS",
+		"thema_name_fr": "Améliorer l'accès à l'excellence",
+		"thema_name_en": "Improved access to Excellence"
+	},
+	{
+		"thema_code": "TALENTS",
+		"thema_name_fr": "Attirer et mobiliser les meilleurs talents",
+		"thema_name_en": "Attracting and mobilising the best talents"
+	},
+	{
+		"thema_code": "COST",
+		"thema_name_fr": "Coopération européenne en science et technologie",
+		"thema_name_en": "European Cooperation in Science and Technology"
+	},
+	{
+		"thema_code": "WIDENING-OTHER",
+		"thema_name_fr": "Autres Widening",
+		"thema_name_en": "Other Widening"
+	},
+	{
+		"thema_code": "ERA-OTHER",
+		"thema_name_fr": "Autres ERA",
+		"thema_name_en": "Other ERA"
+	},
+	{
+		"thema_code": "CONNECT",
+		"thema_name_fr": "Ecosystèmes d'innovation interconnectés",
+		"thema_name_en": "Interconnected Innovation Ecosystems"
+	},
+	{
+		"thema_code": "INNOVSMES",
+		"thema_name_fr": "partenariat pour une PME innovante",
+		"thema_name_en": "Partnership on Innovative SMEs"
+	},
+	{
+		"thema_code": "KIC-CLIMATE",
+		"thema_name_fr": "EIT Climate-KIC",
+		"thema_name_en": "EIT Climate-KIC",
+		"dest_h20": "EIT-Climate-KIC"
+	},
+	{
+		"thema_code": "KIC-DIGITAL",
+		"thema_name_fr": "EIT Digital",
+		"thema_name_en": "EIT Digital",
+		"dest_h20": "EIT-Digital"
+	},
+	{
+		"thema_code": "KIC-HEALTH",
+		"thema_name_fr": "EIT Health",
+		"thema_name_en": "EIT Health",
+		"dest_h20": "EIT-Health"
+	},
+	{
+		"thema_code": "KIC-FOOD",
+		"thema_name_fr": "EIT Food",
+		"thema_name_en": "EIT Food",
+		"dest_h20": "EIT-Food"
+	},
+	{
+		"thema_code": "KIC-MANUFACTURING",
+		"thema_name_fr": "EIT Manufacturing",
+		"thema_name_en": "EIT Manufacturing",
+		"dest_h20": "EIT-Manufacturing"
+	},
+	{
+		"thema_code": "KIC-URBANMOBILITY",
+		"thema_name_fr": "EIT Urban Mobility",
+		"thema_name_en": "EIT Urban Mobility",
+		"dest_h20": "EIT-Urban-Mobility"
+	},
+	{
+		"thema_code": "KIC-RAWMATERIALS",
+		"thema_name_fr": "EIT Raw Materials",
+		"thema_name_en": "EIT Raw Materials",
+		"dest_h20": "EIT-Raw-Material"
+	},
+	{
+		"thema_code": "KIC-INNOENERGY",
+		"thema_name_fr": "EIT InnoEnergy",
+		"thema_name_en": "EIT InnoEnergy",
+		"dest_h20": "EIT-InnoEnergy"
+	},
+	{
+		"thema_code": "KIC-CCSI",
+		"thema_name_fr": "EIT CCSI",
+		"thema_name_en": "EIT CCSI"
+	},
+	{
+		"thema_code": "EIT-OTHER",
+		"thema_name_fr": "Autres EIT",
+		"thema_name_en": "others EIT"
+	},
+	{
+		"thema_code": "ERA",
+		"thema_name_fr": "Réformer et renforcer le système européen de la R&I",
+		"thema_name_en": "Reforming and enhancing the European R&I System"
+	}
 ]
