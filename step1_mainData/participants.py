@@ -25,31 +25,23 @@ def part_role_type(df):
             df.loc[(df.partnerType.isnull())&(df.fundAgencyName.isin(fund_l)), 'partnerType'] = 'beneficiary'
     else:
         print(f"- Attention ! il existe une modalité en plus dans la var partnerType des participants {df.loc[~df['partnerType'].isnull()].partnerType.value_counts()}")
+    print(f"- size part after role: {len(df)}")
     return df
 
-
-def checking_unique_part(df):
-    print("### check unicité de chaque participant")
-    #unicité de ['project_id', 'orderNumber', 'generalPic', 'participant_pic']
-    vl = ['project_id', 'orderNumber', 'generalPic', 'participant_pic']   
-    df = df.assign(n_pogp = 1)
-    df['n_pogp'] = df.groupby(vl, dropna = False).pipe(lambda x: x.n_pogp.transform('sum'))
-    if len(df[df['n_pogp']>1])>0:
-        print("- ATTENTION ! doublon dans part1 avec project_id', 'orderNumber', 'generalPic', 'participant_pic -> Intégrer la var partnerType")
-
-        vl = ['project_id', 'orderNumber', 'generalPic', 'participant_pic', 'partnerType']   
-        df = df.assign(n_pogpp = 1)
-        df['n_pogpp'] = df.groupby(vl, dropna = False).pipe(lambda x: x.n_pogpp.transform('sum'))
-        if len(df[df['n_pogpp']>1])>0:
-            print("- ATTENTION ! doublon dans part1 avec project_id', 'orderNumber', 'generalPic', 'participant_pic, 'partnerType'")
-            
 def check_multiP_by_proj(df):
     print("### check unicité des participants/projets")
     df = df.assign(n_part = 1)
-    df['n_part'] = df.groupby(['project_id', 'generalPic', 'participant_pic'], dropna = False).pipe(lambda x: x.n_part.transform('sum'))
+    df['n_part'] = df.groupby(['project_id', 'orderNumber', 'generalPic', 'participant_pic', 'partnerType'], dropna = False).pipe(lambda x: x.n_part.transform('sum'))
     verif=pd.DataFrame(df[['project_id', 'orderNumber', 'generalPic', 'participant_pic', 'role', 'partnerType', 'name', 'euContribution', 'netEuContribution', 'countryCode']])[df['n_part']>1]
-    # with pd.ExcelWriter(f"{PATH_SOURCE}bugs_found.xlsx") as writer:  
-    #     verif.to_excel(writer, sheet_name='double_part_proj+pic')
     bugs_excel(verif, PATH_SOURCE, 'double_part_proj+pic')
     print(f"- ATTENTION ! {len(verif)} lignes problématiques voire fichier bugs_found")
     return df
+
+
+# def part_var_null(part, app1):
+#     # verification des vars avec null/empty mais qui doivent être complétées
+#     print(f"\n- var with null: {part.columns[part.isnull().any()].tolist()}")
+#     if ('orderNumber' in part.columns[part.isnull().any()].tolist()) | ('partnerType' in part.columns[part.isnull().any()].tolist()):
+#         print(f"- nb part concernés{part.loc[(part.orderNumber.isnull())|(part.partnerType.isnull())].project_id.value_counts()}")
+
+#     ap=app1.loc[app1.project_id.isin(part.loc[(part.orderNumber.isnull())|(part.partnerType.isnull())].project_id.unique())]

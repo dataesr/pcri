@@ -37,7 +37,7 @@ def proposals_id_missing(df, proj, extractDate):
         # extraction des projets absents des propositions création des vars proposals manquantes pour ajout à MERGED
         print(f"- callId already in proposals: {df[df['callId'].isin(call_miss)].callId.value_counts()}\n")
         proj[~proj['project_id'].isin(df.project_id.unique())].groupby('callId')['project_id'].nunique().to_csv(f"{PATH_WORK}proj_no_proposals.csv", sep=';')
-        return df[df['callId'].isin(call_miss)].callId.unique()
+        return df[df['callId'].isin(call_miss)].callId.unique(), call_miss
 
 def proj_id_miss_fixed(df, proj, call_to_integrate):
     if len(proj[~proj['project_id'].isin(df.project_id.unique())])>0:

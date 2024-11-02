@@ -22,9 +22,6 @@ def nuts_department():
                 .rename(columns={'proposalNbr':'project_id', 'applicantPic':'proposal_participant_pic'})
                 .astype(str)
                 .drop_duplicates()
-                # .groupby(['project_id', 'generalPic', 'proposal_participant_pic'])
-                # .agg(lambda x: ';'.join(x))
-                # .reset_index()
                 )
         pp_app = pp_app.loc[pp_app.nutsCode!='-1']
         print(f"- size pp_app: {len(pp_app)}")
@@ -35,9 +32,6 @@ def nuts_department():
                 .rename(columns={'projectNbr':'project_id', 'participantPic':'calculated_pic'})
                 .astype(str)
                 .drop_duplicates()
-                # .groupby(['project_id', 'generalPic', 'calculated_pic'])
-                # .agg(lambda x: ';'.join(x))
-                # .reset_index()
                 )
         print(f"- size pp_part: {len(pp_part)}")
         return pp_app, pp_part
@@ -50,18 +44,11 @@ def nuts_lien(app1, part, lien):
         print("### NUTS avec LIEN")
         nuts_a=(app1[['project_id', 'orderNumber', 'generalPic', 'participant_pic','nutsCode']]
                 .rename(columns={'orderNumber':'proposal_orderNumber','participant_pic':'proposal_participant_pic', 'nutsCode':'nuts_app'})
-                # .drop_duplicates()
-                # .groupby(['project_id', 'proposal_orderNumber', 'generalPic', 'proposal_participant_pic'])
-                # .agg(lambda x: ';'.join(x))
-                # .reset_index()
                 )
 
         nuts_p=(part[['project_id', 'orderNumber', 'generalPic', 'participant_pic', 'nutsCode']]
                 .rename(columns={'nutsCode':'nuts_part', 'participant_pic':'calculated_pic'})
                 .drop_duplicates()
-                # .groupby(['project_id', 'orderNumber', 'generalPic', 'calculated_pic'])
-                # .agg(lambda x: ';'.join(x))
-                # .reset_index()
                 )
 
         print(f"size nuts_a: {len(nuts_a)}, size nuts_p: {len(nuts_p)}")
@@ -96,7 +83,7 @@ def nuts_lien(app1, part, lien):
                         .groupby(['project_id', 'orderNumber', 'generalPic', 'calculated_pic'])
                         .agg(lambda x: ';'.join(x))
                         .reset_index())
-        if len(nuts_p) == l:
+        if len(nuts_p) != l:
                 print("- ATTENTION ! pp_part avec doublon -> revoir le code groupby")
 
         # lien = lien.reset_index()
