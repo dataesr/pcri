@@ -18,10 +18,12 @@ prop1 = proposals_status(prop, proj_id_signed, stage_p)
 ###########################################
 # proposals fix
 # projects missing from proposals
-call_to_integrate = proposals_id_missing(prop1, proj, extractDate)
+call_to_integrate, call_miss = proposals_id_missing(prop1, proj, extractDate)
 
 # project data missing in proposals if call already in proposals then add this
 proj1 = proj_id_miss_fixed(prop1, proj, call_to_integrate)
+call_miss = list(set(call_miss)-set(call_to_integrate))
+proj = proj.loc[~proj.callId.isin(call_miss)]
 
 # merge proj + prop
 print('### MERGED PROPOSALS/PROJECTS')
@@ -70,8 +72,10 @@ calls = calls_to_check(calls, call_id)
 projects = projects_complete_cleaned(merged, extractDate)
 
 #############################################################
-##### PARTICIPANTS
+##### PARTICIPATIONS
 part = participants_load(proj)
+# conserve uniquement les projets présents dans proposals et applicants
+part = part.loc[part.project_id.isin(projects.project_id.unique())] 
 part = part_role_type(part)
 part = erc_role(part, projects)
 
@@ -80,17 +84,19 @@ app = applicants_load(prop)
 # conserve uniquement les projets présents dans proposals et applicants
 app1 = app.loc[app.project_id.isin(projects.project_id.unique())] 
 print(f"- size app hors proj exclus: {len(app1)}")
+
 app_missing_pid = projects.loc[(projects.stage=='evaluated')&(~projects.project_id.isin(app1.project_id.unique())), 'project_id'].unique()
 tmp = part[part.project_id.isin(app_missing_pid)]
 app1 = part_miss_app(tmp, app1)
 
 app1 = app_role_type(app1)
 app1 = erc_role(app1, projects)
+
 del app
 
 ####
 # verification Etat des participations
-checking_unique_part(part)
+# checking_unique_part(part)
 part = check_multiP_by_proj(part)
 app1 = check_multiA_by_proj(app1)
 
@@ -188,3 +194,7 @@ print(entities_info[(entities_info.country_code=='FRA')&(entities_info.entities_
 file_name = f"{PATH_CLEAN}entities_info_current2.pkl"
 with open(file_name, 'wb') as file:
     pd.to_pickle(entities_info, file)
+
+# STEP4 - INDICATEURS
+
+part_step = entities_with_lien(entities_info, lien)

@@ -112,6 +112,8 @@ def merged_partApp(app1, part):
     length_lien=len(lien)
     # print(lien[lien['n_lien']>1])
 
+    lien.loc[lien.inProject==True, 'participation_linked'] = lien['project_id']+"-"+lien['orderNumber']
+
     # verif que chaque obs contient un calculated pic
     lien_no_pic=len(lien[lien['calculated_pic'].isnull()])
     if lien_no_pic > 0:

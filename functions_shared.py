@@ -66,6 +66,7 @@ def erc_role(df, projects):
     df.loc[(df.destination_code!='SyG')&(df.role=='coordinator'), 'erc_role'] = 'PI'
     df.loc[(df.destination_code=='ERC-OTHERS'), 'erc_role'] = np.nan
     df = df.drop(columns=['destination_code', 'action_code']).drop_duplicates()       
+    print(f"- size after erc_role: {len(df)}")
     return df
 
 def bugs_excel(df, chemin, name_sheet):

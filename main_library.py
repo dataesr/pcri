@@ -25,3 +25,4 @@ from step3_entities.groupes import *
 from step3_entities.ID_pic_group import *
 from step3_entities.entities_cleaning import *
 from step3_entities.categories import *
+from step4_calculs.participations import *

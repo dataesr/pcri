@@ -19,9 +19,9 @@ def category_paysage(paysage):
         miss_x[['category_id', 'category_name']].drop_duplicates().to_csv(f"{PATH_WORK}new_cat.csv", sep=';', encoding='utf-8', index=False)
         exit()
     else:
-        return (x.rename(columns={'category_name':'paysage_category', 'category_id':'paysage_category_id'})
-                .loc[x.paysage_category_id.isin(pc.loc[pc.non!='n'].paysage_category_id.unique())]
-                .groupby('id_clean').agg(lambda x: ';'.join(x)).reset_index())
+        return (x.loc[x.category_id.isin(pc.loc[pc.non!='n'].paysage_category_id.unique())]
+                .groupby('id_clean').agg(lambda x: ';'.join(x)).reset_index()
+                .rename(columns={'category_name':'paysage_category', 'category_id':'paysage_category_id'}))
 
 
 def category_cleaning(entities_tmp, sirene):
@@ -83,7 +83,7 @@ def category_woven(entities_tmp):
 def cordis_type(entities_info):
     print("### CORDIS type")    
     # with open('data_json/legalEntityType.json', 'r', encoding='UTF-8') as pl:
-    type_entity = json.load(open('data_json/legalEntityType.json', 'r', encoding='UTF-8'))
+    type_entity = json.load(open('data_files/legalEntityType.json', 'r', encoding='UTF-8'))
     type_entity = pd.DataFrame(type_entity)
     entities_info = (entities_info.drop(columns=['legalStatus','legalEntityType'])
                     .merge(type_entity, how='left', left_on='legalEntityTypeCode', right_on='cordis_type_entity_code')

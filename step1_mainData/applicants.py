@@ -45,10 +45,9 @@ def part_miss_app(tmp, df):
 def check_multiA_by_proj(df):
     print("### check unicité des applicants/projets")
     df = df.assign(n_app = 1)
-    df['n_app'] = df.groupby(['project_id', 'generalPic', 'participant_pic'], dropna = False).pipe(lambda x: x.n_app.transform('sum'))
+    df['n_app'] = df.groupby(['project_id', 'orderNumber', 'generalPic', 'participant_pic', 'partnerType'], dropna = False).pipe(lambda x: x.n_app.transform('sum'))
     verif=pd.DataFrame(df[['project_id', 'orderNumber', 'generalPic', 'participant_pic', 'role', 'partnerType', 'name', 'requestedGrant', 'budget', 'countryCode']])[df['n_app']>1]
-    # with pd.ExcelWriter(f"{PATH_SOURCE}bugs_found.xlsx") as writer:  
-    #     verif.to_excel(writer, sheet_name='double_app_prop+pic')
     bugs_excel(verif, PATH_SOURCE, 'double_app_prop+pic')
     print(f"ATTENTION ! {len(verif)} lignes problématiques, voire fichier bugs_found")
     return df
+

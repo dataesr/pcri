@@ -83,7 +83,7 @@ def proposals_load():
         return prop
 
 def participants_load(proj):
-    print("### LOADING PARTICIPANTS data")
+    print("\n### LOADING PARTICIPANTS data")
     part = unzip_zip(ZIPNAME, f"{PATH_SOURCE}{FRAMEWORK}/", "projects_participants.json", 'utf8')
         
     if part:
@@ -93,7 +93,6 @@ def participants_load(proj):
         columns_comparison(part, 'participants_columns')    
 
         empty_cols=['partnershipName', 'partnerSgaStatus']
-    
         if empty_cols==[col for col in part.columns if part[col].isnull().all()]:
             part.drop(empty_cols, axis=1, inplace=True)
         else:
@@ -114,9 +113,12 @@ def participants_load(proj):
             print(f"- Nouvelle modalité dans partnerRemovalStatus : {part['partnerRemovalStatus'].unique()}")
             part = part[part['partnerRemovalStatus'].isnull()]
 
+
         c = ['project_id', 'orderNumber', 'generalPic', 'participant_pic', 'parentPic']
-        part[c] = part[c].map(num_to_string)
+        part[c] = part[c].fillna('').map(num_to_string)
         
+        part = part.mask(part == '')
+
         # controle des projets entre projects et participants
         tmp=(part[['project_id']].drop_duplicates()
             .merge(proj[['project_id', 'callId', 'acronym']], how='outer', on='project_id', indicator=True))
@@ -146,7 +148,7 @@ def participants_load(proj):
     
 
 def applicants_load(prop):
-    print("### LOADING APPLICANTS data")
+    print("\n### LOADING APPLICANTS data")
     app = unzip_zip(ZIPNAME, f"{PATH_SOURCE}{FRAMEWORK}/", "proposals_applicants.json", 'utf8')
 
     print(f"- size app au chargement: {len(app)}")
@@ -164,6 +166,7 @@ def applicants_load(prop):
         app = app.rename(columns={"proposalNbr": "project_id", "applicantPic": "participant_pic", 
                                 'applicantPicLegalName': 'name'})
 
+        print(f"\n- var with null: {app.columns[app.isnull().any()].tolist()}")
         c = ['project_id', 'orderNumber', 'generalPic', 'participant_pic']
         app[c] = app[c].map(num_to_string)     
         
