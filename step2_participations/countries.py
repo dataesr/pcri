@@ -4,7 +4,7 @@ from functions_shared import unzip_zip
 import json, pandas as pd, numpy as np
 
 def country_load(framework, liste_country):
-    print("### LOADING COUNTRY")
+    print("\n### LOADING COUNTRY")
     data = unzip_zip(ZIPNAME, f"{PATH_SOURCE}{FRAMEWORK}/", "countries.json", 'utf8')
     data = pd.DataFrame(data)
     
@@ -47,9 +47,9 @@ def country_load(framework, liste_country):
     if len(df['country_association_code'].drop_duplicates()) != statut_len:
         diff = len(df['country_association_code'].unique())-statut_len
         if diff>0:
-            print(f"1- check status countries -> {len(df['country_association_code'].unique())-statut_len} new status")
+            print(f"1- check status countries ->\n{len(df['country_association_code'].unique())-statut_len} new status")
         else:
-            print(f"2 - info status countries -> {df['country_association_code'].nunique()-statut_len} status in data {df['country_association_code'].unique()}")
+            print(f"2 - info status countries ->\n{df['country_association_code'].nunique()-statut_len} status in data {df['country_association_code'].unique()}")
 
     countries = countries.merge(df, how='left', on='countryCode_parent')  
 
@@ -90,6 +90,6 @@ def country_load(framework, liste_country):
     if len(countries.columns[countries.isnull().any()])>0:
         list_v = countries.columns[countries.isnull().any()]
         for v in list_v:
-            print(f"des valeurs nulles pour ces lignes: {pd.DataFrame(countries[countries[v].isnull()][['countryCode',v]])}")
+            print(f"- des valeurs nulles pour ces lignes:\n{pd.DataFrame(countries[countries[v].isnull()][['countryCode',v]])}")
             
     return countries

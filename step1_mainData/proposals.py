@@ -3,9 +3,9 @@ import pandas as pd
 
 
 def proposals_status(df, proj_id_signed, stage_p):   
-
+    print("\n### PROPOSALS Status")
     if len(df.stageExitStatus.unique()) != len(stage_p):
-        return print(f"STATUS - {len(df.stageExitStatus.unique())-len(stage_p)} statut de proposition a été ajouté à stageExitStatus ;\n vérifier s'il faut l'intégrer aux projets ELIGIBLE {df.loc[~df.stageExitStatus.isin(stage_p), 'stageExitStatus']}\n")
+        return print(f"- STATUS - {len(df.stageExitStatus.unique())-len(stage_p)} statut de proposition a été ajouté à stageExitStatus ;\n vérifier s'il faut l'intégrer aux projets ELIGIBLE {df.loc[~df.stageExitStatus.isin(stage_p), 'stageExitStatus']}\n")
     else:
         pass
 
@@ -17,18 +17,18 @@ def proposals_status(df, proj_id_signed, stage_p):
     df.loc[df.status_code.isnull(), 'status_code'] = df.stageExitStatus
     df = df.assign(stage='evaluated').drop(columns='stageExitStatus')
 
-    print(f"after cleaning - size prop1 without inadmissible/inegible/etc : {len(df)}\n")
+    print(f"- after cleaning -> size prop1 without inadmissible/inegible/etc : {len(df)}")
     return df
 
 def proposals_id_missing(df, proj, extractDate):
-    print('### MISSING PROPOSALS')
+    print('\n### MISSING PROPOSALS')
     # verification que tous les projets de proj sont aussi dans prop -> prefix des colonnes
     if proj[~proj['project_id'].isin(df.project_id.unique())].empty:
-        print('- ok pas de projets manquants dans proposals') 
+        print('1- ok pas de projets manquants dans proposals') 
     else:    
-        print(f"- result: {len(proj[~proj['project_id'].isin(df.project_id.unique())].project_id.unique())} projets signés absents de la table des propositions")
+        print(f"2- result: {len(proj[~proj['project_id'].isin(df.project_id.unique())].project_id.unique())} projets signés absents de la table des propositions")
         call_miss = proj[~proj['project_id'].isin(df.project_id.unique())].callId.unique()
-        print(f"- missing proposals by callId:\n{proj[~proj['project_id'].isin(df.project_id.unique())].callId.value_counts()}\n")
+        print(f"3- missing proposals by callId:\n{proj[~proj['project_id'].isin(df.project_id.unique())].callId.value_counts()}\n")
         
         with pd.ExcelWriter(f"{PATH_WORK}missing_proposals_{extractDate}.xlsx") as writer:
             for i in call_miss:

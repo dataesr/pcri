@@ -29,12 +29,13 @@ def part_role_type(df):
     return df
 
 def check_multiP_by_proj(df):
-    print("### check unicité des participants/projets")
+    print("\n### check unicité des participants/projets")
     df = df.assign(n_part = 1)
     df['n_part'] = df.groupby(['project_id', 'orderNumber', 'generalPic', 'participant_pic', 'partnerType'], dropna = False).pipe(lambda x: x.n_part.transform('sum'))
     verif=pd.DataFrame(df[['project_id', 'orderNumber', 'generalPic', 'participant_pic', 'role', 'partnerType', 'name', 'euContribution', 'netEuContribution', 'countryCode']])[df['n_part']>1]
     bugs_excel(verif, PATH_SOURCE, 'double_part_proj+pic')
-    print(f"- ATTENTION ! {len(verif)} lignes problématiques voire fichier bugs_found")
+    if len(verif)>0:
+        print(f"- ATTENTION ! {len(verif)} lignes problématiques voire fichier bugs_found")
     return df
 
 

@@ -1,5 +1,6 @@
 def merged_partApp(app1, part):
     import pandas as pd, numpy as np
+    print("\n### create LIEN")
 
     part2 = part[['project_id', 'orderNumber', 'generalPic', 'participant_pic', 'n_part']].drop_duplicates()
     app2 = app1[['project_id', 'orderNumber', 'generalPic', 'participant_pic', 'n_app']].drop_duplicates()
@@ -16,7 +17,7 @@ def merged_partApp(app1, part):
     app2 = (app2.merge(lien1[['project_id']], how='outer', on='project_id', indicator=True)
             .query('_merge == "left_only"')
             .drop('_merge', axis=1))
-    print(f'applicant uniquement lien1: {len(lien1)} reste à croiser -> app2: {len(app2)}')
+    print(f'- applicant uniquement lien1: {len(lien1)} reste à croiser -> app2: {len(app2)}')
 
     '''jointure parfaite'''
     lien2 = part2.merge(app2, how='inner')
@@ -29,7 +30,6 @@ def merged_partApp(app1, part):
             .query('_merge == "left_only"')
             .drop('_merge', axis=1))
     print(f'reste à croiser -> app3: {len(app3)} part3: {len(part3)}')
-
 
     '''jointure sans orderNumber'''
     lien3 = part3.merge(app3, how='inner', on=['project_id', 'generalPic', 'participant_pic'], suffixes=('', '_p'))
@@ -113,11 +113,12 @@ def merged_partApp(app1, part):
     # print(lien[lien['n_lien']>1])
 
     lien.loc[lien.inProject==True, 'participation_linked'] = lien['project_id']+"-"+lien['orderNumber']
-
+    lien.loc[lien.inProposal==True, 'participation_linked'] = lien['project_id']+"-"+lien['proposal_orderNumber']
+    
     # verif que chaque obs contient un calculated pic
     lien_no_pic=len(lien[lien['calculated_pic'].isnull()])
     if lien_no_pic > 0:
-        print(f'attention {lien_no_pic} entités dans la table LIEN n\'ont pas de pic secondaire' )
+        print(f'1- attention {lien_no_pic} entités dans la table LIEN n\'ont pas de pic secondaire' )
 
     del app2, app3, app4, app5, app6, part2, part3, part4, part5, part6, lien1, lien2, lien3, lien4, lien5, lien6
     return lien

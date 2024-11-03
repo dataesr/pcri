@@ -5,7 +5,7 @@ from functions_shared import unzip_zip
 import requests, pandas as pd, numpy as np
 
 def call(chemin):
-    print("### CALLS")
+    print("\n### CALLS")
     requests.packages.urllib3.disable_warnings(requests.packages.urllib3.exceptions.InsecureRequestWarning)
 
     data = unzip_zip(ZIPNAME, chemin, "calls.json", 'utf8')
@@ -33,12 +33,12 @@ def call(chemin):
 
 
 def calls_to_check(calls, call_id):
-    print("### CALLS to CHECK")
+    print("\n### CALLS to CHECK")
     
     calls = (calls
             .merge(call_id, how='left', left_on=['call_id', 'call_deadline'], right_on=['call_id', 'call_deadline'])
             .drop_duplicates())
-    print(f"3 - CALLS de base calls with merge call_id -> nb call+deadline: {len(calls)}, nb call unique: {calls.call_id.nunique()} ")
+    print(f"- CALLS de base calls with merge call_id ->\nnb call+deadline: {len(calls)}, nb call unique: {calls.call_id.nunique()} ")
 
     if len(calls)!=len(call_id):
         x=call_id[['call_id', 'call_deadline']].drop_duplicates()
@@ -46,16 +46,16 @@ def calls_to_check(calls, call_id):
 
         if len(x)>len(y):
             calls_no_info = x.merge(y, how='outer', indicator=True).query('_merge == "left_only"').drop('_merge', axis=1)
-            print(f"si call_id pas dans calls : {calls_no_info}")
+            print(f"1- si call_id pas dans calls :\n{calls_no_info}")
         elif len(y)>len(x):
             calls_no_info = y.merge(x, how='outer', indicator=True).query('_merge == "left_only"').drop('_merge', axis=1)
-            print(f"si calls pas dans call_id : {calls_no_info}")
+            print(f"2- si calls pas dans call_id :\n{calls_no_info}")
         calls_no_info.to_csv(f"{PATH_CONNECT}calls_no_info.csv", index=False, encoding="UTF-8", sep=";", na_rep='')
         
-        print(f"4 - calls with multi deadline\n{calls.groupby('call_id').filter(lambda x: x['workProgrammeCode'].count() > 1.)[['call_id', 'call_deadline', 'call_budget']]}")
+        print(f"3- calls with multi deadline\n{calls.groupby('call_id').filter(lambda x: x['workProgrammeCode'].count() > 1.)[['call_id', 'call_deadline', 'call_budget']]}")
 
     calls['call_deadline'] = calls['call_deadline'].astype('datetime64[ns]')
 
-    print(f"5 - nbre call unique:{calls['call_id'].nunique()}, nbre proposals:{calls['expectedNbrProposals'].sum()}, fonds:{'{:,.1f}'.format(calls['call_budget'].sum())}")
+    print(f"- nbre call unique:{calls['call_id'].nunique()}, nbre proposals:{calls['expectedNbrProposals'].sum()}, fonds:{'{:,.1f}'.format(calls['call_budget'].sum())}")
     # calls.to_csv(PATH_CONNECT+"calls.csv", index=False, encoding="UTF-8", sep=";", na_rep='')
     return calls

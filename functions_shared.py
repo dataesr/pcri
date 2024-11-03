@@ -14,6 +14,7 @@ def unzip_zip(namezip, path, data, encode):
 
 #convert column of lists in strings column
 def del_list_in_col(df, var_old:str, var_new:str):
+    print("#FCT del_list_in_col")
     df[var_new] = None
     for i, row in df.iterrows():
         if row[var_old]!=[]:
@@ -25,12 +26,14 @@ def work_csv(df, file_csv_name):
     return df.to_csv(f"{PATH_WORK}{name}.csv", sep=';', na_rep='', encoding='utf-8', index=False)
 
 def website_to_clean(web_var: str):
+    print("#FCT website_to_clean")
     pat=re.compile(r"((((https|http)://)?(www\.)?)([\w\d#@%;$()~_?=&]+\.)+([a-z]{2,3}){1}([\w\d:#@%/;$()~_?\+-=\\\.&]+))")
     y= re.search(pat, str(web_var))
     if y is not None:
         return y.group()
     
 def columns_comparison(df, namefile):
+    print("#FCT columns_comparison")
     old_cols = np.load(f"data_files/{namefile}.npy").tolist()
     new_cols = df.columns.to_list()
     if any(set(new_cols) - set(old_cols)):
@@ -39,6 +42,7 @@ def columns_comparison(df, namefile):
         print("- no new columns")
 
 def gps_col(df):
+    print("#FCT gps_col")
     df=df.assign(gps_loc=None)
     for i,row in df.iterrows():
         if row.loc['location'].get('latitude') is not None:
@@ -46,6 +50,7 @@ def gps_col(df):
     return df.drop('location', axis=1).drop_duplicates()  
 
 def num_to_string(var):
+    print("#FCT num_to_string")
     try:
         float(var)
         return var.astype(int, errors='ignore').astype(str).replace('.0', '')
@@ -70,6 +75,7 @@ def erc_role(df, projects):
     return df
 
 def bugs_excel(df, chemin, name_sheet):
+    print("#FCT bugs_excel")
     chemin=f"{chemin}bugs_found.xlsx"
     if not os.path.exists(chemin):
         with pd.ExcelWriter(chemin) as writer:
