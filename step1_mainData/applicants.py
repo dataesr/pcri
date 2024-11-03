@@ -19,7 +19,8 @@ def app_role_type (df):
 
 def part_miss_app(tmp, df):
     if len(tmp)>0:
-        print(f"ATTENTION ! vont être ajoutés les participants absents de proposals applicants {len(tmp)}")
+        print(("\n### add to APPLICANT from PARTICIPANT"))
+        print(f"1- ATTENTION ! vont être ajoutés les participants absents de proposals applicants {len(tmp)}")
         
         selector_d=[
             'project_id',
@@ -43,11 +44,12 @@ def part_miss_app(tmp, df):
         return df
     
 def check_multiA_by_proj(df):
-    print("### check unicité des applicants/projets")
+    print("\n### check unicité des applicants/projets")
     df = df.assign(n_app = 1)
     df['n_app'] = df.groupby(['project_id', 'orderNumber', 'generalPic', 'participant_pic', 'partnerType'], dropna = False).pipe(lambda x: x.n_app.transform('sum'))
     verif=pd.DataFrame(df[['project_id', 'orderNumber', 'generalPic', 'participant_pic', 'role', 'partnerType', 'name', 'requestedGrant', 'budget', 'countryCode']])[df['n_app']>1]
     bugs_excel(verif, PATH_SOURCE, 'double_app_prop+pic')
-    print(f"ATTENTION ! {len(verif)} lignes problématiques, voire fichier bugs_found")
+    if len(verif)>0:
+        print(f"- ATTENTION ! {len(verif)} lignes problématiques, voire fichier bugs_found")
     return df
 

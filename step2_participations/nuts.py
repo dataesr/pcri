@@ -18,7 +18,7 @@ def nuts_department():
         # bosser les nuts en amont pour récupérer le max d'infos sans attendre traitement departments
         pp_app = unzip_zip(ZIPNAME, f"{PATH_SOURCE}{FRAMEWORK}/", 'proposals_applicants_departments.json', 'utf8')
         pp_app = pd.DataFrame(pp_app)
-        pp_app = (pp_app[['proposalNbr', 'generalPic', 'applicantPic', 'nutsCode']]
+        pp_app = (pp_app.loc[~pp_app.nutsCode.isnull(), ['proposalNbr', 'generalPic', 'applicantPic', 'nutsCode']]
                 .rename(columns={'proposalNbr':'project_id', 'applicantPic':'proposal_participant_pic'})
                 .astype(str)
                 .drop_duplicates()
@@ -28,7 +28,7 @@ def nuts_department():
 
         pp_part = unzip_zip(ZIPNAME, f"{PATH_SOURCE}{FRAMEWORK}/", 'projects_participants_departments.json', 'utf8')
         pp_part = pd.DataFrame(pp_part)
-        pp_part = (pp_part[['projectNbr', 'generalPic', 'participantPic', 'nutsCode']]
+        pp_part = (pp_part.loc[~pp_part.nutsCode.isnull(),['projectNbr', 'generalPic', 'participantPic', 'nutsCode']]
                 .rename(columns={'projectNbr':'project_id', 'participantPic':'calculated_pic'})
                 .astype(str)
                 .drop_duplicates()
@@ -38,20 +38,22 @@ def nuts_department():
 
 def nuts_lien(app1, part, lien):
     # from step1_mainData.nuts import nuts_department
-        print("### LOADING DEPARTMENT")
+        print("\n### LOADING DEPARTMENT")
         pp_app, pp_part = nuts_department()
 
-        print("### NUTS avec LIEN")
+        print("\n### NUTS avec LIEN")
         nuts_a=(app1[['project_id', 'orderNumber', 'generalPic', 'participant_pic','nutsCode']]
                 .rename(columns={'orderNumber':'proposal_orderNumber','participant_pic':'proposal_participant_pic', 'nutsCode':'nuts_app'})
+                .fillna('')
                 )
 
         nuts_p=(part[['project_id', 'orderNumber', 'generalPic', 'participant_pic', 'nutsCode']]
                 .rename(columns={'nutsCode':'nuts_part', 'participant_pic':'calculated_pic'})
                 .drop_duplicates()
+                .fillna('')
                 )
 
-        print(f"size nuts_a: {len(nuts_a)}, size nuts_p: {len(nuts_p)}")
+        print(f"- size nuts_a: {len(nuts_a)}, size nuts_p: {len(nuts_p)}")
         # size nuts_a: 463523, size nuts_p: 103661
         # pp_app: 347165,  pp_part: 88103
         l=len(nuts_a) 
@@ -68,7 +70,7 @@ def nuts_lien(app1, part, lien):
                         .agg(lambda x: ';'.join(x))
                         .reset_index())
         if len(nuts_a) != l:
-                print("- ATTENTION ! pp_app avec doublon -> revoir le code groupby")
+                print("1- ATTENTION ! pp_app avec doublon -> revoir le code groupby")
         
         l=len(nuts_p)
         nuts_p = nuts_p.merge(pp_part, how='left', on=['project_id', 'generalPic', 'calculated_pic'])
@@ -84,12 +86,17 @@ def nuts_lien(app1, part, lien):
                         .agg(lambda x: ';'.join(x))
                         .reset_index())
         if len(nuts_p) != l:
-                print("- ATTENTION ! pp_part avec doublon -> revoir le code groupby")
+                print("2- ATTENTION ! pp_part avec doublon -> revoir le code groupby")
 
         # lien = lien.reset_index()
         lien = (lien.merge(nuts_p, how='left', on=['project_id', 'orderNumber', 'generalPic', 'calculated_pic'])
               .merge(nuts_a, how='left', on=['project_id', 'proposal_orderNumber', 'generalPic', 'proposal_participant_pic'])
               .drop_duplicates())
         
-        print(f"size lien: {len(lien)}")
+        lien['nuts_code'] = lien[['nuts_code_x', 'nuts_code_y']].stack().groupby(level=0).agg(';'.join)
+        lien['nuts_code'] = lien['nuts_code'].apply(lambda x: ';'.join(set(x.split(';'))))
+
+        lien.rename(columns={'nuts_code_x':'nuts_participant', 'nuts_code_y':'nuts_applicants'}, inplace=True)
+
+        print(f"- size lien: {len(lien)}")
         return lien

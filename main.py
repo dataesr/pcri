@@ -33,7 +33,7 @@ else:
     prop2 = pd.concat([prop1, proj1, proj], ignore_index = True)
 
 prop2 = prop2.loc[~((prop2.status_code=='REJECTED')&(prop2.stage=='successful'))]
-print(f"result - merged all: {len(prop2)}, {prop2[['stage','status_code']].value_counts()}\n")
+print(f"- result - merged all: {len(prop2)},\n{prop2[['stage','status_code']].value_counts()}")
 
 merged = copy.deepcopy(prop2)
 merged = dates_year(merged)
@@ -60,7 +60,7 @@ merged = merged_actions(merged)
 # calls list
 calls = call(PATH_SOURCE+FRAMEWORK+'/')
 
-print("### CALLS+MERGED")
+print("\n### CALLS+MERGED")
 if len(merged.loc[merged.call_id.isnull()])>0:
         print(f"1 - ATTENTION : manque des call_id: {merged.loc[merged.call_id.isnull(), 'project_id']}")
 else:
@@ -75,7 +75,8 @@ projects = projects_complete_cleaned(merged, extractDate)
 ##### PARTICIPATIONS
 part = participants_load(proj)
 # conserve uniquement les projets présents dans proposals et applicants
-part = part.loc[part.project_id.isin(projects.project_id.unique())] 
+part = part.loc[part.project_id.isin(projects.project_id.unique())]
+print(f"- size part hors proj manquant: {len(part)}")
 part = part_role_type(part)
 part = erc_role(part, projects)
 
@@ -83,7 +84,7 @@ part = erc_role(part, projects)
 app = applicants_load(prop)
 # conserve uniquement les projets présents dans proposals et applicants
 app1 = app.loc[app.project_id.isin(projects.project_id.unique())] 
-print(f"- size app hors proj exclus: {len(app1)}")
+print(f"- size app1 hors proj exclus: {len(app1)}")
 
 app_missing_pid = projects.loc[(projects.stage=='evaluated')&(~projects.project_id.isin(app1.project_id.unique())), 'project_id'].unique()
 tmp = part[part.project_id.isin(app_missing_pid)]
@@ -96,16 +97,16 @@ del app
 
 ####
 # verification Etat des participations
-# checking_unique_part(part)
 part = check_multiP_by_proj(part)
 app1 = check_multiA_by_proj(app1)
 
 
-# STEP2
+### STEP2
 lien = merged_partApp(app1, part)
 lien = nuts_lien(app1, part, lien)
 lien.to_pickle(f"{PATH_CLEAN}lien.pkl")
 
+# ENTITIES
 entities = entities_load(lien)
 entities_single = entities_single(entities, lien, part, app1)
 entities_info = entities_info(entities_single, lien, app1, part)
@@ -113,7 +114,7 @@ entities_info = entities_info(entities_single, lien, app1, part)
 list_codeCountry = entities_info.countryCode.unique()
 countries = country_load(FRAMEWORK, list_codeCountry)
 
-# step3
+### step3
 
 # ##################################
 # # nouvelle actualisation ; à executer UNE FOIS
