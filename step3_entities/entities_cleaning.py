@@ -19,7 +19,7 @@ def entities_clean(entities_tmp):
 
     entities_tmp = entities_tmp.assign(entities_name_source = entities_tmp.legalName)
 
-    print(f"size entities_tmp: {len(entities_tmp)}")
+    print(f"- size entities_tmp: {len(entities_tmp)}")
 
     liste=['entities_name_source', 'entities_acronym_source']
     for i in liste:
@@ -47,6 +47,7 @@ def entities_check_null(entities_tmp):
 
 
 def entities_info_add(entities_tmp, entities_info):
+    print("\n### entities_info + entities_tmp")
     entities_info = (entities_info
         .merge(entities_tmp[['generalPic', 'id', 'ZONAGE', 'id_m', 'siren', 'id_secondaire',
                         'entities_id',  'entities_name', 'entities_acronym', 
@@ -56,9 +57,11 @@ def entities_info_add(entities_tmp, entities_info):
                         'ror_category', 'category_woven', 'cj_code',  'sector',  
                         'siret_closeDate',  'siren_cj', 'groupe_sector', 'cat_an']],
         how='inner', on='generalPic'))
+    print(f"- size entities_info + entities_tmp: {len(entities_info)}")
     return entities_info
 
 def add_fix_countries(entities_info, countries):
+    print("\n### entities_info + countries")
     #ajout des infos country à participants_info
     entities_info = (entities_info
                     .merge(countries[['countryCode', 'country_code_mapping', 'country_name_mapping', 'country_code']], how='left', on='countryCode'))
@@ -73,5 +76,5 @@ def add_fix_countries(entities_info, countries):
                     .drop(columns=['countryCode_parent',  'lastUpdateDate'])
                     .drop_duplicates())
 
-    print(f"longueur entities_info après ajout calculated_country : {len(entities_info)}\n {entities_info.columns}\ncolumns with Nan\n {entities_info.columns[entities_info.isnull().any()]}")
+    print(f"- longueur entities_info après ajout calculated_country : {len(entities_info)}\n{entities_info.columns}\n- columns with Nan\n {entities_info.columns[entities_info.isnull().any()]}")
     return entities_info

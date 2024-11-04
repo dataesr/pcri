@@ -4,7 +4,7 @@ from config_path import PATH_WORK
 def merge_ror(entities_tmp, ror):
     print("### merge ROR")
     entities_tmp = (entities_tmp
-                    .merge(ror.drop(columns=['country_code']), how='left', left_on='id', right_on='id_source')
+                    .merge(ror.drop(columns=['country_code']), how='left', left_on='id_extend', right_on='id_source')
                     .drop(columns='id_source')
                     .drop_duplicates())
     print(f"size entities_tmp after add ror_info: {len(entities_tmp)}")

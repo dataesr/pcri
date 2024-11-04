@@ -15,7 +15,7 @@ def category_paysage(paysage):
           .rename(columns={'usualNameFr':'paysage_category', 'id':'paysage_category_id'}))
     miss_x = x.loc[~x.category_id.isin(pc.paysage_category_id.unique())]
     if len(miss_x)>0:
-        print(f"- nouvelles catégories à intégrer à la liste de categories dans data_files")
+        print(f"1- nouvelles catégories à intégrer à la liste de categories dans data_files")
         miss_x[['category_id', 'category_name']].drop_duplicates().to_csv(f"{PATH_WORK}new_cat.csv", sep=';', encoding='utf-8', index=False)
         exit()
     else:
@@ -61,7 +61,7 @@ def category_cleaning(entities_tmp, sirene):
 
     # var_category = ['insee_cat_code', 'paysage_cj_name', 'paysage_category_id','paysage_category', 'category_woven']
 
-    print(f"taille de entities_tmp après cat {len(entities_tmp)}")
+    print(f"- taille de entities_tmp après cat: {len(entities_tmp)}")
     return entities_tmp
 
 def category_woven(entities_tmp):
@@ -77,7 +77,7 @@ def category_woven(entities_tmp):
     x.loc[(x.category_woven.isnull())&(~x.category_temp.isnull()), 'category_woven'] = x.category_temp
     # x.to_csv(f"{PATH_WORK}category_entities.csv", sep=';')
     entities_tmp = entities_tmp.merge(x[['entities_id','category_woven']], how='left', on='entities_id').drop_duplicates()
-    print(len(entities_tmp))
+    print(f"- size entities_tmp: {len(entities_tmp)}")
     return entities_tmp
 
 def cordis_type(entities_info):
@@ -90,6 +90,7 @@ def cordis_type(entities_info):
                     .rename(columns={
                     'isSme':'cordis_is_sme',
                     'category_priority':'paysage_category_priority'}))
+    print(f"- size entities_info: {len(entities_info)}")
     return entities_info
 
 

@@ -1,3 +1,6 @@
 
 FRAMEWORK='HORIZON'
 ZIPNAME='HE_2024-10-09.json.zip'
+
+
+H20_ZIP='H2020_2022-12-05.json.zip'

@@ -1,4 +1,4 @@
-from config_path import PATH_SOURCE
+from config_path import PATH_SOURCE, PATH_REF
 from constant_vars import FRAMEWORK, ZIPNAME
 from functions_shared import unzip_zip
 import pandas as pd, numpy as np
@@ -93,10 +93,29 @@ def nuts_lien(app1, part, lien):
               .merge(nuts_a, how='left', on=['project_id', 'proposal_orderNumber', 'generalPic', 'proposal_participant_pic'])
               .drop_duplicates())
         
-        lien['nuts_code'] = lien[['nuts_code_x', 'nuts_code_y']].stack().groupby(level=0).agg(';'.join)
-        lien['nuts_code'] = lien['nuts_code'].apply(lambda x: ';'.join(set(x.split(';'))))
+        lien['participation_nuts'] = lien[['nuts_code_x', 'nuts_code_y']].stack().groupby(level=0).agg(';'.join)
+        lien['participation_nuts'] = lien['participation_nuts'].apply(lambda x: ';'.join(set(x.split(';'))))
 
         lien.rename(columns={'nuts_code_x':'nuts_participant', 'nuts_code_y':'nuts_applicants'}, inplace=True)
 
+        lien=participations_nuts(lien)
+
         print(f"- size lien: {len(lien)}")
         return lien
+
+def participations_nuts(lien):
+    # gestion code nuts
+    nuts = pd.read_pickle(f'{PATH_REF}nuts_complet.pkl')
+    temp=lien[['participation_nuts']].drop_duplicates()
+    temp['nuts_code'] = temp.participation_nuts.str.split(';')
+    temp=temp.explode('nuts_code')
+    temp=temp.merge(nuts, how='left', on='nuts_code')
+    temp=(temp
+        .groupby(['participation_nuts'])
+        .agg(lambda x: ';'.join(x.dropna()))
+        .drop(columns='nuts_code')
+        .reset_index()
+        .drop_duplicates())
+    lien = lien.merge(temp, how='left', on='participation_nuts')
+    print(f"size lien after add nuts: {len(lien)}, sans code_nuts: {len(lien.loc[(~lien.participation_nuts.isnull())&(lien.region_1_name.isnull())])}")
+    return lien
