@@ -180,12 +180,12 @@ entities_check_null(entities_tmp)
 entities_tmp = category_cleaning(entities_tmp, sirene)
 entities_tmp = category_woven(entities_tmp)
 
-entities_info = entities_info_add(entities_tmp,entities_info)
+entities_info = entities_info_add(entities_tmp, entities_info)
 entities_info = cordis_type(entities_info)
 entities_info = add_fix_countries(entities_info, countries)
-
-### si besoin de charger groupe 
 entities_info = mires(entities_info)
+
+del ref_source
 
 #check entities with pic_id
 print("### check enties fr avec id commençant par pic")
@@ -199,3 +199,8 @@ with open(file_name, 'wb') as file:
 # STEP4 - INDICATEURS
 
 part_step = entities_with_lien(entities_info, lien)
+proj_no_coord = proj_no_coord(projects)
+part_prop = applicants_calcul(part_step, app1)
+part_proj = participants_calcul(part_step, part)
+participation = participations_complete(part_prop, part_proj, proj_no_coord)
+del part_proj, part_prop
