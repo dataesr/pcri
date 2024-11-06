@@ -195,7 +195,7 @@ def FP6_process():
     def participation(FP6):
         FP6['calculated_fund'] = np.where(FP6.stage=='successful', FP6.subv_obt, FP6.subv_dem)
         FP6 = FP6.assign(number_involved=1, with_coord=np.where(FP6.destination_code.isin(['PF']), False, True))
-        FP6[FP6.with_coord==False, 'coordination_number'] = 0
+        FP6.loc[FP6.with_coord==False, 'coordination_number'] = 0
 
         print(f"1 - size project lauréats: {len(FP6.loc[FP6.stage=='successful'])}, fund: {'{:,.1f}'.format(FP6.loc[FP6.stage=='successful', 'calculated_fund'].sum())}")
         # FP6.info()
