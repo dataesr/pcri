@@ -21,7 +21,8 @@ def category_paysage(paysage):
     else:
         return (x.loc[x.category_id.isin(pc.loc[pc.non!='n'].paysage_category_id.unique())]
                 .groupby('id_clean').agg(lambda x: ';'.join(x)).reset_index()
-                .rename(columns={'category_name':'paysage_category', 'category_id':'paysage_category_id'}))
+                .rename(columns={'category_name':'paysage_category', 'category_id':'paysage_category_id',
+                    'category_priority':'paysage_category_priority'}))
 
 
 def category_cleaning(entities_tmp, sirene):
@@ -80,26 +81,28 @@ def category_woven(entities_tmp):
     print(f"- size entities_tmp: {len(entities_tmp)}")
     return entities_tmp
 
-def cordis_type(entities_info):
+def cordis_type(df):
     print("### CORDIS type")    
     # with open('data_json/legalEntityType.json', 'r', encoding='UTF-8') as pl:
     type_entity = json.load(open('data_files/legalEntityType.json', 'r', encoding='UTF-8'))
     type_entity = pd.DataFrame(type_entity)
-    entities_info = (entities_info.drop(columns=['legalStatus','legalEntityType'])
-                    .merge(type_entity, how='left', left_on='legalEntityTypeCode', right_on='cordis_type_entity_code')
+    df = (df.merge(type_entity, how='left', left_on='legalEntityTypeCode', right_on='cordis_type_entity_code')
                     .rename(columns={
-                    'isSme':'cordis_is_sme',
-                    'category_priority':'paysage_category_priority'}))
-    print(f"- size entities_info: {len(entities_info)}")
-    return entities_info
+                    'isSme':'cordis_is_sme'}))
+    l=['legalStatus','legalEntityType', 'legalEntityTypeCode']
+    for i in l:
+        if i in df.columns:
+            df.drop(columns=i, inplace=True)
+    print(f"- size entities_info: {len(df)}")
+    return df
 
 
-def mires(entities_info):
+def mires(df):
     print("\n### MIRES")
     if 'paysage_mires' not in globals() or 'paysage_mires' not in locals():
         paysage_mires = pd.read_pickle(f"{PATH_REF}operateurs_mires.pkl")
     
-    entities_info = entities_info.merge(paysage_mires[['entities_id','operateur_name','operateur_num','operateur_lib']], how='left', on='entities_id')
-    entities_info = entities_info.fillna(value=np.nan)
-    entities_info = entities_info.reindex(sorted(entities_info.columns), axis=1)
-    return entities_info
+    df = df.merge(paysage_mires[['entities_id','operateur_name','operateur_num','operateur_lib']], how='left', on='entities_id')
+    df = df.mask(df=='')
+    df = df.reindex(sorted(df.columns), axis=1)
+    return df

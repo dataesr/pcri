@@ -38,10 +38,6 @@ def merge_paysage(entities_tmp, paysage, cat_filter):
     entities_tmp.loc[entities_tmp.entities_name.isnull(), 'entities_name'] = entities_tmp.name_clean
     entities_tmp.loc[entities_tmp.entities_acronym.isnull(), 'entities_acronym'] = entities_tmp.acronym_clean
 
-    # entities_tmp=entities_tmp.assign(id_multi=entities_tmp.id)
-    # entities_tmp.loc[(~entities_tmp.id_clean.isnull())&(entities_tmp.id_clean!=entities_tmp.id), 'id_multi'] = entities_tmp.id_multi.fillna('') +' '+entities_tmp.id_clean.fillna('')
-    # entities_tmp.loc[(~entities_tmp.entities_id.isnull())&(entities_tmp.entities_id!=entities_tmp.id), 'id_multi'] = entities_tmp.id_multi.fillna('') +' '+entities_tmp.entities_id.fillna('')
-
     entities_tmp = entities_tmp.drop(['id_clean','name_clean','acronym_clean'], axis=1).drop_duplicates()
 
     if any(entities_tmp.groupby('generalPic')['generalPic'].transform('count')>1):
