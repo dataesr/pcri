@@ -88,7 +88,7 @@ def msca_collab(collab):
         'participates_as_collab', 'part_num', 'coord_num', 'with_coord',
         'part_num_collab', 'fund', 'fund_collab', 'stage', 'status_code',
         'country_code_mapping_collab', 'country_name_en', 'country_group_association_code',
-        'nuts_code', 'region_1_name', 'nuts_code_collab', 'region_1_name_collab', 
+        'participation_nuts', 'region_1_name', 'participation_nuts_collab', 'region_1_name_collab', 
         'country_name_en_collab', 'country_group_association_code_collab',
         'country_name_fr_collab', 'call_id', 'call_year', 'topic_code', 'destination_code', 
         'destination_name_en', 'destination_detail_code','destination_detail_name_en', 'total_cost']])
