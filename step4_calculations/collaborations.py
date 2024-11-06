@@ -43,8 +43,9 @@ def collab(participation, projects, countries):
                     (i['generalPic']==i['generalPic_collab']) &
                     (i['pic']==i['pic_collab'])&
                     (i['participates_as']==i['participates_as_collab']))]
-                    .groupby(['stage','project_id','country_code', 'participation_nuts', 'extra_joint_organization','country_code_collab','participation_nuts_collab',
-                            'country_code_mapping_collab', 'participates_as', 'participates_as_collab', 'extra_joint_organization_collab'], dropna=False)
+                    .groupby(['stage','project_id','country_code', 'participation_nuts','region_1_name', 'extra_joint_organization','country_code_collab',
+                            'participation_nuts_collab', 'region_1_name_collab','country_code_mapping_collab', 'participates_as', 'participates_as_collab', 
+                            'extra_joint_organization_collab', 'with_coord'], dropna=False)
                     .agg({'part_num':'nunique', 'coord_num':'nunique',  'part_num_collab' : 'nunique', 'fund':'sum', 
                         'fund_collab':'sum'})
                     .reset_index())
