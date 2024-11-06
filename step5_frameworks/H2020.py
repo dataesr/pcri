@@ -24,6 +24,7 @@ def H2020_process():
 ##############################################################""
 
     def h20_load():
+        print("## LOAD bases")
         _proj=pd.read_pickle(f"{PATH_SOURCE}H2020/H2020_projects.pickle")
         _proj=pd.DataFrame(_proj)
         _proj=_proj.replace('#', np.nan)
@@ -200,6 +201,7 @@ def H2020_process():
     proj = h20_topics(_proj)
 
     def proj_cleaning(proj):
+        print("## PROJ cleaning")
         from functions_shared import website_to_clean
         for i in ['title','abstract', 'free_keywords', 'eic_panels', 'url_project']:
             proj[i]=proj[i].str.replace('\\n|\\t|\\r|\\s+', ' ', regex=True).str.strip()
@@ -231,12 +233,13 @@ def H2020_process():
 ##########################################################################
 
     def entities_cleaning(entities):
+        print("## ENTITIES cleaning")
         from functions_shared import gps_col
         entities = pd.DataFrame(entities)
         entities = gps_col(entities)
 
         c = ['pic', 'generalPic']
-        entities.loc[:,c] = entities.loc[:,c].astype(str)
+        entities[c] = entities[c].astype(str)
         print(f"- longueur entities {len(entities)}")
         return entities
     entities = entities_cleaning(entities)
@@ -312,13 +315,16 @@ def H2020_process():
 
 
     part1.loc[(part1.nutsCode.str.len()>2), 'nuts_code'] = part1.nutsCode
-    part1 = part1.merge(nuts, how='left', on='nuts_code').drop_duplicates()
-    print(f"size participation after add nuts: {len(part1)}, sans nuts name: {len(part1.loc[(~part1.nuts_code.isnull())&(part1.region_1_name.isnull())])}")
+    part1 = (part1.merge(nuts, how='left', on='nuts_code')
+             .drop_duplicates()
+             .rename(columns={'nuts_code':'participation_nuts'}))
+    print(f"size participation after add nuts: {len(part1)}, sans nuts name: {len(part1.loc[(~part1.participation_nuts.isnull())&(part1.region_1_name.isnull())])}")
 
     ### successful projects for ODS -> envoyer ver HE pour concatenation
     def h20_proj_success(proj):
         from config_path import PATH_CLEAN
-        country=(part1.loc[part1.stage=='successful',['project_id','country_code','country_name_fr','country_code_mapping','country_name_mapping', 'nuts_code', 'region_1_name', 'region_2_name', 'regional_unit_name']]
+        country=(part1
+                .loc[part1.stage=='successful',['project_id','country_code','country_name_fr','country_code_mapping','country_name_mapping', 'participation_nuts', 'region_1_name', 'region_2_name', 'regional_unit_name']]
                 .drop_duplicates()
                 .groupby(['project_id'], as_index = False).agg(lambda x: ';'.join(map(str, filter(None, x))))
                 .drop_duplicates())
@@ -369,6 +375,7 @@ def H2020_process():
     ### si besoin de charger paysage pickle
     cat_filter = category_paysage(paysage)
     entities_tmp = merge_paysage(entities_tmp, paysage, cat_filter)
+    entities_tmp = mires(entities_tmp)
 
     # SIRENE
     ### si besoin de charger paysage pickle
@@ -465,10 +472,10 @@ def H2020_process():
     if any(part_tmp.entities_id=='nan')|any(part_tmp.entities_id.isnull()):
         print(f"- attention il reste des entities sans entities_id valides")
     
-    type_entity = pd.read_json(open('data_files/legalEntityType.json', 'r', encoding='UTF-8'))
-    part_tmp.loc[part_tmp.legalEntityTypeCode.isnull(), 'legalEntityTypeCode'] = 'NA'
-    part_tmp = (part_tmp.merge(type_entity, how='left', left_on='legalEntityTypeCode', right_on='cordis_type_entity_code')
-        .drop(columns=['legalEntityTypeCode', 'legalEntityType_fr','legalEntityType_acro', 'legalEntityType_en']))
+    # type_entity = pd.read_json(open('data_files/legalEntityType.json', 'r', encoding='UTF-8'))
+    part_tmp.loc[part_tmp.legalEntityTypeCode.isnull(), 'legalEntityTypeCode'] = np.nan
+    part_tmp = cordis_type(part_tmp)
+    part_tmp = part_tmp.drop(columns=['legalEntityType_fr','legalEntityType_acro', 'legalEntityType_en'])
     
     for i in ['entities_acronym', 'entities_name']:
         part_tmp[i] = part_tmp[i].str.replace('\\n|\\t|\\r|\\s+', ' ', regex=True).str.strip()
@@ -495,23 +502,22 @@ def H2020_process():
     part_tmp = part_tmp.assign(with_coord=True)
     part_tmp.loc[part_tmp.project_id.isin(proj_no_coord), 'with_coord'] = False
 
-                
-    part_tmp.rename(columns={'isSme':'cordis_is_sme', 'ZONAGE':'extra_joint_organization'}, inplace=True)
-    part_tmp = part_tmp.applymap(lambda x: x.strip() if isinstance(x, str) else x)
+    part_tmp.rename(columns={'ZONAGE':'extra_joint_organization'}, inplace=True)
+    part_tmp = part_tmp.map(lambda x: x.strip() if isinstance(x, str) else x)
 
 # agregation des participants
-    participation=(part_tmp[['project_id',  'stage', 'participates_as', 'role', 'calculated_fund','subv', 'subv_net','cordis_is_sme', 
-                      'requestedGrant', 'number_involved', 'coordination_number', 'with_coord',
+    participation=part_tmp[
+        ['project_id',  'stage', 'participates_as', 'role', 'calculated_fund','subv', 'subv_net','cordis_is_sme', 
+        'requestedGrant', 'number_involved', 'coordination_number', 'with_coord',
         'cordis_type_entity_code','cordis_type_entity_name_fr', 'cordis_type_entity_acro', 'erc_role',
-       'cordis_type_entity_name_en', 'nuts_code', 'region_1_name', 'region_2_name', 'regional_unit_name',
+        'cordis_type_entity_name_en', 'participation_nuts', 'region_1_name', 'region_2_name', 'regional_unit_name',
         'country_code_mapping', 'country_name_mapping', 'country_code', 'country_name_en', 'extra_joint_organization',
         'country_association_code','country_association_name_en', 'country_group_association_code',
-       'country_group_association_name_en', 'country_group_association_name_fr', 'country_name_fr', 'article1',
-       'article2',  'entities_name', 'entities_acronym', 'entities_id',
-        'ror_category',  'paysage_category', 'paysage_category_id', 'paysage_siren','paysage_cj_name',
-       'insee_cat_code', 'insee_cat_name', 'groupe_sector', 'cj_code', 'siren_cj',
-       'category_woven']]
-     .rename(columns={'category_priority':'paysage_category_priority'}))
+        'country_group_association_name_en', 'country_group_association_name_fr', 'country_name_fr', 'article1',
+        'article2', 'entities_name', 'entities_acronym', 'entities_id', 'paysage_category_priority',
+        'ror_category', 'paysage_category', 'paysage_category_id', 'paysage_siren','paysage_cj_name',
+        'insee_cat_code', 'insee_cat_name', 'groupe_sector', 'cj_code', 'siren_cj',
+        'category_woven', 'operateur_lib', 'operateur_name', 'operateur_num']]
 
     participation = participation.groupby(list(participation.columns.difference([ 'subv', 'subv_net', 'requestedGrant', 'number_involved'])), dropna=False, as_index=False).sum()
     print(f"involved successful:{'{:,.1f}'.format(participation.loc[(participation.stage=='successful'), 'number_involved'].sum())}\nsubv_laureat:{'{:,.1f}'.format(participation.loc[(participation.stage=='successful'), 'subv_net'].sum())}\nsubv_prop:{'{:,.1f}'.format(participation.loc[(participation.stage=='evaluated'), 'requestedGrant'].sum())}")
@@ -519,11 +525,11 @@ def H2020_process():
     
     # proj pour synthese
     proj_s=proj.loc[~((proj.stage=='successful')&(proj.status_code=='REJECTED')),
-    ['framework','project_id', 'call_id', 'panel_code', 'status_code', 'topic_code', 'stage', 'call_year', 'abstract',
-             'pilier_name_en', 'pilier_name_fr','programme_name_en', 'thema_name_en', 'thema_code', 'programme_code',
-             'panel_name', 'panel_regroupement_code', 'panel_regroupement_name', 'call_deadline', 'free_keywords',
-              'destination_code','destination_name_en','destination_detail_code','destination_detail_name_en',
-             'action_code', 'action_code2', 'action_code3', 'action_name', 'action_name2', 'action_name3', 'ecorda_date']]
+        ['framework','project_id', 'call_id', 'panel_code', 'status_code', 'topic_code', 'stage', 'call_year', 'abstract',
+        'pilier_name_en', 'pilier_name_fr','programme_name_en', 'thema_name_en', 'thema_code', 'programme_code',
+        'panel_name', 'panel_regroupement_code', 'panel_regroupement_name', 'call_deadline', 'free_keywords',
+        'destination_code','destination_name_en','destination_detail_code','destination_detail_name_en',
+        'action_code', 'action_code2', 'action_code3', 'action_name', 'action_name2', 'action_name3', 'ecorda_date']]
     
     temp = proj_s.merge(participation, how='inner', on=['project_id', 'stage'])
     temp = temp.reindex(sorted(temp.columns), axis=1)

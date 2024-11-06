@@ -3,7 +3,7 @@
  "cordis_type_entity_name_fr":"Enseignement supérieur ou secondaire",
  "cordis_type_entity_acro":"Ens. supérieur",
  "cordis_type_entity_name_en":"Higher or Secondary Education Establishments"},
-{"cordis_type_entity_code":"NA",
+{"cordis_type_entity_code":null,
  "cordis_type_entity_name_fr":"Non disponible",
  "cordis_type_entity_acro":"nd",
  "cordis_type_entity_name_en":"N.A"},

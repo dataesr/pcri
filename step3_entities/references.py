@@ -3,9 +3,12 @@ from config_path import PATH_REF
 
 def ref_source_load(sheet_load: str):
     print("\n### LOADING REF_SOURCE")
-    ref_source = pd.read_excel(f"{PATH_REF}_id_pic_entities.xlsx", dtype=object, keep_default_na=False, sheet_name = sheet_load) 
-    ref_source.mask(ref_source=='', inplace=True)
-    print(f"- size of ref_source : {len(ref_source)}")
+    if 'ref_source' not in globals():
+        ref_source = pd.read_excel(f"{PATH_REF}_id_pic_entities.xlsx", dtype=object, keep_default_na=False, sheet_name = sheet_load) 
+        ref_source.mask(ref_source=='', inplace=True)
+        print(f"- size of ref_source : {len(ref_source)}")
+    else:
+        print('- ref_source already load')
     return ref_source
 
 def ref_source_1ere_select(ref_source):

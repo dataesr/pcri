@@ -33,5 +33,6 @@ from step5_frameworks.FP7 import *
 from step5_frameworks.FP6 import *
 from step5_frameworks.fram_load import framework_load
 from check_url import check_proj_id
-from step6_ods.projects import projects_ods
-from step6_ods.collaborations import collab_signed_ods
+from step6_results.projects import projects_ods
+from step6_results.collaborations import *
+from step6_results.entities import *

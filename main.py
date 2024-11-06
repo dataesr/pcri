@@ -12,7 +12,7 @@ countries = pd.read_pickle(f"{PATH_CLEAN}country_current.pkl")
 entities_info = pd.read_pickle(f"{PATH_CLEAN}entities_info_current2.pkl") 
 calls = pd.read_csv(f"{PATH_CONNECT}calls.csv", sep=";", parse_dates=['call_deadline'])
 
-
+entities_part = ent(participation, entities_info, projects)
 collaboration = collab(participation, projects, countries)
 
 #step5 - si nouvelle actualisation ou changement dans nomenclatures

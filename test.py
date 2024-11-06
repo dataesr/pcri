@@ -1,235 +1,561 @@
-import pandas as pd, numpy as np, json
-from config_path import PATH_CLEAN
+import pandas as pd, numpy as np
+from step3_entities.references import *
+from step3_entities.merge_referentiels import *
+from step3_entities.categories import *
+from config_path import PATH_SOURCE, PATH_CLEAN, PATH_REF, PATH_CONNECT
+from functions_shared import unzip_zip
 
-def FP6_process():
-    def FP6_load():
-        FP6_PATH='C:/Users/zfriant/Documents/OneDrive/PCRI/FP6/'
-        with open(f"{FP6_PATH}FP6_projects.json", 'r', encoding='ANSI') as fp:
-            _FP6 = pd.DataFrame(json.load(fp))
-        _FP6.columns = _FP6.columns.str.strip()
-        for i in _FP6.columns:
-            _FP6[i] = _FP6[i].apply(lambda x: x.strip() if isinstance(x, str) else x)
-        _FP6 = _FP6.reindex(sorted(_FP6.columns), axis=1)
-        print(f"size _FP6: {len(_FP6)}, cols: {_FP6.columns}")
-        return _FP6
-
-    _FP6=FP6_load()
-
-    def nuts(_FP6):
-    # gestion code nuts
-        nuts = pd.read_pickle("data_files/nuts_complet.pkl")
-        nuts = (nuts[['nuts_code_2013','nutsCode', 'lvl1Description', 'lvl2Description', 'lvl3Description']]
-                .drop_duplicates()
-                .rename(columns={'nuts_code_2013':'nuts_code_tmp', 'nutsCode':'nuts_code','lvl1Description':'region_1_name', 'lvl2Description': 'region_2_name', 'lvl3Description':'regional_unit_name'}))
-
-        # nuts['region_1_name'] = nuts['region_1_name'].str.title()
-        print(len(nuts))
-
-        _FP6.loc[_FP6.NutsCode.str.len()>2, 'nuts_code_tmp'] = _FP6.NutsCode
-        print(f"size _FP6 with code after cleanup nuts: {len(_FP6[~_FP6.nuts_code_tmp.isnull()])}")
-
-        nuts = nuts.loc[(nuts.nuts_code_tmp.isin(_FP6.nuts_code_tmp.unique()))&(~nuts.nuts_code_tmp.isnull())]
-        _FP6 = _FP6.merge(nuts, how='left', on='nuts_code_tmp').drop_duplicates()
-        print(f"nuts code without name: {len(_FP6[(~_FP6.nuts_code.isnull())&(_FP6.region_1_name.isnull())])}")
-        return _FP6
-    _FP6=nuts(_FP6)
-
-    def str_cleaning(_FP6):
-        _FP6=(_FP6
-            .rename(columns={'year':'call_year', 'Call':'call_id', 'action2':'action_code2',
-                            'participant_type_code':'cordis_type_entity_code', 'coord':'coordination_number', 
-                            'date_end':'end_date', 'date_sign':'signature_date', 'date_start':'start_date'}))
-
-        _FP6.loc[:,'project_id'] = _FP6.loc[:,'project_id'].astype(str).str.rjust(6, "0")
-        for d in ['signature_date',  'start_date',  'end_date', 'call_deadline', 'submission_date']:
-            _FP6[d] = pd.to_datetime(_FP6[d],format='%d/%m/%Y %H:%M:%S')
-
-        for i in ['title']:
-            _FP6[i]=_FP6[i].str.replace('\\n|\\t|\\r|\\s+', ' ', regex=True).str.strip()
-
-        _FP6.mask(_FP6=='', inplace=True)  
-        _FP6 = _FP6.assign(ecorda_date=pd.to_datetime('2021-04-30'), framework='FP6', stage_name='projets lauréats')
-        return _FP6
-    _FP6=str_cleaning(_FP6)
-
-    def country(_FP6):
-        old_country = pd.read_csv('data_files/FP_old_countries.csv', sep=';', keep_default_na=False)
-        old_country = old_country.loc[old_country.FP=='FP6'].drop_duplicates()
-
-        x = (_FP6[['countryCode', 'countryCode_parent']].drop_duplicates()
-            .merge(old_country[['countryName', 'countryCode','country_code_mapping']],
-                    how='left', on='countryCode')
-            .drop_duplicates())
-
-        if any(x.countryCode.isnull()):
-            print(x[x.countryCode.isnull()])
-
-        country = pd.read_csv("C:/Users/zfriant/Documents/OneDrive/PCRI/eCorda_datas/datas_load/H2020/country_current.csv", sep=';', encoding='utf-8')
-        x = x.merge(country[['country_code_mapping', 'country_name_mapping', 'country_code']].drop_duplicates(), how='left', on='country_code_mapping')
-        x.loc[x.country_code_mapping=='ZOE', 'country_name_mapping'] = 'European organisations area'
-
-        if any(x.country_code_mapping.isnull()):
-            print(x.loc[x.country_code_mapping.isnull()])
-        if any(x.country_name_mapping.isnull()):
-            print(f"nom manquant dans country: {x.loc[x.country_name_mapping.isnull()].countryName.unique()}")
-            x.loc[x.country_name_mapping.isnull(), 'country_name_mapping'] = x.countryName
-            
-        if any(x.country_code.isnull()):
-            print(x.loc[x.country_code.isnull(), ['countryCode', 'country_code_mapping']])
-            x.loc[x.country_code_mapping.isin(['ZOE', 'YUG']), 'country_code'] = x.country_code_mapping
-            
-        x = x.merge(country[['country_code', 'country_name_en', 'country_name_fr', 'article1', 'article2']].drop_duplicates(), how='left', on='country_code')
-
-        if any(x.country_name_en.isnull()):
-            print(f"sans country name: {x.loc[x.country_name_en.isnull()].country_code_mapping.unique()}")
-            x.loc[x.country_code_mapping=='YUG', 'country_name_en'] = x.country_name_mapping
-            x.loc[x.country_code=='YUG', 'country_name_fr'] = 'Serbie et Monténégro'
-            
-        x = (x
-            .merge(old_country[['country_code_mapping', 'status_new']].drop_duplicates(), 
-                    how='left', left_on='country_code', right_on='country_code_mapping', suffixes=['', '_fp'])
-            .merge(country[['country_association_code', 'country_association_name_en',
-            'country_group_association_code', 'country_group_association_name_en',
-            'country_group_association_name_fr']].drop_duplicates(),
-                how='left', left_on='status_new', right_on='country_association_code')
-            .drop(columns='country_code_mapping_fp')
-            .drop_duplicates())   
-
-        if any(x.country_association_code.isnull()):
-            print(x.loc[x.country_association_code.isnull(), ['country_code_mapping', 'country_association_code']])
-            x.loc[x.country_association_code.isnull(), 'country_association_code'] = x.status_new
-            x.loc[x.country_association_code=='CANDIDATE', 'country_group_association_code'] = 'MEMBER-ASSOCIATED'
-            x.loc[x.country_association_code=='CANDIDATE', 'country_group_association_name_fr'] = 'Pays membres ou associés'
-            x.loc[x.country_association_code=='CANDIDATE', 'country_group_association_name_en'] = 'Member States or associated'
-            
-        x = x.drop(columns=['countryCode_parent', 'countryName', 'status_new']).drop_duplicates()
-        print(f"size x {len(x)}")
-            
-        _FP6 = (_FP6.merge(x, how='left', on='countryCode')
-            .merge(old_country[['countryCode', 'STATUS']].drop_duplicates(), how='left', on='countryCode')
-            .rename(columns={'STATUS':'fp_specific_country_status'}))
-
-        print(f"size FP6: {len(_FP6)}\ncols: {_FP6.columns}")
-        return _FP6
-    _FP6=country(_FP6)
-
-    def category(_FP6):
-        _FP6.loc[_FP6.cordis_type_entity_code.isnull(), 'cordis_type_entity_code'] = 'NA'
-        type_entity = pd.read_json(open('data_files/legalEntityType.json', 'r', encoding='UTF-8'))
-        _FP6 = _FP6.merge(type_entity, how='left', on='cordis_type_entity_code')
-
-        print(f"size FP6: {len(_FP6)}")
-        return _FP6
-    _FP6=category(_FP6)
-
-    def themes_act(_FP6):
-        instr = pd.read_csv('data_files/instru_nomenclature.csv', sep=';')
+def H2020_process():
+    print("### H2020")
+##########################################################
+    def h20_nom_load():
         destination = pd.read_json(open("data_files/destination.json", 'r', encoding='utf-8'))
-        msca_correspondence = pd.read_table('data_files/msca_correspondence.csv', sep=";").drop(columns='framework')
+        thema = pd.read_json(open("data_files/thema.json", 'r', encoding='utf-8'))
+        act = pd.read_json(open("data_files/actions_name.json", 'r', encoding='utf-8'))
+        topics = unzip_zip('H2020_2022-12-05.json.zip', f"{PATH_SOURCE}H2020/", 'topics.json', encode='utf-8')
+        pilier_fr = pd.read_json(open("data_files/H20_pilier.json", 'r', encoding='utf-8'))
+        countries = pd.read_csv(f"{PATH_SOURCE}H2020/country_current.csv", sep=';')
+        actions = pd.read_table(f"{PATH_CLEAN}actions_current.csv", sep=";")
+        nuts = pd.read_pickle(f'{PATH_REF}nuts_complet.pkl')
+        return destination, thema, act, topics, pilier_fr, countries, actions, nuts
 
-        _FP6.loc[_FP6.programme=='Human resources and mobility', 'thema_code'] = 'MSCA'
-        _FP6.loc[_FP6.programme=='Human resources and mobility', 'thema_name_en'] = 'Marie Skłodowska-Curie'
+    
+    destination, thema, act, topics, pilier_fr, countries, actions, nuts = h20_nom_load()
+##############################################################""
 
-        x = (_FP6.loc[~_FP6.action_code2.isnull(),['action_code2']].drop_duplicates()
-                .merge(msca_correspondence, how='left', left_on=['action_code2'], right_on=['old']))
-        x.loc[~x.destination_detail_code.isnull(), 'destination_code'] = x.destination_detail_code.str.split('-').str[0]
-        FP6 = _FP6.merge(x, how='left', on='action_code2').drop(columns='old')
+    def h20_load():
+        print("## LOAD bases")
+        _proj=pd.read_pickle(f"{PATH_SOURCE}H2020/H2020_projects.pickle")
+        _proj=pd.DataFrame(_proj)
+        _proj=_proj.replace('#', np.nan)
+        print(f"size _proj: {len(_proj)}")
+        part=pd.read_pickle(f"{PATH_SOURCE}H2020/H2020_participation.pickle")
+        part=pd.DataFrame(part)
+        part=part.replace('#', np.nan)
+        print(f"- size part: {len(part)}")
+        entities = unzip_zip('H2020_2022-12-05.json.zip', f"{PATH_SOURCE}H2020/", "legalEntities.json", encode='utf-8')
+        status = pd.read_csv(f"{PATH_SOURCE}H2020/redressement_status_code.csv", sep=';', usecols=['project_id','stat_code'], dtype='str')
+        return _proj, part, entities, status
 
+    _proj, part, entities, status = h20_load()
 
-        FP6.loc[FP6.call_id=='FP6-2006-MOBILITY-13', 'destination_code'] = 'CITIZENS'
+####################################################################################
+    part.loc[part.role=='participant', 'role'] = 'partner'
+    part.loc[part.countryCode=='ZZ', 'country_code_mapping'] = 'ZZZ'
+    part = part[part.participates_as!='utro']
+    part.rename(columns={'order_number':'orderNumber'}, inplace=True)
 
-        FP6.loc[(FP6.thema_code=='MSCA')&(FP6.destination_code.isnull()), 'destination_code'] = 'MSCA-OTHER'
+    ##status
+    _proj = _proj.merge(status, how='inner', on='project_id')
+    _proj.loc[_proj.stage=='evaluated', 'status_code'] = _proj.stat_code
+    _proj.drop(columns=['stat_code'], inplace=True)
 
-        FP6['fp_specific_instrument'] = np.where((FP6.action=='MCA')&(~FP6.action.isnull()), FP6['action']+'-'+FP6['action_code2'], FP6['action'])
+    l=['RIA','IA','CSA']
+    tmp=_proj.loc[(~_proj.action_id.isin(['MSCA','ERC'])&(~_proj.action_2_id.isnull())&(_proj.action_id!='SME')),
+    ['action_2_id']].drop_duplicates()
+    tmp['action_code'] = tmp['action_2_id'].str.extract("(" + "|".join(l) +")", expand=False)
+    _proj = _proj.merge(tmp, how='left', on='action_2_id')
+    _proj.loc[_proj.action_code.isnull(), 'action_code'] = _proj.action_id
 
-        FP6 = (FP6
-            .merge(instr.drop_duplicates(), how='left', left_on='action', right_on='instrument')
-            .rename(columns={'name':'action_name'}) 
-            .drop(columns=['instrument', 'action_code2'])
-            )
-
-        FP6.loc[FP6.action_code=='MCA', 'action_code'] = 'MSCA'
-        FP6.loc[FP6.action_code=='MSCA', 'action_name'] = 'Marie Skłodowska-Curie actions'
+    def h20_topics(df):
+        proj = (df.assign(fp_specific_pilier=_proj.pilier, fp_specific_programme=_proj.programme_name_en, fp_specific_instrument=_proj.action_2_id)
+            .rename(columns={'pilier':'pilier_name_en', 'topicCode':'topic_code','topicDescription':'topic_name',
+                                    'action_2_id':'action_code2', 'action_2_name':'action_name2', 
+                                    'action_3_id':'action_code3', 'action_3_name':'action_name3'})
+            .drop(columns=['action_name'])
+            .merge(pilier_fr, how='left', on='pilier_name_en')
+            .merge(act, how='left', on='action_code'))
 
         #euratom
+        proj.loc[proj.pilier_name_fr=='Euratom', 'pilier_name_en'] = 'Euratom'
+        proj.loc[(proj.pilier_name_fr=='Euratom')&(proj.topic_code.str.contains('NFRP')), 'programme_code'] = 'NFRP'
+        proj.loc[(proj.pilier_name_fr=='Euratom')&(proj.programme_code=='NFRP'), 'programme_name_en'] = 'Nuclear fission and radiation protection'
+        proj.loc[proj.call_id=='EURATOM-Adhoc-2014-20', 'programme_code'] = 'Fusion'
+        proj.loc[proj.call_id=='EURATOM-Adhoc-2014-20', 'programme_name_en'] = 'Fusion Energy'
+        proj.loc[(proj.pilier_name_fr=='Euratom')&(proj.call_id!='EURATOM-Adhoc-2014-20')&(proj.programme_code!='NFRP'), 'programme_code'] = 'Euratom-others'
+        proj.loc[(proj.pilier_name_fr=='Euratom')&(proj.call_id!='EURATOM-Adhoc-2014-20')&(proj.programme_code!='NFRP'), 'programme_name_en'] = 'Euratom others actions'
+
         euratom = pd.read_csv('data_files/euratom_thema_all_FP.csv', sep=';', na_values='')
-        FP6 = FP6.merge(euratom[['topic_area', 'thema_code', 'thema_name_en']], how='left', left_on='ActivityCode1', right_on='topic_area', suffixes=['', '_t'])
+        proj = proj.merge(euratom[['topic_area', 'thema_code', 'thema_name_en']], how='left', left_on='topic_code', right_on='topic_area', suffixes=['', '_t'])
+        proj.loc[(~proj.thema_code_t.isnull()), 'thema_code'] = proj.loc[(~proj.thema_code_t.isnull()), 'thema_code_t']
+        proj.loc[(~proj.thema_name_en_t.isnull()), 'thema_name_en'] = proj.loc[(~proj.thema_name_en_t.isnull()), 'thema_name_en_t']
+        proj = proj.filter(regex=r'.*(?<!_t)$').drop(columns='topic_area')
 
-        FP6.loc[(~FP6.thema_code_t.isnull()), 'thema_code'] = FP6.loc[(~FP6.thema_code_t.isnull()), 'thema_code_t']
-        FP6.loc[(~FP6.thema_name_en_t.isnull()), 'thema_name_en'] = FP6.loc[(~FP6.thema_name_en_t.isnull()), 'thema_name_en_t']
-        FP6 = FP6.filter(regex=r'.*(?<!_t)$')
+        #piler JU-JTI
+        proj.loc[proj.thema_code.str.contains('JU', na=False), 'destination_code'] = proj.thema_code.str.replace('JU','').str.strip()
+        proj.loc[proj.thema_code.str.contains('JU', na=False), 'thema_code'] = 'JU-JTI'
+        proj.loc[proj.call_id.str.contains('JTI',na=False), 'destination_code'] = proj['action_code2'].str.split('-').str[0]
+        proj.loc[proj.call_id.str.contains('JTI',na=False)&(proj.action_code2.isnull()), 'destination_code'] = proj['call_id'].str.split('-').str[2]
+        proj.loc[(proj.action_code2.str.contains('BBI', na=False)), 'destination_code'] = 'CBE'
+        proj.loc[(proj.destination_code=='EuroHPC'), 'destination_code'] = 'EUROHPC'
+        proj.loc[(proj.thema_code=='ECSEL'), 'destination_code'] = 'Chips'
+        proj.loc[(proj.destination_code=='CS2'), 'destination_code'] = 'CLEAN-AVIATION'
+        proj.loc[(proj.destination_code=='FCH2'), 'destination_code'] = 'CLEANH2'
+        proj.loc[(proj.destination_code=='IMI2'), 'destination_code'] = 'IHI'
+        proj.loc[(proj.destination_code=='Shift2Rail'), 'destination_code'] = "EU-Rail"
+        l=['KDT', 'CBE','EUROHPC', 'CLEAN-AVIATION', 'CLEANH2', 'IHI']
+        proj.loc[(proj.call_id.str.contains('JTI',na=False))|(proj.destination_code.isin(l)), 'thema_code'] = 'JU-JTI'
 
-        FP6.loc[FP6.pilier=='Euratom', 'pilier_name_en'] = 'Euratom'
-        FP6.loc[FP6.pilier=='Euratom', 'programme_name_en'] = 'Nuclear fission and radiation protection'
-        FP6.loc[FP6.pilier=='Euratom', 'programme_code'] = 'NFRP'
+        # MSCA / ERC
+        proj.loc[proj.programme_code=='MSCA', 'thema_code'] = 'MSCA'
+        proj.loc[proj.programme_code=='ERC', 'thema_code'] = 'ERC'
 
-        FP6.loc[FP6.programme.isin(['Research infrastructures','Human resources and mobility']), 'pilier_name_en'] = 'Excellent Science'
-        FP6.loc[FP6.programme=='Human resources and mobility', 'programme_name_en'] = 'Marie Skłodowska-Curie Actions (MSCA)'
-        FP6.loc[FP6.programme=='Human resources and mobility', 'programme_code'] = 'MSCA'
+        # ### ajustement MSCA
+        msca_correspondence = pd.read_table('data_files/msca_correspondence.csv', sep=";")
 
-        FP6.loc[FP6.programme=='Research infrastructures', 'programme_name_en'] = 'Research infrastructures'
-        FP6.loc[FP6.programme=='Research infrastructures', 'programme_code'] = 'INFRA'
-
-        FP6.loc[FP6.pilier_name_en.isnull(), 'pilier_name_en'] = FP6.pilier
-        FP6.loc[FP6.programme_name_en.isnull(), 'programme_name_en'] = FP6.programme
-
-        FP6 = FP6.rename(columns={'pilier':'fp_specific_pilier', 'programme':'fp_specific_programme'})
-
-        test = FP6[['programme_code', 'programme_name_en', 'ActivityCode1']].drop_duplicates()
-        test.loc[test.programme_code.isnull(), 'programme_code'] = test.ActivityCode1.str.split("\\.|-", regex=True, expand=True)[0]
-        test = test.groupby(['programme_name_en','programme_code'], dropna=False).agg({'ActivityCode1':'count'}).reset_index()
-        test = (test.sort_values(['programme_name_en','ActivityCode1'], ascending=False)
-                .drop_duplicates(subset=['programme_name_en'], keep="first")
-                .drop(columns='ActivityCode1'))
-        FP6 = FP6.merge(test, how='left', on='programme_name_en', suffixes=['','_t'])
-        FP6.loc[~FP6.programme_code_t.isnull(), 'programme_code'] = FP6.loc[~FP6.programme_code_t.isnull(), 'programme_code_t']
-        FP6.drop(columns='programme_code_t', inplace=True)
+        msca_correspondence = msca_correspondence[msca_correspondence.framework=='H2020'].rename(columns={'EsCodeL2':'destination_detail_code'}).drop(columns='framework')
+        proj.loc[(proj.thema_code=='MSCA')&(proj.action_code3.isnull()), 'action_code3'] = proj.action_code2
 
 
-        FP6 = FP6.merge(destination[['destination_code', 'destination_name_en']], how='left', on='destination_code')
-        FP6 = (FP6.merge(destination.rename(columns={'destination_code':'destination_detail_code', 'destination_name_en':'destination_detail_name_en'})
-                [['destination_detail_code', 'destination_detail_name_en']], how='left', on='destination_detail_code'))
-        return FP6
-    FP6=themes_act(_FP6)
+        m = proj.loc[(proj.action_code=='MSCA'), ['action_code3']].drop_duplicates()
+        m = m.merge(msca_correspondence, how='left', left_on='action_code3', right_on='old')
+        m = m.merge(actions[['destination_detail_code','destination_detail_name_en']].drop_duplicates(), how='left', on='destination_detail_code')
+        m.loc[m.destination_detail_code=='CITIZENS', 'destination_detail_name_en'] = "European Researchers' Night"
+        m.loc[m.destination_detail_code=='COFUND', 'destination_detail_name_en'] = "Co-funding of regional, national and international programmes"
+        m.loc[m.destination_detail_code.str.contains('-', na=False) ,'destination_code'] = m.destination_detail_code.str.split('-').str[0]
 
-    def participation(FP6):
-        FP6['calculated_fund'] = np.where(FP6.stage=='successful', FP6.subv_obt, FP6.subv_dem)
-        FP6 = FP6.assign(number_involved=1, with_coord=np.where(FP6.destination_code.isin(['PF']), False, True))
-        FP6.loc[FP6.with_coord==False, 'coordination_number'] = 0
+        m = m.merge(proj.drop(columns=['destination_code']), how='inner', on='action_code3')
+        proj = proj.loc[~proj.action_code3.isin(m.action_code3.unique())]
 
-        print(f"1 - size project lauréats: {len(FP6.loc[FP6.stage=='successful'])}, fund: {'{:,.1f}'.format(FP6.loc[FP6.stage=='successful', 'calculated_fund'].sum())}")
-        # FP6.info()
-        with open(f"{PATH_CLEAN}FP6_data.pkl", 'wb') as file:
-            pd.to_pickle(FP6, file)
-        return FP6
-    FP6=participation(FP6)
+        proj = pd.concat([proj, m], ignore_index=True)
 
-    def ods(FP6):
-        print("### ODS")
-        country=(FP6[['project_id','country_code','country_name_fr','country_code_mapping', 'country_name_mapping', 'nuts_code', 'region_1_name',
-            'region_2_name', 'regional_unit_name']]
+        proj.loc[(proj.thema_code=='MSCA')&(proj.destination_code.isnull()), 'destination_code'] = proj.destination_detail_code
+        proj.loc[(proj.thema_code=='MSCA')&(proj.destination_code.isnull()),'destination_code'] = 'MSCA-OTHERS'
+        proj.loc[(proj.thema_code=='MSCA'), ['destination_code', 'action_code3','destination_detail_code']].drop_duplicates()
+        proj.loc[proj.programme_code=='MSCA', 'programme_name_en'] = 'Marie Skłodowska-Curie Actions (MSCA)'
+
+        proj.loc[(proj.action_code=='MSCA'), 'action_code2'] = np.nan
+        proj.loc[(proj.action_code=='MSCA'), 'action_name2'] = np.nan
+
+        proj.drop(columns='old', inplace=True)
+
+        ### ajustement ERC
+        proj.loc[proj.thema_code=='ERC', 'destination_code'] = proj.loc[proj.thema_code=='ERC'].action_code2.str.split('-').str[1]
+        proj.loc[proj.destination_code=='POC-LS', 'destination_code'] = "POC"
+        proj.loc[(proj.thema_code=='ERC')&(proj.destination_code.isnull()), 'destination_code'] = 'ERC-OTHERS'
+        proj.loc[(proj.action_code=='ERC'), 'action_code2'] = np.nan
+        proj.loc[(proj.action_code=='ERC'), 'action_name2'] = np.nan
+
+        # FET
+        proj.loc[proj.programme_code=='FET', 'thema_code'] = 'PATHFINDER'
+        # proj.loc[proj.programme_code=='FET', 'thema_name_en'] = 'European Innovation Council'
+        proj.loc[proj.programme_code=='FET', 'destination_code'] = proj.thema_name_en.str.split().str[1].str.upper()
+        proj.loc[proj.programme_code=='FET', 'thema_name_en'] = np.nan
+        proj.loc[proj.programme_code=='FET', 'programme_name_en'] = "European Innovation Council"
+        proj.loc[proj.programme_code=='FET', 'programme_code'] = "EIC"
+        # proj.loc[proj.programme_code=='FET', 'destination_name_en'] = 'EIC Pathfinder'
+
+        # programme SME
+        proj.loc[proj.programme_code=='SME', 'thema_code'] = 'ACCELERATOR'
+        proj.loc[proj.programme_code=='FET', 'thema_name_en'] = np.nan
+        proj.loc[proj.programme_code=='SME', 'programme_name_en'] = 'European Innovation Council'
+        # proj.loc[proj.programme_code=='SME', 'destination_code'] = 'ACCELERATOR'
+        # proj.loc[proj.programme_code=='SME', 'destination_name_en'] = 'EIC Accelerator'
+        proj.loc[proj.topic_code=='H2020-Art185-Eurostars2', 'thema_code'] = 'INNOVSMES'
+        proj.loc[proj.thema_code=='INNOVSMES', 'programme_name_en'] = 'European Innovation Ecosystems'
+        proj.loc[proj.programme_name_en=='European Innovation Ecosystems', 'programme_code'] = 'EIE'
+
+        # INFRA
+        proj.loc[proj.programme_code=='INFRA', 'thema_code'] = proj.programme_code
+        proj.loc[proj.programme_code=='INFRA', 'destination_code'] = proj.loc[proj.programme_code=='INFRA'].call_id.str.split('-').str[1]
+        proj.loc[(proj.programme_code=='INFRA')&(~proj.destination_code.isin(destination.destination_code.unique())), 'destination_code'] = 'DESTINATION-OTHERS'
+                
+        # EIT
+        proj.loc[proj.action_code=='KICS', 'pilier_name_en'] = 'Innovative Europe'
+        proj.loc[proj.action_code=='KICS', 'programme_code'] = 'EIT'
+        proj.loc[proj.action_code=='KICS', 'programme_name_en'] = 'The European Institute of Innovation and Technology (EIT)'
+
+        # t = thema.loc[~thema.dest_h20.isnull(), ['thema_code','dest_h20']]
+
+        # proj = proj.merge(t, how='left', left_on='thema_code', right_on='dest_h20', suffixes=['', '_x'])
+
+        # proj.loc[proj.action_code=='KICS', 'destination_code'] = proj.destination_code_x
+        # # proj.loc[proj.action_code=='KICS', 'destination_name_en'] = proj.destination_name_en_x
+        # proj.loc[(proj.action_code=='KICS'), 'thema_code'] = 'EIT'
+        # proj.loc[(proj.action_code=='KICS'), 'thema_name_en'] = 'European Institute of Innovation and Technology'
+        # proj.loc[(proj.action_code=='KICS'), 'action_code'] = 'KICS'
+        # proj.loc[(proj.action_code=='KICS'), 'action_name'] = 'Knowledge and Innovation Communities'
+        # proj.loc[(proj.programme_code=='EIT')&(proj.action_code.isnull()), 'action_code'] = 'EIT'
+        # proj.loc[(proj.programme_code=='EIT')&(proj.action_code.isnull()), 'action_name'] = 'EIT actions'
+
+        # proj.drop(columns=['destination_code_x', 'dest_h20'], inplace=True)
+
+        # # WIDENING COST
+        proj.loc[proj.programme_code.str.contains('TWINING|WIDESPREAD|NCPNET', na=False), 'thema_code'] = 'ACCESS'
+        proj.loc[proj.programme_code.str.contains('ERA', na=False), 'thema_code'] = 'TALENTS'
+        proj.loc[proj.programme_code.str.contains('INTNET', na=False), 'thema_code'] = 'COST'
+        proj.loc[(proj.pilier_name_en=='Spreading excellence and widening participation')&(proj.programme_code!='ERA'), 'programme_code'] = 'Widening'
+        proj.loc[proj.programme_code=='Widening', 'programme_name_en'] = 'Widening participation and spreading excellence'
+
+        proj.loc[(proj.programme_code=='Widening')&(proj.thema_code.isnull()), 'thema_code'] = 'WIDENING-OTHER'
+        # proj.loc[(proj.thema_code=='THEMA-OTHERS')&(proj.destination_code.isnull()), 'destination_code'] = 'DESTINATION-OTHERS'
+
+        dest = destination[['destination_code', 'destination_name_en']]
+        proj = proj.merge(dest, how='left', on='destination_code')
+
+        proj = proj.merge(thema, how='left', on='thema_code', suffixes=['','_x'])
+        proj.loc[~proj.thema_name_en_x.isnull(), 'thema_name_en'] = proj.thema_name_en_x
+        proj.drop(columns=['thema_name_en_x','dest_h20'], inplace=True)
+        return proj
+
+    proj = h20_topics(_proj)
+
+    def proj_cleaning(proj):
+        print("## PROJ cleaning")
+        from functions_shared import website_to_clean
+        for i in ['title','abstract', 'free_keywords', 'eic_panels', 'url_project']:
+            proj[i]=proj[i].str.replace('\\n|\\t|\\r|\\s+', ' ', regex=True).str.strip()
+            
+        kw = proj[['project_id','stage','free_keywords']].drop_duplicates()
+        kw = kw.assign(free_keywords = kw.free_keywords.str.split(';|,')).explode('free_keywords')
+        kw['free_keywords'] = kw.free_keywords.str.replace('\\.+', '', regex=True)
+        kw = kw.loc[kw.free_keywords.str.len()>3].drop_duplicates()
+        kw.free_keywords = kw.free_keywords.groupby(level=0).apply(lambda x: '|'.join(x.str.strip().unique()))
+        kw = kw.drop_duplicates()
+
+        proj = proj.drop(columns='free_keywords').merge(kw, how='left', on=['project_id','stage']).drop_duplicates()    
+            
+        proj.loc[proj.url_project.str.contains('project/rcn', na=False), 'url_project']=np.nan
+
+        proj.mask(proj=='', inplace=True)  
+        for i,row in proj.iterrows():
+            if row.loc['url_project'] is not None:
+                proj.at[i, 'project_webpage'] = website_to_clean(row['url_project'])
+
+        proj.mask(proj=='', inplace=True)  
+
+        for d in ['call_deadline', 'signature_date',  'start_date', 'end_date', 'submission_date', 'ecorda_date']:
+            proj[d] = proj[d].astype('datetime64[ns]')
+
+        proj['proposal_expected_number'] = proj['proposal_expected_number'].astype('float')
+        return proj
+    proj = proj_cleaning(proj)
+##########################################################################
+
+    def entities_cleaning(entities):
+        print("## ENTITIES cleaning")
+        from functions_shared import gps_col
+        entities = pd.DataFrame(entities)
+        entities = gps_col(entities)
+
+        c = ['pic', 'generalPic']
+        entities[c] = entities[c].astype(str)
+        print(f"- longueur entities {len(entities)}")
+        return entities
+    entities = entities_cleaning(entities)
+
+    # selection des obs de entities liées aux participants/applicants
+    lien_genPic_single = part['generalPic_old'].unique()
+    lien_genCalcPic = part[['generalPic_old', 'pic']].drop_duplicates()
+    entities = lien_genCalcPic.merge(entities, how='inner', left_on=['generalPic_old','pic'], right_on=['generalPic','pic']).drop_duplicates()
+########################################################################
+
+    def ref_select(FP):
+        ref_source = ref_source_load('ref')
+        # traitement ref select le FP, id non null ou/et ZONAGE non null
+        ref = ref_source_2d_select(ref_source, FP)
+        ror = pd.read_pickle(f"{PATH_REF}ror_df.pkl")
+        paysage = pd.read_pickle(f"{PATH_REF}paysage_df.pkl")
+        sirene = pd.read_pickle(f"{PATH_REF}sirene_df.pkl")
+        ### si besoin de charger groupe
+        groupe = pd.read_pickle(f"{PATH_REF}H20_groupe.pkl")
+        return ref, ror, paysage, sirene, groupe
+
+    # traitement ref select le FP, id non null ou/et ZONAGE non null
+    ref, ror, paysage, sirene, groupe = ref_select('H20')
+
+    print(f"- si ++id pour un generalPic: {ref[ref.id.str.contains(';', na=False)]}")
+##########################################################################
+
+    p=part[['generalPic', 'country_code_mapping', 'country_code']].drop_duplicates()
+    print(f"size de p: {len(p)}")
+    #lien part et ref
+    p = p.merge(ref, how='outer', on=['generalPic', 'country_code_mapping'], indicator=True).drop_duplicates()
+    print(f"cols de p: {p.columns}")
+
+    # p1 pic+ccm commun
+    p1 = p.loc[p['_merge']=='both'].drop(columns=['_merge', 'country_code'])
+    print(f"size p1 pic+cc: {len(p1)}")
+
+    # p2 pic cc
+    p2 = (p.loc[p['_merge']=='left_only'].drop(columns=['_merge', 'id', 'ZONAGE', 'id_secondaire'])
+        .merge(ref.rename(columns={'country_code_mapping':'country_code'}), 
+                how='inner', on=['generalPic', 'country_code']).drop_duplicates()
+        .drop(columns='country_code'))
+    print(f"size p2 pic cc_parent: {len(p2)}")
+
+    # acteurs sans identifiant dont le pic à plusieurs pays ou le pic certaines participations ont un identifiant et pas d'autres 
+    p3 = (p.loc[p['_merge']=='left_only'].drop(columns=['_merge', 'country_code_mapping', 'id', 'ZONAGE'])
+        .merge(ref, how='inner', on=['generalPic']).drop_duplicates())
+    if not p3.empty:
+        print(f"A faire si possible, vérifier pourquoi des participations avec pic identiques ont un id ou pas nb pic: {len(p3.generalPic.unique())}")
+
+    p = pd.concat([p1,p2], ignore_index=True).drop_duplicates()
+    print(f"size de new p: {len(p)}, cols: {p.columns}")      
+        
+        
+    part1 = part.drop(columns=['id', 'ZONAGE', 'country_code']).merge(p, how='left', on=['generalPic', 'country_code_mapping'])
+    print(f"size part1: {len(part1)}, part: {len(part)}")
+
+    part1 = part1.drop(columns=['countryCode', 'country_name_en', 'country_association_code', 'country_name_mapping',
+        'country_association_name_en', 'country_group_association_code', 'country_group_association_name_en', 
+        'article1', 'article2', 'country_group_association_name_fr', 'country_name_fr'])
+
+    countries = countries.drop(columns=['countryCode', 'countryCode_parent']).drop_duplicates()
+
+    part1 = part1.merge(countries[['country_code_mapping', 'country_name_mapping', 'country_code']], how='left', on='country_code_mapping')
+    # part1.loc[~part1.ZONAGE.isnull(), 'country_code'] = part1.ZONAGE
+
+    cc = countries.drop(columns=['country_code_mapping', 'country_name_mapping']).drop_duplicates()
+    part1 = part1.merge(cc, how='left', on='country_code')
+
+    print(f"size part1: {len(part1)}, cols: {part1.columns}")
+
+    # gestion code nuts
+
+
+    part1.loc[(part1.nutsCode.str.len()>2), 'nuts_code'] = part1.nutsCode
+    part1 = (part1.merge(nuts, how='left', on='nuts_code')
+             .drop_duplicates()
+             .rename(columns={'nuts_code':'participation_nuts'}))
+    print(f"size participation after add nuts: {len(part1)}, sans nuts name: {len(part1.loc[(~part1.participation_nuts.isnull())&(part1.region_1_name.isnull())])}")
+
+    ### successful projects for ODS -> envoyer ver HE pour concatenation
+    def h20_proj_success(proj):
+        from config_path import PATH_CLEAN
+        country=(part1
+                .loc[part1.stage=='successful',['project_id','country_code','country_name_fr','country_code_mapping','country_name_mapping', 'participation_nuts', 'region_1_name', 'region_2_name', 'regional_unit_name']]
                 .drop_duplicates()
                 .groupby(['project_id'], as_index = False).agg(lambda x: ';'.join(map(str, filter(None, x))))
                 .drop_duplicates())
-        print(f"size country: {len(country)}")
 
-        project = (FP6[['acronym', 'action_code', 'action_name', 'call_id', 'call_year', 'call_deadline', 
-                        'destination_code', 'destination_detail_code', 'destination_detail_name_en', 'destination_name_en', 
-                    'duration', 'ecorda_date', 'end_date', 'framework',  'fp_specific_instrument', 'fp_specific_pilier',
-                    'pilier_name_en', 'programme_name_en', 'project_cost', 'programme_code', 'fp_specific_programme',
-                    'project_eucontribution', 'project_id', 'project_numberofparticipants', 'submission_date',
-                    'signature_date', 'stage', 'stage_name', 'start_date', 'status_code', 'thema_code', 'thema_name_en', 'title']]
-            .rename(columns={'project_cost':'project_totalcost'})   
+        prop = (proj.loc[proj.stage=='evaluated', ['project_id', 'proposal_budget', 'proposal_requestedgrant', 'number_involved']]
+            .rename(columns={'number_involved':'proposal_numberofapplicants'})
             .drop_duplicates())
 
-        project = project.merge(country, how='inner', on='project_id')
+        p = part1.loc[part1.stage=='successful', ['project_id', 'subv_net']].groupby('project_id', as_index=False).aggregate('sum').rename(columns={'subv_net':'project_eucontribution'})
 
-        print(f"1 - size project lauréats: {len(project)}, fund: {'{:,.1f}'.format(project['project_eucontribution'].sum())}")
 
-        file_name = f"{PATH_CLEAN}FP6_successful_projects.pkl"
+        project = (proj.loc[(proj.stage=='successful')&(proj.status_code!='REJECTED'), ['project_id', 'acronym', 'title', 'abstract', 'call_id',
+            'call_deadline', 'action_code', 'panel_code', 'duration', 'submission_date', 'topic_code', 'topic_name', 'status_code',
+            'free_keywords', 'eic_panels', 'call_year', 'pilier_name_en', 'programme_name_en', 'thema_name_en', 'programme_code',
+            'thema_code', 'panel_name', 'panel_regroupement_code', 'panel_regroupement_name', 'panel_description', 
+            'destination_code','destination_name_en','destination_detail_code','destination_detail_name_en',
+            'action_name', 'action_code2', 'action_name2', 'start_date','end_date', 'signature_date', 'project_webpage', 
+            'number_involved','project_totalcost',  'proposal_expected_number', 'call_budget', 'framework', 'ecorda_date',
+            'fp_specific_pilier', 'fp_specific_programme', 'fp_specific_instrument']]
+            .rename(columns={
+                            'number_involved':'project_numberofparticipants',
+                            'action_code2':'action_detail_code',
+                            'action_name2':'action_detail_name'})
+                .drop_duplicates())
+
+        project = project.merge(p, how='left', on='project_id').merge(country, how='inner', on='project_id').merge(prop, how='left' , on='project_id')
+
+        print(f"- size project lauréats: {len(project)}, {len(p)}, fund: {'{:,.1f}'.format(p['project_eucontribution'].sum())}")
+        file_name = f"{PATH_CLEAN}H2020_successful_projects.pkl"
         with open(file_name, 'wb') as file:
             pd.to_pickle(project, file)
-    FP6_p=ods(FP6)
+        return project
+
+    project = h20_proj_success(proj)
+
+    ### entities
+    entities_tmp = part1.loc[~part1.id.isnull(), ['generalPic','id','country_code_mapping']].drop_duplicates()
+    print(f"- size entities {len(entities_tmp)}")
+    if any(entities_tmp.id.str.contains(';')):
+        entities_tmp = entities_tmp.assign(id_extend=entities_tmp.id.str.split(';')).explode('id_extend')
+        ent_size_to_keep = len(entities_tmp)
+        print(f"1- size ent si multi id -> ent_size_to_keep = {ent_size_to_keep}\n{entities_tmp.columns}")
+
+    entities_tmp = merge_ror(entities_tmp, ror)
+    print(f"size entities_tmp after add ror_info: {len(entities_tmp)}, entities_size_to_keep: {ent_size_to_keep}")
+
+    # PAYSAGE
+    ### si besoin de charger paysage pickle
+    cat_filter = category_paysage(paysage)
+    entities_tmp = merge_paysage(entities_tmp, paysage, cat_filter)
+    entities_tmp = mires(entities_tmp)
+
+    # SIRENE
+    ### si besoin de charger paysage pickle
+    entities_tmp = merge_sirene(entities_tmp, sirene)
+    entities_tmp['nb']=entities_tmp.groupby(['generalPic', 'id_extend', 'country_code_mapping'])['entities_id'].transform('count')
+    if any(entities_tmp['nb']>1):
+        print(f"doublons: {entities_tmp.loc[entities_tmp['nb']>1, ['generalPic', 'id_extend', 'country_code_mapping', 'entities_id', 'nb']]}")
+        entities_tmp=entities_tmp.loc[~entities_tmp.entities_id.isin(['889664413', '808994164'])]
+
+    entities_tmp.loc[(~entities_tmp.id.isnull())&(entities_tmp.entities_id.isnull()), 'entities_id'] = entities_tmp.id
+    entities_tmp['siren']=entities_tmp.loc[entities_tmp.entities_id.str.contains('^[0-9]{9}$|^[0-9]{14}$', na=False)].entities_id.str[:9]
+    entities_tmp.loc[entities_tmp.siren.isnull(), 'siren']=entities_tmp.paysage_siren
+
+    #groupe entreprises
+    # recuperation tous les siren pour lien avec groupe -> creation var SIREN 
+    entities_tmp.loc[~entities_tmp.siren.isnull(), "siren"] = entities_tmp.loc[~entities_tmp.siren.isnull(), "siren"].str.split().apply(set).str.join(";")
+
+    if any(entities_tmp.siren.str.contains(';', na=False)):
+        print("ATTENTION faire code pour traiter deux siren différents -> ce qui serait bizarre qu'il y ait 2 siren")
+    else:
+        print(f"taille de entities_tmp avant groupe:{len(entities_tmp)}")
+        entities_tmp=entities_tmp.merge(groupe, how='left', on='siren')
+
+        entities_tmp.loc[~entities_tmp.groupe_id.isnull(), 'entities_name_source']= entities_tmp.entities_name
+        entities_tmp.loc[~entities_tmp.groupe_id.isnull(), 'entities_acronym_source']= entities_tmp.entities_acronym
+        entities_tmp.loc[~entities_tmp.groupe_id.isnull(), 'entities_id']= entities_tmp.groupe_id
+        entities_tmp.loc[~entities_tmp.groupe_id.isnull(), 'entities_acronym'] = entities_tmp.groupe_acronym
+        entities_tmp.loc[~entities_tmp.groupe_id.isnull(), 'entities_name'] = entities_tmp.groupe_name
+
+        entities_tmp.loc[entities_tmp.entities_id.str.contains('gent', na=False), 'siren_cj'] = 'GE_ENT'
+        
+        entities_tmp = entities_tmp.drop(['groupe_id','groupe_name','groupe_acronym'], axis=1).drop_duplicates()
+        print(f"taille de entities_tmp après groupe {len(entities_tmp)}")
     
-    return FP6_p, FP6
-FP6_p, FP6=FP6_process()
+    # traitement catégorie
+    entities_tmp = category_cleaning(entities_tmp, sirene)
+    entities_tmp = category_woven(entities_tmp)
+
+    print(f"size part avant: {len(part)}")
+    part_tmp = part1.merge(entities_tmp, how='left', on=['generalPic', 'country_code_mapping', 'id'])
+    print(f"size part avant: {len(part_tmp)}")
+
+
+    part2=(part_tmp.loc[(part_tmp.entities_name.isnull())&(~part_tmp.entities_id.isnull()), ['entities_id', 'country_code_mapping']]
+       .assign(pic_d = part_tmp.entities_id.str.split('-').str[0])
+       .drop_duplicates()
+      )
+
+    part2 = (part2
+            .drop_duplicates()
+            .merge(entities, how='inner', left_on='pic_d', right_on='generalPic')[['entities_id','legalName', 'businessName', 'legalEntityTypeCode']]
+            .rename(columns={'businessName':'shortName'})
+            .drop_duplicates())
+    print(part2.entities_id.nunique())
+
+    part3=(part_tmp.loc[(~part_tmp.entities_id.isin(part2.entities_id.unique()))&(part_tmp.entities_name.isnull())]
+       .sort_values(['generalPic','legalName', 'shortName'], ascending=False))
+    print(part3.generalPic.nunique())
+
+    part3=(part3.groupby(['generalPic', 'country_code_mapping'])
+        .first().reset_index()[['generalPic', 'country_code_mapping', 'legalName', 'shortName', 'legalEntityTypeCode']]
+        .reset_index(drop=True)
+        .drop_duplicates()
+        )
+    print(part3.generalPic.nunique())
+
+    part_tmp = part_tmp.merge(part2, how='left', on='entities_id', suffixes=['', '_x'])
+    part_tmp.loc[~part_tmp.legalName_x.isnull(), 'legalName'] = part_tmp.legalName_x
+    part_tmp.loc[~part_tmp.shortName_x.isnull(), 'shortName'] = part_tmp.shortName_x
+    part_tmp.loc[~part_tmp.legalEntityTypeCode_x.isnull(), 'legalEntityTypeCode'] = part_tmp.legalEntityTypeCode_x
+    part_tmp = part_tmp.merge(part3, how='left', on=['generalPic', 'country_code_mapping'], suffixes=['', '_y'])
+    part_tmp.loc[~part_tmp.legalName_y.isnull(), 'legalName'] = part_tmp.legalName_y
+    part_tmp.loc[~part_tmp.shortName_y.isnull(), 'shortName'] = part_tmp.shortName_y
+    part_tmp.loc[~part_tmp.legalEntityTypeCode_y.isnull(), 'legalEntityTypeCode'] = part_tmp.legalEntityTypeCode_y
+    part_tmp.drop(part_tmp.columns[part_tmp.columns.str.endswith(('_x','_y'))], axis=1, inplace=True)
+
+    liste=['legalName', 'shortName']
+    for i in liste:
+        part_tmp[i] = part_tmp[i].apply(lambda x: x.capitalize().strip() if isinstance(x, str) else x)
+
+    part_tmp.loc[part_tmp.entities_name.isnull(), 'entities_name'] = part_tmp.legalName
+    part_tmp.loc[part_tmp.entities_acronym.isnull(), 'entities_acronym'] = part_tmp.shortName
+    part_tmp.loc[part_tmp.entities_id.isnull(), 'entities_id'] = "pic"+part_tmp.generalPic.map(str)
+    
+    part_tmp = part_tmp.assign(number_involved=1)
+
+    part_tmp['nb'] = part_tmp.id.str.split(';').str.len()
+    for i in ['subv', 'subv_net', 'requestedGrant', 'number_involved']:
+        part_tmp[i] = np.where(part_tmp['nb']>1, part_tmp[i]/part_tmp['nb'], part_tmp[i])
+
+    # 'requestedGrant'
+    print(f"- size part après: {len(part_tmp)}")
+
+    if any(part_tmp.entities_id=='nan')|any(part_tmp.entities_id.isnull()):
+        print(f"- attention il reste des entities sans entities_id valides")
+    
+    # type_entity = pd.read_json(open('data_files/legalEntityType.json', 'r', encoding='UTF-8'))
+    part_tmp.loc[part_tmp.legalEntityTypeCode.isnull(), 'legalEntityTypeCode'] = np.nan
+    part_tmp = cordis_type(part_tmp)
+    part_tmp = part_tmp.drop(columns=['legalEntityType_fr','legalEntityType_acro', 'legalEntityType_en'])
+    
+    for i in ['entities_acronym', 'entities_name']:
+        part_tmp[i] = part_tmp[i].str.replace('\\n|\\t|\\r|\\s+', ' ', regex=True).str.strip()
+
+#################################################
+# calculs
+
+    proj_erc = proj.loc[(proj.thema_code=='ERC')&(proj.action_code=='ERC'), ['project_id', 'destination_code']]
+    part_tmp = part_tmp.merge(proj_erc, how='left', on='project_id').drop_duplicates()
+    part_tmp = part_tmp.assign(erc_role='partner')
+
+    part_tmp.loc[(part_tmp.destination_code=='SyG')&(part_tmp.participates_as=='beneficiary')&(pd.to_numeric(part_tmp.orderNumber).astype('int')<5), 'erc_role'] = 'PI'
+    part_tmp.loc[(part_tmp.destination_code!='SyG')&(part_tmp.role=='coordinator'), 'erc_role'] = 'PI'
+    part_tmp.loc[part_tmp.destination_code.isnull(), 'erc_role'] = np.nan
+    part_tmp.drop(columns='destination_code', inplace=True)
+
+    part_tmp = (part_tmp
+                .assign(calculated_fund=np.where(part_tmp.stage=='successful', part_tmp['subv_net'], part_tmp['requestedGrant']), 
+                        coordination_number=np.where(part_tmp.role=='coordinator', 1, 0)))
+
+    proj_no_coord = proj[(proj.thema_code.isin(['ACCELERATOR','COST']))|(proj.destination_code.isin(['SNLS','PF']))|(proj.action_code3.str.contains('SNLS', na=False))|((proj.thema_code=='ERC')&(proj.destination_code!='SyG'))].project_id.to_list()
+
+    part_tmp.loc[part_tmp.project_id.isin(proj_no_coord), 'coordination_number'] = 0
+    part_tmp = part_tmp.assign(with_coord=True)
+    part_tmp.loc[part_tmp.project_id.isin(proj_no_coord), 'with_coord'] = False
+
+    part_tmp.rename(columns={'ZONAGE':'extra_joint_organization'}, inplace=True)
+    part_tmp = part_tmp.map(lambda x: x.strip() if isinstance(x, str) else x)
+
+# agregation des participants
+    participation=part_tmp[
+        ['project_id',  'stage', 'participates_as', 'role', 'calculated_fund','subv', 'subv_net','cordis_is_sme', 
+        'requestedGrant', 'number_involved', 'coordination_number', 'with_coord',
+        'cordis_type_entity_code','cordis_type_entity_name_fr', 'cordis_type_entity_acro', 'erc_role',
+        'cordis_type_entity_name_en', 'participation_nuts', 'region_1_name', 'region_2_name', 'regional_unit_name',
+        'country_code_mapping', 'country_name_mapping', 'country_code', 'country_name_en', 'extra_joint_organization',
+        'country_association_code','country_association_name_en', 'country_group_association_code',
+        'country_group_association_name_en', 'country_group_association_name_fr', 'country_name_fr', 'article1',
+        'article2', 'entities_name', 'entities_acronym', 'entities_id', 'paysage_category_priority',
+        'ror_category', 'paysage_category', 'paysage_category_id', 'paysage_siren','paysage_cj_name',
+        'insee_cat_code', 'insee_cat_name', 'groupe_sector', 'cj_code', 'siren_cj',
+        'category_woven', 'operateur_lib', 'operateur_name', 'operateur_num']]
+
+    participation = participation.groupby(list(participation.columns.difference([ 'subv', 'subv_net', 'requestedGrant', 'number_involved'])), dropna=False, as_index=False).sum()
+    print(f"involved successful:{'{:,.1f}'.format(participation.loc[(participation.stage=='successful'), 'number_involved'].sum())}\nsubv_laureat:{'{:,.1f}'.format(participation.loc[(participation.stage=='successful'), 'subv_net'].sum())}\nsubv_prop:{'{:,.1f}'.format(participation.loc[(participation.stage=='evaluated'), 'requestedGrant'].sum())}")
+    participation.drop(columns=['requestedGrant', 'subv_net'], inplace=True)
+    
+    # proj pour synthese
+    proj_s=proj.loc[~((proj.stage=='successful')&(proj.status_code=='REJECTED')),
+        ['framework','project_id', 'call_id', 'panel_code', 'status_code', 'topic_code', 'stage', 'call_year', 'abstract',
+        'pilier_name_en', 'pilier_name_fr','programme_name_en', 'thema_name_en', 'thema_code', 'programme_code',
+        'panel_name', 'panel_regroupement_code', 'panel_regroupement_name', 'call_deadline', 'free_keywords',
+        'destination_code','destination_name_en','destination_detail_code','destination_detail_name_en',
+        'action_code', 'action_code2', 'action_code3', 'action_name', 'action_name2', 'action_name3', 'ecorda_date']]
+    
+    temp = proj_s.merge(participation, how='inner', on=['project_id', 'stage'])
+    temp = temp.reindex(sorted(temp.columns), axis=1)
+    print(f"involved successful:{'{:,.1f}'.format(temp.loc[(temp.stage=='successful'), 'number_involved'].sum())}\nsubv_laureat:{'{:,.1f}'.format(temp.loc[(temp.stage=='successful'), 'calculated_fund'].sum())}\nsubv_prop:{'{:,.1f}'.format(temp.loc[(temp.stage=='evaluated'), 'calculated_fund'].sum())}")
+    print(len(temp))
+
+    file_name = f"{PATH_CLEAN}H2020_data.pkl"
+    with open(file_name, 'wb') as file:
+        pd.to_pickle(temp, file)
+
+
+    # sans cordis type
+    cordis_type_null = pd.read_pickle(f"{PATH_WORK}cordis_type_null.pkl")
+
+    for i in ['evaluated', 'successful']:
+        nb_involved = temp.loc[temp.stage==i].number_involved.sum()
+        nb_type_null = temp.loc[(temp.cordis_type_entity_code.isnull())&(temp.stage==i)].number_involved.sum()
+        fund_type = temp.loc[temp.stage==i].calculated_fund.sum()
+        part_involved_null = nb_type_null/nb_involved*100
+        fund_type_null = temp.loc[(temp.cordis_type_entity_code.isnull())&(temp.stage==i)].calculated_fund.sum()
+        part_fund_null = fund_type_null/fund_type*100
+        d = {'framework': 'H2020', 'stage': i, 'nb_involved': nb_involved, 'nb_type_null':nb_type_null, 'fund_type':fund_type, 'fund_type_null':fund_type_null, 'part_fund_null':part_fund_null}
+        cordis_type_null.append(d)
+        print(f"{i} -> nb_involved {nb_involved}, nb_type_null {nb_type_null}, 'part_involved_null' {part_involved_null} fund_type {fund_type}, fund_type_null {fund_type_null}, {part_fund_null}")
+    pd.DataFrame(cordis_type_null).to_csv(f"{PATH_CONNECT}cordis_type_null.csv", sep=';')
+
+
+    return project, temp
+h20_p, h20 = H2020_process()
