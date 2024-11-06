@@ -1,6 +1,6 @@
 import zipfile, json, re, os
 import pandas as pd, numpy as np
-from config_path import PATH_WORK, PATH_REF
+from config_path import PATH_WORK, PATH_ODS
 
 # load json file in a zipfile
 def unzip_zip(namezip, path, data, encode):
@@ -79,3 +79,18 @@ def bugs_excel(df, chemin, name_sheet):
     else:
         with pd.ExcelWriter(chemin, mode='a', if_sheet_exists='replace') as writer:
             df.to_excel(writer, sheet_name=name_sheet)
+
+def order_columns(df, xl_sheetname):
+    import pandas as pd
+    xl_path = f"{PATH_ODS}colonnes_ordres_par_jeux_ods.xlsx"
+    colorder = pd.read_excel(xl_path, sheet_name=xl_sheetname, dtype={'order':int})
+    colorder=colorder.sort_values('order')
+    colorder=colorder.vars.unique()
+    return df.reindex(columns=colorder)
+
+
+def zipfile_ods(df, file_export):
+    import zipfile
+    with zipfile.ZipFile(f'{PATH_ODS}{file_export}.zip', 'w', compression=zipfile.ZIP_DEFLATED) as z:
+        with z.open(f'{file_export}.csv', 'w', force_zip64=True) as f:
+            df.to_csv(f, sep=';', encoding='utf-8', index=False, na_rep='', decimal=".")

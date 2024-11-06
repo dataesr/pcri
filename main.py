@@ -204,8 +204,18 @@ part_prop = applicants_calcul(part_step, app1)
 part_proj = participants_calcul(part_step, part)
 participation = participations_complete(part_prop, part_proj, proj_no_coord)
 del part_proj, part_prop
+collaboration = collab(participation, projects, countries)
 
-h20_p, h20 = H2020_process()
+#step5 - si nouvelle actualisation ou changement dans nomenclatures
+h20, FP7, FP6, h20_p, FP7_p, FP6_p = framework_load()
 h20 = h20.reindex(sorted(h20.columns), axis=1)
-FP7_p, FP7=FP7_process()
-FP6_p, FP6=FP6_process()
+# h20_p, h20 = H2020_process()
+# h20 = h20.reindex(sorted(h20.columns), axis=1)
+# FP7_p, FP7=FP7_process()
+# FP6_p, FP6=FP6_process()
+
+project_list = list(set(h20_p.project_id))+list(set(FP7_p.project_id))+list(set(FP6_p.project_id))+list(set(projects.loc[projects.stage=='successful'].project_id))
+check_proj_id(project_list)
+
+projects_all = projects_ods(projects, participation, calls, countries, h20_p, FP6_p, FP7_p)
+collab_signed_ods(collaboration)
