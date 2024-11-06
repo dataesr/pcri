@@ -74,11 +74,11 @@ def ent(participation, entities_info, projects):
     )
 
     entities_part=(entities_part
-                    .drop(columns=['generalPic','businessName', 'legalName','generalState', 'street','postalCode','postalBox',
-                                'webPage','naceCode','gps_loc', 'city', 'countryCode','isNonProfit',  'cat_an',
-                                'isPublicBody', 'isInternationalOrganisation', 'isResearchOrganisation', 'isHigherEducation',
-                                'legalType', 'vat', 'legalRegNumber', 'naceCode', 'gps_loc', 'id', 'id_m',  'siret_closeDate',
-                                'siren', 'legalEntityTypeCode']))
+                .drop(columns=['generalPic','businessName', 'legalName','generalState', 'street','postalCode','postalBox',
+                        'webPage','naceCode','gps_loc', 'city', 'countryCode','isNonProfit',  'cat_an',
+                        'isPublicBody', 'isInternationalOrganisation', 'isResearchOrganisation', 'isHigherEducation',
+                        'legalType', 'vat', 'legalRegNumber', 'naceCode', 'gps_loc', 'id', 'id_m',  'siret_closeDate',
+                        'siren']))
 
     entities_part=(entities_part
         .groupby(list(entities_part.columns.difference(['coordination_number', 'number_involved', 'calculated_fund', 'beneficiary_subv'])), dropna=False, as_index=False).sum()
