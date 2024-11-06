@@ -2,6 +2,7 @@ import pandas as pd, numpy as np, json
 from config_path import PATH_CLEAN
 
 def FP6_process():
+    print("\n### FP6")
     def FP6_load():
         FP6_PATH='C:/Users/zfriant/Documents/OneDrive/PCRI/FP6/'
         with open(f"{FP6_PATH}FP6_projects.json", 'r', encoding='ANSI') as fp:

@@ -6,7 +6,7 @@ from config_path import PATH_SOURCE, PATH_CLEAN, PATH_REF, PATH_CONNECT
 from functions_shared import unzip_zip
 
 def H2020_process():
-    print("### H2020")
+    print("\n### H2020")
 ##########################################################
     def h20_nom_load():
         destination = pd.read_json(open("data_files/destination.json", 'r', encoding='utf-8'))

@@ -1,7 +1,9 @@
 
 from main_library import *
 
-# si nouvelle actualisation utiliser MAIN_FIRST_PROCESS
+#################
+# 1 - si nouvelle actualisation utiliser MAIN_FIRST_PROCESS
+#################
 
 # si traitement déjà effectués
 ### si besoin de charger les permiers traitements sns recommencer depuis le debut

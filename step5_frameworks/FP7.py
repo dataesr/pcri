@@ -5,6 +5,7 @@ from step3_entities.merge_referentiels import *
 from step3_entities.categories import *
 
 def FP7_process():
+    print("\n### FP7")
     # def call_api():
     #     url="https://ec.europa.eu/research/participants/portal/data/call/fp7/calls.json?_=1458726074699"
     #     r = requests.get(url)
