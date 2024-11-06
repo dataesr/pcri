@@ -1,0 +1,14 @@
+[{"code": "STG", "name": "Starting grants"},
+ {"code": "ADG", "name": "Advanced grants"},
+ {"code": "SyG", "name": "Synergy grants"},
+ {"code": "COG", "name": "Consolidator grants"},
+ {"code": "POC", "name": "Proof of concept grants"},
+ {"code": "ERC", "name": "Frontier science"},
+ {"code": "SJI",
+  "name": "Science journalism initiative"},
+ {"code": "PERA",
+  "name": "Public Engagement with Research Award"},
+ {"code": "POC-LS", "name": "Proof of concept lump sum pilot"},
+ {"code": "LVG", "name": "Low value grant"},
+ {"code":"ERC-OTHERS", "name":"Others ERC"}
+]

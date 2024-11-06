@@ -1,0 +1,7 @@
+[{"old":"ERC-SG", "destination_code" :"STG"}, 
+ {"old":"ERC-AG", "destination_code":"ADG"}, 
+ {"old":"ERC-SYG", "destination_code":"SyG"}, 
+ {"old":"ERC-CG", "destination_code":"COG"}, 
+ {"old":"ERC-POC", "destination_code":"POC"},
+{"old":"POC", "destination_code":"POC"}]
+

@@ -1,6 +1,6 @@
 [
 	{
-		"destination_lib": "Health others",
+		"destination_lib": "Health other",
 		"destination_code": "HEALTH-OTHER",
 		"destination_name_fr": "Autres destinations en Santé",
 		"destination_name_en": "Other health destinations"
@@ -42,7 +42,7 @@
 		"destination_name_en": "Ensuring access to innovative, sustainable and high-quality health-care"
 	},
 	{
-		"destination_lib": "CCSI others",
+		"destination_lib": "CCSI other",
 		"destination_code": "CCSI-OTHER",
 		"destination_name_fr": "Autres destinations en Culture, créativité et société inclusive",
 		"destination_name_en": "Other Culture, creativity and inclusive society destinations"
@@ -66,7 +66,7 @@
 		"destination_name_en": "Innovative Research on Democracy and Governance"
 	},
 	{
-		"destination_lib": "CSS others",
+		"destination_lib": "CSS other",
 		"destination_code": "CSS-OTHER",
 		"destination_name_fr": "",
 		"destination_name_en": "Other Civil Security for Society destinations"
@@ -108,7 +108,7 @@
 		"destination_name_en": "Increased Cybersecurity"
 	},
 	{
-		"destination_lib": "DIS others",
+		"destination_lib": "DIS other",
 		"destination_code": "DIS-OTHER",
 		"destination_name_fr": "Autres destinations en Numérique, industrie et espace",
 		"destination_name_en": "Other Digital, Industry and Space destinations"
@@ -150,7 +150,7 @@
 		"destination_name_en": "World-leading Data and Computing Technologies"
 	},
 	{
-		"destination_lib": "CEM others",
+		"destination_lib": "CEM other",
 		"destination_code": "CEM-OTHER",
 		"destination_name_fr": "",
 		"destination_name_en": "Other Climate, Energy and Mobility destinations"
@@ -285,7 +285,7 @@
 		"destination_name_en": "Smart Networks and Services"
 	},
 	{
-		"destination_code": "ER",
+		"destination_code": "EU-Rail",
 		"destination_name_fr": "EU-Rail",
 		"destination_name_en": "EU-Rail"
 	},
@@ -432,7 +432,7 @@
 	{
 		"destination_code": "ERC-OTHER",
 		"destination_name_fr": "Autres ERC",
-		"destination_name_en": "ERC others"
+		"destination_name_en": "ERC other"
 	},
 	{
 		"destination_code": "COFUND",
@@ -485,7 +485,7 @@
 	{
 		"destination_code": "MSCA-OTHER",
 		"destination_name_fr": "Autres MSCA",
-		"destination_name_en": "MSCA others"
+		"destination_name_en": "MSCA other"
 	},
 	{
 		"destination_code": "GENDER",
