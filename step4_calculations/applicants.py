@@ -39,4 +39,5 @@ def applicants_calcul(part_step, app1):
     else:
         print(f"5- ATTENTION ! bien vérifier le volume de calculated_proposal_subv dans PARTICIPATION FINALE :{'{:,.1f}'.format(part_prop['calculated_fund'].sum())}, subv_orig:{app_sum}")
 
-    print(f"- size part_prop: {len(part_prop)}") 
+    print(f"- size part_prop: {len(part_prop)}")
+    return part_prop

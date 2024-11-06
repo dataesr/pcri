@@ -232,4 +232,3 @@ def FP6_process():
     FP6_p=ods(FP6)
     
     return FP6_p, FP6
-FP6_p, FP6=FP6_process()

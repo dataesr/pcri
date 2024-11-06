@@ -47,4 +47,5 @@ def participants_calcul(part_step, part):
     else:
         print(f"-- ATTENTION ! Revoir le calcul de calculated_other_subv:{'{:,.1f}'.format(part_proj['calculated_fund'].sum())}, netEuContribution:{'{:,.1f}'.format(part['netEuContribution'].sum())}")
         
-    print(f"- size part_prop: {len(part_proj)}") 
+    print(f"- size part_prop: {len(part_proj)}")
+    return part_proj

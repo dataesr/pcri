@@ -1,4 +1,3 @@
-import copy, time
 from functions_shared import *
 from step1_mainData.data_load import *
 from step1_mainData.projects import *
@@ -28,3 +27,6 @@ from step3_entities.categories import *
 from step4_calculations.participations import *
 from step4_calculations.applicants import *
 from step4_calculations.participants import *
+from step5_frameworks.H2020 import *
+from step5_frameworks.FP7 import *
+from step5_frameworks.FP6 import *
