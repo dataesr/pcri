@@ -1,0 +1,15 @@
+pilier_name_en	pilier_global_name
+Capacities	Capacities (2007-2013)
+Cooperation	Cooperation (2007-2013)
+EC Treaty	EC Treaty (2014-2020)
+Euratom	Euratom (2002-2020)
+Excellent Science	Excellent Science
+Global Challenges and European Industrial Competitiveness	Global Challenges and European Industrial Competitiveness
+Industrial Leadership	Industrial Leadership (2007-2013)
+Innovative Europe	Innovative Europe
+Integrating and strenghtening the ERA	Integrating and strenghtening the ERA (2002-2006)
+Science with and for Society	Science with and for Society (2014-2020)
+Societal Challenges	Societal Challenges (2014-2020)
+Spreading excellence and widening participation	Widening Participation and Strengthening the European Research Area
+Structuring the ERA	Structuring the ERA (2002-2006)
+Widening Participation and Strengthening the European Research Area	Widening Participation and Strengthening the European Research Area
