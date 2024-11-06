@@ -16,7 +16,7 @@ def collab_signed_ods(collab):
             'participates_as', 'participates_as_collab',  'action_code', 'action_name',
             'thema_code', 'destination_code',  'destination_name_en', 'extra_joint_organization', 'extra_joint_organization_collab',
             'part_num', 'coord_num', 'fund', 'part_num_collab', 'fund_collab', 'total_cost', 'proposal_budget',
-            'nuts_code','region_1_name',  'nuts_code_collab', 'region_1_name_collab', 
+            'participation_nuts','region_1_name', 'participation_nuts_collab', 'region_1_name_collab', 
             'country_code', 'country_code_collab', 'country_code_mapping_collab', 
             'country_name_en', 'country_name_en_collab',  'pilier_name_en', 'programme_name_en', 'thema_name_en', 'with_coord', 'ecorda_date']]
 

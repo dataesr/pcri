@@ -203,3 +203,9 @@ part_prop = applicants_calcul(part_step, app1)
 part_proj = participants_calcul(part_step, part)
 participation = participations_complete(part_prop, part_proj, proj_no_coord)
 del part_proj, part_prop
+
+#step5 - si nouvelle actualisation ou changement dans nomenclatures
+h20_p, h20 = H2020_process()
+h20 = h20.reindex(sorted(h20.columns), axis=1)
+FP7_p, FP7=FP7_process()
+FP6_p, FP6=FP6_process()
