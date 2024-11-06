@@ -29,7 +29,7 @@ def projects_ods(projects, participation, calls, countries, h20_p, FP6_p, FP7_p)
             'thema_name_en', 'destination_code', 'destination_detail_code', 'destination_detail_name_en', 
             'action_code', 'action_name', 'action_code2', 'action_name2', 'topic_name',
             'panel_code', 'panel_name', 'panel_regroupement_code', 'panel_regroupement_name','panel_description',
-            'free_keywords', 'eic_panels', 'nuts_code', 'region_1_name', 'region_2_name', 'regional_unit_name',
+            'free_keywords', 'eic_panels', 'participation_nuts', 'region_1_name', 'region_2_name', 'regional_unit_name',
             'country_code', 'country_name_fr', 'country_code_mapping', 'country_name_mapping', 
             'ecorda_date']]
         .rename(columns={
