@@ -54,14 +54,14 @@ def projects_ods(projects, participation, calls, countries, h20_p, FP6_p, FP7_p)
     tmp = tmp.loc[tmp.status_code!='REJECTED']
 
     for i in ['title','abstract', 'free_keywords', 'eic_panels', 'project_webpage', 'topic_name']:
-        tmp[i] = tmp[i].str.replace('\n|\t|\r|\s+', ' ', regex=True).str.strip()
+        tmp[i] = tmp[i].str.replace('\\n|\\t|\\r|\\s+', ' ', regex=True).str.strip()
 
     tmp['free_keywords'] = tmp['free_keywords'].str.lower()
 
     for i in ['duration']:
         tmp[i] = tmp[i].astype('float')
         
-    tmp['call_budget'] = tmp.call_budget.astype('str').str.replace(r'\.[0-9]*', '', regex=True).astype('float')
+    tmp['call_budget'] = tmp.call_budget.astype('str').str.replace(r'\\.[0-9]*', '', regex=True).astype('float')
 
     cordis = pd.read_csv(f"{PATH_SOURCE}cordis_status.csv", sep=',', dtype = {'project_id':'str'}).drop_duplicates()
     tmp = tmp.merge(cordis[cordis.cordis_webPage_status==200], how='left', on='project_id')
