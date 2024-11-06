@@ -69,7 +69,7 @@ def projects_ods(projects, participation, calls, countries, h20_p, FP6_p, FP7_p)
     
     tmp.mask(tmp=='', inplace=True)    
 
-    pg = pd.read_table('data_json/pilier_global.txt', sep='\t')
+    pg = pd.read_table('data_files/pilier_global.txt', sep='\t')
     tmp = tmp.merge(pg, how='left', on='pilier_name_en')
 
     # attention si changement de nom de vars -> la modifier aussi dans pcri_info_columns_order

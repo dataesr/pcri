@@ -28,3 +28,5 @@ h20 = h20.reindex(sorted(h20.columns), axis=1)
 
 projects_all = projects_ods(projects, participation, calls, countries, h20_p, FP6_p, FP7_p)
 collab_signed_ods(collaboration)
+msca_collab_ods(collaboration)
+msca_collab(collaboration)
