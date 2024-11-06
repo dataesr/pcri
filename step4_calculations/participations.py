@@ -85,7 +85,7 @@ def ent(participation, entities_info, projects):
         .drop_duplicates()
         )
 
-    entities_part = entities_part.applymap(lambda x: x.strip() if isinstance(x, str) else x)
+    entities_part = entities_part.map(lambda x: x.strip() if isinstance(x, str) else x)
 
     print(f"1 - part={'{:,.1f}'.format(part.loc[part.stage=='evaluated', 'calculated_fund'].sum())},participation={'{:,.1f}'.format(participation.loc[participation.stage=='evaluated', 'calculated_fund'].sum())}")
     print(f"2 - part={'{:,.1f}'.format(part.loc[part.stage=='successful', 'calculated_fund'].sum())},participation={'{:,.1f}'.format(participation.loc[participation.stage=='successful', 'calculated_fund'].sum())}")
