@@ -90,7 +90,7 @@ def msca_entities(me_entities):
             'operateur_name', 'paysage_category', 'paysage_category_id', 'category_woven', 'insee_cat_code', 'insee_cat_name',
             'action_code', 'action_name', 
             'entities_name', 'entities_acronym', 'calculated_fund', 'coordination_number', 'number_involved',
-            'project_id', 'nuts_code', 'region_1_name', 'region_2_name', 'regional_unit_name',
+            'project_id', 'participation_nuts', 'region_1_name', 'region_2_name', 'regional_unit_name',
             'country_group_association_name_fr', 'country_name_mapping','country_name_en',
             'country_group_association_code', 'country_group_association_name_en', 'country_code_mapping', 'panel_code',
             'destination_code', 'destination_detail_code', 'entities_id', 'status_code', 'ecorda_date',

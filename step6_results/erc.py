@@ -90,7 +90,7 @@ def erc_entities(me_entities):
             'cordis_type_entity_name_en', 'cordis_type_entity_name_fr',  'role', 'extra_joint_organization', 'is_ejo',
             'operateur_name', 'paysage_category','paysage_category_id', 'category_woven', 'insee_cat_code', 'insee_cat_name',
             'entities_name', 'entities_acronym', 'calculated_fund', 'coordination_number', 'number_involved', 'with_coord',
-            'project_id', 'nuts_code', 'region_1_name', 'region_2_name', 'regional_unit_name',
+            'project_id', 'participation_nuts', 'region_1_name', 'region_2_name', 'regional_unit_name',
             'country_group_association_name_fr', 'country_name_mapping','country_name_en',
             'country_group_association_code', 'country_group_association_name_en', 'country_code_mapping', 'panel_code',
             'destination_code', 'entities_id', 'status_code', 'ecorda_date',  'free_keywords', 'abstract', 'acronym',

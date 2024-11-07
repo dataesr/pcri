@@ -5,6 +5,7 @@ from main_library import *
 extractDate = date_load()
 
 ### pour l'instant ne fonctionne pas
+## demander à Eric de relancer la machine sur sandbox
 # get_call_info()
 
 proj = projects_load()
