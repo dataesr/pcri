@@ -82,13 +82,5 @@ def collab(participation, projects, countries):
             .merge(proj, how='inner', on=['project_id','stage'])
             .drop_duplicates())
 
-    # collab=(collab
-    #         .assign(with_coord=np.where(collab.destination_code.isin(['PF','ACCELERATOR','COST'])|(collab.thema_code=='ERC'), False, True)))
-    # collab.loc[collab.destination_code=='SyG', 'with_coord'] = True 
-
     print(f"size collab {len(collab)}")
-
-    del collab_eval, collab_signed, countries_collab
-
-    # pd.DataFrame(collab).drop(columns=['ecorda_date', 'abstract', 'free_keywords']).to_csv(PATH_CONNECT+"collaboration_current.csv", index=False, encoding="UTF-8", sep=";", na_rep='')
     return collab
