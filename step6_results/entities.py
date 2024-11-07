@@ -8,11 +8,11 @@ def entities_preparation(entities_part, h20):
             'call_deadline','abstract', 
             'calculated_fund', 'call_id', 'call_year', 'cj_code', 'category_woven',
             'coordination_number', 'cordis_is_sme', 'cordis_type_entity_acro', 
-            'extra_joint_organization', 'with_coord',
+            'extra_joint_organization', 'with_coord', 'is_ejo',
             'cordis_type_entity_code', 'cordis_type_entity_name_en','cordis_type_entity_name_fr', 
             'participation_nuts', 'region_1_name', 'region_2_name', 'regional_unit_name',
             'country_association_code','country_association_name_en', 'country_code', 
-            'country_code_mapping', 'is_ejo',
+            'country_code_mapping', 
             'country_group_association_code', 'country_group_association_name_en',
             'country_group_association_name_fr', 'country_name_en',
             'country_name_fr', 'country_name_mapping', 'destination_code', 'destination_name_en',
@@ -64,7 +64,8 @@ def entities_ods(entities_participation):
         'status_code', 'framework', 'call_year', 'ecorda_date',
         'pilier_name_en', 'pilier_name_fr', 'programme_code', 'programme_name_en', 
         'programme_name_fr',  'thema_code', 'thema_name_fr', 'thema_name_en', 'destination_code',
-        'destination_lib', 'destination_name_en','action_code2', 'action_name2', 'free_keywords', 'abstract', 'entities_name_source']]
+        'destination_lib', 'destination_name_en','action_code2', 'action_name2', 'free_keywords', 'abstract', 'entities_name_source',
+        'operateur_num','operateur_lib', 'paysage_category_priority']]
         .merge(pd.DataFrame(l), how='left', left_on='entities_id', right_on='api_id')
         .drop(columns='api_id')
         .rename(columns={ 

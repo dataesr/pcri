@@ -39,3 +39,6 @@ from step6_results.collaborations import *
 from step6_results.entities import *
 from step6_results.synthese import *
 from step6_results.calls import *
+from step6_results.msca_erc import *
+from step6_results.msca import *
+from step6_results.erc import *
