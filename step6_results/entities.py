@@ -1,6 +1,7 @@
 import pandas as pd, numpy as np
 from functions_shared import order_columns, zipfile_ods
 from step3_entities.ID_getSourceRef import sourcer_ID
+from config_path import PATH_CONNECT
 
 def entities_preparation(entities_part, h20):
     tmp= h20.rename(columns={ 'subv':'beneficiary_subv'})[
@@ -146,19 +147,21 @@ def entities_collab(entities_participation):
 
     ent_signed = (entities_participation
         .loc[(entities_participation.country_code=='FRA')&(entities_participation.stage=='successful'),
-        ['stage', 'framework', 'call_year','project_id', 'action_code', 'category_woven','entities_id','entities_name','entities_acronym', 'calculated_fund']])
+        ['stage', 'framework', 'call_year','project_id', 'action_code', 'programme_name_fr', 'thema_code', 'thema_name_fr', 'destination_code', 'category_woven','entities_id','entities_name','entities_acronym', 'calculated_fund']])
 
     print(len(entities_participation.loc[(entities_participation.country_code=='FRA')&(entities_participation.stage=='successful')&(entities_participation.destination_code=='Destination 5 - SPACE'), ['project_id', 'entities_id']]))
 
     collab_ent = ent_signed.merge(copy_signed, on=['project_id'])
     collab_ent = collab_ent[~(collab_ent['entities_id']==collab_ent['entities_id_collab'])].drop_duplicates()
+
+    (collab_ent
+    .loc[(collab_ent.framework=='Horizon Europe')&(collab_ent.country_code_collab!='FRA')]
+    .groupby(['programme_name_fr', 'thema_code', 'thema_name_fr', 'destination_code', 
+              'action_code', 'entities_id_collab', 'entities_name_collab', 
+              'entities_acronym_collab','country_name_fr_collab','country_code_collab' ])
+    .agg({'project_id':'count', 'calculated_fund':'sum','calculated_fund_collab':'sum'})
+    .reset_index()
+    .sort_values('project_id', ascending=False)
+    .to_csv(f"{PATH_CONNECT}entities_collaboration_current.csv", sep=";", index=False, encoding='UTF-8', na_rep=''))
+   
     return collab_ent
-    # (collab_ent
-    # .loc[(collab_ent.framework=='Horizon Europe')&(collab_ent.country_code_collab!='FRA')]
-    # .merge(proj, how='inner', on=['stage','project_id', 'call_year', 'action_code'])
-    # .groupby(['programme_name_fr', 'thema_code', 'thema_name_fr', 'destination_code', 'action_code', 'entities_id_collab', 'entities_name_collab', 'entities_acronym_collab','country_name_fr_collab','country_code_collab' ])
-    # .agg({'project_id':'count', 'calculated_fund':'sum','calculated_fund_collab':'sum'})
-    # .reset_index()
-    # .sort_values('project_id', ascending=False)
-    # .to_csv(f"{PATH_CONNECT}entities_collaboration_current.csv", sep=";", index=False, encoding='UTF-8', na_rep=''))
-    
