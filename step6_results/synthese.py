@@ -97,12 +97,10 @@ def synthese(projects_current):
             'with_coord':'flag_coordination'
             }))
 
-
     tmp.loc[tmp.thema_code.isin(['ERC','MSCA']), ['destination_code', 'destination_name_en']] = np.nan
 
     # attention si changement de nom de vars -> la modifier aussi dans pcri_info_columns_order
     tmp = order_columns(tmp, 'proj_synthese')
-
 
     print(f"{'{:,.1f}'.format(tmp.loc[tmp.stage=='successful','fund_€'].sum())}")
     zipfile_ods(tmp, 'fr-esr-all-projects-synthese')

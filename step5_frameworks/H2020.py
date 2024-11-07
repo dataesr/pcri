@@ -505,6 +505,9 @@ def H2020_process():
     part_tmp.rename(columns={'ZONAGE':'extra_joint_organization'}, inplace=True)
     part_tmp = part_tmp.map(lambda x: x.strip() if isinstance(x, str) else x)
 
+    part_tmp = (part_tmp
+            .assign(is_ejo=np.where(part_tmp.extra_joint_organization.isnull(), 'Sans', 'Avec')))
+ 
 # agregation des participants
     participation=part_tmp[
         ['project_id',  'stage', 'participates_as', 'role', 'calculated_fund','subv', 'subv_net','cordis_is_sme', 
