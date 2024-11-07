@@ -1,5 +1,5 @@
 from functions_shared import zipfile_ods, order_columns
-from config_path import PATH_CONNECT
+from config_path import PATH_CONNECT, PATH_CLEAN
 import numpy as np, pandas as pd
 
 def collab_signed_ods(collab):
@@ -95,3 +95,25 @@ def msca_collab(collab):
         'destination_name_en', 'destination_detail_code','destination_detail_name_en', 'total_cost']])
 
     pd.DataFrame(msca_collab).to_csv(f"{PATH_CONNECT}msca_collaboration_current.csv", index=False, encoding="UTF-8", sep=";", na_rep='')
+
+
+def collab_evolution(collab):
+    col_select=['framework', 'stage','call_year', 'project_id',  'total_cost',
+    'extra_joint_organization', 'country_code_collab', 'country_name_fr_collab', 
+    'participates_as', 'participates_as_collab', 'extra_joint_organization_collab','action_code', 'action_name',
+    'part_num', 'coord_num', 'part_num_collab', 'fund', 'fund_collab' ]
+
+
+    collab_fr = (collab.assign(framework='Horizon Europe').loc[(collab.with_coord==True)&(collab.country_code=='FRA'), col_select])
+    collab_fr =  (collab_fr.groupby(list(collab_fr.columns.difference(['part_num', 'coord_num', 'part_num_collab', 'fund', 'fund_collab'])), dropna=False, as_index=False)
+                .sum()
+                )
+
+    h20_collab = pd.read_pickle(f"{PATH_CLEAN}H2020_collab.pkl")
+
+    h20_collab = h20_collab.loc[h20_collab.with_coord==True, col_select]
+    h20_collab = (h20_collab.groupby(list(h20_collab.columns.difference(['part_num', 'coord_num', 'part_num_collab', 'fund', 'fund_collab'])), dropna=False, as_index=False)
+                .sum()
+                )
+    
+    pd.concat([collab_fr, h20_collab], ignore_index=True).to_csv(f"{PATH_CONNECT}collab_evol.csv", index=False, encoding="UTF-8", sep=";", na_rep='')
