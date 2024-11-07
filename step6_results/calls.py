@@ -89,3 +89,4 @@ def calls_all(projects):
     calls_all.drop(columns=['year', 'call_temp'], inplace=True)
 
     calls_all.sort_values('call_deadline').to_csv(PATH_CONNECT+"calls_liste.csv", index=False, encoding="UTF-8", sep=";", na_rep='')
+    return calls_all

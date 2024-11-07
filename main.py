@@ -40,3 +40,4 @@ projects_current = projects_participations(projects, part)
 synthese(projects_current)
 
 calls_current(projects_current, calls)
+calls_all = calls_all(projects)
