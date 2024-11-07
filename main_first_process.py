@@ -4,7 +4,8 @@ from main_library import *
 ## data load / adjustements*
 extractDate = date_load()
 
-get_call_info()
+### pour l'instant ne fonctionne pas
+# get_call_info()
 
 proj = projects_load()
 proj_id_signed = proj.project_id.unique()
