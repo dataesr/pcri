@@ -414,6 +414,8 @@ def FP7_process():
             .merge(part1, how='inner', on=['project_id', 'stage'])
             .rename(columns={'funding':'calculated_fund', 'ZONAGE':'extra_joint_organization'}))
         
+        t = (t.assign(is_ejo=np.where(t.extra_joint_organization.isnull(), 'Sans', 'Avec')))
+ 
         t.loc[(t.destination_code.isin(['PF', 'ERARESORG', 'GA']))|((t.thema_code.isin(['ERC', 'COST']))&(t.destination_code!='SyG')), 'coordination_number'] = 0
         t=t.assign(with_coord=True)
         t.loc[(t.destination_code.isin(['PF', 'ERARESORG', 'GA']))|((t.thema_code.isin(['ERC', 'COST']))&(t.destination_code!='SyG')), 'with_coord'] = False

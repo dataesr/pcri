@@ -20,6 +20,8 @@ def entities_with_lien(entities_info, lien):
         print(f"2- lien={len(lien)}, part_step={len(part_step)}")
     return part_step
 
+def proj_no_coord(projects):
+    return projects[(projects.thema_code.isin(['ACCELERATOR']))|(projects.destination_code.isin(['PF','COST']))|((projects.thema_code=='ERC')&(projects.destination_code!='SyG'))].project_id.to_list()
 
 def participations_complete(part_prop, part_proj, proj_no_coord):
     print("### PARTICIPATIONS final")
@@ -31,6 +33,9 @@ def participations_complete(part_prop, part_proj, proj_no_coord):
     participation = participation.assign(with_coord=True)
     participation.loc[participation.project_id.isin(proj_no_coord), 'with_coord'] = False
 
+    participation = (participation
+            .assign(is_ejo=np.where(participation.extra_joint_organization.isnull(), 'Sans', 'Avec')))
+ 
     participation.rename(columns={'partnerType':'participates_as'}, inplace=True)
 
     print(f"- size participation: {len(participation)}")
@@ -40,9 +45,6 @@ def participations_complete(part_prop, part_proj, proj_no_coord):
         pd.to_pickle(participation, file)
     return participation
     
-def proj_no_coord(projects):
-    return projects[(projects.thema_code.isin(['ACCELERATOR']))|(projects.destination_code.isin(['PF','COST']))|((projects.thema_code=='ERC')&(projects.destination_code!='SyG'))].project_id.to_list()
-
 def ent(participation, entities_info, projects):
     print("### ENTITIES preparation")
     part=participation[['stage', 'project_id','generalPic', 'role', 'participates_as', 'erc_role', 'with_coord',
