@@ -405,7 +405,7 @@ def FP7_process():
         with open(f"{PATH_CLEAN}FP7_successful_projects.pkl", 'wb') as file:
             pd.to_pickle(project, file)
         return project
-    FP7_p =proj_ods(proj, part1)
+    proj_ods(proj, part1)
 
     def FP7_all(proj, part1):
         t = (proj.drop(columns=['cost_total', 'duration', 'end_date', 'eu_reqrec_grant', 'fp_specific_instrument', 
@@ -433,5 +433,4 @@ def FP7_process():
 
         print(f"size proj: {t.loc[t.stage=='successful'].project_id.nunique()}, nb project_id: {len(t.loc[t.stage=='successful'])}, {t.loc[t.stage=='successful', 'calculated_fund'].sum()}")
         return t
-    FP7=FP7_all(proj, part1)
-    return FP7_p, FP7
+    FP7_all(proj, part1)

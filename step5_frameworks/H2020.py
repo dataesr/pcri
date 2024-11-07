@@ -599,5 +599,3 @@ def H2020_process():
     print(f"size collab {len(collab)}")
 
     collab.to_pickle(f"{PATH_CLEAN}H2020_collab.pkl")
-
-    return project, temp
