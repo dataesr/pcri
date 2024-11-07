@@ -230,6 +230,4 @@ def FP6_process():
         file_name = f"{PATH_CLEAN}FP6_successful_projects.pkl"
         with open(file_name, 'wb') as file:
             pd.to_pickle(project, file)
-    FP6_p=ods(FP6)
-    
-    return FP6_p, FP6
+    ods(FP6)
