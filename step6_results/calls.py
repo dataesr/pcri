@@ -1,6 +1,6 @@
 from config_path import PATH_CONNECT, PATH_WORK, PATH_SOURCE, PATH_REF
 from constant_vars import FRAMEWORK
-import requests, pandas as pd
+import requests, pandas as pd, numpy as np, datetime as dt
 
 def calls_current(projects_current, calls):
     print("### CALLS current")
