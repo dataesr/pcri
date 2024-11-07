@@ -52,3 +52,5 @@ erc_evol_ods(me_resume)
 me_entities = msca_erc_ent(entities_participation)
 msca_entities(me_entities)
 erc_entities(me_entities)
+
+resume(projects_current)

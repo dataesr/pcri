@@ -104,3 +104,85 @@ def synthese(projects_current):
 
     print(f"{'{:,.1f}'.format(tmp.loc[tmp.stage=='successful','fund_€'].sum())}")
     zipfile_ods(tmp, 'fr-esr-all-projects-synthese')
+
+
+def resume(projects_current):
+    print("\n### RESUME")
+    glob = projects_current[['project_id', 'call_id', 'country_code', 'call_deadline']].drop_duplicates()
+    call_fr = pd.Series(glob.loc[glob.country_code=='FRA', 'call_id'].nunique(), index=['call_fr'])
+    call_glob = pd.Series(glob.call_id.nunique(), index=['call_glob'])
+    date_start = pd.Series(min(glob['call_deadline']), index=['date_start'])
+    date_end = pd.Series(max(glob['call_deadline']), index=['date_end'])
+
+    print(f"call fr:{call_fr}, call_g: {call_glob}, deb:{date_start}, fin:{date_end}")
+
+    def stat_count(i,country=None):
+        if country:        
+            w=(projects_current[(projects_current['stage']==i) & (projects_current['country_code'].isin(country))]
+                    .assign(is_ejo=True)
+                    .groupby('is_ejo')
+                    .agg({'project_id': 'nunique', 'number_involved':'sum', 'calculated_fund':'sum'})
+                    .rename(columns={'project_id':f'pres_{i}_country', 'calculated_fund':f'subv_{i}_country', 'number_involved':f'part_{i}_country'})  
+                    .reset_index())
+
+            x=(projects_current[(projects_current['stage']==i) & (projects_current['country_code'].isin(country))&(projects_current.extra_joint_organization.isnull())]
+                    .assign(is_ejo=False)
+                    .groupby('is_ejo')
+                    .agg({'project_id': 'nunique', 'number_involved':'sum', 'calculated_fund':'sum'})
+                    .rename(columns={'project_id':f'pres_{i}_country', 'calculated_fund':f'subv_{i}_country', 'number_involved':f'part_{i}_country'})  
+                    .reset_index())
+            x=pd.concat([w,x], axis=0)
+            
+            y=(projects_current[(projects_current['stage']==i) & (projects_current['country_code'].isin(country))&(projects_current.with_coord==True)]
+                    .assign(is_ejo=True)
+                    .groupby('is_ejo')
+                    .agg({'coordination_number':'sum'})
+                    .rename(columns={'coordination_number': f'coord_{i}_country'})  
+                    .reset_index())
+
+            z=(projects_current[(projects_current['stage']==i) & (projects_current['country_code'].isin(country))&(projects_current.extra_joint_organization.isnull())&(projects_current.with_coord==True)]
+                    .assign(is_ejo=False)
+                    .groupby('is_ejo')
+                    .agg({'coordination_number':'sum'})
+                    .rename(columns={'coordination_number': f'coord_{i}_country'})  
+                    .reset_index())
+
+            y=pd.concat([y,z], axis=0)
+            
+            return(pd.merge(x,y, how='inner', on='is_ejo'))
+        else:
+            x=(projects_current[projects_current['stage']==i]
+                .agg({'project_id': 'nunique', 'number_involved':'sum', 'calculated_fund':'sum'})
+                .rename({'project_id':f'pres_{i}', 'calculated_fund':f'subv_{i}', 'number_involved':f'part_{i}'})
+                )
+            y=(projects_current[(projects_current['stage']==i)&(projects_current.with_coord==True)]
+                .agg({'coordination_number':'sum'})
+                .rename({'coordination_number': f'coord_{i}'})  )
+            return(pd.concat([x,y]))
+        
+    sig=stat_count('successful')
+    sig_country=stat_count('successful' ,['FRA'])
+    el=stat_count('evaluated')
+    el_country=stat_count('evaluated', ['FRA'])
+
+    def calcul_part(tab, tab1, status):
+        for indic in ['pres', 'subv', 'part', 'coord']:
+            tab[f'%{indic}_{status}']=tab[f'{indic}_{status}_country']/tab1[f'{indic}_{status}']
+
+    def calcul_succes(tab, tab1):       
+        for indic in ['pres', 'subv', 'part', 'coord']:
+            if 'country' in f'{tab}':
+                tab[f'succes_{indic}_country']=tab1[f'{indic}_successful_country']/tab[f'{indic}_evaluated_country']
+            else:
+                tab[f'succes_{indic}']=tab1[f'{indic}_successful']/tab[f'{indic}_evaluated']
+                
+    calcul_part(el_country, el, 'evaluated')  
+    calcul_part(sig_country, sig, 'successful')  
+    calcul_succes(el_country, sig_country) 
+    calcul_succes(el, sig) 
+
+    resume_country=pd.merge(el_country, sig_country, how='inner', on='is_ejo')
+    resume_country=resume_country.merge(pd.concat([el, sig, call_fr, call_glob, date_start, date_end]).to_frame().T, how='cross')
+    resume_country['proj_under_prep']=projects_current[projects_current['status_code']=='UNDER_PREPARATION'][['project_id']].nunique().values[0]
+    resume_country['proj_signed']=projects_current[projects_current['status_code'].isin(['SIGNED','CLOSED','TERMINATED','SUSPENDED'])][['project_id']].nunique().values[0]
+    resume_country.to_csv(PATH_CONNECT+"resume_country.csv", index=False, encoding="UTF-8", sep=";", na_rep='')
