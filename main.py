@@ -41,3 +41,14 @@ synthese(projects_current)
 
 calls_current(projects_current, calls)
 calls_all = calls_all(projects)
+
+msca_erc = msca_erc_projects(FP6, FP7, h20, projects, part)
+msca_ods(msca_erc)
+erc_ods(msca_erc)
+me_resume = msca_erc_resume(msca_erc)
+msca_evol_ods(me_resume)
+erc_evol_ods(me_resume)
+
+me_entities = msca_erc_ent(entities_participation)
+msca_entities(me_entities)
+erc_entities(me_entities)
