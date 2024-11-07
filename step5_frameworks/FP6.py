@@ -206,7 +206,7 @@ def FP6_process():
     FP6=participation(FP6)
 
     def ods(FP6):
-        print("### ODS")
+        print("### FP6 ods")
         country=(FP6[['project_id','country_code','country_name_fr','country_code_mapping', 'country_name_mapping', 'nuts_code', 'region_1_name',
             'region_2_name', 'regional_unit_name']]
                 .drop_duplicates()

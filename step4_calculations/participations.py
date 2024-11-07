@@ -47,7 +47,7 @@ def participations_complete(part_prop, part_proj, proj_no_coord):
     
 def ent(participation, entities_info, projects):
     print("### ENTITIES preparation")
-    part=participation[['stage', 'project_id','generalPic', 'role', 'participates_as', 'erc_role', 'with_coord',
+    part=participation[['stage', 'project_id','generalPic', 'role', 'participates_as', 'erc_role', 'with_coord', 'is_ejo',
                         'country_code', 'participation_nuts', 'region_1_name', 'region_2_name', 'regional_unit_name',
                         'coordination_number', 'calculated_fund', 'beneficiary_subv']].assign(number_involved=1)
 

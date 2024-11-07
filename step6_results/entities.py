@@ -12,7 +12,7 @@ def entities_preparation(entities_part, h20):
             'cordis_type_entity_code', 'cordis_type_entity_name_en','cordis_type_entity_name_fr', 
             'participation_nuts', 'region_1_name', 'region_2_name', 'regional_unit_name',
             'country_association_code','country_association_name_en', 'country_code', 
-            'country_code_mapping',
+            'country_code_mapping', 'is_ejo',
             'country_group_association_code', 'country_group_association_name_en',
             'country_group_association_name_fr', 'country_name_en',
             'country_name_fr', 'country_name_mapping', 'destination_code', 'destination_name_en',
@@ -38,9 +38,6 @@ def entities_preparation(entities_part, h20):
     entities_part = pd.concat([entities_part, tmp], ignore_index=True)
     entities_part.loc[(~entities_part.siren_cj.isin(['ENT','GE_ENT','ETAB_LOCAL','CTI']))|(entities_part.category_woven!='Entreprise'), 'insee_cat_name']=np.nan
     entities_part.loc[(~entities_part.siren_cj.isin(['ENT','GE_ENT','ETAB_LOCAL','CTI']))|(entities_part.category_woven!='Entreprise'), 'insee_cat_code']=np.nan
-
-    entities_part = (entities_part
-        .assign(is_ejo=np.where(entities_part.extra_joint_organization.isnull(), 'Sans', 'Avec')))
     
     entities_part = entities_part.reindex(sorted(entities_part.columns), axis=1)
     return entities_part
@@ -53,7 +50,7 @@ def entities_ods(entities_participation):
     tmp=(entities_participation[
         ['cj_code', 'category_woven', 'cordis_is_sme', 'cordis_type_entity_acro', 'stage','acronym',
         'cordis_type_entity_code', 'cordis_type_entity_name_en',
-        'cordis_type_entity_name_fr', 'extra_joint_organization',
+        'cordis_type_entity_name_fr', 'extra_joint_organization', 'is_ejo',
         'country_code', 'country_code_mapping',
         'country_group_association_code', 'country_group_association_name_en',
         'country_group_association_name_fr', 'country_name_en',
@@ -82,7 +79,8 @@ def entities_ods(entities_participation):
             'country_group_association_code':'country_association_code',
             'country_group_association_name_en':'country_association_name_en',
             'country_group_association_name_fr':'country_association_name_fr',
-            'with_coord':'flag_coordination'
+            'with_coord':'flag_coordination',
+            'is_ejo':'flag_organization'
             }))
 
     tmp.loc[tmp.entities_id_source=='ror', 'entities_id'] = tmp.loc[tmp.entities_id_source=='ror', 'entities_id'].str.replace("^R", "", regex=True)

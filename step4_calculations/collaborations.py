@@ -8,7 +8,8 @@ def collab(participation, projects, countries):
         print("### COLLAB base")
         tmp = (tab[(tab['stage']==stage_value)]
                         .drop(columns={
-            'cordis_type_entity_acro', 'cordis_type_entity_code', 'cordis_type_entity_name_en', 'cordis_type_entity_name_fr', 
+            'cordis_type_entity_acro', 'cordis_type_entity_code', 'cordis_type_entity_name_en', 
+            'cordis_type_entity_name_fr', 
             'cordis_is_sme', 'coordination_number', 'country_code_mapping'})
                         .rename(columns={'calculated_fund':'fund'}))
 
@@ -29,7 +30,8 @@ def collab(participation, projects, countries):
                     )
 
         print(f"subv copy:{'{:,.1f}'.format(copy['fund_collab'].sum())}, size: {len(copy)}")
-        copy['part_num_collab'] = copy[["orderNumber_collab", "generalPic_collab", "pic_collab", 'participates_as_collab']].apply(lambda row:"-".join(row.values.astype(str)), axis=1)
+        copy['part_num_collab'] = (copy[["orderNumber_collab", "generalPic_collab", "pic_collab", 'participates_as_collab']]
+                                   .apply(lambda row:"-".join(row.values.astype(str)), axis=1))
 
         return tmp.merge(copy, on='project_id')
 
@@ -45,7 +47,7 @@ def collab(participation, projects, countries):
                     (i['participates_as']==i['participates_as_collab']))]
                     .groupby(['stage','project_id','country_code', 'participation_nuts','region_1_name', 'extra_joint_organization','country_code_collab',
                             'participation_nuts_collab', 'region_1_name_collab','country_code_mapping_collab', 'participates_as', 'participates_as_collab', 
-                            'extra_joint_organization_collab', 'with_coord'], dropna=False)
+                            'extra_joint_organization_collab', 'is_ejo', 'with_coord'], dropna=False)
                     .agg({'part_num':'nunique', 'coord_num':'nunique',  'part_num_collab' : 'nunique', 'fund':'sum', 
                         'fund_collab':'sum'})
                     .reset_index())
