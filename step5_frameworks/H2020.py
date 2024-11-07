@@ -511,7 +511,7 @@ def H2020_process():
 # agregation des participants
     participation=part_tmp[
         ['project_id',  'stage', 'participates_as', 'role', 'calculated_fund','subv', 'subv_net','cordis_is_sme', 
-        'requestedGrant', 'number_involved', 'coordination_number', 'with_coord', 'is_ejo'
+        'requestedGrant', 'number_involved', 'coordination_number', 'with_coord', 'is_ejo',
         'cordis_type_entity_code','cordis_type_entity_name_fr', 'cordis_type_entity_acro', 'erc_role',
         'cordis_type_entity_name_en', 'participation_nuts', 'region_1_name', 'region_2_name', 'regional_unit_name',
         'country_code_mapping', 'country_name_mapping', 'country_code', 'country_name_en', 'extra_joint_organization',

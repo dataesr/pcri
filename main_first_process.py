@@ -7,7 +7,7 @@ extractDate = date_load()
 ### pour l'instant ne fonctionne pas
 # get_call_info()
 
-proj = projects_load()
+proj = projects_load()()
 proj_id_signed = proj.project_id.unique()
 
 prop = proposals_load()
