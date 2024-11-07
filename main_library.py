@@ -36,3 +36,4 @@ from check_url import check_proj_id
 from step6_results.projects import projects_ods
 from step6_results.collaborations import *
 from step6_results.entities import *
+from step6_results.synthese import *
