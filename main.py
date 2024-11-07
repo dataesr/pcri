@@ -14,13 +14,15 @@ countries = pd.read_pickle(f"{PATH_CLEAN}country_current.pkl")
 entities_info = pd.read_pickle(f"{PATH_CLEAN}entities_info_current2.pkl") 
 calls = pd.read_csv(f"{PATH_CONNECT}calls.csv", sep=";", parse_dates=['call_deadline'])
 
+# step4
 entities_part = ent(participation, entities_info, projects)
 collaboration = collab(participation, projects, countries)
 
-#step5 - si nouvelle actualisation ou changement dans nomenclatures
+# step5 - si nouvelle actualisation ou changement dans nomenclatures
 h20, FP7, FP6, h20_p, FP7_p, FP6_p = framework_load()
 h20 = h20.reindex(sorted(h20.columns), axis=1)
 
+# step6
 projects_all = projects_ods(projects, participation, calls, countries, h20_p, FP6_p, FP7_p)
 collab_signed_ods(collaboration)
 msca_collab_ods(collaboration)
@@ -36,3 +38,5 @@ collab_ent = entities_collab(entities_participation)
 part = synthese_preparation(participation, countries)
 projects_current = projects_participations(projects, part)
 synthese(projects_current)
+
+calls_current(projects_current, calls)

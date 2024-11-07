@@ -1,4 +1,5 @@
 from functions_shared import *
+from Api_requests.call_info import *
 from step1_mainData.data_load import *
 from step1_mainData.projects import *
 from step1_mainData.proposals import *
@@ -37,3 +38,4 @@ from step6_results.projects import projects_ods
 from step6_results.collaborations import *
 from step6_results.entities import *
 from step6_results.synthese import *
+from step6_results.calls import *

@@ -13,7 +13,7 @@ def synthese_preparation(participation, countries):
         .drop(columns=['orderNumber', 'generalPic', 'pic', 'country_code_mapping'])
         .assign(number_involved=1)
         .groupby(['stage', 'project_id', 'role','participates_as', 'erc_role', 'cordis_is_sme', 'cordis_type_entity_acro',
-        'cordis_type_entity_code', 'cordis_type_entity_name_en', 'extra_joint_organization',
+        'cordis_type_entity_code', 'cordis_type_entity_name_en', 'extra_joint_organization', 'is_ejo',
         'cordis_type_entity_name_fr', 'country_code'],  dropna = False)
         .sum()
         .reset_index())
@@ -62,7 +62,6 @@ def projects_participations(projects, part):
     projects_current.loc[~projects_current.action_code.isin(act_liste), 'action_group_name'] = 'Others actions'
 
     projects_current = projects_current.merge(part, how='inner', on=['project_id', 'stage'])
-    projects_current = projects_current.assign(is_ejo=np.where(projects_current.extra_joint_organization.isnull(), 'Sans', 'Avec')) 
 
     print(f"size: {len(projects_current)}, fund_signed: {'{:,.1f}'.format(projects_current.loc[projects_current.stage=='successful','calculated_fund'].sum())}, participant_signed: {'{:,.1f}'.format(projects_current.loc[projects_current.stage=='successful','number_involved'].sum())}")
 
@@ -78,7 +77,7 @@ def synthese(projects_current):
     tmp=(projects_current.assign(stage_name=np.where(projects_current.stage=='evaluated', 'projets évalués', 'projets lauréats'))
         [['country_name_fr', 'stage_name', 'call_year', 'programme_name_fr', 'thema_code',  'thema_name_fr', 
         'destination_code', 'destination_name_en', 'action_code',  'action_name', 'action_code2', 'action_name2',  
-        'action_group_code', 'action_group_name', 'extra_joint_organization',
+        'action_group_code', 'action_group_name', 'extra_joint_organization', 'is_ejo',
         'cordis_type_entity_acro', 'cordis_type_entity_code', 'cordis_type_entity_name_en', 'cordis_type_entity_name_fr',
         'role', 'pilier_name_fr',  'calculated_fund', 'coordination_number', 'number_involved','project_id', 
         'country_group_association_name_fr','country_group_association_name_en', 
@@ -94,7 +93,8 @@ def synthese(projects_current):
             'country_group_association_code':'country_association_code',
             'country_group_association_name_en':'country_association_name_en',
             'country_group_association_name_fr':'country_association_name_fr',
-            'with_coord':'flag_coordination'
+            'with_coord':'flag_coordination',
+            'is_ejo':'flag_organization'
             }))
 
     tmp.loc[tmp.thema_code.isin(['ERC','MSCA']), ['destination_code', 'destination_name_en']] = np.nan
