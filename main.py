@@ -55,5 +55,5 @@ erc_entities(me_entities)
 
 resume(projects_current)
 pc = evol_preparation(FP6, FP7, h20, projects_current)
-evolution_FP(pc)
+evolution_FP(pc, countries)
 evolution_type(FP6, FP7, h20, projects_current)
