@@ -78,7 +78,7 @@ def projects_ods(projects, participation, calls, countries, h20_p, FP6_p, FP7_p)
     if any(projects_all['project_id'].value_counts()[projects_all['project_id'].value_counts()> 1]):
         print(projects_all['project_id'].value_counts()[projects_all['project_id'].value_counts()> 1])
 
-    projects_all.to_pickle(f"{PATH_WORK}projects_all_FW.pkl")
+    # projects_all.to_pickle(f"{PATH_WORK}projects_all_FW.pkl")
     # projects_all.to_csv(f"{PATH_ODS}fr-esr-all-projects-signed-informations.csv", sep=';', encoding='utf-8', index=False, na_rep='', decimal=",")
     zipfile_ods(projects_all, 'fr-esr-all-projects-signed-informations')
     return projects_all
