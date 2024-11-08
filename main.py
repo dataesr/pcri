@@ -28,7 +28,7 @@ collab_signed_ods(collaboration)
 collaboration.drop(columns=['ecorda_date', 'abstract', 'free_keywords']).to_csv(PATH_CONNECT+"collaboration_current.csv", index=False, encoding="UTF-8", sep=";", na_rep='')
 msca_collab_ods(collaboration)
 msca_collab(collaboration)
-collab_evolution(collaboration)
+# collab_evolution(collaboration)
 
 entities_participation = entities_preparation(entities_part, h20)
 entities_participation.to_pickle(f"{PATH_CLEAN}entities_participation_current.pkl")
