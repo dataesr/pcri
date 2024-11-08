@@ -208,10 +208,11 @@ part_proj = participants_calcul(part_step, part)
 participation = participations_complete(part_prop, part_proj, proj_no_coord)
 del part_proj, part_prop
 
+gc.collect()
 #step5 - si nouvelle actualisation ou changement dans nomenclatures
 H2020_process()
 FP7_process()
-FP6_process()
+FP6 = FP6_process()
 
 # project_list = list(set(h20_p.project_id))+list(set(FP7_p.project_id))+list(set(FP6_p.project_id))+list(set(projects.loc[projects.stage=='successful'].project_id))
 # check_proj_id(project_list)

@@ -57,5 +57,5 @@ def calls_to_check(calls, call_id):
     calls['call_deadline'] = calls['call_deadline'].astype('datetime64[ns]')
 
     print(f"- nbre call unique:{calls['call_id'].nunique()}, nbre proposals:{calls['expectedNbrProposals'].sum()}, fonds:{'{:,.1f}'.format(calls['call_budget'].sum())}")
-    # calls.to_csv(PATH_CONNECT+"calls.csv", index=False, encoding="UTF-8", sep=";", na_rep='')
+    calls.to_csv(PATH_CONNECT+"calls.csv", index=False, encoding="UTF-8", sep=";", na_rep='')
     return calls
