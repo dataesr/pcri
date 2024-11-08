@@ -6,20 +6,12 @@ from step3_entities.categories import *
 
 def FP7_process():
     print("\n### FP7")
-    # def call_api():
-    #     url="https://ec.europa.eu/research/participants/portal/data/call/fp7/calls.json?_=1458726074699"
-    #     r = requests.get(url)
-    #     response=r.json()['callData']['Calls']
-    #     call=[]
-    #     for i in response:
-    #     #     print(i)
-    #         x = {'call_id':i.get('CallIdentifier').get('CallId'), 'call_budget':i.get('TotalIndicativeBudget').strip(',')}
-    #         call.append(x)
-
-    #     call = pd.DataFrame(call)
-    #     call['call_budget'] = call['call_budget'].str.replace(',', '').astype('float')
-    #     return call
-    # call=call_api()
+    def call_api():
+        call=pd.read_json(open(f"data_files/FP7_calls.json", 'r+', encoding='utf-8'))
+        call = pd.DataFrame(call)
+        call['call_budget'] = call['call_budget'].str.replace(',', '').astype('float')
+        return call
+    call=call_api()
 
     def ref_select(FP):
         ref_source = ref_source_load('ref')
@@ -351,7 +343,7 @@ def FP7_process():
 
     def proj_cleaning(proj):
         proj = proj.merge(act, how='left', on='action_code')
-        # proj = proj.merge(call, how='left', on='call_id').assign(ecorda_date=pd.to_datetime('2021-04-30'), framework='FP7')
+        proj = proj.merge(call, how='left', on='call_id').assign(ecorda_date=pd.to_datetime('2021-04-30'), framework='FP7')
         proj = proj.assign(ecorda_date=pd.to_datetime('2021-04-30'), framework='FP7')
         for i in ['title', 'abstract', 'free_keywords']:
             proj[i]=proj[i].str.replace('\\n|\\t|\\r|\\s+', ' ', regex=True).str.strip()
@@ -385,8 +377,8 @@ def FP7_process():
             .rename(columns={'eu_reqrec_grant':'project_eucontribution', 'number_involved':'project_numberofparticipants','cost_total':'project_totalcost'})
             .drop_duplicates())
 
-        # PROVISOIRE quand def call refonctionnera
-        proj=proj.assign(call_budget=np.nan)
+        # # PROVISOIRE quand def call refonctionnera
+        # proj=proj.assign(call_budget=np.nan)
 
         project = (proj.loc[proj.stage=='successful', 
                 ['abstract', 'acronym', 'action_code', 'action_name', 'call_budget','call_deadline', 'call_id', 'call_year',
