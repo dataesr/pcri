@@ -82,8 +82,7 @@ def category_woven(entities_tmp):
     return entities_tmp
 
 def cordis_type(df):
-    print("### CORDIS type")    
-    # with open('data_json/legalEntityType.json', 'r', encoding='UTF-8') as pl:
+    print("### CORDIS type")
     type_entity = json.load(open('data_files/legalEntityType.json', 'r', encoding='UTF-8'))
     type_entity = pd.DataFrame(type_entity)
     df = (df.merge(type_entity, how='left', left_on='legalEntityTypeCode', right_on='cordis_type_entity_code')

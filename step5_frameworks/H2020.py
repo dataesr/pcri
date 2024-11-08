@@ -1,4 +1,4 @@
-import pandas as pd, numpy as np
+import pandas as pd, numpy as np, gc
 from step3_entities.references import *
 from step3_entities.merge_referentiels import *
 from step3_entities.categories import *
@@ -246,7 +246,6 @@ def H2020_process():
     entities = entities_cleaning(entities)
 
     # selection des obs de entities liées aux participants/applicants
-    lien_genPic_single = part['generalPic_old'].unique()
     lien_genCalcPic = part[['generalPic_old', 'pic']].drop_duplicates()
     entities = lien_genCalcPic.merge(entities, how='inner', left_on=['generalPic_old','pic'], right_on=['generalPic','pic']).drop_duplicates()
 ########################################################################
@@ -357,9 +356,7 @@ def H2020_process():
         file_name = f"{PATH_CLEAN}H2020_successful_projects.pkl"
         with open(file_name, 'wb') as file:
             pd.to_pickle(project, file)
-        return project
-
-    project = h20_proj_success(proj)
+    h20_proj_success(proj)
 
     ### entities
     entities_tmp = part1.loc[~part1.id.isnull(), ['generalPic','id','country_code_mapping']].drop_duplicates()
@@ -481,6 +478,8 @@ def H2020_process():
     for i in ['entities_acronym', 'entities_name']:
         part_tmp[i] = part_tmp[i].str.replace('\\n|\\t|\\r|\\s+', ' ', regex=True).str.strip()
 
+    del sirene, paysage, ror, ref, entities
+    gc.collect()
 #################################################
 # calculs
 
@@ -561,41 +560,41 @@ def H2020_process():
     pd.DataFrame(cordis_type_null).to_csv(f"{PATH_CONNECT}cordis_type_null.csv", sep=';')
 
 
-    p=proj.loc[~((proj.stage=='successful')&(proj.status_code=='REJECTED')), ['stage', 'project_id']]
-    part_fr = part_tmp.loc[part_tmp.country_code=='FRA'].merge(p, how='inner', on=['stage', 'project_id']).project_id.unique()
-    print(len(part_fr))
+    # p=proj.loc[~((proj.stage=='successful')&(proj.status_code=='REJECTED')), ['stage', 'project_id']]
+    # part_fr = part_tmp.loc[part_tmp.country_code=='FRA'].merge(p, how='inner', on=['stage', 'project_id']).project_id.unique()
+    # print(len(part_fr))
 
-    collab_eval = collab_base(part_tmp.loc[part_tmp.project_id.isin(part_fr)], 'evaluated')
-    collab_signed = collab_base(part_tmp.loc[part_tmp.project_id.isin(part_fr)], 'successful')
+    # collab_eval = collab_base(part_tmp.loc[part_tmp.project_id.isin(part_fr)], 'evaluated')
+    # collab_signed = collab_base(part_tmp.loc[part_tmp.project_id.isin(part_fr)], 'successful')
 
-    col_eval = collab_cross(collab_eval)
-    col_signed = collab_cross(collab_signed)
+    # col_eval = collab_cross(collab_eval)
+    # col_signed = collab_cross(collab_signed)
 
-    collab=pd.concat([col_eval, col_signed], ignore_index=True)
+    # collab=pd.concat([col_eval, col_signed], ignore_index=True)
 
-    # add countries infos
-    collab = (collab.merge(cc, how='left', on='country_code')
-                .drop(columns=['country_association_name_en', 'country_group_association_name_fr',
-                'country_association_code', 'country_group_association_name_en']))
+    # # add countries infos
+    # collab = (collab.merge(cc, how='left', on='country_code')
+    #             .drop(columns=['country_association_name_en', 'country_group_association_name_fr',
+    #             'country_association_code', 'country_group_association_name_en']))
 
-    countries_collab = cc.add_suffix('_collab')
-    collab = (collab.merge(countries_collab, how='left', on='country_code_collab')
-                .drop(columns=['country_association_name_en_collab', 'country_group_association_name_fr_collab',
-                'country_association_code_collab', 'country_group_association_name_en_collab']))
+    # countries_collab = cc.add_suffix('_collab')
+    # collab = (collab.merge(countries_collab, how='left', on='country_code_collab')
+    #             .drop(columns=['country_association_name_en_collab', 'country_group_association_name_fr_collab',
+    #             'country_association_code_collab', 'country_group_association_name_en_collab']))
 
 
-    collab = collab.loc[collab.country_code=='FRA']
-    # add projects infos
-    proj_s=proj[['framework','project_id', 'call_id', 'panel_code', 'status_code', 'topic_code', 'stage', 'call_year', 'abstract',
-                'pilier_name_en', 'pilier_name_fr','programme_name_en', 'thema_name_en', 'thema_code', 'programme_code',
-                'panel_name', 'panel_regroupement_code', 'panel_regroupement_name', 'call_deadline', 'free_keywords',
-                'destination_code','destination_name_en','destination_detail_code','destination_detail_name_en',
-                'action_code', 'action_name',  'ecorda_date']]
+    # collab = collab.loc[collab.country_code=='FRA']
+    # # add projects infos
+    # proj_s=proj[['framework','project_id', 'call_id', 'panel_code', 'status_code', 'topic_code', 'stage', 'call_year', 'abstract',
+    #             'pilier_name_en', 'pilier_name_fr','programme_name_en', 'thema_name_en', 'thema_code', 'programme_code',
+    #             'panel_name', 'panel_regroupement_code', 'panel_regroupement_name', 'call_deadline', 'free_keywords',
+    #             'destination_code','destination_name_en','destination_detail_code','destination_detail_name_en',
+    #             'action_code', 'action_name',  'ecorda_date']]
 
-    collab=(collab
-            .merge(proj_s, how='inner', on=['project_id','stage'])
-            .drop_duplicates())
+    # collab=(collab
+    #         .merge(proj_s, how='inner', on=['project_id','stage'])
+    #         .drop_duplicates())
 
-    print(f"size collab {len(collab)}")
+    # print(f"size collab {len(collab)}")
 
-    collab.to_pickle(f"{PATH_CLEAN}H2020_collab.pkl")
+    # collab.to_pickle(f"{PATH_CLEAN}H2020_collab.pkl")

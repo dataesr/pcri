@@ -231,3 +231,4 @@ def FP6_process():
         with open(file_name, 'wb') as file:
             pd.to_pickle(project, file)
     ods(FP6)
+    return FP6
