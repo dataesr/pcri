@@ -33,6 +33,7 @@ def category_cleaning(entities_tmp, sirene):
     name=pd.read_excel(f'{PATH_REF}_category.xlsx', sheet_name='category_name', dtype='str')
     cat_category=pd.read_excel(f'{PATH_REF}_category.xlsx', sheet_name='cat_category', dtype='str')
 
+    entities_tmp.loc[(entities_tmp.siren.isnull())&(~entities_tmp.paysage_siren.isnull()), 'siren'] = entities_tmp.paysage_siren
     entities_tmp=entities_tmp.merge(temp, how='left', on='siren')
     entities_tmp.loc[~entities_tmp.cj.isnull(), 'cj_code'] = entities_tmp.cj
     entities_tmp=entities_tmp.merge(cj, how='left', left_on='cj_code', right_on='code', suffixes=['', '_x'])
@@ -68,7 +69,7 @@ def category_cleaning(entities_tmp, sirene):
 def category_woven(entities_tmp):
     # CAT 2 : category_woven
     print("\n## category woven")
-    x=entities_tmp[['entities_id', 'entities_name', 'category_temp', 'paysage_category', 'siren_cj']].drop_duplicates()
+    x=entities_tmp[['source_id', 'entities_id', 'entities_name', 'category_temp', 'paysage_category', 'siren_cj']].drop_duplicates()
     x.loc[~x.paysage_category.isnull(), 'paysage_cat_1'] = x.paysage_category.str.split(';').str[0]
 
     x.loc[(x.paysage_cat_1.str.contains('^Entreprise', regex=True, na=False)), 'category_woven'] = 'Entreprise'

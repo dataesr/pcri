@@ -164,23 +164,24 @@ entities_tmp = merge_sirene(entities_tmp, sirene)
 
 entities_tmp.loc[(~entities_tmp.id.isnull())&(entities_tmp.entities_id.isnull()), 'entities_id'] = entities_tmp.id
 
-### groupe entreprises
-# groupe = groupe_treatment('groupe_prov', 'groupe')
-# wb=openpyxl.load_workbook(f"{PATH_REF}groupe_prov.xlsm").sheetnames[1:]
 if any(entities_tmp.siren.str.contains(';', na=False)):
     print("ATTENTION faire code pour traiter deux siren différents -> ce qui serait bizarre qu'il y ait 2 siren")
 
+# IDENT with '-' : traitement des identifiants avec '-' pour regrouper multi-pic non identifiés
+entities_tmp = IDpic(entities_tmp)
+entities_tmp = entities_tmp.merge(get_source_ID(entities_tmp, 'entities_id'), how='left', on='entities_id')
+
+### groupe entreprises
+# groupe = groupe_treatment('groupe_prov', 'groupe')
+# wb=openpyxl.load_workbook(f"{PATH_REF}groupe_prov.xlsm").sheetnames[1:]
 ### si besoin de charger groupe 
 groupe = pd.read_pickle(f"{PATH_REF}groupe.pkl")
 print(f"taille de entities_tmp avant groupe:{len(entities_tmp)}")
 entities_tmp = merge_groupe(entities_tmp, groupe)
 
-# IDENT with '-' : traitement des identifiants avec '-' pour regrouper multi-pic non identifiés
-entities_tmp = IDpic(entities_tmp)
 
 entities_tmp = entities_clean(entities_tmp)
 entities_check_null(entities_tmp)
-entities_tmp = entities_tmp.merge(get_source_ID(entities_tmp, 'entities_id'), how='left', on='entities_id')
 
 # traitement catégorie
 entities_tmp = category_cleaning(entities_tmp, sirene)
