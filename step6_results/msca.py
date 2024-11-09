@@ -78,8 +78,8 @@ def msca_evol_ods(msca_resume):
 def msca_entities(me_entities):
     print("### MSCA entities ODS")
 
-    l=list(set(me_entities.entities_id.unique()))   
-    l=sourcer_ID(l)  
+    # l=list(set(me_entities.entities_id.unique()))   
+    # l=sourcer_ID(l)  
 
     tmp = (me_entities.loc[(me_entities.stage=='successful')&(me_entities.thema_code=='MSCA'),
 
@@ -88,7 +88,7 @@ def msca_entities(me_entities):
             'cordis_type_entity_acro', 'cordis_type_entity_code',
             'cordis_type_entity_name_en', 'cordis_type_entity_name_fr', 
             'operateur_name', 'paysage_category', 'paysage_category_id', 'category_woven', 'insee_cat_code', 'insee_cat_name',
-            'action_code', 'action_name', 
+            'action_code', 'action_name', 'source_id',
             'entities_name', 'entities_acronym', 'calculated_fund', 'coordination_number', 'number_involved',
             'project_id', 'participation_nuts', 'region_1_name', 'region_2_name', 'regional_unit_name',
             'country_group_association_name_fr', 'country_name_mapping','country_name_en',
@@ -96,8 +96,6 @@ def msca_entities(me_entities):
             'destination_code', 'destination_detail_code', 'entities_id', 'status_code', 'ecorda_date',
             'free_keywords', 'abstract', 'acronym', 'operateur_num','operateur_lib', 'paysage_category_priority'
             ]]
-        .merge(pd.DataFrame(l), how='left', left_on='entities_id', right_on='api_id')
-        .drop(columns='api_id')
         .rename(columns={ 
             'source_id':'entities_id_source',
             'panel_code':'panel_id',
