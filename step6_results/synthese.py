@@ -13,7 +13,7 @@ def synthese_preparation(participation, countries):
         .drop(columns=['orderNumber', 'generalPic', 'pic', 'country_code_mapping'])
         .assign(number_involved=1)
         .groupby(['stage', 'project_id', 'role','participates_as', 'erc_role', 'cordis_is_sme', 'cordis_type_entity_acro',
-        'cordis_type_entity_code', 'cordis_type_entity_name_en', 'extra_joint_organization', 'is_ejo',
+        'cordis_type_entity_code', 'cordis_type_entity_name_en', 'extra_joint_organization', 'is_ejo', 'with_coord',
         'cordis_type_entity_name_fr', 'country_code'],  dropna = False)
         .sum()
         .reset_index())

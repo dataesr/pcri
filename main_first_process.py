@@ -8,6 +8,8 @@ extractDate = date_load()
 ## demander à Eric de relancer la machine sur sandbox
 # get_call_info()
 
+# get_call_info_europa()
+
 proj = projects_load()
 proj_id_signed = proj.project_id.unique()
 
