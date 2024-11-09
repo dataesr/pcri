@@ -7,7 +7,6 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.edge.service import Service as EdgeService
 from webdriver_manager.microsoft import EdgeChromiumDriverManager
 
-driver = webdriver.Edge(service=EdgeService(EdgeChromiumDriverManager().install()))
 
 def get_data_from_html(soup):
     response=[]
@@ -28,6 +27,7 @@ def click_next(b):
 
 
 def get_call_info_europa():
+    driver = webdriver.Edge(service=EdgeService(EdgeChromiumDriverManager().install()))
     status='31094501,31094502,31094503'
     type_='1,8'
     # status='31094503'
