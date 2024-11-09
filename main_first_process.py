@@ -180,6 +180,7 @@ entities_tmp = IDpic(entities_tmp)
 
 entities_tmp = entities_clean(entities_tmp)
 entities_check_null(entities_tmp)
+entities_tmp = entities_tmp.merge(sourcer_ID(entities_tmp, 'entities_id'), how='left', on='entities_id')
 
 # traitement catégorie
 entities_tmp = category_cleaning(entities_tmp, sirene)
