@@ -76,7 +76,10 @@ def category_woven(entities_tmp):
     x.loc[(x.category_woven.isnull())&(x.category_temp.str.contains('^Entreprise', regex=True, na=False)), 'category_woven'] = 'Entreprise'
     x.loc[x.entities_id.str.contains('^gent', regex=True, na=False), 'category_woven'] = 'Entreprise'
     x.loc[(x.category_woven.isnull())&(~x.category_temp.isnull()), 'category_woven'] = x.category_temp
-    # x.to_csv(f"{PATH_WORK}category_entities.csv", sep=';')
+    
+    
+    # cat_ag=pd.read_excel()
+    x.to_csv(f"{PATH_WORK}category_entities.csv", sep=';')
     entities_tmp = entities_tmp.merge(x[['entities_id','category_woven']], how='left', on='entities_id').drop_duplicates()
     print(f"- size entities_tmp: {len(entities_tmp)}")
     return entities_tmp
