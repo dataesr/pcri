@@ -2,6 +2,7 @@ import pandas as pd, numpy as np, gc
 from step3_entities.references import *
 from step3_entities.merge_referentiels import *
 from step3_entities.categories import *
+from step3_entities.ID_getSourceRef import *
 from step4_calculations.collaborations import collab_base, collab_cross
 from config_path import PATH_SOURCE, PATH_CLEAN, PATH_REF, PATH_CONNECT
 from functions_shared import unzip_zip
@@ -507,6 +508,8 @@ def H2020_process():
 
     part_tmp = (part_tmp
             .assign(is_ejo=np.where(part_tmp.extra_joint_organization.isnull(), 'Sans', 'Avec')))
+    
+    part_tmp = part_tmp.merge(get_source_ID(entities_tmp, 'entities_id'), how='left', on='entities_id')
  
 # agregation des participants
     participation=part_tmp[
@@ -519,7 +522,7 @@ def H2020_process():
         'country_group_association_name_en', 'country_group_association_name_fr', 'country_name_fr', 'article1',
         'article2', 'entities_name', 'entities_acronym', 'entities_id', 'paysage_category_priority',
         'ror_category', 'paysage_category', 'paysage_category_id', 'paysage_siren','paysage_cj_name',
-        'insee_cat_code', 'insee_cat_name', 'groupe_sector', 'cj_code', 'siren_cj',
+        'insee_cat_code', 'insee_cat_name', 'groupe_sector', 'cj_code', 'siren_cj', 'source_id',
         'category_woven', 'operateur_lib', 'operateur_name', 'operateur_num']]
 
     participation = participation.groupby(list(participation.columns.difference([ 'subv', 'subv_net', 'requestedGrant', 'number_involved'])), dropna=False, as_index=False).sum()

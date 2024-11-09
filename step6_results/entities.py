@@ -1,6 +1,6 @@
 import pandas as pd, numpy as np
 from functions_shared import order_columns, zipfile_ods
-from step3_entities.ID_getSourceRef import sourcer_ID
+from step3_entities.ID_getSourceRef import get_source_ID
 from config_path import PATH_CONNECT
 
 def entities_preparation(entities_part, h20):
@@ -45,8 +45,8 @@ def entities_preparation(entities_part, h20):
 
 def entities_ods(entities_participation):
     # ### entities pour ODS
-    l=list(set(entities_participation.entities_id.unique()))   
-    l=sourcer_ID(l)  
+    # l=list(set(entities_participation.entities_id.unique()))   
+    # l=sourcer_ID(l)  
     # for i in ['successful', 'evaluated']:
     tmp=(entities_participation[
         ['cj_code', 'category_woven', 'cordis_is_sme', 'cordis_type_entity_acro', 'stage','acronym',
@@ -66,9 +66,9 @@ def entities_ods(entities_participation):
         'pilier_name_en', 'pilier_name_fr', 'programme_code', 'programme_name_en', 
         'programme_name_fr',  'thema_code', 'thema_name_fr', 'thema_name_en', 'destination_code',
         'destination_lib', 'destination_name_en','action_code2', 'action_name2', 'free_keywords', 'abstract', 'entities_name_source',
-        'operateur_num','operateur_lib', 'paysage_category_priority']]
-        .merge(pd.DataFrame(l), how='left', left_on='entities_id', right_on='api_id')
-        .drop(columns='api_id')
+        'operateur_num','operateur_lib', 'paysage_category_priority', 'source_id']]
+        # .merge(pd.DataFrame(l), how='left', left_on='entities_id', right_on='api_id')
+        # .drop(columns='api_id')
         .rename(columns={ 
             'source_id':'entities_id_source',
             'action_code':'action_id', 

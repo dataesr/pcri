@@ -80,8 +80,8 @@ def erc_entities(me_entities):
     print("\n### ERC entities")
     ## ERC entities for ODS
 
-    l=list(set(me_entities.entities_id.unique()))   
-    l=sourcer_ID(l)  
+    # l=list(set(me_entities.entities_id.unique()))   
+    # l=sourcer_ID(l)  
 
     tmp = (me_entities.loc[(me_entities.stage=='successful')&(me_entities.thema_code=='ERC'),
 
@@ -94,10 +94,8 @@ def erc_entities(me_entities):
             'country_group_association_name_fr', 'country_name_mapping','country_name_en',
             'country_group_association_code', 'country_group_association_name_en', 'country_code_mapping', 'panel_code',
             'destination_code', 'entities_id', 'status_code', 'ecorda_date',  'free_keywords', 'abstract', 'acronym',
-            'operateur_num','operateur_lib', 'paysage_category_priority'
+            'operateur_num','operateur_lib', 'paysage_category_priority', 'source_id'
             ]]
-        .merge(pd.DataFrame(l), how='left', left_on='entities_id', right_on='api_id')
-        .drop(columns='api_id')
         .rename(columns={ 
             'source_id':'entities_id_source',
             'panel_code':'panel_id',
