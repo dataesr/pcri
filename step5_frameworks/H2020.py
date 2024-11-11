@@ -8,15 +8,16 @@ from config_path import PATH_SOURCE, PATH_CLEAN, PATH_REF, PATH_CONNECT
 from functions_shared import unzip_zip
 
 def H2020_process():
+    FRAMEWORK='H2020'
     print("\n### H2020")
 ##########################################################
     def h20_nom_load():
         destination = pd.read_json(open("data_files/destination.json", 'r', encoding='utf-8'))
         thema = pd.read_json(open("data_files/thema.json", 'r', encoding='utf-8'))
         act = pd.read_json(open("data_files/actions_name.json", 'r', encoding='utf-8'))
-        topics = unzip_zip('H2020_2022-12-05.json.zip', f"{PATH_SOURCE}H2020/", 'topics.json', encode='utf-8')
+        topics = unzip_zip('H2020_2022-12-05.json.zip', f"{PATH_SOURCE}{FRAMEWORK}/", 'topics.json', encode='utf-8')
         pilier_fr = pd.read_json(open("data_files/H20_pilier.json", 'r', encoding='utf-8'))
-        countries = pd.read_csv(f"{PATH_SOURCE}H2020/country_current.csv", sep=';')
+        countries = pd.read_csv(f"{PATH_SOURCE}{FRAMEWORK}/country_current.csv", sep=';')
         actions = pd.read_table(f"{PATH_CLEAN}actions_current.csv", sep=";")
         nuts = pd.read_pickle(f'{PATH_REF}nuts_complet.pkl')
         return destination, thema, act, topics, pilier_fr, countries, actions, nuts
@@ -35,7 +36,7 @@ def H2020_process():
         part=pd.DataFrame(part)
         part=part.replace('#', np.nan)
         print(f"- size part: {len(part)}")
-        entities = unzip_zip('H2020_2022-12-05.json.zip', f"{PATH_SOURCE}H2020/", "legalEntities.json", encode='utf-8')
+        entities = unzip_zip('H2020_2022-12-05.json.zip', f"{PATH_SOURCE}{FRAMEWORK}/", "legalEntities.json", encode='utf-8')
         status = pd.read_csv(f"{PATH_SOURCE}H2020/redressement_status_code.csv", sep=';', usecols=['project_id','stat_code'], dtype='str')
         return _proj, part, entities, status
 
@@ -400,18 +401,21 @@ def H2020_process():
 
         entities_tmp.loc[~entities_tmp.groupe_id.isnull(), 'entities_name_source']= entities_tmp.entities_name
         entities_tmp.loc[~entities_tmp.groupe_id.isnull(), 'entities_acronym_source']= entities_tmp.entities_acronym
-        entities_tmp.loc[~entities_tmp.groupe_id.isnull(), 'entities_id']= entities_tmp.groupe_id
-        entities_tmp.loc[~entities_tmp.groupe_id.isnull(), 'entities_acronym'] = entities_tmp.groupe_acronym
-        entities_tmp.loc[~entities_tmp.groupe_id.isnull(), 'entities_name'] = entities_tmp.groupe_name
+        # entities_tmp.loc[~entities_tmp.groupe_id.isnull(), 'entities_id']= entities_tmp.groupe_id
+        # entities_tmp.loc[~entities_tmp.groupe_id.isnull(), 'entities_acronym'] = entities_tmp.groupe_acronym
+        # entities_tmp.loc[~entities_tmp.groupe_id.isnull(), 'entities_name'] = entities_tmp.groupe_name
 
-        entities_tmp.loc[entities_tmp.entities_id.str.contains('gent', na=False), 'siren_cj'] = 'GE_ENT'
+        # entities_tmp.loc[entities_tmp.entities_id.str.contains('gent', na=False), 'siren_cj'] = 'GE_ENT'
         
-        entities_tmp = entities_tmp.drop(['groupe_id','groupe_name','groupe_acronym'], axis=1).drop_duplicates()
+        # entities_tmp = entities_tmp.drop(['groupe_id','groupe_name','groupe_acronym'], axis=1).drop_duplicates()
         print(f"taille de entities_tmp après groupe {len(entities_tmp)}")
     
+
+    entities_tmp = entities_tmp.merge(get_source_ID(entities_tmp, 'entities_id'), how='left', on='entities_id')
+
     # traitement catégorie
     entities_tmp = category_cleaning(entities_tmp, sirene)
-    entities_tmp = category_woven(entities_tmp)
+    # entities_tmp = category_woven(entities_tmp)
 
     print(f"size part avant: {len(part)}")
     part_tmp = part1.merge(entities_tmp, how='left', on=['generalPic', 'country_code_mapping', 'id'])
@@ -508,8 +512,7 @@ def H2020_process():
 
     part_tmp = (part_tmp
             .assign(is_ejo=np.where(part_tmp.extra_joint_organization.isnull(), 'Sans', 'Avec')))
-    
-    part_tmp = part_tmp.merge(get_source_ID(entities_tmp, 'entities_id'), how='left', on='entities_id')
+
  
 # agregation des participants
     participation=part_tmp[
@@ -521,8 +524,8 @@ def H2020_process():
         'country_association_code','country_association_name_en', 'country_group_association_code',
         'country_group_association_name_en', 'country_group_association_name_fr', 'country_name_fr', 'article1',
         'article2', 'entities_name', 'entities_acronym', 'entities_id', 'paysage_category_priority',
-        'ror_category', 'paysage_category', 'paysage_category_id', 'paysage_siren','paysage_cj_name',
-        'insee_cat_code', 'insee_cat_name', 'groupe_sector', 'cj_code', 'siren_cj', 'source_id',
+        'ror_category', 'paysage_category', 'paysage_category_id', 'category_agregation',
+        'insee_cat_code', 'insee_cat_name', 'groupe_sector', 'source_id',
         'category_woven', 'operateur_lib', 'operateur_name', 'operateur_num']]
 
     participation = participation.groupby(list(participation.columns.difference([ 'subv', 'subv_net', 'requestedGrant', 'number_involved'])), dropna=False, as_index=False).sum()
@@ -548,8 +551,7 @@ def H2020_process():
 
 
     # sans cordis type
-    cordis_type_null = pd.read_pickle(f"{PATH_WORK}cordis_type_null.pkl")
-
+    cordis_type_null=[]
     for i in ['evaluated', 'successful']:
         nb_involved = temp.loc[temp.stage==i].number_involved.sum()
         nb_type_null = temp.loc[(temp.cordis_type_entity_code.isnull())&(temp.stage==i)].number_involved.sum()
@@ -561,7 +563,6 @@ def H2020_process():
         cordis_type_null.append(d)
         print(f"{i} -> nb_involved {nb_involved}, nb_type_null {nb_type_null}, 'part_involved_null' {part_involved_null} fund_type {fund_type}, fund_type_null {fund_type_null}, {part_fund_null}")
     pd.DataFrame(cordis_type_null).to_csv(f"{PATH_CONNECT}cordis_type_null.csv", sep=';')
-
 
     # p=proj.loc[~((proj.stage=='successful')&(proj.status_code=='REJECTED')), ['stage', 'project_id']]
     # part_fr = part_tmp.loc[part_tmp.country_code=='FRA'].merge(p, how='inner', on=['stage', 'project_id']).project_id.unique()

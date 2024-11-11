@@ -1,5 +1,5 @@
 [
-    {"GCS":	"Groupement de coopération sanitaire"},
+    {"GCS":	"Groupements de coopération sanitaire"},
     {"ORG_PRIV":"Organismes privés"},
     {"ISBL":"Institutions sans but lucratif (ISBL)"},
     {"ENT":"Entreprises"},
@@ -9,6 +9,7 @@
     {"ETAB_HOSP":"Etablissements hospitaliers"},
     {"ENT_ETR":"Entreprises étrangères"},
     {"GIP":"Groupements d'intérêt public (GIP)"},
-    {"OI":"Organisation internationale"},
-    {"CTI":"Centres techniques industriels (CTI)"}
+    {"OI":"Organisations internationales"},
+    {"CTI":"Centres techniques industriels (CTI)"},
+    {"STRUCT":"Structures de recherche"}
 ]

@@ -10,5 +10,6 @@
 {"COLLTER":"Institutions publiques"},
 {"CTI":"Entreprises"},
 {"ENT":"Entreprises"},
-{"GCS": "Etablissements de santé"}
+{"GCS": "Etablissements de santé"},
+{"ISBL":"Institutions sans but lucratif (ISBL)"}
 ]
