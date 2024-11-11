@@ -10,11 +10,11 @@ def merge_groupe(entities_tmp, groupe):
         entities_tmp.loc[~entities_tmp.groupe_id.isnull(), 'entities_name_source']= entities_tmp.entities_name
         entities_tmp.loc[~entities_tmp.groupe_id.isnull(), 'entities_acronym_source']= entities_tmp.entities_acronym
         # entities_tmp.loc[~entities_tmp.groupe_id.isnull(), 'entities_id']= entities_tmp.groupe_id
-        entities_tmp.loc[~entities_tmp.groupe_id.isnull(), 'entities_acronym'] = entities_tmp.groupe_acronym
-        entities_tmp.loc[~entities_tmp.groupe_id.isnull(), 'entities_name'] = entities_tmp.groupe_name
+        # entities_tmp.loc[~entities_tmp.groupe_id.isnull(), 'entities_acronym'] = entities_tmp.groupe_acronym
+        # entities_tmp.loc[~entities_tmp.groupe_id.isnull(), 'entities_name'] = entities_tmp.groupe_name
 
-        entities_tmp.loc[entities_tmp.groupe_id.str.contains('gent', na=False), 'siren_cj'] = 'GE_ENT'
+        # entities_tmp.loc[entities_tmp.groupe_id.str.contains('gent', na=False), 'siren_cj'] = 'GE_ENT'
 
-        entities_tmp = entities_tmp.drop(['groupe_name','groupe_acronym'], axis=1).drop_duplicates()
+        # entities_tmp = entities_tmp.drop(['groupe_name','groupe_acronym'], axis=1).drop_duplicates()
     print(f"taille de entities_tmp après groupe {len(entities_tmp)}")
     return entities_tmp
