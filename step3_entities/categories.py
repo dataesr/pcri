@@ -11,7 +11,7 @@ def category_paysage(paysage):
          .loc[~x.category_id.isnull()]
          .drop_duplicates())
     x['category_priority'] = x.category_priority.str.replace('.0','', regex=False)
-    pc = (pd.read_csv("data_files/categories_paysage.csv", sep=';', encoding='utf-8')
+    pc = (pd.read_csv("data_files/cat_paysage.csv", sep=';', encoding='utf-8')
           .rename(columns={'usualNameFr':'paysage_category', 'id':'paysage_category_id'}))
     miss_x = x.loc[~x.category_id.isin(pc.paysage_category_id.unique())]
     if len(miss_x)>0:
@@ -28,36 +28,62 @@ def category_paysage(paysage):
 def category_cleaning(entities_tmp, sirene):
     print("\n## category FR")
     # CAT1 : categorisation FR
-    temp=sirene[['siren','cat', 'cat_an','cj']].drop_duplicates()
-    cj=pd.read_excel(f'{PATH_REF}_category.xlsx', sheet_name='cj_code_to_lib', dtype='str')
-    name=pd.read_excel(f'{PATH_REF}_category.xlsx', sheet_name='category_name', dtype='str')
-    cat_category=pd.read_excel(f'{PATH_REF}_category.xlsx', sheet_name='cat_category', dtype='str')
+
+    # entities_tmp.loc[~entities_tmp.paysage_category.isnull(), 'paysage_category_first'] = entities_tmp.loc[~entities_tmp.paysage_category.isnull()].paysage_category.str.split(';').str[0]
+
+    temp=sirene[['siren', 'cat', 'cat_an', 'cj']].drop_duplicates()
+    # cj=pd.read_excel(f'{PATH_REF}_category.xlsx', sheet_name='cj_code_to_lib', dtype='str')
+    # name=pd.read_excel(f'{PATH_REF}_category.xlsx', sheet_name='category_name', dtype='str')
+    # cat_category=pd.read_excel(f'{PATH_REF}_category.xlsx', sheet_name='cat_category', dtype='str')
+
 
     entities_tmp.loc[(entities_tmp.siren.isnull())&(~entities_tmp.paysage_siren.isnull()), 'siren'] = entities_tmp.paysage_siren
     entities_tmp=entities_tmp.merge(temp, how='left', on='siren')
     entities_tmp.loc[~entities_tmp.cj.isnull(), 'cj_code'] = entities_tmp.cj
-    entities_tmp=entities_tmp.merge(cj, how='left', left_on='cj_code', right_on='code', suffixes=['', '_x'])
-    entities_tmp.loc[~entities_tmp.siren_cj_x.isnull(), 'siren_cj'] = entities_tmp.siren_cj_x
 
-    entities_tmp=(entities_tmp.merge(name, how='left', left_on='siren_cj', right_on='category')
-        .rename(columns={'category_name':'cj_name'})
-        .drop(columns=['category', 'cj', 'code', 'siren_cj_x'])
-        .merge(cat_category,how='left', on='cat')
-        .rename(columns={'cat':'insee_cat_code'}))
-
-    if len(entities_tmp[entities_tmp.cj_name.isnull()])>1:
-        print(entities_tmp.loc[(entities_tmp.cj_name.isnull()), ['siren_cj']].drop_duplicates())
-    if any(entities_tmp.loc[(entities_tmp.insee_cat_name.isnull()), ['insee_cat_code']].drop_duplicates()):
-        print(entities_tmp.loc[(entities_tmp.insee_cat_name.isnull()), ['insee_cat_code']].drop_duplicates())
-    else:
-        pass 
-
+    cj_lib=json.load(open("data_files/cat_cj_code_to_lib.json"))
+    for i in cj_lib:
+        for k,v in i.items():
+            entities_tmp.loc[entities_tmp.cj_code==k, 'siren_cj']=v
+    
+    entities_tmp.loc[~entities_tmp.siren_cj.isnull(), 'category_tmp'] = entities_tmp.siren_cj
     #traitement des catégories assoc si identifiants commencent par W
-    entities_tmp.loc[entities_tmp.entities_id.str.match('^[W|w]([A-Z0-9]{8})[0-9]{1}$', na=False), 'category_temp'] = 'Institutions sans but lucratif (ISBL)'
-    entities_tmp.loc[entities_tmp.entities_name.str.contains('association', na=False), 'category_temp'] = 'Institutions sans but lucratif (ISBL)'
+    entities_tmp.loc[entities_tmp.entities_id.str.match('^[W|w]([A-Z0-9]{8})[0-9]{1}$', na=False), 'category_tmp'] = 'ISBL'
+    entities_tmp.loc[(entities_tmp.source_id=='rnsr')|(entities_tmp.paysage_category_id.str.split(';').str[0]=='z367d'), 'category_tmp'] = 'STRUCT'
+    entities_tmp.loc[~entities_tmp.paysage_category_id.isnull(), 'category_tmp'] = entities_tmp.loc[~entities_tmp.paysage_category_id.isnull()].paysage_category_id.str.split(';').str[0]
+    entities_tmp.loc[~entities_tmp.paysage_category_id.isnull(), 'category_first'] = entities_tmp.loc[~entities_tmp.paysage_category_id.isnull()].paysage_category.str.split(';').str[0]
 
-    entities_tmp.loc[entities_tmp.entities_id.str.match('^[0-9]{9}[A-Z]{1}$', na=False), 'category_temp'] = 'Structures internes de recherche académique (type UMR)'
-    entities_tmp.loc[entities_tmp.category_temp.isnull(), 'category_temp'] = entities_tmp.cj_name
+    cj_lib=json.load(open("data_files/cat_cj_lib.json"))
+    for i in cj_lib:
+        for k,v in i.items():
+            entities_tmp.loc[entities_tmp.category_tmp==k, 'category_first']=v
+
+    agreg=json.load(open("data_files/cat_to_agreg.json"))
+    for i in agreg:
+        for k,v in i.items():
+            entities_tmp.loc[entities_tmp.category_tmp==k, 'category_agregation']=v
+
+    agreg=json.load(open("data_files/cat_agreg_lib.json"))
+    for i in agreg:
+        for k,v in i.items():
+            entities_tmp.loc[entities_tmp.category_tmp==k, 'category_agregation']=v
+
+    # entities_tmp=(entities_tmp.merge(name, how='left', left_on='siren_cj', right_on='category')
+    #     .rename(columns={'category_name':'cj_name'})
+    #     .drop(columns=['category', 'cj', 'code', 'siren_cj_x'])
+    #     .merge(cat_category,how='left', on='cat')
+    #     .rename(columns={'cat':'insee_cat_code'}))
+
+    # if len(entities_tmp[entities_tmp.cj_name.isnull()])>1:
+    #     print(entities_tmp.loc[(entities_tmp.cj_name.isnull()), ['siren_cj']].drop_duplicates())
+    # if any(entities_tmp.loc[(entities_tmp.insee_cat_name.isnull()), ['insee_cat_code']].drop_duplicates()):
+    #     print(entities_tmp.loc[(entities_tmp.insee_cat_name.isnull()), ['insee_cat_code']].drop_duplicates())
+    # else:
+    #     pass 
+
+  
+    # 
+    # entities_tmp.loc[entities_tmp.category_temp.isnull(), 'category_temp'] = entities_tmp.cj_name
 
     entities_tmp.mask(entities_tmp=='', inplace=True)
 
@@ -78,6 +104,12 @@ def category_woven(entities_tmp):
     x.loc[x.entities_id.str.contains('^gent', regex=True, na=False), 'category_woven'] = 'Entreprise'
     x.loc[(x.category_woven.isnull())&(~x.category_temp.isnull()), 'category_woven'] = x.category_temp
     
+    x.loc[(x.siren_cj.isin('ENT', 'ENT_ETR'))|(x.ror_category=='Company'), 'flag_entreprise'] = True
+    x.loc[x.flag_entreprise.isnull(), 'flag_entreprise'] = False
+    x.loc[x.flag_entreprise==True, 'category_last'] = 'ENT'
+    x.loc[x.category_woven.str.contains('ISBL', na=False), 'category_last'] = 'ISBL'
+    l=['Établissement d’enseignement supérieur']
+    x.loc[x.category_woven.str.contains('Établissement d’enseignement supérieur', na=False), 'category_last'] = 'ES'    
     
     # cat_ag=pd.read_excel()
     x.to_csv(f"{PATH_WORK}category_entities.csv", sep=';')

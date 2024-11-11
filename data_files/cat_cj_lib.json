@@ -1,0 +1,14 @@
+[
+    {"GCS":	"Groupement de coopération sanitaire"},
+    {"ORG_PRIV":"Organismes privés"},
+    {"ISBL":"Institutions sans but lucratif (ISBL)"},
+    {"ENT":"Entreprises"},
+    {"COLLTER":"Collectivités territoriales"},
+    {"EPIC":"EPIC"},
+    {"ETAT_AUT":"Autres institutions publiques (hors GIP/Santé)"},
+    {"ETAB_HOSP":"Etablissements hospitaliers"},
+    {"ENT_ETR":"Entreprises étrangères"},
+    {"GIP":"Groupements d'intérêt public (GIP)"},
+    {"OI":"Organisation internationale"},
+    {"CTI":"Centres techniques industriels (CTI)"}
+]
