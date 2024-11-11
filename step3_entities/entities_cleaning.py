@@ -49,13 +49,15 @@ def entities_check_null(entities_tmp):
 def entities_info_add(entities_tmp, entities_info):
     print("\n### entities_info + entities_tmp")
     entities_info = (entities_info
-        .merge(entities_tmp[['generalPic', 'id', 'ZONAGE', 'id_m', 'siren', 'id_secondaire',
-                        'entities_id',  'entities_name', 'entities_acronym', 
-                        'entities_name_source', 'entities_acronym_source', 
-                        'insee_cat_code', 'insee_cat_name', 
-                        'paysage_category', 'paysage_category_id',  'paysage_cj_name', 
-                        'ror_category', 'category_woven', 'cj_code',  'sector',  
-                        'siret_closeDate',  'siren_cj', 'groupe_sector', 'cat_an']],
+        .merge(entities_tmp[
+            ['generalPic', 'id', 'ZONAGE', 'id_m', 'siren', 
+            'id_secondaire', 'entities_id',  'entities_name', 'entities_acronym', 
+            'entities_name_source', 'entities_acronym_source', 
+            'insee_cat_code', 'insee_cat_name',  'category_agregation',
+            'paysage_category', 'flag_entreprise', 
+            'ror_category', 'category_woven', 'source_id', 'sector',  
+            'siret_closeDate', 'cat_an',
+            'groupe_name','groupe_acronym', 'groupe_id', 'groupe_sector']],
         how='inner', on='generalPic'))
     print(f"- size entities_info + entities_tmp: {len(entities_info)}")
     return entities_info

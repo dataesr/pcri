@@ -202,16 +202,19 @@
 {"837tk":"ES"},
 {"psgmw":"ES"},
 {"xvai7":"ES"},
+{"P3XZB":"RECH"},
 {"GCS":	"SANTE"},
 {"ORG_PRIV":"ORG_PRIV"},
 {"ISBL":"ISBL"},
 {"ENT":"ENT"},
 {"COLLTER":"ORG_PUB"},
-{"EPIC":"EPIC"},
+{"EPIC":"ORG_PUB"},
 {"ETAT_AUT":"ORG_PUB"},
 {"ETAB_HOSP":"SANTE"},
 {"ENT_ETR":"ENT"},
 {"GIP":"ORG_PUB"},
 {"OI":"OI"},
-{"CTI":"ENT"}
+{"CTI":"ENT"},
+{"STRUCT":"RECH"}
 ]
+

@@ -6,10 +6,12 @@ def entities_with_lien(entities_info, lien):
     print(f"- ETAT avant lien ->\ngeneralPic de lien={lien.generalPic.nunique()},\ngeneralPic de entities_info={entities_info.generalPic.nunique()}")
 
     part_step = (lien
-                .merge(entities_info[['generalPic', 'cordis_is_sme', 'cordis_type_entity_code', 'cordis_type_entity_name_fr', 
-                                    'cordis_type_entity_name_en', 'cordis_type_entity_acro', 'nutsCode',
-                                    'country_code', 'country_code_mapping', 'extra_joint_organization']].drop_duplicates(),
-                        how='inner', on='generalPic')
+                .merge(entities_info[
+                    ['generalPic', 
+                    'cordis_is_sme', 'cordis_type_entity_code', 'cordis_type_entity_name_fr', 
+                    'cordis_type_entity_name_en', 'cordis_type_entity_acro', 'nutsCode',
+                    'country_code', 'country_code_mapping', 'extra_joint_organization']].drop_duplicates(),
+                    how='inner', on='generalPic')
                 .drop(columns={'n_app', 'n_part', 'participant_pic'})
                 .rename(columns={ 'nutsCode':'entities_nuts', 'nuts_code':'participation_nuts'})   
             )
@@ -47,9 +49,11 @@ def participations_complete(part_prop, part_proj, proj_no_coord):
     
 def ent(participation, entities_info, projects):
     print("### ENTITIES preparation")
-    part=participation[['stage', 'project_id','generalPic', 'role', 'participates_as', 'erc_role', 'with_coord', 'is_ejo',
-                        'country_code', 'participation_nuts', 'region_1_name', 'region_2_name', 'regional_unit_name',
-                        'coordination_number', 'calculated_fund', 'beneficiary_subv']].assign(number_involved=1)
+    part=participation[
+        ['stage', 'project_id','generalPic', 'role', 'participates_as', 'erc_role', 
+         'with_coord', 'is_ejo', 'country_code', 'participation_nuts', 
+         'region_1_name', 'region_2_name', 'regional_unit_name',
+        'coordination_number', 'calculated_fund', 'beneficiary_subv']].assign(number_involved=1)
 
     def ent_stage(df, stage_value:str):
         df=df[df.stage==stage_value].merge(entities_info, how='left', on=['generalPic','country_code'])
@@ -76,11 +80,14 @@ def ent(participation, entities_info, projects):
     )
 
     entities_part=(entities_part
-                .drop(columns=['generalPic','businessName', 'legalName','generalState', 'street','postalCode','postalBox',
-                        'webPage','naceCode','gps_loc', 'city', 'countryCode','isNonProfit',  'cat_an',
-                        'isPublicBody', 'isInternationalOrganisation', 'isResearchOrganisation', 'isHigherEducation',
-                        'legalType', 'vat', 'legalRegNumber', 'naceCode', 'gps_loc', 'id', 'id_m',  'siret_closeDate',
-                        'siren']))
+                .drop(columns=
+                ['generalPic','businessName', 'legalName','generalState', 'street',
+                'postalCode','postalBox','webPage','naceCode','gps_loc', 'city', 
+                'countryCode','isNonProfit',  
+                'cat_an','isPublicBody', 'isInternationalOrganisation', 
+                'isResearchOrganisation', 
+                'isHigherEducation','legalType', 'vat', 'legalRegNumber', 
+                'naceCode', 'gps_loc', 'id', 'id_m', 'siret_closeDate','siren']))
 
     entities_part=(entities_part
         .groupby(list(entities_part.columns.difference(['coordination_number', 'number_involved', 'calculated_fund', 'beneficiary_subv'])), dropna=False, as_index=False).sum()
