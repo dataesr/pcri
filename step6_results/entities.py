@@ -9,21 +9,20 @@ def entities_preparation(entities_part, h20):
             'call_deadline','abstract', 
             'calculated_fund', 'call_id', 'call_year', 'cj_code', 'category_woven',
             'coordination_number', 'cordis_is_sme', 'cordis_type_entity_acro', 
-            'extra_joint_organization', 'with_coord', 'is_ejo',
+            'extra_joint_organization', 'with_coord', 'is_ejo', 'flag_entreprise',
             'cordis_type_entity_code', 'cordis_type_entity_name_en','cordis_type_entity_name_fr', 
             'participation_nuts', 'region_1_name', 'region_2_name', 'regional_unit_name',
             'country_association_code','country_association_name_en', 'country_code', 
-            'country_code_mapping', 
-            'country_group_association_code', 'country_group_association_name_en',
+            'country_code_mapping', 'country_group_association_code', 'country_group_association_name_en',
             'country_group_association_name_fr', 'country_name_en',
             'country_name_fr', 'country_name_mapping', 'destination_code', 'destination_name_en',
             'destination_detail_code', 'destination_detail_name_en', 
             'entities_acronym', 'entities_id', 'entities_name', 'framework', 'groupe_sector',
             'insee_cat_code', 'insee_cat_name', 'number_involved', 'participates_as', 
-            'paysage_category', 'paysage_category_id', 'paysage_category_priority',
+            'paysage_category', 'paysage_category_id', 'category_agregation',
             'pilier_name_en', 'pilier_name_fr', 'programme_code', 
             'panel_code', 'panel_name', 'panel_regroupement_code', 'panel_regroupement_name',
-            'programme_name_en', 'project_id', 'role', 'erc_role', 'ror_category', 'siren_cj',
+            'programme_name_en', 'project_id', 'role', 'erc_role', 'ror_category', 
             'stage', 'status_code', 'thema_code', 'thema_name_en', 'topic_code', 'free_keywords', 
             'operateur_name','operateur_num','operateur_lib','ecorda_date']]
 
@@ -37,17 +36,14 @@ def entities_preparation(entities_part, h20):
     # print(f"3 - comparaison nb couple genpic + country (doit être égal) {len(part[['generalPic','country_code']].drop_duplicates())},{len(entities_info[['generalPic','country_code']].drop_duplicates())}")
 
     entities_part = pd.concat([entities_part, tmp], ignore_index=True)
-    entities_part.loc[(~entities_part.siren_cj.isin(['ENT','GE_ENT','ETAB_LOCAL','CTI']))|(entities_part.category_woven!='Entreprise'), 'insee_cat_name']=np.nan
-    entities_part.loc[(~entities_part.siren_cj.isin(['ENT','GE_ENT','ETAB_LOCAL','CTI']))|(entities_part.category_woven!='Entreprise'), 'insee_cat_code']=np.nan
+    # entities_part.loc[(~entities_part.siren_cj.isin(['ENT','GE_ENT','ETAB_LOCAL','CTI']))|(entities_part.category_woven!='Entreprise'), 'insee_cat_name']=np.nan
+    # entities_part.loc[(~entities_part.siren_cj.isin(['ENT','GE_ENT','ETAB_LOCAL','CTI']))|(entities_part.category_woven!='Entreprise'), 'insee_cat_code']=np.nan
     
     entities_part = entities_part.reindex(sorted(entities_part.columns), axis=1)
     return entities_part
 
 def entities_ods(entities_participation):
     # ### entities pour ODS
-    # l=list(set(entities_participation.entities_id.unique()))   
-    # l=sourcer_ID(l)  
-    # for i in ['successful', 'evaluated']:
     tmp=(entities_participation[
         ['cj_code', 'category_woven', 'cordis_is_sme', 'cordis_type_entity_acro', 'stage','acronym',
         'cordis_type_entity_code', 'cordis_type_entity_name_en',
@@ -62,13 +58,11 @@ def entities_ods(entities_participation):
         'role', 'ror_category', 'sector', 'paysage_category', 'paysage_category_id',
         'coordination_number', 'calculated_fund', 'with_coord',
         'number_involved', 'action_code', 'action_name', 'call_id', 'topic_code',
-        'status_code', 'framework', 'call_year', 'ecorda_date',
+        'status_code', 'framework', 'call_year', 'ecorda_date', 'flag_entreprise',
         'pilier_name_en', 'pilier_name_fr', 'programme_code', 'programme_name_en', 
         'programme_name_fr',  'thema_code', 'thema_name_fr', 'thema_name_en', 'destination_code',
         'destination_lib', 'destination_name_en','action_code2', 'action_name2', 'free_keywords', 'abstract', 'entities_name_source',
-        'operateur_num','operateur_lib', 'paysage_category_priority', 'source_id']]
-        # .merge(pd.DataFrame(l), how='left', left_on='entities_id', right_on='api_id')
-        # .drop(columns='api_id')
+        'operateur_num','operateur_lib', 'category_agregation', 'source_id']]
         .rename(columns={ 
             'source_id':'entities_id_source',
             'action_code':'action_id', 
