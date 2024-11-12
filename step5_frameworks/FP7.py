@@ -3,6 +3,7 @@ from config_path import PATH_SOURCE, PATH_CLEAN
 from step3_entities.references import *
 from step3_entities.merge_referentiels import *
 from step3_entities.categories import *
+from step3_entities.ID_getSourceRef import *
 
 def FP7_process():
     print("\n### FP7")
@@ -154,19 +155,20 @@ def FP7_process():
 
             entities_tmp=entities_tmp.merge(groupe, how='left', on='siren')
 
-            entities_tmp.loc[~entities_tmp.groupe_id.isnull(), 'entities_id']= entities_tmp.groupe_id
-            entities_tmp.loc[~entities_tmp.groupe_id.isnull(), 'entities_acronym'] = entities_tmp.groupe_acronym
-            entities_tmp.loc[~entities_tmp.groupe_id.isnull(), 'entities_name'] = entities_tmp.groupe_name
+            # entities_tmp.loc[~entities_tmp.groupe_id.isnull(), 'entities_id']= entities_tmp.groupe_id
+            # entities_tmp.loc[~entities_tmp.groupe_id.isnull(), 'entities_acronym'] = entities_tmp.groupe_acronym
+            # entities_tmp.loc[~entities_tmp.groupe_id.isnull(), 'entities_name'] = entities_tmp.groupe_name
 
-            entities_tmp.loc[entities_tmp.entities_id.str.contains('gent', na=False), 'siren_cj'] = 'GE_ENT'
+            # entities_tmp.loc[entities_tmp.entities_id.str.contains('gent', na=False), 'siren_cj'] = 'GE_ENT'
             
-            entities_tmp = entities_tmp.drop(['groupe_id','groupe_name','groupe_acronym'], axis=1).drop_duplicates()
+            # entities_tmp = entities_tmp.drop(['groupe_id','groupe_name','groupe_acronym'], axis=1).drop_duplicates()
             print(f"taille de entities_tmp après groupe {len(entities_tmp)}")
 
+        entities_tmp = entities_tmp.merge(get_source_ID(entities_tmp, 'entities_id'), how='left', on='entities_id')
             # traitement catégorie
-        entities_tmp = category_cleaning(entities_tmp, sirene)
-        entities_tmp = category_woven(entities_tmp)
-
+        # entities_tmp = category_cleaning(entities_tmp, sirene)
+        entities_tmp = category_woven(entities_tmp, sirene)
+        entities_tmp = category_agreg(entities_tmp)
         return  entities_tmp
     entities_tmp=FP7_entities(FP7)
 
@@ -336,8 +338,8 @@ def FP7_process():
                 .rename(columns={'prog_lib':'fp_specific_programme', 'pilier':'fp_specific_pilier'}))
         
         print(proj[['programme_code',
-       'programme_name_en', 'thema_name_en', 'destination_code', 'destination_name_en',
-       'destination_detail_code','destination_detail_name_en']].drop_duplicates())
+        'programme_name_en', 'thema_name_en', 'destination_code', 'destination_name_en',
+        'destination_detail_code','destination_detail_name_en']].drop_duplicates())
         return proj
     proj=themes_cleaning(FP7)
 
@@ -407,7 +409,7 @@ def FP7_process():
             .rename(columns={'funding':'calculated_fund', 'ZONAGE':'extra_joint_organization'}))
         
         t = (t.assign(is_ejo=np.where(t.extra_joint_organization.isnull(), 'Sans', 'Avec')))
- 
+
         t.loc[(t.destination_code.isin(['PF', 'ERARESORG', 'GA']))|((t.thema_code.isin(['ERC', 'COST']))&(t.destination_code!='SyG')), 'coordination_number'] = 0
         t=t.assign(with_coord=True)
         t.loc[(t.destination_code.isin(['PF', 'ERARESORG', 'GA']))|((t.thema_code.isin(['ERC', 'COST']))&(t.destination_code!='SyG')), 'with_coord'] = False
