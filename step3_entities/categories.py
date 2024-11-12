@@ -22,7 +22,9 @@ def category_paysage(paysage):
     else:
         return (x.loc[x.category_id.isin(pc.loc[pc.non!='n'].paysage_category_id.unique())]
                 .groupby('id_clean').agg(lambda x: ';'.join(x)).reset_index()
-                .rename(columns={'category_name':'paysage_category', 'category_id':'paysage_category_id',
+                .rename(columns={
+                    'category_name':'paysage_category', 
+                    'category_id':'paysage_category_id',
                     'category_priority':'paysage_category_priority'}))
 
 
@@ -53,7 +55,6 @@ def category_woven(df, sirene):
         for k,v in i.items():
             df.loc[df.category_tmp==k, 'category_woven']=v
 
-    # if any(df.loc[df.category_woven.isnull()]) & (FRAMEWORK!='H2020'):
     print(f"{df.loc[(df.source_id.isin(['paysage','siren','siret','rnsr']))&(df.category_woven.isnull()), ['source_id', 'entities_name', 'entities_id', 'siren_cj', 'paysage_category']]}")
 
     print(f"- taille de df après cat: {len(df)}")
@@ -84,7 +85,7 @@ def category_agreg(df):
     df.mask(df=='', inplace=True)
 
     df.loc[(df.siren_cj.isin(['ENT', 'ENT_ETR']))|(df.ror_category=='Company'), 'flag_entreprise'] = True
-    df.loc[(df.category_agregation=='Entreprises'), 'flag_entreprise'] = True
+    df.loc[(df.category_agregation=='Entreprise'), 'flag_entreprise'] = True
     df.loc[df.flag_entreprise.isnull(), 'flag_entreprise'] = False
 
     l=['insee_cat_code', 'insee_cat_name']

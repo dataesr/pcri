@@ -463,6 +463,9 @@ def H2020_process():
     part_tmp.loc[part_tmp.entities_acronym.isnull(), 'entities_acronym'] = part_tmp.shortName
     part_tmp.loc[part_tmp.entities_id.isnull(), 'entities_id'] = "pic"+part_tmp.generalPic.map(str)
 
+    part_tmp.rename(columns={'legalName':'entities_name_source',
+                             'shortName':'entities_acronym_source'}, inplace=True)
+
     part_tmp = part_tmp.assign(number_involved=1)
 
     part_tmp['nb'] = part_tmp.id.str.split(';').str.len()
@@ -480,7 +483,7 @@ def H2020_process():
     part_tmp = cordis_type(part_tmp)
     part_tmp = part_tmp.drop(columns=['legalEntityType_fr','legalEntityType_acro', 'legalEntityType_en'])
 
-    for i in ['entities_acronym', 'entities_name']:
+    for i in ['entities_acronym', 'entities_name','entities_acronym_source', 'entities_name_source']:
         part_tmp[i] = part_tmp[i].str.replace('\\n|\\t|\\r|\\s+', ' ', regex=True).str.strip()
 
     del sirene, paysage, ror, ref, entities
@@ -523,7 +526,8 @@ def H2020_process():
         'country_code_mapping', 'country_name_mapping', 'country_code', 'country_name_en', 'extra_joint_organization',
         'country_association_code','country_association_name_en', 'country_group_association_code',
         'country_group_association_name_en', 'country_group_association_name_fr', 'country_name_fr', 'article1',
-        'article2', 'entities_name', 'entities_acronym', 'entities_id', 'paysage_category_priority',
+        'article2', 'entities_name', 'entities_acronym', 'entities_id', 
+        'entities_name_source', 'entities_acronym_source','paysage_category_priority',
         'ror_category', 'paysage_category', 'paysage_category_id', 'category_agregation',
         'insee_cat_code', 'insee_cat_name', 'groupe_sector', 'source_id', 'flag_entreprise',
         'category_woven', 'operateur_lib', 'operateur_name', 'operateur_num',

@@ -5,14 +5,21 @@ from functions_shared import zipfile_ods, order_columns
 def projects_ods(projects, participation, calls, countries, h20_p, FP6_p, FP7_p):
     ###projects info for ODS
     cc = countries.drop(columns=['countryCode', 'country_name_mapping','country_code_mapping']).drop_duplicates()
-    part= (participation.loc[participation.stage=='successful', ['project_id', 'country_code', 'country_code_mapping', 'participation_nuts', 'region_1_name', 'region_2_name', 'regional_unit_name']].drop_duplicates()
+    part= (participation.loc[participation.stage=='successful', 
+                ['project_id', 'country_code', 'country_code_mapping', 
+                 'participation_nuts', 'region_1_name', 'region_2_name', 
+                 'regional_unit_name']].drop_duplicates()
     .merge(cc[['country_code','country_name_fr']], how='left', on='country_code')
     .merge(countries[['country_code_mapping', 'country_name_mapping']], how='left', on='country_code_mapping')
     .groupby(['project_id'], as_index = False).agg(lambda x: ';'.join(map(str, filter(None, x)))))
 
     #recuperation des données proposals à afficher
-    tmpP=(projects.loc[projects.stage=="evaluated", ['project_id','submission_date', 'total_cost', 'eu_reqrec_grant', 'number_involved']]
-        .rename(columns={'total_cost':'proposal_budget', 'eu_reqrec_grant':'proposal_requestedgrant', 'number_involved':'proposal_numberofapplicants'}))
+    tmpP=(projects.loc[projects.stage=="evaluated", 
+                ['project_id','submission_date', 'total_cost', 'eu_reqrec_grant', 
+                 'number_involved']]
+        .rename(columns={'total_cost':'proposal_budget', 
+                         'eu_reqrec_grant':'proposal_requestedgrant', 
+                         'number_involved':'proposal_numberofapplicants'}))
 
     tmp=projects.loc[(projects.stage=='successful')&(projects.status_code!='UNDER_PREPARATION') ]
 

@@ -208,7 +208,7 @@
 {"ISBL":"ISBL"},
 {"ENT":"ENT"},
 {"COLLTER":"ORG_PUB"},
-{"EPIC":"ORG_PUB"},
+{"EPIC":"ENT"},
 {"ETAT_AUT":"ORG_PUB"},
 {"ETAB_HOSP":"SANTE"},
 {"ENT_ETR":"ENT"},
