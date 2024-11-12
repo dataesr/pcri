@@ -184,11 +184,10 @@ entities_tmp = entities_clean(entities_tmp)
 entities_check_null(entities_tmp)
 
 # traitement catégorie
-entities_tmp = category_cleaning(entities_tmp, sirene)
-# entities_tmp = category_woven(entities_tmp)
-
+entities_tmp = category_woven(entities_tmp, sirene)
 entities_info = entities_info_add(entities_tmp, entities_info)
 entities_info = cordis_type(entities_info)
+entities_info = category_agreg(entities_info)
 entities_info = add_fix_countries(entities_info, countries)
 entities_info = mires(entities_info)
 
