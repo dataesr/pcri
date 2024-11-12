@@ -15,9 +15,9 @@ def h20_nom_load():
     destination = pd.read_json(open("data_files/destination.json", 'r', encoding='utf-8'))
     thema = pd.read_json(open("data_files/thema.json", 'r', encoding='utf-8'))
     act = pd.read_json(open("data_files/actions_name.json", 'r', encoding='utf-8'))
-    topics = unzip_zip('H2020_2022-12-05.json.zip', f"{PATH_SOURCE}{FRAMEWORK}/", 'topics.json', encode='utf-8')
+    topics = unzip_zip('H2020_2022-12-05.json.zip', f"{PATH_SOURCE}H2020/", 'topics.json', encode='utf-8')
     pilier_fr = pd.read_json(open("data_files/H20_pilier.json", 'r', encoding='utf-8'))
-    countries = pd.read_csv(f"{PATH_SOURCE}{FRAMEWORK}/country_current.csv", sep=';')
+    countries = pd.read_csv(f"{PATH_SOURCE}H2020/country_current.csv", sep=';')
     actions = pd.read_table(f"{PATH_CLEAN}actions_current.csv", sep=";")
     nuts = pd.read_pickle(f'{PATH_REF}nuts_complet.pkl')
     return destination, thema, act, topics, pilier_fr, countries, actions, nuts
@@ -36,7 +36,7 @@ def h20_load():
     part=pd.DataFrame(part)
     part=part.replace('#', np.nan)
     print(f"- size part: {len(part)}")
-    entities = unzip_zip('H2020_2022-12-05.json.zip', f"{PATH_SOURCE}{FRAMEWORK}/", "legalEntities.json", encode='utf-8')
+    entities = unzip_zip('H2020_2022-12-05.json.zip', f"{PATH_SOURCE}H2020/", "legalEntities.json", encode='utf-8')
     status = pd.read_csv(f"{PATH_SOURCE}H2020/redressement_status_code.csv", sep=';', usecols=['project_id','stat_code'], dtype='str')
     return _proj, part, entities, status
 
@@ -414,8 +414,8 @@ else:
 entities_tmp = entities_tmp.merge(get_source_ID(entities_tmp, 'entities_id'), how='left', on='entities_id')
 
 # traitement catégorie
-entities_tmp = category_cleaning(entities_tmp, sirene)
-# entities_tmp = category_woven(entities_tmp)
+entities_tmp = category_woven(entities_tmp, sirene)
+entities_tmp = category_agreg(entities_tmp)
 
 print(f"size part avant: {len(part)}")
 part_tmp = part1.merge(entities_tmp, how='left', on=['generalPic', 'country_code_mapping', 'id'])
@@ -525,8 +525,9 @@ participation=part_tmp[
     'country_group_association_name_en', 'country_group_association_name_fr', 'country_name_fr', 'article1',
     'article2', 'entities_name', 'entities_acronym', 'entities_id', 'paysage_category_priority',
     'ror_category', 'paysage_category', 'paysage_category_id', 'category_agregation',
-    'insee_cat_code', 'insee_cat_name', 'groupe_sector', 'source_id',
-    'category_woven', 'operateur_lib', 'operateur_name', 'operateur_num']]
+    'insee_cat_code', 'insee_cat_name', 'groupe_sector', 'source_id', 'flag_entreprise',
+    'category_woven', 'operateur_lib', 'operateur_name', 'operateur_num',
+    'groupe_name','groupe_acronym', 'groupe_id']]
 
 participation = participation.groupby(list(participation.columns.difference([ 'subv', 'subv_net', 'requestedGrant', 'number_involved'])), dropna=False, as_index=False).sum()
 print(f"involved successful:{'{:,.1f}'.format(participation.loc[(participation.stage=='successful'), 'number_involved'].sum())}\nsubv_laureat:{'{:,.1f}'.format(participation.loc[(participation.stage=='successful'), 'subv_net'].sum())}\nsubv_prop:{'{:,.1f}'.format(participation.loc[(participation.stage=='evaluated'), 'requestedGrant'].sum())}")
@@ -551,7 +552,6 @@ with open(file_name, 'wb') as file:
 
 
 # sans cordis type
-# cordis_type_null = pd.read_pickle(f"{PATH_CONNECT}cordis_type_null.pkl")
 cordis_type_null=[]
 for i in ['evaluated', 'successful']:
     nb_involved = temp.loc[temp.stage==i].number_involved.sum()
@@ -564,4 +564,3 @@ for i in ['evaluated', 'successful']:
     cordis_type_null.append(d)
     print(f"{i} -> nb_involved {nb_involved}, nb_type_null {nb_type_null}, 'part_involved_null' {part_involved_null} fund_type {fund_type}, fund_type_null {fund_type_null}, {part_fund_null}")
 pd.DataFrame(cordis_type_null).to_csv(f"{PATH_CONNECT}cordis_type_null.csv", sep=';')
-

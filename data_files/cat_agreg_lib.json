@@ -1,15 +1,50 @@
 [
-{"ORG_PRIV":"Organismes privés"},
-{"ORG_PUB":"Institutions publiques"},
-{"SANTE":"Etablissements de santé"},
-{"ES":"Enseignement supérieur"},
-{"RECH":"Recherche"},
-{"OI": "Organisations internationales"},
-{"ETAT_AUT":"Institutions publiques"},
-{"RESEAU":"Réseaux"},
-{"COLLTER":"Institutions publiques"},
-{"CTI":"Entreprises"},
-{"ENT":"Entreprises"},
-{"GCS": "Etablissements de santé"},
-{"ISBL":"Institutions sans but lucratif (ISBL)"}
+    {
+        "ORG_PRIV": "Organisme privé"
+    },
+    {
+        "ORG_PUB": "Institution publique"
+    },
+    {
+        "SANTE": "Etablissement de santé"
+    },
+    {
+        "ES": "Enseignement supérieur"
+    },
+    {
+        "RECH": "Recherche"
+    },
+    {
+        "OI": "Organisation internationale"
+    },
+    {
+        "ETAT_AUT": "Institution publique"
+    },
+    {
+        "RESEAU": "Réseau"
+    },
+    {
+        "COLLTER": "Institution publique"
+    },
+    {
+        "CTI": "Entreprise"
+    },
+    {
+        "ENT": "Entreprise"
+    },
+    {
+        "GCS": "Etablissement de santé"
+    },
+    {
+        "ISBL": "Institution sans but lucratif (ISBL)"
+    },
+    {
+        "OTH": "Autre structure"
+    },
+    {
+        "ENT_ETR": "Entreprise"
+    },
+    {
+        "EPIC": "Institution publique"
+    }
 ]

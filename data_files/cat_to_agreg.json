@@ -215,6 +215,7 @@
 {"GIP":"ORG_PUB"},
 {"OI":"OI"},
 {"CTI":"ENT"},
-{"STRUCT":"RECH"}
+{"STRUCT":"RECH"},
+{"OTH":"OTH"}
 ]
 
