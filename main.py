@@ -24,10 +24,10 @@ h20 = h20.reindex(sorted(h20.columns), axis=1)
 
 # step6
 projects_all = projects_ods(projects, participation, calls, countries, h20_p, FP6_p, FP7_p)
-collab_signed_ods(collaboration)
-collaboration.drop(columns=['ecorda_date', 'abstract', 'free_keywords']).to_csv(PATH_CONNECT+"collaboration_current.csv", index=False, encoding="UTF-8", sep=";", na_rep='')
-msca_collab_ods(collaboration)
-msca_collab(collaboration)
+# collab_signed_ods(collaboration)
+# collaboration.drop(columns=['ecorda_date', 'abstract', 'free_keywords']).to_csv(PATH_CONNECT+"collaboration_current.csv", index=False, encoding="UTF-8", sep=";", na_rep='')
+# msca_collab_ods(collaboration)
+# msca_collab(collaboration)
 # collab_evolution(collaboration)
 
 entities_participation = entities_preparation(entities_part, h20)
@@ -40,7 +40,7 @@ print(f"size entities_participation: {len(entities_participation)}")
             index=False, encoding='UTF-8', na_rep='', decimal='.'))
 
 entities_ods(entities_participation)
-collab_ent = entities_collab(entities_participation)
+# collab_ent = entities_collab(entities_participation)
 
 part = synthese_preparation(participation, countries)
 projects_current = projects_participations(projects, part)

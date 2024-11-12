@@ -9,13 +9,13 @@ def msca_erc_projects(FP6, FP7, h20, projects, part):
         'cordis_type_entity_name_en', 'cordis_type_entity_name_fr', 'extra_joint_organization',
         'country_group_association_code', 'country_group_association_name_en',
         'country_group_association_name_fr', 'country_name_en',  'free_keywords', 'abstract',
-        'country_name_fr', 'destination_code', 'destination_detail_code',
+        'country_name_fr', 'destination_code', 'destination_detail_code', 
         'destination_detail_name_en', 'destination_name_en',  'number_involved',
-        'panel_code', 'panel_name', 'project_id', 'role', 'erc_role',
-        'stage', 'status_code', 'framework', 'thema_code', 'ecorda_date']
+        'panel_code', 'panel_name', 'project_id', 'role', 'erc_role', 'flag_entreprise',
+        'stage', 'status_code', 'framework', 'thema_code', 'category_woven', 'category_agregation', 'source_id','ecorda_date']
 
     me7= FP7.loc[FP7.thema_code.isin(["ERC","MSCA"]), select_cols]
-    me6= FP6.loc[FP6.thema_code.isin(["ERC","MSCA"]), list(set(select_cols).difference(['panel_code', 'panel_name','erc_role', 'extra_joint_organization', 'free_keywords', 'abstract']))]
+    me6= FP6.loc[FP6.thema_code.isin(["ERC","MSCA"]), list(set(select_cols).difference(['panel_code', 'panel_name','erc_role', 'extra_joint_organization', 'free_keywords', 'abstract','source_id', 'category_agregation', 'category_woven', 'flag_entreprise']))]
     me20=h20.loc[h20.programme_code.isin(['ERC', 'MSCA']), select_cols]
 
 
