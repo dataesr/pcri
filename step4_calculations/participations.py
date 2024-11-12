@@ -70,10 +70,11 @@ def ent(participation, entities_info, projects):
 
     entities_part = pd.concat([entities_eval, entities_signed], ignore_index=True)
 
-    mask=(entities_part.entities_id.str.contains('^gent', na=False))&(~entities_part.entities_acronym_source.isnull())
-    r=(entities_part.loc[mask ,['generalPic', 'entities_id','entities_name_source', 'entities_acronym_source']]
+    # mask=(entities_part.entities_id.str.contains('^gent', na=False))&(~entities_part.entities_acronym_source.isnull())
+    r=(entities_part[['generalPic', 'entities_id','entities_name_source', 'entities_acronym_source']]
     .drop_duplicates())
 
+    r[['entities_acronym_source']] = r[['entities_acronym_source']].fillna('')
     r['entities_name_source'] = r.apply(lambda x: x['entities_name_source'] if  x["entities_acronym_source"].upper() in x["entities_name_source"].upper() else x['entities_name_source']+' '+x["entities_acronym_source"].lower(),axis=1)
     entities_part = (entities_part.drop(columns=['entities_name_source', 'entities_acronym_source'])
                     .merge(r.drop(columns='entities_acronym_source'), how='left', on=['generalPic', 'entities_id'])

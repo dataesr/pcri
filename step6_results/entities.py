@@ -6,8 +6,8 @@ from config_path import PATH_CONNECT
 def entities_preparation(entities_part, h20):
     tmp= h20.rename(columns={ 'subv':'beneficiary_subv'})[
             ['action_code','action_name', 'action_code2', 'action_name2', 'article1', 'article2', 
-            'call_deadline','abstract', 
-            'calculated_fund', 'call_id', 'call_year', 'cj_code', 'category_woven',
+            'call_deadline','abstract', 'source_id', 'generalPic',
+            'calculated_fund', 'call_id', 'call_year', 'category_woven',
             'coordination_number', 'cordis_is_sme', 'cordis_type_entity_acro', 
             'extra_joint_organization', 'with_coord', 'is_ejo', 'flag_entreprise',
             'cordis_type_entity_code', 'cordis_type_entity_name_en','cordis_type_entity_name_fr', 
@@ -17,14 +17,16 @@ def entities_preparation(entities_part, h20):
             'country_group_association_name_fr', 'country_name_en',
             'country_name_fr', 'country_name_mapping', 'destination_code', 'destination_name_en',
             'destination_detail_code', 'destination_detail_name_en', 
-            'entities_acronym', 'entities_id', 'entities_name', 'framework', 'groupe_sector',
+            'entities_acronym', 'entities_id', 'entities_name', 'framework', 
             'insee_cat_code', 'insee_cat_name', 'number_involved', 'participates_as', 
             'paysage_category', 'paysage_category_id', 'category_agregation',
             'pilier_name_en', 'pilier_name_fr', 'programme_code', 
             'panel_code', 'panel_name', 'panel_regroupement_code', 'panel_regroupement_name',
             'programme_name_en', 'project_id', 'role', 'erc_role', 'ror_category', 
             'stage', 'status_code', 'thema_code', 'thema_name_en', 'topic_code', 'free_keywords', 
-            'operateur_name','operateur_num','operateur_lib','ecorda_date']]
+            'operateur_name','operateur_num','operateur_lib', 'entities_name_source', 'entities_acronym_source', 
+            'groupe_id', 'groupe_name', 'groupe_acronym', 'groupe_sector',
+            'ecorda_date']]
 
     tmp = (tmp
         .groupby(list(tmp.columns.difference(['coordination_number', 'number_involved', 'calculated_fund'])), dropna=False, as_index=False).sum()
@@ -44,9 +46,15 @@ def entities_preparation(entities_part, h20):
 
 def entities_ods(entities_participation):
     # ### entities pour ODS
+
+    entities_participation.loc[(entities_participation.flag_entreprise==True)&(~entities_participation.groupe_id.isnull()), 'entities_id'] = entities_participation.groupe_id
+    entities_participation.loc[(entities_participation.flag_entreprise==True)&(~entities_participation.groupe_id.isnull()), 'entities_name'] = entities_participation.groupe_name
+    entities_participation.loc[(entities_participation.flag_entreprise==True)&(~entities_participation.groupe_id.isnull())&(~entities_participation.entities_acronym.isnull()), 'entities_acronym'] = entities_participation.groupe_acronym
+    entities_participation.loc[(entities_participation.flag_entreprise==True)&(~entities_participation.groupe_id.isnull())&(entities_participation.groupe_acronym.isnull()), 'entities_acronym'] = np.nan
+
     tmp=(entities_participation[
         ['cj_code', 'category_woven', 'cordis_is_sme', 'cordis_type_entity_acro', 'stage','acronym',
-        'cordis_type_entity_code', 'cordis_type_entity_name_en',
+        'cordis_type_entity_code', 'cordis_type_entity_name_en', 'entities_name_source',
         'cordis_type_entity_name_fr', 'extra_joint_organization', 'is_ejo',
         'country_code', 'country_code_mapping',
         'country_group_association_code', 'country_group_association_name_en',
@@ -55,14 +63,14 @@ def entities_ods(entities_participation):
         'participation_nuts', 'region_1_name', 'region_2_name', 'regional_unit_name',
         'entities_acronym', 'entities_id', 'entities_name', 'operateur_name',
         'insee_cat_code', 'insee_cat_name', 'participates_as', 'project_id',
-        'role', 'ror_category', 'sector', 'paysage_category', 'paysage_category_id',
+        'role', 'ror_category', 'sector', 'paysage_category', 
         'coordination_number', 'calculated_fund', 'with_coord',
         'number_involved', 'action_code', 'action_name', 'call_id', 'topic_code',
         'status_code', 'framework', 'call_year', 'ecorda_date', 'flag_entreprise',
         'pilier_name_en', 'pilier_name_fr', 'programme_code', 'programme_name_en', 
-        'programme_name_fr',  'thema_code', 'thema_name_fr', 'thema_name_en', 'destination_code',
-        'destination_lib', 'destination_name_en','action_code2', 'action_name2', 'free_keywords', 'abstract', 'entities_name_source',
-        'operateur_num','operateur_lib', 'category_agregation', 'source_id']]
+        'programme_name_fr', 'thema_code', 'thema_name_fr', 'thema_name_en', 'destination_code',
+        'destination_lib', 'destination_name_en','action_code2', 'action_name2', 'free_keywords', 'abstract', 
+        'operateur_num','operateur_lib', 'category_agregation', 'source_id', 'generalPic']]
         .rename(columns={ 
             'source_id':'entities_id_source',
             'action_code':'action_id', 
@@ -76,7 +84,8 @@ def entities_ods(entities_participation):
             'country_group_association_name_en':'country_association_name_en',
             'country_group_association_name_fr':'country_association_name_fr',
             'with_coord':'flag_coordination',
-            'is_ejo':'flag_organization'
+            'is_ejo':'flag_organization',
+            'generalPic':'pic_number'
             }))
 
     tmp.loc[tmp.entities_id_source=='ror', 'entities_id'] = tmp.loc[tmp.entities_id_source=='ror', 'entities_id'].str.replace("^R", "", regex=True)
@@ -135,13 +144,16 @@ def entities_collab(entities_participation):
 # ## collab ENTITIES ##
     copy_signed = (entities_participation
         .loc[(entities_participation.stage=='successful'),
-        ['project_id', 'ror_category','entities_id','entities_name','entities_acronym','country_code','country_name_fr', 'calculated_fund']]
+        ['project_id', 'ror_category','entities_id','entities_name','entities_acronym',
+         'country_code','country_name_fr', 'calculated_fund']]
                     .add_suffix('_collab')
                     .rename(columns={'project_id_collab':'project_id'}))
 
     ent_signed = (entities_participation
         .loc[(entities_participation.country_code=='FRA')&(entities_participation.stage=='successful'),
-        ['stage', 'framework', 'call_year','project_id', 'action_code', 'programme_name_fr', 'thema_code', 'thema_name_fr', 'destination_code', 'category_woven','entities_id','entities_name','entities_acronym', 'calculated_fund']])
+        ['stage', 'framework', 'call_year','project_id', 'action_code', 'programme_name_fr', 
+         'thema_code', 'thema_name_fr', 'destination_code', 'category_agregation','entities_id',
+         'entities_name','entities_acronym', 'calculated_fund']])
 
     print(len(entities_participation.loc[(entities_participation.country_code=='FRA')&(entities_participation.stage=='successful')&(entities_participation.destination_code=='Destination 5 - SPACE'), ['project_id', 'entities_id']]))
 

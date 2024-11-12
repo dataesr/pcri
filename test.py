@@ -428,3 +428,5 @@ def FP7_all(proj, part1):
         pd.to_pickle(t, file)
 
     print(f"size proj: {t.loc[t.stage=='successful'].project_id.nunique()}, nb project_id: {len(t.loc[t.stage=='successful'])}, {t.loc[t.stage=='successful', 'calculated_fund'].sum()}")
+    return t
+t=FP7_all(proj, part1)
