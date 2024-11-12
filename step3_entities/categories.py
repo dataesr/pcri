@@ -48,7 +48,7 @@ def category_woven(df, sirene):
     df.loc[~df.paysage_category_id.isnull(), 'category_tmp'] = df.loc[~df.paysage_category_id.isnull()].paysage_category_id.str.split(';').str[0]
     df.loc[~df.paysage_category_id.isnull(), 'category_woven'] = df.loc[~df.paysage_category_id.isnull()].paysage_category.str.split(';').str[0]
 
-    cj_lib=json.load(open("data_files/cat_cj_lib.json"))
+    cj_lib=json.load(open("data_files/cat_cj_lib.json", encoding='utf-8'))
     for i in cj_lib:
         for k,v in i.items():
             df.loc[df.category_tmp==k, 'category_woven']=v
@@ -59,11 +59,43 @@ def category_woven(df, sirene):
     print(f"- taille de df après cat: {len(df)}")
     return df
 
+def category_agreg(df):
+
+    agreg=json.load(open("data_files/cat_to_agreg.json"))
+    for i in agreg:
+        for k,v in i.items():
+            df.loc[df.category_tmp==k, 'category_agregation']=v
+ 
+    df.loc[df.category_agregation.isnull(), 'category_agregation'] = df.siren_cj
+
+    agreg=json.load(open("data_files/cat_agreg_lib.json", encoding='utf-8'))
+    for i in agreg:
+        for k,v in i.items():
+            df.loc[df.category_agregation==k, 'category_agregation']=v
+
+
+    # entreprise
+    entreprise=json.load(open("data_files/cat_entreprise_lib.json"))
+    for i in entreprise:
+        for k,v in i.items():
+            df.loc[df.cat==k, 'insee_cat_name']=v
+    df.rename(columns={'cat':'insee_cat_code'}, inplace=True)
+
+    df.mask(df=='', inplace=True)
+
+    df.loc[(df.siren_cj.isin(['ENT', 'ENT_ETR']))|(df.ror_category=='Company'), 'flag_entreprise'] = True
+    df.loc[(df.category_agregation=='Entreprises'), 'flag_entreprise'] = True
+    df.loc[df.flag_entreprise.isnull(), 'flag_entreprise'] = False
+
+    l=['insee_cat_code', 'insee_cat_name']
+    df.loc[df.flag_entreprise==False, l] = np.nan
+    return df
+
 
 def cordis_type(df):
     print("### CORDIS type")
     type_entity = json.load(open('data_files/legalEntityType.json', 'r', encoding='UTF-8'))
-    type_entity = pd.DataFrame(type_entity)
+    type_entity = pd.DataFrame(type_entity).fillna(np.nan)
     df = (df.merge(type_entity, how='left', left_on='legalEntityTypeCode', right_on='cordis_type_entity_code')
                     .rename(columns={
                     'isSme':'cordis_is_sme'}))
@@ -75,35 +107,7 @@ def cordis_type(df):
     return df
 
 
-def category_agreg(df):
-    agreg=json.load(open("data_files/cat_to_agreg.json"))
-    for i in agreg:
-        for k,v in i.items():
-            df.loc[df.category_tmp==k, 'category_agregation']=v
- 
-    df.loc[df.category_agregation.isnull(), 'category_agregation'] = df.siren_cj
 
-    agreg=json.load(open("data_files/cat_agreg_lib.json"))
-    for i in agreg:
-        for k,v in i.items():
-            df.loc[df.category_agregation==k, 'category_agregation']=v
-
-    entreprise=json.load(open("data_files/cat_entreprise_lib.json"))
-    for i in entreprise:
-        for k,v in i.items():
-            df.loc[df.cat==k, 'insee_cat_name']=v
-    df.rename(columns={'cat':'insee_cat_code'}, inplace=True)
-
-    df.mask(df=='', inplace=True)
-
-    df.loc[(df.siren_cj.isin(['ENT', 'ENT_ETR']))|(df.ror_category=='Company'), 'flag_entreprise'] = True
-    df.loc[(df.category_agregation=='Entreprises'), 'flag_entreprise'] = True
-    df.loc[(df.flag_entreprise.isnull())&(df.cordis_type_entity_code=='PRC'), 'flag_entreprise'] = True
-    df.loc[df.flag_entreprise.isnull(), 'flag_entreprise'] = False
-
-    l=['insee_cat_code', 'insee_cat_name']
-    df.loc[df.flag_entreprise==False, l] = np.nan
-    return df
 # def category_woven(df):
 #     # CAT 2 : category_woven
 #     print("\n## category woven")
