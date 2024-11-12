@@ -53,7 +53,7 @@ def entities_ods(entities_participation):
     entities_participation.loc[(entities_participation.flag_entreprise==True)&(~entities_participation.groupe_id.isnull())&(entities_participation.groupe_acronym.isnull()), 'entities_acronym'] = np.nan
 
     tmp=(entities_participation[
-        ['cj_code', 'category_woven', 'cordis_is_sme', 'cordis_type_entity_acro', 'stage','acronym',
+        ['category_woven', 'cordis_is_sme', 'cordis_type_entity_acro', 'stage','acronym',
         'cordis_type_entity_code', 'cordis_type_entity_name_en', 'entities_name_source',
         'cordis_type_entity_name_fr', 'extra_joint_organization', 'is_ejo',
         'country_code', 'country_code_mapping',
