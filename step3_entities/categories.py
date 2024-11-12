@@ -26,76 +26,88 @@ def category_paysage(paysage):
                     'category_priority':'paysage_category_priority'}))
 
 
-def category_cleaning(entities_tmp, sirene):
+def category_woven(df, sirene):
     print("\n## category FR")
     # CAT1 : categorisation FR
 
-    # entities_tmp.loc[~entities_tmp.paysage_category.isnull(), 'paysage_category_first'] = entities_tmp.loc[~entities_tmp.paysage_category.isnull()].paysage_category.str.split(';').str[0]
-
     temp=sirene[['siren', 'cat', 'cat_an', 'cj']].drop_duplicates()
-    # cj=pd.read_excel(f'{PATH_REF}_category.xlsx', sheet_name='cj_code_to_lib', dtype='str')
-    # name=pd.read_excel(f'{PATH_REF}_category.xlsx', sheet_name='category_name', dtype='str')
-    # cat_category=pd.read_excel(f'{PATH_REF}_category.xlsx', sheet_name='cat_category', dtype='str')
 
-
-    entities_tmp.loc[(entities_tmp.siren.isnull())&(~entities_tmp.paysage_siren.isnull()), 'siren'] = entities_tmp.paysage_siren
-    entities_tmp=entities_tmp.merge(temp, how='left', on='siren')
-    entities_tmp.loc[~entities_tmp.cj.isnull(), 'cj_code'] = entities_tmp.cj
+    df.loc[(df.siren.isnull())&(~df.paysage_siren.isnull()), 'siren'] = df.paysage_siren
+    df=df.merge(temp, how='left', on='siren')
+    df.loc[~df.cj.isnull(), 'cj_code'] = df.cj
 
     cj_lib=json.load(open("data_files/cat_cj_code_to_lib.json"))
     for i in cj_lib:
         for k,v in i.items():
-            entities_tmp.loc[entities_tmp.cj_code==k, 'siren_cj']=v
+            df.loc[df.cj_code==k, 'siren_cj']=v
     
-    entities_tmp.loc[~entities_tmp.siren_cj.isnull(), 'category_tmp'] = entities_tmp.siren_cj
+    df.loc[~df.siren_cj.isnull(), 'category_tmp'] = df.siren_cj
     #traitement des catégories assoc si identifiants commencent par W
-    entities_tmp.loc[entities_tmp.entities_id.str.match('^[W|w]([A-Z0-9]{8})[0-9]{1}$', na=False), 'category_tmp'] = 'ISBL'
-    entities_tmp.loc[(entities_tmp.source_id=='rnsr')|(entities_tmp.paysage_category_id.str.split(';').str[0]=='z367d'), 'category_tmp'] = 'STRUCT'
-    entities_tmp.loc[~entities_tmp.paysage_category_id.isnull(), 'category_tmp'] = entities_tmp.loc[~entities_tmp.paysage_category_id.isnull()].paysage_category_id.str.split(';').str[0]
-    entities_tmp.loc[~entities_tmp.paysage_category_id.isnull(), 'category_woven'] = entities_tmp.loc[~entities_tmp.paysage_category_id.isnull()].paysage_category.str.split(';').str[0]
+    df.loc[df.entities_id.str.match('^[W|w]([A-Z0-9]{8})[0-9]{1}$', na=False), 'category_tmp'] = 'ISBL'
+    df.loc[(df.source_id=='rnsr')|(df.paysage_category_id.str.split(';').str[0]=='z367d'), 'category_tmp'] = 'STRUCT'
+    df.loc[~df.paysage_category_id.isnull(), 'category_tmp'] = df.loc[~df.paysage_category_id.isnull()].paysage_category_id.str.split(';').str[0]
+    df.loc[~df.paysage_category_id.isnull(), 'category_woven'] = df.loc[~df.paysage_category_id.isnull()].paysage_category.str.split(';').str[0]
 
     cj_lib=json.load(open("data_files/cat_cj_lib.json"))
     for i in cj_lib:
         for k,v in i.items():
-            entities_tmp.loc[entities_tmp.category_tmp==k, 'category_woven']=v
+            df.loc[df.category_tmp==k, 'category_woven']=v
 
+    # if any(df.loc[df.category_woven.isnull()]) & (FRAMEWORK!='H2020'):
+    print(f"{df.loc[(df.source_id.isin(['paysage','siren','siret','rnsr']))&(df.category_woven.isnull()), ['source_id', 'entities_name', 'entities_id', 'siren_cj', 'paysage_category']]}")
+
+    print(f"- taille de df après cat: {len(df)}")
+    return df
+
+
+def cordis_type(df):
+    print("### CORDIS type")
+    type_entity = json.load(open('data_files/legalEntityType.json', 'r', encoding='UTF-8'))
+    type_entity = pd.DataFrame(type_entity)
+    df = (df.merge(type_entity, how='left', left_on='legalEntityTypeCode', right_on='cordis_type_entity_code')
+                    .rename(columns={
+                    'isSme':'cordis_is_sme'}))
+    l=['legalStatus','legalEntityType', 'legalEntityTypeCode']
+    for i in l:
+        if i in df.columns:
+            df.drop(columns=i, inplace=True)
+    print(f"- size entities_info: {len(df)}")
+    return df
+
+
+def category_agreg(df):
     agreg=json.load(open("data_files/cat_to_agreg.json"))
     for i in agreg:
         for k,v in i.items():
-            entities_tmp.loc[entities_tmp.category_tmp==k, 'category_agregation']=v
+            df.loc[df.category_tmp==k, 'category_agregation']=v
  
-    entities_tmp.loc[entities_tmp.category_agregation.isnull(), 'category_agregation'] = entities_tmp.siren_cj
+    df.loc[df.category_agregation.isnull(), 'category_agregation'] = df.siren_cj
 
     agreg=json.load(open("data_files/cat_agreg_lib.json"))
     for i in agreg:
         for k,v in i.items():
-            entities_tmp.loc[entities_tmp.category_agregation==k, 'category_agregation']=v
+            df.loc[df.category_agregation==k, 'category_agregation']=v
 
     entreprise=json.load(open("data_files/cat_entreprise_lib.json"))
     for i in entreprise:
         for k,v in i.items():
-            entities_tmp.loc[entities_tmp.cat==k, 'insee_cat_name']=v
-    entities_tmp.rename(columns={'cat':'insee_cat_code'}, inplace=True)
+            df.loc[df.cat==k, 'insee_cat_name']=v
+    df.rename(columns={'cat':'insee_cat_code'}, inplace=True)
 
-    entities_tmp.mask(entities_tmp=='', inplace=True)
+    df.mask(df=='', inplace=True)
 
-    entities_tmp.loc[(entities_tmp.siren_cj.isin(['ENT', 'ENT_ETR']))|(entities_tmp.ror_category=='Company'), 'flag_entreprise'] = True
-    entities_tmp.loc[(entities_tmp.category_agregation=='Entreprises'), 'flag_entreprise'] = True
-    entities_tmp.loc[entities_tmp.flag_entreprise.isnull(), 'flag_entreprise'] = False
+    df.loc[(df.siren_cj.isin(['ENT', 'ENT_ETR']))|(df.ror_category=='Company'), 'flag_entreprise'] = True
+    df.loc[(df.category_agregation=='Entreprises'), 'flag_entreprise'] = True
+    df.loc[(df.flag_entreprise.isnull())&(df.cordis_type_entity_code=='PRC'), 'flag_entreprise'] = True
+    df.loc[df.flag_entreprise.isnull(), 'flag_entreprise'] = False
 
     l=['insee_cat_code', 'insee_cat_name']
-    entities_tmp.loc[entities_tmp.flag_entreprise==False, l] = np.nan
-
-    # if any(entities_tmp.loc[entities_tmp.category_woven.isnull()]) & (FRAMEWORK!='H2020'):
-    print(f"{entities_tmp.loc[(entities_tmp.source_id.isin(['paysage','siren','siret','rnsr']))&(entities_tmp.category_woven.isnull()), ['source_id', 'entities_name', 'entities_id', 'siren_cj', 'paysage_category']]}")
-
-    print(f"- taille de entities_tmp après cat: {len(entities_tmp)}")
-    return entities_tmp
-
-# def category_woven(entities_tmp):
+    df.loc[df.flag_entreprise==False, l] = np.nan
+    return df
+# def category_woven(df):
 #     # CAT 2 : category_woven
 #     print("\n## category woven")
-#     x=entities_tmp[['source_id', 'entities_id', 'entities_name', 'category_temp', 'paysage_category', 'siren_cj']].drop_duplicates()
+#     x=df[['source_id', 'entities_id', 'entities_name', 'category_temp', 'paysage_category', 'siren_cj']].drop_duplicates()
 #     x.loc[~x.paysage_category.isnull(), 'paysage_cat_1'] = x.paysage_category.str.split(';').str[0]
 
 #     x.loc[(x.paysage_cat_1.str.contains('^Entreprise', regex=True, na=False)), 'category_woven'] = 'Entreprise'
@@ -113,24 +125,9 @@ def category_cleaning(entities_tmp, sirene):
     
 #     # cat_ag=pd.read_excel()
 #     x.to_csv(f"{PATH_WORK}category_entities.csv", sep=';')
-#     entities_tmp = entities_tmp.merge(x[['entities_id','category_woven']], how='left', on='entities_id').drop_duplicates()
-#     print(f"- size entities_tmp: {len(entities_tmp)}")
-#     return entities_tmp
-
-def cordis_type(df):
-    print("### CORDIS type")
-    type_entity = json.load(open('data_files/legalEntityType.json', 'r', encoding='UTF-8'))
-    type_entity = pd.DataFrame(type_entity)
-    df = (df.merge(type_entity, how='left', left_on='legalEntityTypeCode', right_on='cordis_type_entity_code')
-                    .rename(columns={
-                    'isSme':'cordis_is_sme'}))
-    l=['legalStatus','legalEntityType', 'legalEntityTypeCode']
-    for i in l:
-        if i in df.columns:
-            df.drop(columns=i, inplace=True)
-    print(f"- size entities_info: {len(df)}")
-    return df
-
+#     df = df.merge(x[['entities_id','category_woven']], how='left', on='entities_id').drop_duplicates()
+#     print(f"- size df: {len(df)}")
+#     return df
 
 def mires(df):
     print("\n### MIRES")
