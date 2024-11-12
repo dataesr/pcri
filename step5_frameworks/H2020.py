@@ -399,15 +399,8 @@ def H2020_process():
         print(f"taille de entities_tmp avant groupe:{len(entities_tmp)}")
         entities_tmp=entities_tmp.merge(groupe, how='left', on='siren')
 
-        entities_tmp.loc[~entities_tmp.groupe_id.isnull(), 'entities_name_source']= entities_tmp.entities_name
-        entities_tmp.loc[~entities_tmp.groupe_id.isnull(), 'entities_acronym_source']= entities_tmp.entities_acronym
-        # entities_tmp.loc[~entities_tmp.groupe_id.isnull(), 'entities_id']= entities_tmp.groupe_id
-        # entities_tmp.loc[~entities_tmp.groupe_id.isnull(), 'entities_acronym'] = entities_tmp.groupe_acronym
-        # entities_tmp.loc[~entities_tmp.groupe_id.isnull(), 'entities_name'] = entities_tmp.groupe_name
-
-        # entities_tmp.loc[entities_tmp.entities_id.str.contains('gent', na=False), 'siren_cj'] = 'GE_ENT'
-        
-        # entities_tmp = entities_tmp.drop(['groupe_id','groupe_name','groupe_acronym'], axis=1).drop_duplicates()
+        # entities_tmp.loc[~entities_tmp.groupe_id.isnull(), 'entities_name_source']= entities_tmp.entities_name
+        # entities_tmp.loc[~entities_tmp.groupe_id.isnull(), 'entities_acronym_source']= entities_tmp.entities_acronym
         print(f"taille de entities_tmp après groupe {len(entities_tmp)}")
 
 
@@ -464,7 +457,7 @@ def H2020_process():
     part_tmp.loc[part_tmp.entities_id.isnull(), 'entities_id'] = "pic"+part_tmp.generalPic.map(str)
 
     part_tmp.rename(columns={'legalName':'entities_name_source',
-                             'shortName':'entities_acronym_source'}, inplace=True)
+                            'shortName':'entities_acronym_source'}, inplace=True)
 
     part_tmp = part_tmp.assign(number_involved=1)
 
