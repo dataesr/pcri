@@ -10,11 +10,11 @@ def msca_ods(msca_erc):
         .loc[msca_erc.thema_code=='MSCA',
         ['action_code', 'action_name', 'calculated_fund', 'call_year', 'coordination_number', 'framework',
         'cordis_type_entity_acro', 'cordis_type_entity_code', 'cordis_type_entity_name_en', 
-        'cordis_type_entity_name_fr', 'flag_entreprise', 'category_woven', 'category_agregation',
+        'cordis_type_entity_name_fr', 
         'country_group_association_code', 'country_group_association_name_en',
         'country_group_association_name_fr', 'country_name_en', 'with_coord',
         'country_name_fr', 'extra_joint_organization', 'is_ejo',
-        'destination_code', 'destination_detail_code',
+        'destination_code', 'destination_detail_code', 
         'destination_detail_name_en', 'destination_name_en', 'number_involved',
         'panel_code', 'panel_name', 'participates_as', 'project_id', 'role', 
         'stage', 'stage_name', 'country_code', 'ecorda_date']]
@@ -85,16 +85,16 @@ def msca_entities(me_entities):
 
             ['framework','country_name_fr', 'call_year','destination_name_en', 'destination_detail_name_en', 'panel_name', 
             'role', 'participates_as', 'extra_joint_organization', 'is_ejo', 'with_coord',
-            'cordis_type_entity_acro', 'cordis_type_entity_code',
+            'cordis_type_entity_acro', 'cordis_type_entity_code', 'operateur_name',
             'cordis_type_entity_name_en', 'cordis_type_entity_name_fr', 
-            'operateur_name', 'paysage_category',  'category_woven', 'insee_cat_code', 'insee_cat_name',
+            'paysage_category',  'category_woven', 'insee_cat_code', 'insee_cat_name',
             'action_code', 'action_name', 'source_id', 'flag_entreprise',
             'entities_name', 'entities_acronym', 'calculated_fund', 'coordination_number', 'number_involved',
             'project_id', 'participation_nuts', 'region_1_name', 'region_2_name', 'regional_unit_name',
             'country_group_association_name_fr', 'country_name_mapping','country_name_en',
             'country_group_association_code', 'country_group_association_name_en', 'country_code_mapping', 'panel_code',
             'destination_code', 'destination_detail_code', 'entities_id', 'status_code', 'ecorda_date',
-            'free_keywords', 'abstract', 'acronym', 'operateur_num','operateur_lib', 'category_agregation',
+            'free_keywords', 'abstract', 'acronym', 'category_agregation',
             ]]
         .rename(columns={ 
             'source_id':'entities_id_source',

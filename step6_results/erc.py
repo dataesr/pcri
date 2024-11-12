@@ -11,8 +11,8 @@ def erc_ods(msca_erc):
         .loc[msca_erc.thema_code=='ERC',   
         ['action_code', 'action_name','calculated_fund', 'call_year', 'extra_joint_organization', 'is_ejo',
         'cordis_type_entity_acro', 'cordis_type_entity_code','cordis_type_entity_name_en', 'cordis_type_entity_name_fr',
-        'country_group_association_code', 'country_group_association_name_en', 'with_coord','category_woven',
-        'country_group_association_name_fr', 'country_name_en', 'flag_entreprise', 'category_agregation',
+        'country_group_association_code', 'country_group_association_name_en', 'with_coord',
+        'country_group_association_name_fr', 'country_name_en', 
         'country_name_fr', 'destination_code', 'destination_name_en', 'erc_role','framework', 'number_involved',
         'panel_code', 'panel_name', 'participates_as', 'project_id', 'role', 'ecorda_date',
         'stage', 'stage_name', 'country_code']]
@@ -80,9 +80,6 @@ def erc_entities(me_entities):
     print("\n### ERC entities")
     ## ERC entities for ODS
 
-    # l=list(set(me_entities.entities_id.unique()))   
-    # l=sourcer_ID(l)  
-
     tmp = (me_entities.loc[(me_entities.stage=='successful')&(me_entities.thema_code=='ERC'),
 
             ['framework','country_name_fr', 'call_year','destination_name_en', 'panel_name', 
@@ -94,7 +91,7 @@ def erc_entities(me_entities):
             'country_group_association_name_fr', 'country_name_mapping','country_name_en',
             'country_group_association_code', 'country_group_association_name_en', 'country_code_mapping', 'panel_code',
             'destination_code', 'entities_id', 'status_code', 'ecorda_date',  'free_keywords', 'abstract', 'acronym',
-            'operateur_num','operateur_lib', 'category_agregation', 'flag_entreprise', 'source_id'
+            'category_agregation', 'flag_entreprise', 'source_id'
             ]]
         .rename(columns={ 
             'source_id':'entities_id_source',

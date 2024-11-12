@@ -95,6 +95,15 @@ app_missing_pid = projects.loc[(projects.stage=='evaluated')&(~projects.project_
 tmp = part[part.project_id.isin(app_missing_pid)]
 app1 = part_miss_app(tmp, app1)
 
+#redressement accelerator
+acc_folio = pd.read_csv(f"{PATH_SOURCE}{FRAMEWORK}/eic_fund_portfolio.csv", sep=';', dtype={'PROPOSAL_NBR':str})
+print(f"size acc_folio: {len(acc_folio)}")
+acc = app1.loc[(app1.project_id.isin(acc_folio.PROPOSAL_NBR.unique()))&(app1.role=='Coordinator')]
+print(f"size acc: {len(acc)}")
+app1 = app1.merge(acc_folio[['PROPOSAL_NBR','GRANT_REQUESTED']], how='inner', left_on='project_id', right_on='PROPOSAL_NBR')
+app1.loc[app1.requestedGrant.isnull(), 'requestedGrant'] = app1.GRANT_REQUESTED
+app1.drop(columns=['PROPOSAL_NBR', 'GRANT_REQUESTED'], inplace=True)
+
 app1 = app_role_type(app1)
 app1 = erc_role(app1, projects)
 
