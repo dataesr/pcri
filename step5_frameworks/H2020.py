@@ -519,7 +519,7 @@ def H2020_process():
         'country_code_mapping', 'country_name_mapping', 'country_code', 'country_name_en', 'extra_joint_organization',
         'country_association_code','country_association_name_en', 'country_group_association_code',
         'country_group_association_name_en', 'country_group_association_name_fr', 'country_name_fr', 'article1',
-        'article2', 'entities_name', 'entities_acronym', 'entities_id', 
+        'article2', 'entities_name', 'entities_acronym', 'entities_id', 'generalPic',
         'entities_name_source', 'entities_acronym_source','paysage_category_priority',
         'ror_category', 'paysage_category', 'paysage_category_id', 'category_agregation',
         'insee_cat_code', 'insee_cat_name', 'groupe_sector', 'source_id', 'flag_entreprise',
