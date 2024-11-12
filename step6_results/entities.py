@@ -117,7 +117,7 @@ def entities_ods(entities_participation):
     tmp1 = (tmp.loc[(tmp.stage=='evaluated')]
         .rename(columns={ 'number_involved':'numberofapplicants'})
         .drop(columns=['country_name_mapping', 'country_association_name_en', 'country_name_en', 
-                 'country_code_mapping',  'pilier_name_fr', 'paysage_category_id', 'programme_code',
+                 'country_code_mapping',  'pilier_name_fr',  'programme_code',
                 #  'country_association_name_fr',
                 # 'programme_name_fr', 'thema_name_fr', 'action_group_code', 'action_group_name', 'destination_lib',
                 'cordis_type_entity_name_en', 'cordis_type_entity_acro','cordis_type_entity_name_fr',  'stage']))
