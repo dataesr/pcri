@@ -247,7 +247,8 @@ def topics_divisions(chemin):
     'COST':'COST',
     'GENDER':'GENDER',
     '-ERA-':'ERA',
-    'PRIZE':'PRIZE'
+    'PRIZE':'PRIZE',
+    'EURATOM':'EURATOM'
     }
 
     for k,v in spec.items():
