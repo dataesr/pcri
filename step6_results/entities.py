@@ -1,5 +1,5 @@
 import pandas as pd, numpy as np
-from functions_shared import order_columns, zipfile_ods
+from functions_shared import order_columns, zipfile_ods, entreprise_cat_cleaning
 from step3_entities.ID_getSourceRef import get_source_ID
 from config_path import PATH_CONNECT
 
@@ -47,10 +47,7 @@ def entities_preparation(entities_part, h20):
 def entities_ods(entities_participation):
     # ### entities pour ODS
 
-    entities_participation.loc[(entities_participation.flag_entreprise==True)&(~entities_participation.groupe_id.isnull()), 'entities_id'] = entities_participation.groupe_id
-    entities_participation.loc[(entities_participation.flag_entreprise==True)&(~entities_participation.groupe_id.isnull()), 'entities_name'] = entities_participation.groupe_name
-    entities_participation.loc[(entities_participation.flag_entreprise==True)&(~entities_participation.groupe_id.isnull())&(~entities_participation.entities_acronym.isnull()), 'entities_acronym'] = entities_participation.groupe_acronym
-    entities_participation.loc[(entities_participation.flag_entreprise==True)&(~entities_participation.groupe_id.isnull())&(entities_participation.groupe_acronym.isnull()), 'entities_acronym'] = np.nan
+    entities_participation = entreprise_cat_cleaning(entities_participation)
 
     tmp=(entities_participation[
         ['category_woven', 'cordis_is_sme', 'cordis_type_entity_acro', 'stage','acronym',
@@ -62,14 +59,14 @@ def entities_ods(entities_participation):
         'country_name_fr', 'country_name_mapping', 
         'participation_nuts', 'region_1_name', 'region_2_name', 'regional_unit_name',
         'entities_acronym', 'entities_id', 'entities_name', 'operateur_name',
-        'insee_cat_code', 'insee_cat_name', 'participates_as', 'project_id',
+        'entreprise_cat_code', 'entreprise_cat_name', 'participates_as', 'project_id',
         'role', 'ror_category', 'sector', 'paysage_category', 
-        'coordination_number', 'calculated_fund', 'with_coord',
+        'coordination_number', 'calculated_fund', 'with_coord','abstract', 
         'number_involved', 'action_code', 'action_name', 'call_id', 'topic_code',
         'status_code', 'framework', 'call_year', 'ecorda_date', 'flag_entreprise',
         'pilier_name_en', 'pilier_name_fr', 'programme_code', 'programme_name_en', 
         'programme_name_fr', 'thema_code', 'thema_name_fr', 'thema_name_en', 'destination_code',
-        'destination_lib', 'destination_name_en','action_code2', 'action_name2', 'free_keywords', 'abstract', 
+        'destination_lib', 'destination_name_en','action_code2', 'action_name2', 'free_keywords', 
         'operateur_num','operateur_lib', 'category_agregation', 'source_id', 'generalPic']]
         .rename(columns={ 
             'source_id':'entities_id_source',

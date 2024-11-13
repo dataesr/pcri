@@ -94,3 +94,13 @@ def zipfile_ods(df, file_export):
     with zipfile.ZipFile(f'{PATH_ODS}{file_export}.zip', 'w', compression=zipfile.ZIP_DEFLATED) as z:
         with z.open(f'{file_export}.csv', 'w', force_zip64=True) as f:
             df.to_csv(f, sep=';', encoding='utf-8', index=False, na_rep='', decimal=".")
+
+
+def entreprise_cat_cleaning(df):
+    df.loc[(df.flag_entreprise==True)&(~df.groupe_id.isnull()), 'entities_id'] = df.groupe_id
+    df.loc[(df.flag_entreprise==True)&(~df.groupe_id.isnull()), 'entities_name'] = df.groupe_name
+    df.loc[(df.flag_entreprise==True)&(~df.groupe_id.isnull())&(~df.entities_acronym.isnull()), 'entities_acronym'] = df.groupe_acronym
+    df.loc[(df.flag_entreprise==True)&(~df.groupe_id.isnull())&(df.groupe_acronym.isnull()), 'entities_acronym'] = np.nan
+    df.loc[df.entities_id.str.contains('^gent'), 'insee_cat_code'] = 'GE'
+    df.loc[df.entities_id.str.contains('^gent'), 'insee_cat_name'] = 'Grandes entreprises'
+    return df
