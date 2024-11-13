@@ -97,6 +97,7 @@ def msca_erc_ent(entities_participation):
                     .loc[entities_participation.thema_code.isin(['MSCA','ERC'])])
 
     me_entities = entreprise_cat_cleaning(me_entities)
+    me_entities.rename(columns={'insee_cat_code':'entreprise_cat_code','insee_cat_name':'entreprise_cat_name'}, inplace=True)
 
     print(f"size msca_entities: {len(me_entities)}")
     me_entities.drop(columns=['ecorda_date', 'free_keywords', 'abstract']).to_csv(PATH_CONNECT+"msca_entities.csv", index=False, encoding="UTF-8", sep=";", na_rep='', decimal=".")
