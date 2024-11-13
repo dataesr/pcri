@@ -187,7 +187,7 @@
 	{
 		"thema_code": "EIC-OTHER",
 		"thema_name_fr": "autres EIC",
-		"thema_name_en": "others EIC"
+		"thema_name_en": "other EIC"
 	},
 	{
 		"thema_code": "ACCESS",
@@ -198,6 +198,11 @@
 		"thema_code": "TALENTS",
 		"thema_name_fr": "Attirer et mobiliser les meilleurs talents",
 		"thema_name_en": "Attracting and mobilising the best talents"
+	},
+	{
+		"thema_code": "EURATOM",
+		"thema_name_fr": "Euratom",
+		"thema_name_en": "Euratom"
 	},
 	{
 		"thema_code": "COST",
@@ -280,7 +285,7 @@
 	{
 		"thema_code": "EIT-OTHER",
 		"thema_name_fr": "Autres EIT",
-		"thema_name_en": "others EIT"
+		"thema_name_en": "other EIT"
 	},
 	{
 		"thema_code": "ERA",

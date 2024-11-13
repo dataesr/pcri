@@ -75,8 +75,8 @@ def H2020_process():
         proj.loc[(proj.pilier_name_fr=='Euratom')&(proj.programme_code=='NFRP'), 'programme_name_en'] = 'Nuclear fission and radiation protection'
         proj.loc[proj.call_id=='EURATOM-Adhoc-2014-20', 'programme_code'] = 'Fusion'
         proj.loc[proj.call_id=='EURATOM-Adhoc-2014-20', 'programme_name_en'] = 'Fusion Energy'
-        proj.loc[(proj.pilier_name_fr=='Euratom')&(proj.call_id!='EURATOM-Adhoc-2014-20')&(proj.programme_code!='NFRP'), 'programme_code'] = 'Euratom-others'
-        proj.loc[(proj.pilier_name_fr=='Euratom')&(proj.call_id!='EURATOM-Adhoc-2014-20')&(proj.programme_code!='NFRP'), 'programme_name_en'] = 'Euratom others actions'
+        proj.loc[(proj.pilier_name_fr=='Euratom')&(proj.call_id!='EURATOM-Adhoc-2014-20')&(proj.programme_code!='NFRP'), 'programme_code'] = 'Euratom-other'
+        proj.loc[(proj.pilier_name_fr=='Euratom')&(proj.call_id!='EURATOM-Adhoc-2014-20')&(proj.programme_code!='NFRP'), 'programme_name_en'] = 'Euratom other actions'
 
         euratom = pd.read_csv('data_files/euratom_thema_all_FP.csv', sep=';', na_values='')
         proj = proj.merge(euratom[['topic_area', 'thema_code', 'thema_name_en']], how='left', left_on='topic_code', right_on='topic_area', suffixes=['', '_t'])
@@ -123,7 +123,7 @@ def H2020_process():
         proj = pd.concat([proj, m], ignore_index=True)
 
         proj.loc[(proj.thema_code=='MSCA')&(proj.destination_code.isnull()), 'destination_code'] = proj.destination_detail_code
-        proj.loc[(proj.thema_code=='MSCA')&(proj.destination_code.isnull()),'destination_code'] = 'MSCA-OTHERS'
+        proj.loc[(proj.thema_code=='MSCA')&(proj.destination_code.isnull()),'destination_code'] = 'MSCA-OTHER'
         proj.loc[(proj.thema_code=='MSCA'), ['destination_code', 'action_code3','destination_detail_code']].drop_duplicates()
         proj.loc[proj.programme_code=='MSCA', 'programme_name_en'] = 'Marie Skłodowska-Curie Actions (MSCA)'
 
@@ -135,7 +135,7 @@ def H2020_process():
         ### ajustement ERC
         proj.loc[proj.thema_code=='ERC', 'destination_code'] = proj.loc[proj.thema_code=='ERC'].action_code2.str.split('-').str[1]
         proj.loc[proj.destination_code=='POC-LS', 'destination_code'] = "POC"
-        proj.loc[(proj.thema_code=='ERC')&(proj.destination_code.isnull()), 'destination_code'] = 'ERC-OTHERS'
+        proj.loc[(proj.thema_code=='ERC')&(proj.destination_code.isnull()), 'destination_code'] = 'ERC-OTHER'
         proj.loc[(proj.action_code=='ERC'), 'action_code2'] = np.nan
         proj.loc[(proj.action_code=='ERC'), 'action_name2'] = np.nan
 
@@ -161,7 +161,7 @@ def H2020_process():
         # INFRA
         proj.loc[proj.programme_code=='INFRA', 'thema_code'] = proj.programme_code
         proj.loc[proj.programme_code=='INFRA', 'destination_code'] = proj.loc[proj.programme_code=='INFRA'].call_id.str.split('-').str[1]
-        proj.loc[(proj.programme_code=='INFRA')&(~proj.destination_code.isin(destination.destination_code.unique())), 'destination_code'] = 'DESTINATION-OTHERS'
+        proj.loc[(proj.programme_code=='INFRA')&(~proj.destination_code.isin(destination.destination_code.unique())), 'destination_code'] = 'DESTINATION-OTHER'
                 
         # EIT
         proj.loc[proj.action_code=='KICS', 'pilier_name_en'] = 'Innovative Europe'
@@ -191,7 +191,6 @@ def H2020_process():
         proj.loc[proj.programme_code=='Widening', 'programme_name_en'] = 'Widening participation and spreading excellence'
 
         proj.loc[(proj.programme_code=='Widening')&(proj.thema_code.isnull()), 'thema_code'] = 'WIDENING-OTHER'
-        # proj.loc[(proj.thema_code=='THEMA-OTHERS')&(proj.destination_code.isnull()), 'destination_code'] = 'DESTINATION-OTHERS'
 
         dest = destination[['destination_code', 'destination_name_en']]
         proj = proj.merge(dest, how='left', on='destination_code')
