@@ -1,5 +1,6 @@
 import pandas as pd, numpy as np
 from config_path import PATH_CONNECT
+from functions_shared import entreprise_cat_cleaning
 
 
 def msca_erc_projects(FP6, FP7, h20, projects, part):
@@ -15,7 +16,12 @@ def msca_erc_projects(FP6, FP7, h20, projects, part):
         'stage', 'status_code', 'framework', 'thema_code', 'category_woven', 'category_agregation', 'source_id','ecorda_date']
 
     me7= FP7.loc[FP7.thema_code.isin(["ERC","MSCA"]), select_cols]
-    me6= FP6.loc[FP6.thema_code.isin(["ERC","MSCA"]), list(set(select_cols).difference(['panel_code', 'panel_name','erc_role', 'extra_joint_organization', 'free_keywords', 'abstract','source_id', 'category_agregation', 'category_woven', 'flag_entreprise']))]
+    me6= (FP6
+            .loc[FP6.thema_code.isin(["ERC","MSCA"]), list(set(select_cols)
+            .difference(['panel_code', 'panel_name','erc_role', 
+                         'extra_joint_organization', 'free_keywords', 
+                         'abstract','source_id', 'category_agregation', 
+                         'category_woven', 'flag_entreprise']))])
     me20=h20.loc[h20.programme_code.isin(['ERC', 'MSCA']), select_cols]
 
 
@@ -35,8 +41,6 @@ def msca_erc_projects(FP6, FP7, h20, projects, part):
     # MSCA/ERC PROJECTS HE
     print("## MSCA_ERC data")
     msca_erc = projects_m.merge(part, how='inner', on=['project_id', 'stage']).sort_values(['project_id','stage','country_code'])
-    msca_erc = msca_erc.assign(with_coord=np.where(msca_erc.destination_code.isin(['PF','ACCELERATOR','COST'])|(msca_erc.thema_code=='ERC'), False, True))
-    msca_erc.loc[msca_erc.destination_code=='SyG', 'with_coord'] = True 
     print(f"size projects_MSCA_ERC: {len(msca_erc)}")
 
     msca_erc.reset_index(drop=True, inplace=True)
@@ -91,6 +95,8 @@ def msca_erc_ent(entities_participation):
                                     'thema_name_fr',
                                     'topic_name'])
                     .loc[entities_participation.thema_code.isin(['MSCA','ERC'])])
+
+    me_entities = entreprise_cat_cleaning(me_entities)
 
     print(f"size msca_entities: {len(me_entities)}")
     me_entities.drop(columns=['ecorda_date', 'free_keywords', 'abstract']).to_csv(PATH_CONNECT+"msca_entities.csv", index=False, encoding="UTF-8", sep=";", na_rep='', decimal=".")
