@@ -38,16 +38,13 @@ def entities_preparation(entities_part, h20):
     # print(f"3 - comparaison nb couple genpic + country (doit être égal) {len(part[['generalPic','country_code']].drop_duplicates())},{len(entities_info[['generalPic','country_code']].drop_duplicates())}")
 
     entities_part = pd.concat([entities_part, tmp], ignore_index=True)
-    # entities_part.loc[(~entities_part.siren_cj.isin(['ENT','GE_ENT','ETAB_LOCAL','CTI']))|(entities_part.category_woven!='Entreprise'), 'insee_cat_name']=np.nan
-    # entities_part.loc[(~entities_part.siren_cj.isin(['ENT','GE_ENT','ETAB_LOCAL','CTI']))|(entities_part.category_woven!='Entreprise'), 'insee_cat_code']=np.nan
+    entities_part = entreprise_cat_cleaning(entities_part)
     
     entities_part = entities_part.reindex(sorted(entities_part.columns), axis=1)
     return entities_part
 
 def entities_ods(entities_participation):
     # ### entities pour ODS
-
-    entities_participation = entreprise_cat_cleaning(entities_participation)
 
     tmp=(entities_participation[
         ['category_woven', 'cordis_is_sme', 'cordis_type_entity_acro', 'stage','acronym',
@@ -59,7 +56,7 @@ def entities_ods(entities_participation):
         'country_name_fr', 'country_name_mapping', 
         'participation_nuts', 'region_1_name', 'region_2_name', 'regional_unit_name',
         'entities_acronym', 'entities_id', 'entities_name', 'operateur_name',
-        'entreprise_cat_code', 'entreprise_cat_name', 'participates_as', 'project_id',
+        'insee_cat_code', 'insee_cat_name', 'participates_as', 'project_id',
         'role', 'ror_category', 'sector', 'paysage_category', 
         'coordination_number', 'calculated_fund', 'with_coord','abstract', 
         'number_involved', 'action_code', 'action_name', 'call_id', 'topic_code',
@@ -82,7 +79,9 @@ def entities_ods(entities_participation):
             'country_group_association_name_fr':'country_association_name_fr',
             'with_coord':'flag_coordination',
             'is_ejo':'flag_organization',
-            'generalPic':'pic_number'
+            'generalPic':'pic_number',
+            'insee_cat_code':'entreprise_cat_code',
+            'insee_cat_name':'entreprise_cat_name'
             }))
 
     tmp.loc[tmp.entities_id_source=='ror', 'entities_id'] = tmp.loc[tmp.entities_id_source=='ror', 'entities_id'].str.replace("^R", "", regex=True)
