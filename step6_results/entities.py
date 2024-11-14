@@ -45,6 +45,7 @@ def entities_preparation(entities_part, h20):
 
 def entities_ods(entities_participation):
     # ### entities pour ODS
+    import math
 
     tmp=(entities_participation[
         ['category_woven', 'cordis_is_sme', 'cordis_type_entity_acro', 'stage','acronym',
@@ -107,25 +108,65 @@ def entities_ods(entities_participation):
     # attention si changement de nom de vars -> la modifier aussi dans pcri_info_columns_order
     tmp = order_columns(tmp, 'proj_entities')
 
-    zipfile_ods(tmp[(tmp.stage=='successful')&(tmp.framework=='Horizon Europe')].drop(columns=['stage', 'entities_name_source']), 'fr-esr-horizon-projects-entities')
-    zipfile_ods(tmp[(tmp.stage=='successful')&(tmp.framework=='Horizon 2020')].drop(columns='stage'), 'fr-esr-h2020-projects-entities')
+    def get_filename(df, nb):
+        filename = f'{df}{nb}'   
+        return filename
+
+    for h in tmp.framework.unique():
+        x = tmp[(tmp.stage=='successful')&(tmp.framework==h)].drop(columns=['stage'])
+        chunk_size = int(math.ceil((x.shape[0] / 2)))
+        print(chunk_size)
+        i=0
+        for start in range(0, x.shape[0], chunk_size):
+            df_subset = x.iloc[start:start + chunk_size]
+            i=i+1
+            if h=='Horizon Europe':
+                he='horizon'
+            else:
+                he='h2020'
+            y=get_filename(df_subset, i)
+            zipfile_ods(y, f'fr-esr-{he}-projects-entities')
+
+    # zipfile_ods(tmp[(tmp.stage=='successful')&(tmp.framework=='Horizon Europe')].drop(columns=['stage', 'entities_name_source']), 'fr-esr-horizon-projects-entities')
+    # zipfile_ods(tmp[(tmp.stage=='successful')&(tmp.framework=='Horizon 2020')].drop(columns='stage'), 'fr-esr-h2020-projects-entities')
 
     tmp1 = (tmp.loc[(tmp.stage=='evaluated')]
         .rename(columns={ 'number_involved':'numberofapplicants'})
-        .drop(columns=['country_name_mapping', 'country_association_name_en', 'country_name_en', 
-                 'country_code_mapping',  'pilier_name_fr',  'programme_code',
-                #  'country_association_name_fr',
-                # 'programme_name_fr', 'thema_name_fr', 'action_group_code', 'action_group_name', 'destination_lib',
-                'cordis_type_entity_name_en', 'cordis_type_entity_acro','cordis_type_entity_name_fr',  'stage']))
+        .drop(columns=
+            ['country_name_mapping', 'country_association_name_en', 'country_name_en', 
+            'country_code_mapping',  'pilier_name_fr',  'programme_code', 
+            'operateur_num','operateur_lib', 'ror_category',  'paysage_category', 'country_association_name_en',
+            'country_association_name_fr', 'thema_name_fr', 'destination_lib',
+            # 'programme_name_fr', 'action_group_code', 'action_group_name',
+            'cordis_type_entity_name_en', 'cordis_type_entity_acro','cordis_type_entity_name_fr', 'stage']))
 
-    zipfile_ods(tmp1[tmp1.framework=='Horizon Europe'], 'fr-esr-horizon-projects-entities-evaluated')
+    empty_cols = [col for col in tmp1.columns if tmp1[col].isnull().all()]
+    print(f"- colonnes vides dans les fichiers evaluated exportées: {empty_cols}")
+    tmp1 = tmp1.drop(empty_cols, axis=1)
 
-
-    empty_cols = [col for col in tmp1.columns if tmp1.loc[tmp1.framework=='Horizon 2020', col].isnull().all()]
-    tmp1 = tmp1[(tmp1.framework=='Horizon 2020')&(tmp1.country_code=='FRA')].drop(empty_cols, axis=1)
+    # zipfile_ods(tmp1[tmp1.framework=='Horizon Europe'], 'fr-esr-horizon-projects-entities-evaluated')
+    
+    for h in tmp.framework.unique():
+        x = tmp[(tmp.stage=='evaluated')&(tmp.framework==h)]
+        chunk_size = int(math.ceil((x.shape[0] / 2)))
+        print(chunk_size)
+        i=0
+        for start in range(0, x.shape[0], chunk_size):
+            df_subset = x.iloc[start:start + chunk_size]
+            i=i+1
+            if h=='Horizon Europe':
+                he='horizon'
+            else:
+                he='h2020'
+            y=get_filename(df_subset, i)
+            zipfile_ods(y, f'fr-esr-{he}-projects-entities_evaluated')
+    
+    
+    
+    
     # tmp1 = tmp1[tmp1.framework=='Horizon 2020'].drop(columns=['action_detail_name','action_detail_id','cj_code', 'destination_lib','cordis_type_entity_name_fr','entities_id_source','cordis_type_entity_name_fr', 'sector'])
-    tmp1.call_year.nunique()
-    zipfile_ods(tmp1, f'fr-esr-h2020-projects-entities-evaluated_france')
+    # tmp1.call_year.nunique()
+    # # zipfile_ods(tmp1, f'fr-esr-h2020-projects-entities-evaluated_france')
     # n = 600000
     # chunk_size = int(math.ceil((tmp1.shape[0] / 2)))
     # print(chunk_size)
@@ -133,7 +174,7 @@ def entities_ods(entities_participation):
     # for start in range(0, tmp1.shape[0], chunk_size):
     #     df_subset = tmp1.iloc[start:start + chunk_size]
     #     i=i+1
-    #     zipfile_ods(df_subset, f'fr-esr-h2020-projects-entities-evaluated{i}')
+    #     zipfile_ods(f"{df_subset}{i}", 'fr-esr-h2020-projects-entities-evaluated')
 
 
 def entities_collab(entities_participation):
