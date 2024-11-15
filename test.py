@@ -86,11 +86,6 @@ tmp.loc[(tmp.stage=='successful')&(tmp.status_code=='UNDER_PREPARATION'), 'abstr
 tmp = order_columns(tmp, 'proj_entities')
 
 
-#########
-def get_filename(df, nb):
-    filename = f'{df}{nb}'   
-    return filename
-
 for h in tmp.framework.unique():
     x = tmp[(tmp.stage=='successful')&(tmp.framework==h)].drop(columns=['stage'])
     chunk_size = int(math.ceil((x.shape[0] / 2)))

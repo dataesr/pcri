@@ -106,6 +106,45 @@ def entities_ods(entities_participation):
     tmp.loc[(tmp.stage=='successful')&(tmp.status_code=='UNDER_PREPARATION'), 'abstract'] = np.nan
 
     # attention si changement de nom de vars -> la modifier aussi dans pcri_info_columns_order
+    tmp = order_columns(tmp, 'proj_entities')
+
+
+    for h in tmp.framework.unique():
+        x = tmp[(tmp.stage=='successful')&(tmp.framework==h)].drop(columns=['stage'])
+        chunk_size = int(math.ceil((x.shape[0] / 2)))
+        i=0
+        for start in range(0, x.shape[0], chunk_size):
+            df_subset = x.iloc[start:start + chunk_size]
+            i=i+1
+            if h=='Horizon Europe':
+                he='horizon'
+            else:
+                he='h2020'
+            zipfile_ods(df_subset, f"fr-esr-{he}-projects-entities{i}")
+ 
+    tmp1 = (tmp.loc[(tmp.stage=='evaluated')]
+        .rename(columns={ 'number_involved':'numberofapplicants'})
+        .drop(columns=
+            ['country_name_mapping', 'country_association_name_en', 'country_name_en', 
+            'country_code_mapping', 'pilier_name_fr', 'programme_code', 'entities_name_source',
+            'operateur_num','operateur_lib', 'ror_category', 'paysage_category', 'country_association_name_en',
+            'country_association_name_fr', 'thema_name_fr', 'destination_lib',
+            'programme_name_fr', 'action_group_code', 'action_group_name', 'stage',
+            'cordis_type_entity_name_en', 'cordis_type_entity_acro','cordis_type_entity_name_fr']))
+
+
+    for h in tmp1.framework.unique():
+        x = tmp1[(tmp1.framework==h)]
+        chunk_size = int(math.ceil((x.shape[0] / 2)))
+        i=0
+        for start in range(0, x.shape[0], chunk_size):
+            df_subset = x.iloc[start:start+chunk_size]
+            i=i+1
+            if h=='Horizon Europe':
+                he='horizon'
+            else:
+                he='h2020'
+            zipfile_ods(df_subset, f"fr-esr-{he}-projects-entities_evaluated{i}")
 
 
 def entities_collab(entities_participation):
