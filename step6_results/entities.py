@@ -134,17 +134,18 @@ def entities_ods(entities_participation):
 
 
     for h in tmp1.framework.unique():
-        x = tmp1[(tmp1.framework==h)]
+        if h=='Horizon Europe':
+            he='horizon'
+            x = tmp1[(tmp1.framework==h)]
+        else:
+            he='h2020'
+            x = tmp1[(tmp1.framework==h)&(tmp1.country_code=='FRA')]
         chunk_size = int(math.ceil((x.shape[0] / 2)))
         i=0
         for start in range(0, x.shape[0], chunk_size):
             df_subset = x.iloc[start:start+chunk_size]
             i=i+1
-            if h=='Horizon Europe':
-                he='horizon'
-            else:
-                he='h2020'
-            zipfile_ods(df_subset, f"fr-esr-{he}-projects-entities_evaluated{i}")
+            zipfile_ods(df_subset, f"fr-esr-{he}-projects-entities-evaluated{i}")
 
 
 def entities_collab(entities_participation):
