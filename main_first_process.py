@@ -123,8 +123,10 @@ lien = nuts_lien(app1, part, lien)
 lien.to_pickle(f"{PATH_CLEAN}lien.pkl")
 
 # ENTITIES
-entities = entities_load(lien, app1, part)
-entities_single = entities_single(entities, lien, part, app1)
+entities = entities_load(lien)
+# entities = entities_missing_country(entities, lien)
+# entities = entities_cleaning(entities)
+entities_single = entities_single(entities, lien)
 entities_info = entities_info(entities_single, lien)
 
 list_codeCountry = entities_info.countryCode.unique()
@@ -135,13 +137,13 @@ countries = country_load(FRAMEWORK, list_codeCountry)
 # ##################################
 # # nouvelle actualisation ; à executer UNE FOIS
 ref_source = ref_source_load('ref')
-result, check_id_liste, identification = first_update(ref_source, entities_info, countries)
+# result, check_id_liste, identification = first_update(ref_source, entities_info, countries)
 
 # # vérifier dans excel les nouveaux ID PATH_WORK/_check_id_result.xlsx
 # IDchecking_results(result, check_id_liste, identification)
 
-# id_verified = ID_resultChecked()
-# new_ref_source(id_verified, ref_source, extractDate, part, app1, entities_single, countries)
+id_verified = ID_resultChecked()
+new_ref_source(id_verified, ref_source, extractDate, part, app1, entities_single, countries)
 
 # ########################
 
