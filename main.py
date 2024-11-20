@@ -16,7 +16,7 @@ calls = pd.read_csv(f"{PATH_CONNECT}calls.csv", sep=";", parse_dates=['call_dead
 
 # step4
 entities_part = ent(participation, entities_info, projects)
-collaboration = collab(participation, projects, countries)
+# collaboration = collab(participation, projects, countries)
 
 # step5 - si nouvelle actualisation ou changement dans nomenclatures
 h20, FP7, FP6, h20_p, FP7_p, FP6_p = framework_load()

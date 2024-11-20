@@ -1,127 +1,52 @@
+from functions_shared import unzip_zip, gps_col, num_to_string
+from constant_vars import FRAMEWORK, ZIPNAME
+from config_path import PATH_SOURCE, PATH_CLEAN
 import pandas as pd
-from main_library import *
 
-#################
-# 1 - si nouvelle actualisation utiliser MAIN_FIRST_PROCESS
-#################
+lien=pd.read_pickle(f"{PATH_CLEAN}lien.pkl")
+entities = unzip_zip(ZIPNAME, f"{PATH_SOURCE}{FRAMEWORK}/", "legalEntities.json", 'utf8')
+entities = pd.DataFrame(entities)
+print(f"- first size entities: {len(entities)}")
+entities = gps_col(entities)
 
-# si traitement déjà effectués
-### si besoin de charger les permiers traitements sns recommencer depuis le debut
-        
-projects = pd.read_pickle(f"{PATH_CLEAN}projects_current.pkl")         
-participation = pd.read_pickle(f"{PATH_CLEAN}participation_current.pkl") 
-countries = pd.read_pickle(f"{PATH_CLEAN}country_current.pkl") 
-entities_info = pd.read_pickle(f"{PATH_CLEAN}entities_info_current2.pkl") 
-calls = pd.read_csv(f"{PATH_CONNECT}calls.csv", sep=";", parse_dates=['call_deadline'])
+entities = entities.loc[~entities.generalPic.isnull()]
 
-# step4
-entities_part = ent(participation, entities_info, projects)
-h20, FP7, FP6, h20_p, FP7_p, FP6_p = framework_load()
-h20 = h20.reindex(sorted(h20.columns), axis=1)
-entities_participation = entities_preparation(entities_part, h20)
+c = ['pic', 'generalPic']
+entities[c] = entities[c].map(num_to_string)
+print(f"- size entities {len(entities)}")
 
+# selection des obs de entities liées aux participants/applicants
+entities = entities.loc[entities.generalPic.isin(lien.generalPic.unique())]
+print(f"- new size entities: {len(entities)}")  
 
-# ### entities pour ODS
-import math
+pic_no_entities = list(set(lien.generalPic.unique()) - set(entities.generalPic.unique()))
+if len(pic_no_entities) >0:
+    print(f"- pic lien not in entities: {len(pic_no_entities)}")
 
-tmp=(entities_participation[
-    ['category_woven', 'cordis_is_sme', 'cordis_type_entity_acro', 'stage','acronym',
-    'cordis_type_entity_code', 'cordis_type_entity_name_en', 'entities_name_source',
-    'cordis_type_entity_name_fr', 'extra_joint_organization', 'is_ejo',
-    'country_code', 'country_code_mapping',
-    'country_group_association_code', 'country_group_association_name_en',
-    'country_group_association_name_fr', 'country_name_en',
-    'country_name_fr', 'country_name_mapping', 
-    'participation_nuts', 'region_1_name', 'region_2_name', 'regional_unit_name',
-    'entities_acronym', 'entities_id', 'entities_name', 'operateur_name',
-    'insee_cat_code', 'insee_cat_name', 'participates_as', 'project_id',
-    'role', 'ror_category', 'sector', 'paysage_category', 
-    'coordination_number', 'calculated_fund', 'with_coord','abstract', 
-    'number_involved', 'action_code', 'action_name', 'call_id', 'topic_code',
-    'status_code', 'framework', 'call_year', 'ecorda_date', 'flag_entreprise',
-    'pilier_name_en', 'pilier_name_fr', 'programme_code', 'programme_name_en', 
-    'programme_name_fr', 'thema_code', 'thema_name_fr', 'thema_name_en', 'destination_code',
-    'destination_lib', 'destination_name_en','action_code2', 'action_name2', 'free_keywords', 
-    'operateur_num','operateur_lib', 'category_agregation', 'source_id', 'generalPic']]
-    .rename(columns={ 
-        'source_id':'entities_id_source',
-        'action_code':'action_id', 
-        'action_name':'action_name',
-        'action_code2':'action_detail_id', 
-        'action_name2':'action_detail_name',
-        'calculated_fund':'fund_€',
-        'number_involved':'numberofparticipants',
-        'coordination_number':'coordination_number',
-        'country_group_association_code':'country_association_code',
-        'country_group_association_name_en':'country_association_name_en',
-        'country_group_association_name_fr':'country_association_name_fr',
-        'with_coord':'flag_coordination',
-        'is_ejo':'flag_organization',
-        'generalPic':'pic_number',
-        'insee_cat_code':'entreprise_cat_code',
-        'insee_cat_name':'entreprise_cat_name'
-        }))
+# contrôle nombre d'obs avec les pic coutry et state
+PicState = entities[['generalPic', 'generalState', 'countryCode']]
+n_state=PicState.groupby(['generalPic',  'countryCode']).filter(lambda x: x['generalState'].count() > 1.)
 
-tmp.loc[tmp.entities_id_source=='ror', 'entities_id'] = tmp.loc[tmp.entities_id_source=='ror', 'entities_id'].str.replace("^R", "", regex=True)
-tmp.loc[tmp.entities_id_source=='pic', 'entities_id_source'] = 'ecorda pic'
-tmp.loc[tmp.entities_id_source=='identifiantAssociationUniteLegale', 'entities_id_source'] = 'rna'
-tmp.loc[(tmp.entities_id_source.isnull())&(tmp.entities_id.str.contains('gent', na=False)), 'entities_id_source'] = 'paysage'
+if (len(n_state)>0):
+    print(f"1 - ++state pour un pic/country; régler ci-dessous {len(n_state)}")
+    gen_state = ['VALIDATED', 'DECLARED', 'DEPRECATED', 'SLEEPING', 'SUSPENDED', 'BLOCKED']
 
-#     if i=='successful':
-act_liste = ['RIA', 'MSCA', 'IA', 'CSA', 'ERC', 'EIC']
-tmp = tmp.assign(action_group_code=tmp.action_id, action_group_name=tmp.action_name)
-tmp.loc[~tmp.action_id.isin(act_liste), 'action_group_code'] = 'ACT-OTHER'
-tmp.loc[~tmp.action_id.isin(act_liste), 'action_group_name'] = 'Others actions'
+    if len(entities.generalState.unique()) > len(gen_state):
+        print(f"2 - Attention ! un generalState nouveau dans entities -> {set(entities.generalState.unique())-set(gen_state)}")
+    else:
+        entities=entities.groupby(['generalPic', 'countryCode']).apply(lambda x: x.sort_values('generalState', key=lambda col: pd.Categorical(col, categories=gen_state, ordered=True))).reset_index(drop=True)
+    print(f"3 - size entities: {len(entities)}")
 
-tmp.loc[tmp.thema_code.isin(['ERC','MSCA']), ['destination_code', 'destination_name_en']] = np.nan
+# control country
+PicState = entities[['generalPic', 'generalState', 'countryCode']]
+n_country=PicState.groupby(['generalPic', 'generalState']).filter(lambda x: x['countryCode'].nunique() > 1.)
 
-for i in ['abstract', 'free_keywords']:
-    tmp[i] = tmp[i].str.replace('\\n|\\t|\\r|\\s+|^\\"', ' ', regex=True).str.strip()
+if  (len(n_country)>0):
+    print(f"1 - PROBLEME !!! ++country pour un pic/state {len(n_country)}")
 
-tmp['free_keywords'] = tmp['free_keywords'].str.lower()
-
-tmp.loc[(tmp.stage=='successful')&(tmp.status_code=='UNDER_PREPARATION'), 'abstract'] = np.nan
-
-# attention si changement de nom de vars -> la modifier aussi dans pcri_info_columns_order
-tmp = order_columns(tmp, 'proj_entities')
-
-
-for h in tmp.framework.unique():
-    x = tmp[(tmp.stage=='successful')&(tmp.framework==h)].drop(columns=['stage'])
-    chunk_size = int(math.ceil((x.shape[0] / 2)))
-    i=0
-    for start in range(0, x.shape[0], chunk_size):
-        df_subset = x.iloc[start:start + chunk_size]
-        i=i+1
-        if h=='Horizon Europe':
-            he='horizon'
-        else:
-            he='h2020'
-        
-        zipfile_ods(df_subset, f"fr-esr-{he}-projects-entities{i}")
-        # df_subset.to_csv(f'{PATH_ODS}fr-esr-{he}-projects-entities{i}.csv', sep=';', encoding='utf-8', index=False, na_rep='', decimal=".")
-
-tmp1 = (tmp.loc[(tmp.stage=='evaluated')]
-    .rename(columns={ 'number_involved':'numberofapplicants'})
-    .drop(columns=
-        ['country_name_mapping', 'country_association_name_en', 'country_name_en', 
-        'country_code_mapping', 'pilier_name_fr', 'programme_code', 'entities_name_source',
-        'operateur_num','operateur_lib', 'ror_category', 'paysage_category', 'country_association_name_en',
-        'country_association_name_fr', 'thema_name_fr', 'destination_lib',
-        'programme_name_fr', 'action_group_code', 'action_group_name', 'stage',
-        'cordis_type_entity_name_en', 'cordis_type_entity_acro','cordis_type_entity_name_fr']))
-
-
-for h in tmp1.framework.unique():
-    x = tmp1[(tmp1.framework==h)]
-    chunk_size = int(math.ceil((x.shape[0] / 2)))
-    i=0
-    for start in range(0, x.shape[0], chunk_size):
-        df_subset = x.iloc[start:start+chunk_size]
-        i=i+1
-        if h=='Horizon Europe':
-            he='horizon'
-        else:
-            he='h2020'
-
-        zipfile_ods(df_subset, f"fr-esr-{he}-projects-entities_evaluated{i}")
+#############################
+entities_single=entities.groupby(['generalPic', 'countryCode']).head(1)
+print(entities_single.generalState.value_counts())
+print(f"- size entities_single:{len(entities_single)},\n- pic_unique entities_single:{entities_single.generalPic.nunique()},\n- pic_unique lien:{lien.generalPic.nunique()}")
+if len(set(lien.generalPic.unique())):
+pic_no_entities = list(set(lien.generalPic.unique()) - set(entities.generalPic.unique()))

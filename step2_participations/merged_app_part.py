@@ -115,6 +115,23 @@ def merged_partApp(app1, part):
     lien.loc[lien.inProject==True, 'participation_linked'] = lien['project_id']+"-"+lien['orderNumber']
     lien.loc[lien.inProposal==True, 'participation_linked'] = lien['project_id']+"-"+lien['proposal_orderNumber']
     
+    # add countryCode
+    lien = (lien
+            .merge(part[['project_id', 'orderNumber', 'generalPic', 'participant_pic', 'countryCode']],
+                   how='left', on=['project_id', 'orderNumber', 'generalPic', 'participant_pic']))
+    lien = (lien
+            .merge(app1[['project_id', 'orderNumber', 'generalPic', 'participant_pic', 'countryCode']], 
+                   how='left', left_on=['project_id', 'orderNumber', 'generalPic', 'participant_pic'],
+                   right_on=['project_id', 'orderNumber', 'generalPic', 'proposal_participant_pic'],
+                   su=[ '','y'])
+            .drop(columns=['proposal_participant_pic'])
+            .rename(columns={'countryCode.y':'proposal_countryCode'}))
+
+    lien.loc[lien.countryCode.isnull(), 'countryCode'] = lien.loc[lien.countryCode.isnull(), 'proposal_countryCode']
+
+    if any(lien.country_code.isnull()):
+        print(f"- ATTENTION countryCode missing {lien[lien.country_code.isnull()].generalPic.unique()}")
+
     # verif que chaque obs contient un calculated pic
     lien_no_pic=len(lien[lien['calculated_pic'].isnull()])
     if lien_no_pic > 0:
