@@ -119,18 +119,19 @@ def merged_partApp(app1, part):
     lien = (lien
             .merge(part[['project_id', 'orderNumber', 'generalPic', 'participant_pic', 'countryCode']],
                    how='left', on=['project_id', 'orderNumber', 'generalPic', 'participant_pic']))
+
     lien = (lien
             .merge(app1[['project_id', 'orderNumber', 'generalPic', 'participant_pic', 'countryCode']], 
-                   how='left', left_on=['project_id', 'orderNumber', 'generalPic', 'participant_pic'],
-                   right_on=['project_id', 'orderNumber', 'generalPic', 'proposal_participant_pic'],
-                   su=[ '','y'])
-            .drop(columns=['proposal_participant_pic'])
+                   how='left', left_on=['project_id', 'proposal_orderNumber', 'generalPic', 'proposal_participant_pic'],
+                   right_on=['project_id', 'orderNumber', 'generalPic', 'participant_pic'],
+                   suffixes=[ '','.y'])
+            .drop(columns=[ 'participant_pic.y', 'orderNumber.y'])
             .rename(columns={'countryCode.y':'proposal_countryCode'}))
 
     lien.loc[lien.countryCode.isnull(), 'countryCode'] = lien.loc[lien.countryCode.isnull(), 'proposal_countryCode']
 
-    if any(lien.country_code.isnull()):
-        print(f"- ATTENTION countryCode missing {lien[lien.country_code.isnull()].generalPic.unique()}")
+    if any(lien.countryCode.isnull()):
+        print(f"- ATTENTION {lien[lien.countryCode.isnull()].generalPic.nunique()} countryCode missing {lien[lien.countryCode.isnull()].generalPic.unique()}")
 
     # verif que chaque obs contient un calculated pic
     lien_no_pic=len(lien[lien['calculated_pic'].isnull()])
