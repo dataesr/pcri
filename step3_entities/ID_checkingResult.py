@@ -126,10 +126,13 @@ def new_ref_source(id_verified,ref_source,extractDate,part,app1,entities_single,
         ref_source[i] = ref_source[i].replace('', np.nan, regex=False)
         ref_source[i] = ref_source[i].astype(float)
 
-    ref_source=ref_source[['generalPic', 'generalState', 'countryCode_parent', 'country_code_mapping', 'country_name_mapping', 'id_secondaire', 'ZONAGE', 'id',
+    ref_source=ref_source[
+        ['generalPic', 'generalState', 'countryCode_parent', 'country_code_mapping', 
+        'country_name_mapping', 'id_secondaire', 'ZONAGE', 'id',
         'legalName', 'city', 'url', 'project', 'proposal',  'FP', 'last_control',
-        'comments', 'isInternationalOrganisation', 'vat', 'legalRegNumber', 'source_id', 'code']]    
+        'comments', 'isInternationalOrganisation', 'vat', 'legalRegNumber', 
+        'source_id', 'code']]    
 
-    print(f"{len(ref_source)}")
+    print(f"- End size new ref_source:{len(ref_source)}")
     ref_source.to_csv(f"{PATH_WORK}ref_{extractDate}.csv", sep=';', encoding='utf-8', index=False, na_rep='')
     print("# Nouveau REF_SOURCE\n- remplir des ID pour les nouveaux français")
