@@ -30,7 +30,6 @@ def IDchecking_results(result, check_id_liste, identification):
 
     verif_id = pd.concat([unik, multi], ignore_index=True)
 
-
     verif_id = (verif_id
                 .sort_values('generalPic')
                 .groupby(['generalPic','countryCode', 'countryCode_parent'])[['checked_id', 'stock_id','source','code','new_id']]
@@ -40,7 +39,6 @@ def IDchecking_results(result, check_id_liste, identification):
 
     cols = verif_id.select_dtypes(object).columns
     verif_id[cols] = verif_id[cols].apply(lambda x: x.str.replace('\\n|\\t|\\r|\\s+', ' ', regex=True).str.strip())
-
 
     verif_id.loc[(verif_id.code=='200')&(verif_id.checked_id==verif_id.new_id), 'indicator_control'] = 'ok'
     # verif_id.loc[(verif_id.indicator_control.isnull())&(verif_id.code=='200')&(verif_id.checked_id==verif_id.new_id), 'indicator_control'] = 'ok'
