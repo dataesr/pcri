@@ -3,70 +3,95 @@ from constant_vars import FRAMEWORK, ZIPNAME
 from config_path import PATH_SOURCE
 import pandas as pd
 
-def entities_load(lien):
-    print("\n### LOADING ENTITIES")
+def entities_missing_country(df, app1, part):
+    df.loc[df.generalPic=='996567331', 'countryCode'] = 'FR'
+
+    genCountry = pd.concat([app1[['generalPic', 'countryCode']].drop_duplicates(), part[['generalPic', 'countryCode']].drop_duplicates()], ignore_index=True)
+    genCountry['nb'] = genCountry.groupby('generalPic')['countryCode'].transform('count')
+    genCountry = genCountry.loc[genCountry.nb<2].drop(columns='nb')
+
+    # traitement des codes country manquants dans participants_info
+    if len(df.loc[df.countryCode.isnull()])>0:
+        no_country = (df.loc[df.countryCode.isnull(), ['generalPic']]
+                    .merge(genCountry[['generalPic', 'countryCode']], how='inner', on='generalPic')
+                    .rename(columns={ 'countryCode':'cc'})
+                    .drop_duplicates())
+        print(f"2- ATTENTION ! entities_info sans code_country {len(no_country)}")
+        df = df.merge(no_country, how='left', on='generalPic')
+        df.loc[df.countryCode.isnull(), 'countryCode'] = df.cc
+        df.drop(columns=['cedex', 'cc'], inplace=True)
+        if len(df.loc[df.countryCode.isnull()])>0:
+            print(f"3- ATTENTION ! il reste des sans code_country {df.loc[df.countryCode.isnull(), ['generalPic']].drop_duplicates()}")
+        else:
+            print('4- RESOLU -> sans country')
+    return df
+
+def entities_load(lien, app1, part):
+
     entities = unzip_zip(ZIPNAME, f"{PATH_SOURCE}{FRAMEWORK}/", "legalEntities.json", 'utf8')
     entities = pd.DataFrame(entities)
+    print(f"- first size entities: {len(entities)}")
     entities = gps_col(entities)
-    
+
     entities = entities.loc[~entities.generalPic.isnull()]
-    
+
     c = ['pic', 'generalPic']
     entities[c] = entities[c].map(num_to_string)
     print(f"- size entities {len(entities)}")
 
     # selection des obs de entities liées aux participants/applicants
-    lien_genCalcPic = lien[['generalPic', 'calculated_pic']].drop_duplicates()
-    entities = lien_genCalcPic.merge(entities, how='inner', left_on=['generalPic','calculated_pic'], right_on=['generalPic','pic']).drop_duplicates()
-    
-    if entities is not None:
-        Nlien_genPic_single = lien['generalPic'].nunique() 
-        Nlien_genCalcPic = len(lien_genCalcPic)
-        Nentities_genPic_single = entities['generalPic'].nunique()
-        print(f"- nb generalPic +calc_pic dans lien:{Nlien_genCalcPic}, nb genPic unique dans lien:{Nlien_genPic_single}, nb genPic unique dans entities:{Nentities_genPic_single}")
-        
-        if Nlien_genPic_single != Nentities_genPic_single:
-            print(f"1- si Nlien_genPic_single dans lien diff de Nentities_genPic_single dans entities\n \n-> {lien.loc[~lien.generalPic.isin(entities.generalPic.unique()), ['generalPic']].nunique()}")
-        
-        # contrôle nombre d'obs avec les pic coutry et state
-        genPicState = entities[['generalPic', 'pic', 'generalState', 'countryCode']]
-        n_country=genPicState.groupby(['generalPic', 'pic']).filter(lambda x: x['countryCode'].nunique() > 1.)
-        n_state=genPicState.groupby(['generalPic', 'pic', 'countryCode']).filter(lambda x: x['generalState'].count() > 1.)
-        if (len(n_state)>0) | (len(n_country)>0):
-            print(f'2- attention il y a des doublons à traiter au niveau des entities : ++state {len(n_state)}, ++country {len(n_country)}')
+    entities = entities.loc[entities.generalPic.isin(lien.generalPic.unique())]
+    print(f"- new size entities: {len(entities)}")  
 
-        lien_genCalcPic = lien[['generalPic', 'calculated_pic']].drop_duplicates()
-        entitiesCountry = entities.groupby(['generalPic', 'generalState']).filter(lambda x: x['countryCode'].nunique() > 1.)
-        if len(entitiesCountry)>0:
-            print(f'3- attention ++ pays pour un genPic+state {len(entitiesCountry)}')
+    pic_no_entities = list(set(lien.generalPic.unique()) - set(entities.generalPic.unique()))
+    if len(pic_no_entities) >0:
+        print(f"- pic lien not in entities: {len(pic_no_entities)}")
+
+    #add missing country inta entities
+    entities = entities_missing_country(entities, app1, part)
+
+    # contrôle nombre d'obs avec les pic coutry et state
+    PicState=entities[['generalPic', 'generalState', 'countryCode']]
+    n_state=PicState.groupby(['generalPic',  'countryCode']).filter(lambda x: x['generalState'].count() > 1.)
+
+    if (len(n_state)>0):
+        print(f"1 - ++state pour un pic/country; régler ci-dessous {len(n_state)}")
+        gen_state=['VALIDATED', 'DECLARED', 'DEPRECATED', 'SLEEPING', 'SUSPENDED', 'BLOCKED']
+
+        if len(entities.generalState.unique()) > len(gen_state):
+            print(f"2 - Attention ! un generalState nouveau dans entities -> {set(entities.generalState.unique())-set(gen_state)}")
         else:
-            gen_state = ['VALIDATED', 'DECLARED', 'DEPRECATED', 'SLEEPING', 'SUSPENDED', 'BLOCKED']
+            entities=entities.groupby(['generalPic', 'countryCode']).apply(lambda x: x.sort_values('generalState', key=lambda col: pd.Categorical(col, categories=gen_state, ordered=True))).reset_index(drop=True)
+            print(f"3 - size entities: {len(entities)}")
 
-            if len(entities.generalState.unique()) > len(gen_state):
-                print(f"4- Attention ! un generalState nouveau dans entities -> ajout à gen_state")
-            else:
-                entities=entities.groupby(['generalPic']).apply(lambda x: x.sort_values('generalState', key=lambda col: pd.Categorical(col, categories=gen_state, ordered=True))).reset_index(drop=True)
-        print(f"- size entities: {len(entities)}")
-        return entities
+    # control country
+    PicState=entities[['generalPic', 'generalState', 'countryCode']]
+    n_country=PicState.groupby(['generalPic', 'generalState']).filter(lambda x: x['countryCode'].nunique() > 1.)
 
+    if  (len(n_country)>0):
+        print(f"1 - PROBLEME !!! ++country pour un pic/state {len(n_country)}")
+    return entities
 
 def entities_single(entities, lien, part, app1):
     print("\n### ENTITIES SINGLE")
-    Nlien_genPic_single = lien['generalPic'].nunique()
-    entities_single=entities.groupby(['generalPic']).head(1)
-    print(entities_single.generalState.value_counts())
-    print(f"- longueur de entities_single:{len(entities_single)},\n- nb generalPic unique de entities_single:{len(entities_single.generalPic.unique())},\n- nb de generalPic unique de lien:{Nlien_genPic_single}")
-     
-    tmp=entities_single.groupby(['generalPic']).filter(lambda x: x['generalPic'].count() > 1.)
-    if not tmp.empty:
-        for i, row in tmp.iterrows():
-            tmp.at[i, 'isNa']=row.isnull().values.sum()
-        tmp2=tmp.loc[tmp.groupby(["generalPic"])['isNa'].idxmin()][['generalPic', 'calculated_pic']]
-        tmp=tmp[~(tmp["generalPic"].isin(tmp2.generalPic.unique())&tmp["calculated_pic"].isin(tmp2.calculated_pic.unique()))][['generalPic', 'calculated_pic']]
-        del tmp2
+    entities_single=entities.groupby(['generalPic', 'countryCode']).head(1)
+    print(f"- size entities_single:{len(entities_single)}\n{entities_single.generalState.value_counts()}")
+    print(f"\n- pic_unique entities_single:{entities_single.generalPic.nunique()},\n- pic_unique lien:{lien.generalPic.nunique()}")
+    if len(set(lien.generalPic.unique()))>len(set(entities.generalPic.unique())):
+        pic_lien=list(set(lien.generalPic.unique()) - set(entities.generalPic.unique()))
+        print(f"pic_lien absent de entities_single {pic_lien}")
 
-    entities_single = entities_single[~(entities_single["generalPic"].isin(tmp.generalPic.unique())&entities_single["calculated_pic"].isin(tmp.calculated_pic.unique()))]
-    print(f'- après suppression des doublons:{len(entities_single)}')
+    tmp=entities_single.groupby(['generalPic', 'countryCode']).filter(lambda x: x['generalPic'].count() > 1.)
+    if not tmp.empty:
+        print(f"1 - ATTENTION doublon generalPic revoir code ci-dessous si besoin")
+        # for i, row in tmp.iterrows():
+        #     tmp.at[i, 'isNa']=row.isnull().values.sum()
+        # tmp2=tmp.loc[tmp.groupby(["generalPic"])['isNa'].idxmin()][['generalPic', 'calculated_pic']]
+        # tmp=tmp[~(tmp["generalPic"].isin(tmp2.generalPic.unique())&tmp["calculated_pic"].isin(tmp2.calculated_pic.unique()))][['generalPic', 'calculated_pic']]
+        # del tmp2
+
+        # entities_single = entities_single[~(entities_single["generalPic"].isin(tmp.generalPic.unique())&entities_single["calculated_pic"].isin(tmp.calculated_pic.unique()))]
+        # print(f'- après suppression des doublons:{len(entities_single)}')
     
     # traitement des generalPic absents de entities
     temp = lien.loc[~lien.generalPic.isin(entities_single.generalPic.unique()), ['generalPic']].drop_duplicates()
@@ -86,10 +111,10 @@ def entities_single(entities, lien, part, app1):
     print(f"- longueur entities_single:{len(entities_single)}, nb de generalPic unique de lien:{Nlien_genPic_single}")
     return entities_single
 
-def entities_info(entities_single, lien, app1, part):
+def entities_info(entities_single, lien):
     print("\n### ENTITIES INFO")
     entities_info = (entities_single
-                     .drop(['pic', 'calculated_pic'], axis=1)
+                     .drop(['pic'], axis=1)
                      .merge(lien[['generalPic']], how="inner", on=['generalPic'])
                      .drop_duplicates())
 
@@ -97,27 +122,6 @@ def entities_info(entities_single, lien, app1, part):
         print(f"1- ATTENTION ! longueur finale de entities_info : {len(entities_info)}, longueur lien:{lien['generalPic'].nunique()}")
     else:
         pass
-
-    entities_info.loc[entities_info.generalPic=='996567331', 'countryCode'] = 'FR'
-
-    genCountry = pd.concat([app1[['generalPic', 'countryCode']].drop_duplicates(), part[['generalPic', 'countryCode']].drop_duplicates()], ignore_index=True)
-    genCountry['nb'] = genCountry.groupby('generalPic')['countryCode'].transform('count')
-    genCountry = genCountry.loc[genCountry.nb<2].drop(columns='nb')
-
-    # traitement des codes country manquants dans participants_info
-    if len(entities_info.loc[entities_info.countryCode.isnull()])>0:
-        no_country = (entities_info.loc[entities_info.countryCode.isnull(), ['generalPic']]
-                    .merge(genCountry[['generalPic', 'countryCode']], how='inner', on='generalPic')
-                    .rename(columns={ 'countryCode':'cc'})
-                    .drop_duplicates())
-        print(f"2- ATTENTION ! entities_info sans code_country {len(no_country)}")
-        entities_info = entities_info.merge(no_country, how='left', on='generalPic')
-        entities_info.loc[entities_info.countryCode.isnull(), 'countryCode'] = entities_info.cc
-        entities_info = entities_info.drop(columns=['cedex', 'cc'])
-        if len(entities_info.loc[entities_info.countryCode.isnull()])>0:
-            print(f"3- ATTENTION ! il reste des sans code_country {entities_info.loc[entities_info.countryCode.isnull(), ['generalPic']].drop_duplicates()}")
-        else:
-            print('4- RESOLU -> sans country')
     print(f"- size entities_info: {len(entities_info)}")
     return entities_info
     

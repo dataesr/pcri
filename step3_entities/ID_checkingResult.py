@@ -94,7 +94,7 @@ def new_ref_source(id_verified,ref_source,extractDate,part,app1,entities_single,
         tmp = tmp.merge(tmp1, how='left', on=['generalPic','countryCode'])
 
     tmp = (tmp
-            .merge(entities_single[['generalPic', 'countryCode', 'isInternationalOrganisation']].drop_duplicates(), 
+            .merge(entities_single[['generalPic', 'generalState', 'countryCode', 'isInternationalOrganisation']].drop_duplicates(), 
                     how='left')
             .drop(columns=['ZONAGE_y','id_secondaire_y','countryCode']))
         
@@ -128,7 +128,7 @@ def new_ref_source(id_verified,ref_source,extractDate,part,app1,entities_single,
         ref_source[i] = ref_source[i].replace('', np.nan, regex=False)
         ref_source[i] = ref_source[i].astype(float)
 
-    ref_source=ref_source[['generalPic', 'countryCode_parent', 'country_code_mapping', 'country_name_mapping', 'id_secondaire', 'ZONAGE', 'id',
+    ref_source=ref_source[['generalPic', 'generalState', 'countryCode_parent', 'country_code_mapping', 'country_name_mapping', 'id_secondaire', 'ZONAGE', 'id',
         'legalName', 'city', 'url', 'project', 'proposal',  'FP', 'last_control',
         'comments', 'isInternationalOrganisation', 'vat', 'legalRegNumber', 'source_id', 'code']]    
 
