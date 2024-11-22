@@ -134,8 +134,8 @@ countries = country_load(FRAMEWORK, list_codeCountry)
 
 # ##################################
 # # nouvelle actualisation ; à executer UNE FOIS
-ref_source = ref_source_load('ref')
-result, check_id_liste, identification = first_update(ref_source, entities_info, countries)
+# ref_source = ref_source_load('ref')
+# result, check_id_liste, identification = first_update(ref_source, entities_info, countries)
 
 # # vérifier dans excel les nouveaux ID PATH_WORK/_check_id_result.xlsx
 # IDchecking_results(result, check_id_liste, identification)
@@ -143,7 +143,7 @@ result, check_id_liste, identification = first_update(ref_source, entities_info,
 # id_verified = ID_resultChecked()
 # new_ref_source(id_verified, ref_source, extractDate, part, app1, entities_single, countries)
 
-# ########################
+# ########################################################################################################
 
 # chargement du nouveau ref_source
 ref_source = ref_source_load('ref')
@@ -153,12 +153,16 @@ print(f"size entities_tmp: {len(entities_tmp)}")
 entities_tmp = entities_for_merge(entities_tmp)
 
 ### Executer uniquement si besoin
-lid_source, unknow_list = ID_entities_list(ref_source)
-# ror, paysage, paysage_category, paysage_mires, sirene = ID_getRefInfo(lid_source) 
-ror = ror_getRefInfo(lid_source)
-siren_siret = get_siret_siege(lid_source)
-paysage, paysage_category, paysage_mires = paysage_getRefInfo(lid_source, siren_siret, paysage_old=None)
-sirene = get_sirene(lid_source, sirene_old=None)
+# lid_source, unknow_list = ID_entities_list(ref_source)
+# ror = ror_getRefInfo(lid_source)
+# siren_siret = get_siret_siege(lid_source)
+# paysage_id = ID_to_IDpaysage(lid_source, siren_siret)
+# paysage, paysage_mires = paysage_getRefInfo(lid_source, siren_siret, paysage_old=None)
+# paysage_category = IDpaysage_category(paysage)
+# sirene = get_sirene(lid_source, sirene_old=None)
+
+#############################################################################################################
+
 
 ### merge entities_tmp + referentiel
 # ROR
@@ -169,7 +173,8 @@ entities_tmp = merge_ror(entities_tmp, ror)
 # PAYSAGE
 ### si besoin de charger paysage pickle
 paysage = pd.read_pickle(f"{PATH_REF}paysage_df.pkl")
-cat_filter = category_paysage(paysage)
+paysage_category = IDpaysage_category(paysage)
+cat_filter = category_paysage(paysage_category)
 entities_tmp = merge_paysage(entities_tmp, paysage, cat_filter)
 
 # SIRENE
