@@ -124,10 +124,8 @@ lien.to_pickle(f"{PATH_CLEAN}lien.pkl")
 
 # ENTITIES
 entities = entities_load(lien)
-# entities = entities_missing_country(entities, lien)
-# entities = entities_cleaning(entities)
-entities_single = entities_single(entities, lien)
-entities_info = entities_info(entities_single, lien)
+entities_single = entities_single_create(entities, lien)
+entities_info = entities_info_create(entities_single, lien)
 
 list_codeCountry = entities_info.countryCode.unique()
 countries = country_load(FRAMEWORK, list_codeCountry)
@@ -137,19 +135,19 @@ countries = country_load(FRAMEWORK, list_codeCountry)
 # ##################################
 # # nouvelle actualisation ; à executer UNE FOIS
 ref_source = ref_source_load('ref')
-# result, check_id_liste, identification = first_update(ref_source, entities_info, countries)
+result, check_id_liste, identification = first_update(ref_source, entities_info, countries)
 
 # # vérifier dans excel les nouveaux ID PATH_WORK/_check_id_result.xlsx
 # IDchecking_results(result, check_id_liste, identification)
 
-id_verified = ID_resultChecked()
-new_ref_source(id_verified, ref_source, extractDate, part, app1, entities_single, countries)
+# id_verified = ID_resultChecked()
+# new_ref_source(id_verified, ref_source, extractDate, part, app1, entities_single, countries)
 
 # ########################
 
 # chargement du nouveau ref_source
 ref_source = ref_source_load('ref')
-ref = ref_source_2d_select(ref_source, 'HE')
+ref, genPic_to_new = ref_source_2d_select(ref_source, 'HE')
 entities_tmp = entities_tmp_create(entities_info, countries, ref)
 print(f"size entities_tmp: {len(entities_tmp)}")
 entities_tmp = entities_for_merge(entities_tmp)
@@ -157,6 +155,10 @@ entities_tmp = entities_for_merge(entities_tmp)
 ### Executer uniquement si besoin
 lid_source, unknow_list = ID_entities_list(ref_source)
 # ror, paysage, paysage_category, paysage_mires, sirene = ID_getRefInfo(lid_source) 
+ror = ror_getRefInfo(lid_source)
+siren_siret = get_siret_siege(lid_source)
+paysage, paysage_category, paysage_mires = paysage_getRefInfo(lid_source, siren_siret, paysage_old=None)
+sirene = get_sirene(lid_source, sirene_old=None)
 
 ### merge entities_tmp + referentiel
 # ROR
@@ -185,8 +187,8 @@ entities_tmp = IDpic(entities_tmp)
 entities_tmp = entities_tmp.merge(get_source_ID(entities_tmp, 'entities_id'), how='left', on='entities_id')
 
 ### groupe entreprises
-# groupe = groupe_treatment('groupe_prov', 'groupe')
-# wb=openpyxl.load_workbook(f"{PATH_REF}groupe_prov.xlsm").sheetnames[1:]
+groupe = groupe_treatment('groupe_prov', 'groupe')
+wb=openpyxl.load_workbook(f"{PATH_REF}groupe_prov.xlsm").sheetnames[1:]
 ### si besoin de charger groupe 
 groupe = pd.read_pickle(f"{PATH_REF}groupe.pkl")
 print(f"taille de entities_tmp avant groupe:{len(entities_tmp)}")

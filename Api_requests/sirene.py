@@ -13,7 +13,9 @@ def siren_liste(lid_source):
 ###############################
 
 def get_siret_siege(lid_source):
+    
     print("### harvest siret siege from siren")
+    print(time.strftime("%H:%M:%S"))
     sl=siren_liste(lid_source)
     siren_siret=[]
     n=0
@@ -31,11 +33,13 @@ def get_siret_siege(lid_source):
         if rinit_status == 200:
             siren_siret.append(rinit.json()['etablissements'][0].get('siret'))
     print(len(siren_siret))
+    print(time.strftime("%H:%M:%S"))
     return siren_siret
 ####################################
 
 def get_sirene(lid_source, sirene_old=None):
     print("### SIRENE")
+    print(time.strftime("%H:%M:%S"))
     sirene_liste = [i['api_id'] for i in lid_source if i['source_id'] in ['siren', 'siret','identifiantAssociationUniteLegale']]
 
     sirene_liste = sourcer_ID(list(set(sirene_liste)))  
@@ -55,6 +59,9 @@ def get_sirene(lid_source, sirene_old=None):
         return {}
 
     for i in sirene_liste:
+        n=n+1
+        if n % 100 == 0: 
+            print(f"{n}", end=',')
         try:
             if i['source_id'] == 'siret':
                 url = 'https://api.insee.fr/entreprises/sirene/siret?q=siret:' + str(i['api_id'])
@@ -114,11 +121,10 @@ def get_sirene(lid_source, sirene_old=None):
         except Exception as e:
             print(f"\n{i} -> An unexpected error occurred: {e}")
             sirene_liste.append(str(i)) 
-        n+=1
-        print(n, end=',')
 
     sirene=pd.DataFrame(result)
-    print(f"\n- taille de sirene: {len(sirene)}")
+    print(f"\n- size sirene: {len(sirene)}")
+    print(time.strftime("%H:%M:%S"))
 
     if 'sirene_old' in globals() or 'sirene_old' in locals():
         tmp=pd.concat([sirene, sirene_old], ignore_index=True).drop_duplicates()

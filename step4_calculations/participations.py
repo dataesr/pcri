@@ -7,7 +7,7 @@ def entities_with_lien(entities_info, lien):
 
     part_step = (lien
                 .merge(entities_info[
-                    ['generalPic', 
+                    ['generalPic', 'participation_linked', 'flag_entreprise',
                     'cordis_is_sme', 'cordis_type_entity_code', 'cordis_type_entity_name_fr', 
                     'cordis_type_entity_name_en', 'cordis_type_entity_acro', 'nutsCode',
                     'country_code', 'country_code_mapping', 'extra_joint_organization']].drop_duplicates(),
