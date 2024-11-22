@@ -22,7 +22,7 @@ def merge_paysage(entities_tmp, paysage, cat_filter):
                                 'acronym_clean':'entities_acronym', 
                                 'cj_name':'paysage_cj_name',
                             'siren':'paysage_siren'})
-            .drop(columns=['acro_tmp', 'category_id','category_priority', 'category_name'])
+            .drop(columns=['acro_tmp'])
             .drop_duplicates()
             .merge(cat_filter, how='left', left_on='entities_id', right_on='id_clean')
             .drop(columns='id_clean'))
