@@ -84,8 +84,6 @@ def ID_to_IDpaysage(lid_source, siren_siret):
         paysage_id = paysage_id[~paysage_id.id_paysage.isnull()]
         return paysage_id
 
-   
-
     ###############################
 
 def IDpaysage_status(lid_source, paysage_id):
@@ -538,16 +536,15 @@ def IDpaysage_category(paysage):
         paysage_category['category_end'] = pd.to_datetime(paysage_category['category_end'], format='mixed', errors='ignore')
 
         paysage_category = paysage_category.loc[~(paysage_category.category_end<pd.Timestamp("today"))]
-
         paysage_category = paysage_category.groupby(['id_clean', 'category_id', 'category_priority']).first().reset_index()
 
-        paysage_category = paysage_category[['id_clean', 'category_id', 'category_name', 'category_priority']].sort_values(['id_clean', 'category_priority', 'category_id']).drop_duplicates()
-        # paysage_category=paysage_category.drop_duplicates().groupby('id_clean', as_index=False).agg(lambda x: ';'.join(x.astype(str)))
-
-        # paysage = paysage.merge(paysage_category, how='left',on='id_clean') 
-
-        # if len(paysage.merge(paysage_category, how='left',on='id_clean').loc[paysage.category_id.isnull()])>0:
-        #     print(f"SANS CATEGORY -> à compléter dans paysage\n{paysage.loc[paysage.category_id.isnull()].id_clean.unique()}")
+        paysage_category = (paysage_category[['id_clean', 'category_id', 'category_name', 'category_priority']]
+                            .sort_values(['id_clean', 'category_priority', 'category_id'])
+                            .drop_duplicates())
+        
+        file_name = f"{PATH_SOURCE}paysage_category.pkl"
+        with open(file_name, 'wb') as file:
+            pd.to_pickle(paysage_category, file)
         return paysage_category
 
 ################################################

@@ -32,6 +32,10 @@ def get_siret_siege(lid_source):
         rinit_status = rinit.status_code
         if rinit_status == 200:
             siren_siret.append(rinit.json()['etablissements'][0].get('siret'))
+    
+    file_name = f"{PATH_SOURCE}siren_siret.pkl"
+    with open(file_name, 'wb') as file:
+        pd.to_pickle(siren_siret, file)
     print(len(siren_siret))
     print(time.strftime("%H:%M:%S"))
     return siren_siret

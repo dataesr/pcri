@@ -15,7 +15,7 @@ def ID_getRefInfo(lid_source):
         pd.to_pickle(ror, file)
 
     siren_siret = get_siret_siege(lid_source)
-    paysage, paysage_category, paysage_mires = get_paysage(lid_source, siren_siret, paysage_old=None)
+    paysage, paysage_category, paysage_mires = paysage_getRefInfo(lid_source, siren_siret, paysage_old=None)
     sirene = get_sirene(lid_source, sirene_old=None)
 
     return ror, paysage, paysage_category, paysage_mires, sirene
@@ -30,7 +30,7 @@ def ror_getRefInfo(lid_source):
 
 def paysage_getRefInfo(lid_source, siren_siret, paysage_old=None):
     print("### PAYSAGE HARVEST")
-    paysage_id=ID_to_IDpaysage(lid_source, siren_siret)
+    
     paysage_id, doublon=IDpaysage_status(lid_source, paysage_id)
     paysage=IDpaysage_successor(paysage_id)
     paysage=IDpaysage_parent(paysage)
@@ -38,7 +38,6 @@ def paysage_getRefInfo(lid_source, siren_siret, paysage_old=None):
     paysage=IDpaysage_name(paysage)
     paysage=IDpaysage_siret(paysage)
     check_var_null(paysage)
-    paysage_category=IDpaysage_category(paysage)
     paysage_mires=get_mires()
 
     x=paysage.loc[~paysage.id_clean.isin(paysage.id.unique())]
@@ -58,4 +57,4 @@ def paysage_getRefInfo(lid_source, siren_siret, paysage_old=None):
         with open(file_name, 'wb') as file:
             pd.to_pickle(paysage, file)
     
-    return paysage, paysage_category, paysage_mires
+    return paysage, paysage_mires
