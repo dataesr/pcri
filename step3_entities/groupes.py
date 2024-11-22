@@ -1,6 +1,6 @@
 
 def groupe_treatment(df, output):
-    import pandas as pd, numpy as np, xlrd, openpyxl, warnings, copy
+    import pandas as pd, numpy as np, openpyxl, warnings, copy
     warnings.simplefilter("ignore")
     PATH_REF = "C:/Users/zfriant/Documents/OneDrive/PCRI/eCorda_datas/datas_reference/"
 
@@ -28,11 +28,11 @@ def groupe_treatment(df, output):
                 pass
  
             if 'Taux détention' in x.columns:
-                x = x.assign(detention = x['Taux détention'].astype(float))
+                x = x.assign(detention = x['Taux détention'].str.replace(',', '.').astype(float))
             elif 'Taux integration' in x.columns:
-                x = x.assign(detention = x['Taux integration'].astype(float))
+                x = x.assign(detention = x['Taux integration'].str.replace(',', '.').astype(float))
                 
-            x = x.loc[~(x['detention'] < 50)]
+            x = x.loc[~(x['detention'] < 50.)]
                       
             print(i, end=",")
             verif = pd.concat([verif, x], ignore_index=True)
