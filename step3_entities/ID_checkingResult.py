@@ -9,7 +9,7 @@ def IDchecking_results(result, check_id_liste, identification):
                 .drop(columns='check_id')
                 .drop_duplicates()
                 .sort_values('generalPic'))
-    print(f"nombre de pic unique verif_id: {verif_id.generalPic.nunique()}")
+    print(f"- nombre de pic unique verif_id: {verif_id.generalPic.nunique()}")
 
     verif_id['nb'] = verif_id.groupby(['generalPic','countryCode'])['checked_id'].transform('nunique')
     verif_id.loc[(verif_id.nb==1)&(verif_id.code=='200'), 'new_id'] = verif_id.loc[(verif_id.nb==1)&(verif_id.code=='200'), 'checked_id']
@@ -17,13 +17,13 @@ def IDchecking_results(result, check_id_liste, identification):
 
     # verif_id = verif_id[~((verif_id.nb>1)&(verif_id.code!='200'))].drop(columns='nb')
     verif_id['nb'] = verif_id.groupby(['generalPic','countryCode'])['checked_id'].transform('nunique')
-    print(f"nombre de pic unique verif_id: {verif_id.generalPic.nunique()}")
+    print(f"- nombre de pic unique verif_id: {verif_id.generalPic.nunique()}")
 
     unik = verif_id[~verif_id.new_id.isnull()|((verif_id.nb==1)&(verif_id.code!='200'))]
-    print(f"nombre de pic unique unik: {unik.generalPic.nunique()}")
+    print(f"- nombre de pic unique unik: {unik.generalPic.nunique()}")
 
     multi = verif_id.loc[~verif_id.generalPic.isin(unik.generalPic.unique())]
-    print(f"nombre de pic unique multi: {multi.generalPic.nunique()}")
+    print(f"- nombre de pic unique multi: {multi.generalPic.nunique()}")
     # for name, group in multi.groupby(['generalPic'], as_index=False):
     #     for i, row in group.iterrows():
     #         multi.loc[i, 'new_id'] = np.where((row['code']=='200'), row['checked_id'], row['new_id'])
@@ -34,7 +34,7 @@ def IDchecking_results(result, check_id_liste, identification):
                 .sort_values('generalPic')
                 .groupby(['generalPic','countryCode', 'countryCode_parent'])[['checked_id', 'stock_id','source','code','new_id']]
                 .agg(lambda col: ';'.join(col.astype(str).dropna().unique())).reset_index()
-                .merge(identification[['id_secondaire', 'ZONAGE', 'generalPic', 'legalName',  'webPage', 'city', 'country_name_mapping', 'countryCode', 'countryCode_parent', 'country_code_mapping', 'vat', 'legalRegNumber']],
+                .merge(identification[['id_secondaire','ZONAGE', 'generalPic', 'legalName',  'webPage', 'city', 'country_name_mapping', 'countryCode', 'countryCode_parent', 'country_code_mapping', 'vat', 'legalRegNumber']],
                     how='right', on=['generalPic', 'countryCode', 'countryCode_parent']))
 
     cols = verif_id.select_dtypes(object).columns
@@ -59,11 +59,11 @@ def new_ref_source(id_verified,ref_source,extractDate,part,app1,entities_single,
     if 'ZONAGE' not in id_verified.columns:
         id_verified = id_verified.assign(ZONAGE=np.nan)
 
-    tmp = (id_verified[['generalPic','country_code_mapping','countryCode','ZONAGE','id_secondaire','new_id','source','code','legalName', 'webPage', 'city']]
+    tmp = (id_verified[['generalPic','country_code_mapping','countryCode','ZONAGE','id_secondaire',
+                        'new_id','source','code','legalName', 'webPage', 'city']]
     .rename(columns={'new_id':'id', 'webPage':'url', 'source':'source_id'})     
-    .merge(ref_source[['generalPic', 'country_code_mapping', 'FP', 'ZONAGE','id_secondaire']],
+    .merge(ref_source[['generalPic', 'pic_new',  'country_code_mapping', 'FP', 'ZONAGE','id_secondaire']],
                     how='left', on=['generalPic','country_code_mapping'], suffixes=['','_y']))
-    
     tmp['FP'] = np.where((tmp['FP'].isnull())|(tmp['FP']==''), 'HE', tmp['FP'])
     tmp.loc[~tmp.FP.str.contains('HE'), 'FP'] = tmp.FP +' HE'
     tmp.FP=(tmp['FP']          # stack removes `nan`
@@ -74,9 +74,10 @@ def new_ref_source(id_verified,ref_source,extractDate,part,app1,entities_single,
     .reindex(tmp.index, fill_value=''))
     tmp=tmp.assign(last_control=extractDate)
 
-    tmp.loc[tmp.ZONAGE.isnull(), 'ZONAGE'] =  tmp.ZONAGE_y
-    tmp.loc[tmp.id_secondaire.isnull(), 'id_secondaire'] =  tmp.id_secondaire_y
+    print(f"- size id_verif+ref_source: {len(tmp)}")
 
+    tmp.loc[tmp.ZONAGE.isnull(), 'ZONAGE'] =  tmp.loc[tmp.ZONAGE.isnull(), 'ZONAGE_y']
+    tmp.loc[tmp.id_secondaire.isnull(), 'id_secondaire'] =  tmp.loc[tmp.id_secondaire.isnull(), 'id_secondaire_y']
     for tab in [part, app1]:
         if 'netEuContribution' in tab.columns:
             f='netEuContribution'
@@ -90,16 +91,16 @@ def new_ref_source(id_verified,ref_source,extractDate,part,app1,entities_single,
                 .drop_duplicates()
                 .rename(columns={f:v}))
         tmp = tmp.merge(tmp1, how='left', on=['generalPic','countryCode'])
+    print(f"- size id_verif+ref_source + subv: {len(tmp)}")
 
     tmp = (tmp
-            .merge(entities_single[['generalPic', 'generalState', 'countryCode', 'isInternationalOrganisation']].drop_duplicates(), 
-                    how='left')
-            .drop(columns=['ZONAGE_y','id_secondaire_y','countryCode']))
+        .merge(entities_single[['generalPic', 'generalState', 'countryCode', 'isInternationalOrganisation']].drop_duplicates(), how='left')
+        .drop(columns=['ZONAGE_y','id_secondaire_y','countryCode']))
         
-    print(f"size tmp complet:{len(tmp)}, size tmp only generalPic+cc {len(tmp[['generalPic', 'country_code_mapping']].drop_duplicates())}")
+    print(f"- size tmp complet:{len(tmp)}, size tmp only generalPic+cc {len(tmp[['generalPic', 'country_code_mapping']].drop_duplicates())}")
 
     if len(tmp)!=len(tmp[['generalPic', 'country_code_mapping']].drop_duplicates()):
-        print(tmp.groupby(['generalPic', 'country_code_mapping'], dropna=False).size().sort_values(ascending=False) )
+        print(f"{tmp.groupby(['generalPic', 'country_code_mapping'], dropna=False).size().sort_values(ascending=False)}" )
 
     outer = ref_source.merge(tmp[['generalPic', 'country_code_mapping']].drop_duplicates(), how='outer', on=['generalPic', 'country_code_mapping'], indicator=True)
     anti_join = outer[(outer._merge=='left_only')].drop(['_merge'], axis=1)
@@ -131,7 +132,25 @@ def new_ref_source(id_verified,ref_source,extractDate,part,app1,entities_single,
         'country_name_mapping', 'id_secondaire', 'ZONAGE', 'id',
         'legalName', 'city', 'url', 'project', 'proposal',  'FP', 'last_control',
         'comments', 'isInternationalOrganisation', 'vat', 'legalRegNumber', 
-        'source_id', 'code']]    
+        'source_id', 'code']]
+
+    print(f"- End size new ref_source:{len(ref_source)}")    
+    ref_source = pd.concat([anti_join, tmp], ignore_index=True).drop_duplicates()
+
+    liste=['legalName', 'city']
+    for i in liste:
+        ref_source[i] = ref_source[i].apply(lambda x: x.lower().strip() if isinstance(x, str) else x)
+    liste=['proposal', 'project']
+    for i in liste:
+        ref_source[i] = ref_source[i].replace('', np.nan, regex=False)
+        ref_source[i] = ref_source[i].astype(float)
+
+    ref_source=ref_source[
+        ['generalPic', 'generalState', 'pic_new', 'countryCode_parent', 'country_code_mapping', 
+        'country_name_mapping', 'id_secondaire', 'ZONAGE', 'id',
+        'legalName', 'city', 'url', 'project', 'proposal',  'FP', 'last_control',
+        'comments', 'isInternationalOrganisation', 'vat', 'legalRegNumber', 
+        'source_id', 'code']]
 
     print(f"- End size new ref_source:{len(ref_source)}")
     ref_source.to_csv(f"{PATH_WORK}ref_{extractDate}.csv", sep=';', encoding='utf-8', index=False, na_rep='')

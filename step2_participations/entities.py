@@ -73,7 +73,7 @@ def entities_cleaning(df):
     return df
 
 
-def entities_single(df, lien):
+def entities_single_create(df, lien):
     print("### ENTITIES cleaning")
     df = entities_cleaning(df)
 
@@ -96,7 +96,7 @@ def entities_single(df, lien):
     print(f"- size entities_single:{len(entities_single)}")
     return entities_single
 
-def entities_info(entities_single, lien):
+def entities_info_create(entities_single, lien):
     print("\n### ENTITIES INFO")
     entities_info = (entities_single
                      .drop(['pic', 'cedex', 'countryCode_y', 'lastUpdateDate'], axis=1)

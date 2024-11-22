@@ -262,6 +262,7 @@ def get_ror(lid_source, ror_old=None):
 
     ####################
     def ror_query(id):
+
         time.sleep(0.3)
         try:
             url = 'https://api.ror.org/organizations?query=' + id
@@ -309,12 +310,14 @@ def get_ror(lid_source, ror_old=None):
         n=0
         while len(id_relat)>0:
             for id in id_relat:
+                n=n+1
+                if n % 100 == 0: 
+                    print(f"{n}", end=',')
+
                 result.append(ror_query(id))
             id_relat = relation_list(result)
             id_result=[elem['id'].split('/')[-1] for elem in result if elem['id'] is not None]
             id_relat = list(set(id_relat).difference(set(id_result)))                    
-            n+=1
-            print(n, end=',')
         print(f"3- size new ror:{len(result)}")
         return result
     ###################
@@ -328,7 +331,8 @@ def get_ror(lid_source, ror_old=None):
 
     for id in ror_list:
         n=n+1
-        print(f"{n}", end=',')
+        if n % 100 == 0: 
+            print(f"{n}", end=',')
         ror_result.append(ror_query(id))
 
     while None in ror_result:
