@@ -7,7 +7,7 @@ def merge_ror(entities_tmp, ror):
                     .merge(ror.drop(columns=['country_code']), how='left', left_on='id_extend', right_on='id_source')
                     .drop(columns='id_source')
                     .drop_duplicates())
-    print(f"size entities_tmp after add ror_info: {len(entities_tmp)}")
+    print(f"- End size entities_tmp+ror_info: {len(entities_tmp)}")
     if any(entities_tmp.groupby('generalPic')['generalPic'].transform('count')>1):
         entities_tmp[entities_tmp.groupby('generalPic')['generalPic'].transform('count')>1]
     return entities_tmp
@@ -41,16 +41,16 @@ def merge_paysage(entities_tmp, paysage, cat_filter):
     entities_tmp = entities_tmp.drop(['id_clean','name_clean','acronym_clean'], axis=1).drop_duplicates()
 
     if any(entities_tmp.groupby('generalPic')['generalPic'].transform('count')>1):
-        print(f"- doublons PIC{entities_tmp[entities_tmp.groupby('generalPic')['generalPic'].transform('count')>1]}")
+        print(f"- doublons PIC\n{entities_tmp[entities_tmp.groupby('generalPic')['generalPic'].transform('count')>1][['generalPic', 'legalName', 'country_code_mapping', 'id']]}")
         
-    print(f"size entities_tmp after add paysage_info: {len(entities_tmp)}")
+    print(f"- End size entities_tmp+paysage_info: {len(entities_tmp)}")
     return entities_tmp
 
 
 def merge_sirene(entities_tmp, sirene):
     print("### merge SIRENE")
     sirene = sirene.drop_duplicates()
-    print(f"1 - size sirene : {len(sirene)}")
+    print(f"- first size sirene : {len(sirene)}")
 
     sirene=sirene.loc[~sirene.siren.isin(['889664413'])]
 
@@ -61,7 +61,7 @@ def merge_sirene(entities_tmp, sirene):
     sirene=sirene.sort_values(['siren', 'siret','date_debut'], ascending=False)
     sirene=sirene.groupby(['siren', 'siret']).first().reset_index()
 
-    print(f"2 - size sirene : {len(sirene)}")
+    print(f"- size sirene : {len(sirene)}")
 
 
     sirene=sirene.rename(columns={'date_debut':"siret_closeDate"})
@@ -87,7 +87,7 @@ def merge_sirene(entities_tmp, sirene):
     df = pd.concat([df, df1, df2], ignore_index=True).drop_duplicates()
 
     if any(df.loc[df.orig=='siret']):
-        print(f"3 - A vérifier -> liste des noms à traiter:\n {df.loc[df.orig=='siret', ['ens', 'denom_us', 'nom_ul']]}\n#####")
+        print(f"1 - A vérifier -> liste des noms à traiter:\n {df.loc[df.orig=='siret', ['ens', 'denom_us', 'nom_ul']]}\n#####")
 
     df=df.assign(nom=np.where((df.orig=='siret')&(df.denom_us.isnull()), df.ens, df.denom_us))
     df.loc[df.nom.isnull(), 'nom']=df['nom_ul']
@@ -96,7 +96,7 @@ def merge_sirene(entities_tmp, sirene):
     if df.loc[df.nom.isnull()].empty:
         pass
     else:
-        print(f"4 - compléter code pour récupérer une valeur pour nom manquant - {df.loc[df.nom.isnull()]}")
+        print(f"2 - compléter code pour récupérer une valeur pour nom manquant - {df.loc[df.nom.isnull()]}")
         
     df['nom']= df.nom.str.capitalize()
     df=df.assign(id_m=np.where(df.orig.isin(['siret', 'rna']), df.siren.fillna('')+' '+df.rna.fillna(''), df.rna))
@@ -113,7 +113,7 @@ def merge_sirene(entities_tmp, sirene):
     entities_tmp.drop(columns=['nom','sigle', 'orig'], inplace=True)
 
     if any(entities_tmp.groupby('generalPic')['generalPic'].transform('count')>1):
-        print(f"5 - si ++ lignes / pics : {entities_tmp[entities_tmp.groupby('generalPic')['generalPic'].transform('count')>1]}")
+        print(f"3 - si ++ lignes / pics :\n{entities_tmp[entities_tmp.groupby('generalPic')['generalPic'].transform('count')>1][['generalPic', 'legalName', 'country_code_mapping', 'id']]}")
 
-    print(f"after sirene: {len(entities_tmp)}")
+    print(f"- End size entities_tmp+sirene: {len(entities_tmp)}")
     return entities_tmp

@@ -17,5 +17,5 @@ def IDpic(entities_tmp):
 
     # IDENT pic : corriger appliquer les lignes ci-dessous uniuqument sur entities_id est null ou commence par pic
     entities_tmp.loc[entities_tmp.entities_id.isnull(), 'entities_id'] = "pic"+entities_tmp.generalPic.map(str)
-    print(f"- size entities_tmp: {len(entities_tmp)}")
+    print(f"- End size entities_tmp: {len(entities_tmp)}")
     return entities_tmp

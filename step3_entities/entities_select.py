@@ -22,7 +22,6 @@ def entities_tmp_create(entities_info, countries, ref):
     # entities only into entities_info
     print("# missing entities into ref")
     tmp2 = tab.merge(tmp[['generalPic','country_code_mapping']], how='left', on=['generalPic','country_code_mapping'], indicator=True).query('_merge=="left_only"').drop(columns=['_merge'])
-    print(tmp2)
     print(f"- entities_info en + -> (tmp2): {len(tmp2)}")
     if not tmp2.empty:
         # test lien avec ref voire si un identifiant seulement sur le generalPic
