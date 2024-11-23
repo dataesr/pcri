@@ -120,7 +120,6 @@ app1 = check_multiA_by_proj(app1)
 ### STEP2
 lien = merged_partApp(app1, part)
 lien = nuts_lien(app1, part, lien)
-lien.to_pickle(f"{PATH_CLEAN}lien.pkl")
 
 # ENTITIES
 entities = entities_load(lien)
@@ -133,11 +132,27 @@ if countryCode_err:
         for k,v in i.items():
             lien.loc[lien.countryCode==k, 'countryCode'] = v
             entities.loc[entities.countryCode==k, 'countryCode'] = v
+cc_code = (countries[['countryCode', 'country_code_mapping']]
+           .rename(columns={'countryCode':'iso2', 'country_code_mapping':'iso3'})
+           .drop_duplicates())
+
+lien = lien.merge(cc_code, how='left', left_on='countryCode', right_on='iso2').drop(columns='iso2')
+lien = lien.merge(cc_code, how='left', left_on='proposal_countryCode', right_on='iso2').drop(columns='iso2')
+lien = (lien.rename(columns={'iso3_x':'country_code_mapping', 'iso3_y':'proposal_country_code_mapping'})
+        .drop(columns=['countryCode', 'proposal_countryCode']))
+lien.to_pickle(f"{PATH_CLEAN}lien.pkl")
+
+entities = (entities.merge(cc_code, how='left', left_on='countryCode', right_on='iso2').drop(columns='iso2')
+            .rename(columns={'iso3':'country_code_mapping'}))
+
+part = part.merge(cc_code, how='left', left_on='countryCode', right_on='iso2').drop(columns='iso2')
+app1 = app1.merge(cc_code, how='left', left_on='countryCode', right_on='iso2').drop(columns='iso2')
 
 #ENTITIES +LIEN
+entities = entities_cleaning(entities)
+entities.to_pickle(f"{PATH_SOURCE}entities.pkl")
 entities_single = entities_single_create(entities, lien)
 entities_info = entities_info_create(entities_single, lien)
-
 
 ### step3
 
@@ -177,7 +192,7 @@ entities_tmp = entities_for_merge(entities_tmp)
 # ROR
 ### si besoin de charger ror pickle
 ror = pd.read_pickle(f"{PATH_REF}ror_df.pkl")
-entities_tmp = merge_ror(entities_tmp, ror)
+entities_tmp = merge_ror(entities_tmp, ror, countries)
 
 # PAYSAGE
 ### si besoin de charger paysage pickle
@@ -218,7 +233,7 @@ entities_tmp = category_agreg(entities_tmp)
 entities_info = entities_info_add(entities_tmp, entities_info)
 entities_info = cordis_type(entities_info)
 
-entities_info = add_fix_countries(entities_info, countries)
+entities_info = fix_countries(entities_info, countries)
 entities_info = mires(entities_info)
 
 del ref_source
@@ -234,7 +249,7 @@ with open(file_name, 'wb') as file:
 
 # STEP4 - INDICATEURS
 
-part_step = entities_with_lien(entities_info, lien)
+part_step = entities_with_lien(entities_info, lien, genPic_to_new)
 proj_no_coord = proj_no_coord(projects)
 part_prop = applicants_calcul(part_step, app1)
 part_proj = participants_calcul(part_step, part)

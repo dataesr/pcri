@@ -47,37 +47,40 @@ def entities_check_null(entities_tmp):
         print(f"{test.loc[(test.entities_id.isnull())|(test.entities_id=='nan')]}")
 
 
-def entities_info_add(entities_tmp, entities_info):
+def entities_info_add(entities_tmp, entities_info, countries):
     print("\n### entities_info + entities_tmp")
+        #ajout des infos country à participants_info
+    entities_info = (entities_info
+                    .merge(countries[['country_code_mapping', 'country_name_mapping', 'country_code']], how='left', on='country_code_mapping'))
+        
     entities_info = (entities_info
         .merge(entities_tmp[
-            ['generalPic', 'id', 'ZONAGE', 'id_m', 'siren', 
+            ['generalPic', 'id', 'ZONAGE', 'id_m', 'siren', 'country_code_mapping',
             'id_secondaire', 'entities_id',  'entities_name', 'entities_acronym', 
             'insee_cat_code', 'insee_cat_name',  'category_agregation',
             'paysage_category', 'flag_entreprise', 
             'ror_category', 'category_woven', 'source_id', 'sector',  
             'siret_closeDate', 'cat_an',
             'groupe_name','groupe_acronym', 'groupe_id', 'groupe_sector']],
-        how='inner', on='generalPic'))
+        how='left', on=['generalPic', 'country_code_mapping'])
+        .drop(columns=['legalName', 'businessName']))
     print(f"- size entities_info + entities_tmp: {len(entities_info)}")
     return entities_info
 
 
-def add_fix_countries(entities_info, countries):
+def fix_countries(df, countries):
     print("\n### entities_info + countries")
     #ajout des infos country à participants_info
-    entities_info = (entities_info
-                    .merge(countries[['countryCode', 'country_code_mapping', 'country_name_mapping', 'country_code']], how='left', on='countryCode'))
-        
+    
     # correction des ecoles françaises à l'etranger
     l=['951736453','996825642','994591926','996825642','953002303', '998384626', '879924055']
-    entities_info.loc[entities_info.generalPic.isin(l), 'country_code'] = 'FRA'
+    df.loc[df.generalPic.isin(l), 'country_code'] = 'FRA'
     cc = countries.drop(columns=['countryCode', 'country_name_mapping','country_code_mapping']).drop_duplicates()
-    entities_info = (entities_info
-                    .merge(cc, how='left', on='country_code')
-                    .rename(columns={'ZONAGE':'extra_joint_organization'})
-                    .drop(columns=['countryCode_parent',  'lastUpdateDate'])
-                    .drop_duplicates())
+    df = (df
+            .merge(cc, how='left', on='country_code')
+            .rename(columns={'ZONAGE':'extra_joint_organization'})
+            .drop(columns=['countryCode_parent'])
+            .drop_duplicates())
 
-    print(f"- longueur entities_info après ajout calculated_country : {len(entities_info)}\n{entities_info.columns}\n- columns with Nan\n {entities_info.columns[entities_info.isnull().any()]}")
-    return entities_info
+    print(f"- longueur entities_info après ajout calculated_country : {len(df)}\n{df.columns}\n- columns with Nan\n {df.columns[df.isnull().any()]}")
+    return df

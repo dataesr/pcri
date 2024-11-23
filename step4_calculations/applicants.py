@@ -27,7 +27,8 @@ def applicants_calcul(part_step, app1):
         print(f"3- ATTENTION ! Ecart subventions proposals -> subv_orig:{app_sum}, après fusion:{'{:,.1f}'.format(subv_p['requestedGrant'].sum())}")
         
     part_prop = (part_step.merge(subv_p, how='inner')[
-                ['project_id',  'generalPic', 'proposal_orderNumber', 'proposal_participant_pic', 'participation_linked', 'cordis_is_sme',  'erc_role',
+                ['project_id',  'generalPic', 'proposal_orderNumber', 'proposal_participant_pic', 'participation_linked', 
+                'erc_role', 'cordis_is_sme',  'flag_entreprise', 'groupe_id', 'groupe_name', 'groupe_acronym',
                 'cordis_type_entity_code', 'cordis_type_entity_name_fr', 'cordis_type_entity_name_en', 'cordis_type_entity_acro', 
                 'participation_nuts', 'region_1_name', 'region_2_name', 'regional_unit_name',
                 'country_code', 'country_code_mapping', 'extra_joint_organization', 'role', 'partnerType', 'calculated_fund']]

@@ -1,17 +1,21 @@
 import numpy as np, pandas as pd
 from config_path import PATH_CLEAN
 
-def entities_with_lien(entities_info, lien):
+def entities_with_lien(entities_info, lien, genPic_to_new):
     print("### LIEN + entities_info -> pour calculations")
     print(f"- ETAT avant lien ->\ngeneralPic de lien={lien.generalPic.nunique()},\ngeneralPic de entities_info={entities_info.generalPic.nunique()}")
 
+    lien = lien.merge(genPic_to_new, how='left', on=['generalPic', 'country_code_mapping'])
+    lien = lien.rename(columns={'generalPic':'pic_old', 'pic_new':'generalPic'})
+    lien.loc[lien.generalPic.isnull(), 'generalPic'] = lien.loc[lien.generalPic.isnull(), 'pic_old']
+
     part_step = (lien
                 .merge(entities_info[
-                    ['generalPic', 'participation_linked', 'flag_entreprise',
+                    ['generalPic', 'flag_entreprise', 'groupe_id', 'groupe_name', 'groupe_acronym',
                     'cordis_is_sme', 'cordis_type_entity_code', 'cordis_type_entity_name_fr', 
                     'cordis_type_entity_name_en', 'cordis_type_entity_acro', 'nutsCode',
                     'country_code', 'country_code_mapping', 'extra_joint_organization']].drop_duplicates(),
-                    how='inner', on='generalPic')
+                    how='left', on=['generalPic', 'country_code_mapping'])
                 .drop(columns={'n_app', 'n_part', 'participant_pic'})
                 .rename(columns={ 'nutsCode':'entities_nuts', 'nuts_code':'participation_nuts'})   
             )
@@ -71,13 +75,13 @@ def ent(participation, entities_info, projects):
     entities_part = pd.concat([entities_eval, entities_signed], ignore_index=True)
 
     # mask=(entities_part.entities_id.str.contains('^gent', na=False))&(~entities_part.entities_acronym_source.isnull())
-    r=(entities_part[['generalPic', 'entities_id','entities_name_source', 'entities_acronym_source']]
+    r=(entities_part[['generalPic', 'entities_id','entities_name', 'entities_acronym']]
     .drop_duplicates())
 
-    r[['entities_acronym_source']] = r[['entities_acronym_source']].fillna('')
-    r['entities_name_source'] = r.apply(lambda x: x['entities_name_source'] if  x["entities_acronym_source"].upper() in x["entities_name_source"].upper() else x['entities_name_source']+' '+x["entities_acronym_source"].lower(),axis=1)
-    entities_part = (entities_part.drop(columns=['entities_name_source', 'entities_acronym_source'])
-                    .merge(r.drop(columns='entities_acronym_source'), how='left', on=['generalPic', 'entities_id'])
+    r[['entities_acronym']] = r[['entities_acronym']].fillna('')
+    r['entities_name'] = r.apply(lambda x: x['entities_name'] if x["entities_acronym"].upper() in x["entities_name"].upper() else x['entities_name']+' '+x["entities_acronym"].lower(),axis=1)
+    entities_part = (entities_part.drop(columns=['entities_name', 'entities_acronym'])
+                    .merge(r.drop(columns='entities_acronym'), how='left', on=['generalPic', 'entities_id'])
     )
 
     entities_part=(entities_part
