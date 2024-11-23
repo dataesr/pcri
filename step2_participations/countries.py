@@ -13,8 +13,12 @@ def country_load(framework, liste_country):
     
     mask = list(set(data.loc[(data.framework=='H2020') & (data.countryCode.isin(liste_country))].countryCode)-set(data.loc[(data.framework=='HORIZON') & (data.countryCode.isin(liste_country))].countryCode))
     if mask:
+        print(mask)
         diff = data.loc[data.countryCodeisin(mask), ['isoCountryCode','countryCode', 'countryName', 'countryGroupAssociationCode','countryGroupAssociation']]
         df = pd.concat([df, diff], ignore_index=True)
+
+    countryCode_error=list(set(liste_country)-set(df.countryCode.to_list()))
+    print(f"- ATTENTION countryCode missing in countryBase {countryCode_error}")
 
     countries = (df[['countryCode', 'countryName', 'isoCountryCode']]
                  .rename(columns={'isoCountryCode':'country_code_mapping', 'countryName':'country_name_mapping'}))
@@ -92,4 +96,4 @@ def country_load(framework, liste_country):
         for v in list_v:
             print(f"- des valeurs nulles pour ces lignes:\n{pd.DataFrame(countries[countries[v].isnull()][['countryCode',v]])}")
             
-    return countries
+    return countries, countryCode_error
