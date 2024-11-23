@@ -53,7 +53,6 @@ def entities_info_add(entities_tmp, entities_info):
         .merge(entities_tmp[
             ['generalPic', 'id', 'ZONAGE', 'id_m', 'siren', 
             'id_secondaire', 'entities_id',  'entities_name', 'entities_acronym', 
-            'entities_name_source', 'entities_acronym_source', 
             'insee_cat_code', 'insee_cat_name',  'category_agregation',
             'paysage_category', 'flag_entreprise', 
             'ror_category', 'category_woven', 'source_id', 'sector',  
@@ -62,6 +61,7 @@ def entities_info_add(entities_tmp, entities_info):
         how='inner', on='generalPic'))
     print(f"- size entities_info + entities_tmp: {len(entities_info)}")
     return entities_info
+
 
 def add_fix_countries(entities_info, countries):
     print("\n### entities_info + countries")
