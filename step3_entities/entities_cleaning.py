@@ -26,7 +26,10 @@ def entities_clean(entities_tmp):
         
         entities_tmp = entities_tmp.loc[~entities_tmp.generalPic.isin(x.generalPic.unique())]
         entities_tmp = pd.concat([entities_tmp, x], ignore_index=True)
-        return entities_tmp
+    
+    entities_tmp.loc[entities_tmp.entities_name.isnull(), 'entities_acronym'] = entities_tmp.businessName
+    entities_tmp.loc[(entities_tmp.entities_name.isnull()), 'entities_name'] = entities_tmp.legalName
+    return entities_tmp
 
 def entities_check_null(entities_tmp):
     print("\n## check entities null")
