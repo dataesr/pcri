@@ -28,9 +28,11 @@ def participants_calcul(part_step, part):
 
     part_proj = (part_step.merge(subv_pt, how='inner')[
                 ['project_id',  'generalPic', 'orderNumber', 'participant_pic','cordis_is_sme', 
+                'flag_entreprise', 'groupe_id', 'groupe_name', 'groupe_acronym', 'participation_linked',
                 'cordis_type_entity_code', 'cordis_type_entity_name_fr', 'cordis_type_entity_name_en', 'cordis_type_entity_acro',
                 'participation_nuts', 'region_1_name', 'region_2_name', 'regional_unit_name', 
-                'country_code', 'country_code_mapping', 'extra_joint_organization', 'role', 'partnerType', 'erc_role', 'calculated_fund', 'beneficiary_subv']]
+                'country_code', 'country_code_mapping', 'extra_joint_organization', 'role', 'partnerType', 'erc_role', 
+                'calculated_fund', 'beneficiary_subv']]
                 .rename(columns={'participant_pic':'pic'})
                 .assign(stage='successful'))    
 

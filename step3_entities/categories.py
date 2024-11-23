@@ -100,33 +100,6 @@ def cordis_type(df):
     print(f"- size entities_info: {len(df)}")
     return df
 
-
-
-# def category_woven(df):
-#     # CAT 2 : category_woven
-#     print("\n## category woven")
-#     x=df[['source_id', 'entities_id', 'entities_name', 'category_temp', 'paysage_category', 'siren_cj']].drop_duplicates()
-#     x.loc[~x.paysage_category.isnull(), 'paysage_cat_1'] = x.paysage_category.str.split(';').str[0]
-
-#     x.loc[(x.paysage_cat_1.str.contains('^Entreprise', regex=True, na=False)), 'category_woven'] = 'Entreprise'
-#     x.loc[(x.category_woven.isnull())&(~x.paysage_cat_1.isnull()), 'category_woven'] = x.paysage_cat_1
-#     x.loc[(x.category_woven.isnull())&(x.category_temp.str.contains('^Entreprise', regex=True, na=False)), 'category_woven'] = 'Entreprise'
-#     x.loc[x.entities_id.str.contains('^gent', regex=True, na=False), 'category_woven'] = 'Entreprise'
-#     x.loc[(x.category_woven.isnull())&(~x.category_temp.isnull()), 'category_woven'] = x.category_temp
-    
-#     x.loc[(x.siren_cj.isin('ENT', 'ENT_ETR'))|(x.ror_category=='Company'), 'flag_entreprise'] = True
-#     x.loc[x.flag_entreprise.isnull(), 'flag_entreprise'] = False
-#     x.loc[x.flag_entreprise==True, 'category_last'] = 'ENT'
-#     x.loc[x.category_woven.str.contains('ISBL', na=False), 'category_last'] = 'ISBL'
-#     l=['Établissement d’enseignement supérieur']
-#     x.loc[x.category_woven.str.contains('Établissement d’enseignement supérieur', na=False), 'category_last'] = 'ES'    
-    
-#     # cat_ag=pd.read_excel()
-#     x.to_csv(f"{PATH_WORK}category_entities.csv", sep=';')
-#     df = df.merge(x[['entities_id','category_woven']], how='left', on='entities_id').drop_duplicates()
-#     print(f"- size df: {len(df)}")
-#     return df
-
 def mires(df):
     print("\n### MIRES")
     if 'paysage_mires' not in globals() or 'paysage_mires' not in locals():
