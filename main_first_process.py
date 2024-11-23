@@ -124,11 +124,20 @@ lien.to_pickle(f"{PATH_CLEAN}lien.pkl")
 
 # ENTITIES
 entities = entities_load(lien)
+
+list_codeCountry = list(set(entities.countryCode.to_list()+lien.countryCode.to_list()))
+countries, countryCode_err = country_load(FRAMEWORK, list_codeCountry)
+if countryCode_err:
+    ccode=json.load(open("data_files/countryCode_match.json"))
+    for i in ccode:
+        for k,v in i.items():
+            lien.loc[lien.countryCode==k, 'countryCode'] = v
+            entities.loc[entities.countryCode==k, 'countryCode'] = v
+
+#ENTITIES +LIEN
 entities_single = entities_single_create(entities, lien)
 entities_info = entities_info_create(entities_single, lien)
 
-list_codeCountry = entities_info.countryCode.unique()
-countries = country_load(FRAMEWORK, list_codeCountry)
 
 ### step3
 
@@ -193,7 +202,6 @@ entities_tmp = entities_tmp.merge(get_source_ID(entities_tmp, 'entities_id'), ho
 
 ### groupe entreprises
 groupe = groupe_treatment('groupe_prov', 'groupe')
-wb=openpyxl.load_workbook(f"{PATH_REF}groupe_prov.xlsm").sheetnames[1:]
 ### si besoin de charger groupe 
 groupe = pd.read_pickle(f"{PATH_REF}groupe.pkl")
 print(f"taille de entities_tmp avant groupe:{len(entities_tmp)}")
