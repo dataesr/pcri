@@ -1,34 +1,32 @@
 import pandas as pd, numpy as np
 
-# def entities_clean(entities_tmp):
-#     print("### ENTITIES TMP cleaning name")
-#     if any(entities_tmp.loc[(entities_tmp.legalName.str.contains("\\00",  na=True))]):
-#         print(entities_tmp.loc[(entities_tmp.legalName.str.contains("\\00",  na=True))].legalName)
+def entities_clean(entities_tmp):
+    print("### ENTITIES TMP cleaning name")
+    x=entities_tmp[entities_tmp.entities_name.isnull()]
+    print(f"- size entities_tmp without entities_name: {len(x)}")
+    if not x.empty:
+        if any(x.loc[(x.legalName.str.contains("\\00",  na=True))]):
+            print(x.loc[(x.legalName.str.contains("\\00",  na=True))].legalName)
 
-#     x=entities_tmp.loc[(entities_tmp.businessName.str.contains("00",  na=True))]
-#     for i, row in x.iterrows():
-#         try:
-#             x.at[i, 'businessName'] = row.businessName.replace("\\", "\\u").encode().decode('unicode_escape')
-#         except:
-#             x.at[i, 'businessName'] = np.nan
-#     entities_tmp = entities_tmp.loc[~entities_tmp.generalPic.isin(x.generalPic.unique())]
-#     entities_tmp = pd.concat([entities_tmp, x], ignore_index=True)
+        y=x.loc[(x.businessName.str.contains("00",  na=True))]
+        for i, row in y.iterrows():
+            try:
+                y.at[i, 'businessName'] = row.businessName.replace("\\", "\\u").encode().decode('unicode_escape')
+            except:
+                y.at[i, 'businessName'] = np.nan
+        x = x.loc[~x.generalPic.isin(y.generalPic.unique())]
+        x = pd.concat([x, y], ignore_index=True)
 
-#     entities_tmp.loc[entities_tmp.businessName.str.contains('^\\d+$', na=True), 'businessName'] = None
-#     entities_tmp.loc[entities_tmp.entities_acronym.isnull(), 'entities_acronym'] = entities_tmp.businessName
+        x.loc[x.businessName.str.contains('^\\d+$', na=True), 'businessName'] = np.nan
+        liste=['legalName', 'businessName']
+        for i in liste:
+            x[i] = x[i].apply(lambda v: v.capitalize().strip() if isinstance(v, str) else v)
 
-    # entities_tmp = entities_tmp.assign(entities_name_source = entities_tmp.legalName)
-
-#     print(f"- size entities_tmp: {len(entities_tmp)}")
-
-#     liste=['entities_name_source', 'entities_acronym_source']
-#     for i in liste:
-#         entities_tmp[i] = entities_tmp[i].apply(lambda x: x.capitalize().strip() if isinstance(x, str) else x)
+        print(f"- End size entities_tmp without entities_name: {len(x)}")
         
-#     entities_tmp.loc[entities_tmp.entities_name.isnull(), 'entities_name'] = entities_tmp.entities_name_source
-#     entities_tmp.loc[(entities_tmp.id.isnull())&(entities_tmp.entities_acronym.isnull()), 'entities_acronym'] = entities_tmp.entities_acronym_source
-
-#     return entities_tmp
+        entities_tmp = entities_tmp.loc[~entities_tmp.generalPic.isin(x.generalPic.unique())]
+        entities_tmp = pd.concat([entities_tmp, x], ignore_index=True)
+        return entities_tmp
 
 def entities_check_null(entities_tmp):
     print("\n## check entities null")

@@ -182,7 +182,8 @@ entities_tmp = merge_ror(entities_tmp, ror)
 # PAYSAGE
 ### si besoin de charger paysage pickle
 paysage = pd.read_pickle(f"{PATH_REF}paysage_df.pkl")
-paysage_category = IDpaysage_category(paysage)
+# paysage_category = IDpaysage_category(paysage)
+paysage_category = pd.read_pickle(f"{PATH_SOURCE}paysage_category.pkl")
 cat_filter = category_paysage(paysage_category)
 entities_tmp = merge_paysage(entities_tmp, paysage, cat_filter)
 
@@ -201,7 +202,7 @@ entities_tmp = IDpic(entities_tmp)
 entities_tmp = entities_tmp.merge(get_source_ID(entities_tmp, 'entities_id'), how='left', on='entities_id')
 
 ### groupe entreprises
-groupe = groupe_treatment('groupe_prov', 'groupe')
+# groupe = groupe_treatment('groupe_prov', 'groupe')
 ### si besoin de charger groupe 
 groupe = pd.read_pickle(f"{PATH_REF}groupe.pkl")
 print(f"taille de entities_tmp avant groupe:{len(entities_tmp)}")
