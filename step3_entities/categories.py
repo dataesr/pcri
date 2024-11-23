@@ -22,7 +22,7 @@ def category_paysage(df):
 
 
 def category_woven(df, sirene):
-    print("\n## category FR")
+    print("\n## category woven")
     # CAT1 : categorisation FR
 
     temp=sirene[['siren', 'cat', 'cat_an', 'cj']].drop_duplicates()
@@ -48,7 +48,7 @@ def category_woven(df, sirene):
         for k,v in i.items():
             df.loc[df.category_tmp==k, 'category_woven']=v
 
-    print(f"{df.loc[(df.source_id.isin(['paysage','siren','siret','rnsr']))&(df.category_woven.isnull()), ['source_id', 'entities_name', 'entities_id', 'siren_cj', 'paysage_category']]}")
+    print(f"- categorization missing\n{df.loc[(df.source_id.isin(['paysage','siren','siret','rnsr']))&(df.category_woven.isnull()), ['source_id', 'entities_name', 'entities_id', 'siren_cj', 'paysage_category']]}")
 
     print(f"- taille de df après cat: {len(df)}")
     return df
@@ -69,7 +69,7 @@ def category_agreg(df):
 
 
     # entreprise
-    entreprise=json.load(open("data_files/cat_entreprise_lib.json"))
+    entreprise=json.load(open("data_files/cat_entreprise_lib.json", encoding='utf-8'))
     for i in entreprise:
         for k,v in i.items():
             df.loc[df.cat==k, 'insee_cat_name']=v
