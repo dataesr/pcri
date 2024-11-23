@@ -4,17 +4,17 @@ import numpy as np
 def applicants_calcul(part_step, app1):
     '''Traitement des subventions proposals -> création calculated_proposal_subv'''
     print("\n### CALCULS applicants")
-    subv_p = (part_step.loc[part_step.inProposal==True, ['project_id', 'generalPic', 'proposal_participant_pic', 'proposal_orderNumber', 'projNlien']]
+    subv_p = (part_step.loc[part_step.inProposal==True, ['project_id', 'generalPic', 'country_code_mapping', 'proposal_orderNumber', 'projNlien']]
             .drop_duplicates()
-            .merge(app1[['project_id', 'generalPic', 'participant_pic', 'orderNumber', 'role', 'partnerType', 'erc_role', 'requestedGrant']], 
+            .merge(app1[['project_id', 'generalPic', 'country_code_mapping', 'orderNumber', 'role', 'partnerType', 'erc_role', 'requestedGrant']], 
                 how='inner',
-                left_on=['project_id', 'generalPic', 'proposal_participant_pic', 'proposal_orderNumber'],
-                right_on=['project_id', 'generalPic', 'participant_pic', 'orderNumber']))
+                left_on=['project_id', 'generalPic', 'country_code_mapping', 'proposal_orderNumber'],
+                right_on=['project_id', 'generalPic', 'country_code_mapping', 'orderNumber']))
 
     print(f"0 - {'{:,.1f}'.format(app1['requestedGrant'].sum())}, {'{:,.1f}'.format(subv_p['requestedGrant'].sum())}")
 
     subv_p['calculated_fund'] = np.where(subv_p['projNlien']>1, subv_p['requestedGrant']/subv_p['projNlien'], subv_p['requestedGrant'])
-    subv_p.drop(['projNlien', 'participant_pic', 'orderNumber'], axis=1, inplace=True)
+    subv_p.drop(['projNlien', 'orderNumber'], axis=1, inplace=True)
 
     if len(subv_p)!=len(app1):
         print(f"1- ATTENTION ! {len(subv_p)-len(app1)} participations perdues entre app1 et subv_p")

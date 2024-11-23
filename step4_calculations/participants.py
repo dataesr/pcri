@@ -10,12 +10,12 @@ def participants_calcul(part_step, part):
 
     # print(f"calculated_subv, verif des volumes après traitement-> benef_part1:{'{:,.1f}'.format(part1['euContribution'].sum())}, other_part1:{'{:,.1f}'.format(part1['netEuContribution'].sum())}")
 
-    subv_pt = (part_step.loc[part_step.inProject==True, ['project_id', 'generalPic', 'calculated_pic', 'orderNumber', 'propNlien']]
+    subv_pt = (part_step.loc[part_step.inProject==True, ['project_id', 'generalPic', 'country_code_mapping', 'orderNumber', 'propNlien']]
             .drop_duplicates()
-            .merge(part[['project_id', 'generalPic', 'participant_pic', 'orderNumber', 'role', 'partnerType', 'erc_role', 'euContribution', 'netEuContribution']], 
+            .merge(part[['project_id', 'generalPic', 'country_code_mapping', 'orderNumber', 'role', 'partnerType', 'erc_role', 'euContribution', 'netEuContribution']], 
                 how='inner',
-                left_on=['project_id', 'generalPic', 'calculated_pic', 'orderNumber'],
-                right_on=['project_id', 'generalPic', 'participant_pic', 'orderNumber']))
+                left_on=['project_id', 'generalPic', 'country_code_mapping', 'orderNumber'],
+                right_on=['project_id', 'generalPic', 'country_code_mapping', 'orderNumber']))
 
     subv_pt['beneficiary_subv'] = np.where(subv_pt['propNlien']>1, subv_pt['euContribution']/subv_pt['propNlien'], subv_pt['euContribution'])
     subv_pt['calculated_fund'] = np.where(subv_pt['propNlien']>1, subv_pt['netEuContribution']/subv_pt['propNlien'], subv_pt['netEuContribution'])

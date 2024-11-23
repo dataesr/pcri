@@ -145,8 +145,8 @@ lien.to_pickle(f"{PATH_CLEAN}lien.pkl")
 entities = (entities.merge(cc_code, how='left', left_on='countryCode', right_on='iso2').drop(columns='iso2')
             .rename(columns={'iso3':'country_code_mapping'}))
 
-part = part.merge(cc_code, how='left', left_on='countryCode', right_on='iso2').drop(columns='iso2')
-app1 = app1.merge(cc_code, how='left', left_on='countryCode', right_on='iso2').drop(columns='iso2')
+part = part.merge(cc_code, how='left', left_on='countryCode', right_on='iso2').drop(columns='iso2').rename(columns={'iso3':'country_code_mapping'})
+app1 = app1.merge(cc_code, how='left', left_on='countryCode', right_on='iso2').drop(columns='iso2').rename(columns={'iso3':'country_code_mapping'})
 
 #ENTITIES +LIEN
 entities = entities_cleaning(entities)
@@ -258,9 +258,9 @@ del part_proj, part_prop
 
 gc.collect()
 #step5 - si nouvelle actualisation ou changement dans nomenclatures
-H2020_process()
-FP7_process()
-FP6_process()
+# H2020_process()
+# FP7_process()
+# FP6_process()
 
 # project_list = list(set(h20_p.project_id))+list(set(FP7_p.project_id))+list(set(FP6_p.project_id))+list(set(projects.loc[projects.stage=='successful'].project_id))
 # check_proj_id(project_list)
