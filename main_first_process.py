@@ -76,6 +76,8 @@ calls = calls_to_check(calls, call_id)
 
 projects = projects_complete_cleaned(merged, extractDate)
 
+# projects = pd.read_pickle(f"{PATH_CLEAN}projects_current.pkl")
+
 #############################################################
 ##### PARTICIPATIONS
 part = participants_load(proj)
@@ -116,42 +118,43 @@ del app
 part = check_multiP_by_proj(part)
 app1 = check_multiA_by_proj(app1)
 
-
+########################################
 ### STEP2
+# ENTITIES
+entities = entities_load(app1, part)
+
+# countries
+list_codeCountry = list(set(entities.countryCode.to_list()+app1.countryCode.to_list()+part.countryCode.to_list()))
+countries, countryCode_err = country_load(FRAMEWORK, list_codeCountry)
+# countries fix old code and add iso3
+for b in [app1, part, entities]:
+    b = country_old(b)
+
+cc_code = (countries[['countryCode', 'country_code_mapping']]
+        .rename(columns={'countryCode':'iso2', 'country_code_mapping':'iso3'})
+        .drop_duplicates())
+app1 = pd.merge(app1, cc_code, how='left', left_on='countryCode', right_on='iso2').drop(columns='iso2').rename(columns={'iso3':'country_code_mapping'})
+part = pd.merge(part, cc_code, how='left', left_on='countryCode', right_on='iso2').drop(columns='iso2').rename(columns={'iso3':'country_code_mapping'})
+entities = pd.merge(entities, cc_code, how='left', left_on='countryCode', right_on='iso2').drop(columns='iso2').rename(columns={'iso3':'country_code_mapping'})
+
+# LIEN
 lien = merged_partApp(app1, part)
 lien = nuts_lien(app1, part, lien)
 
-# ENTITIES
-entities = entities_load(lien)
 
-list_codeCountry = list(set(entities.countryCode.to_list()+lien.countryCode.to_list()))
-countries, countryCode_err = country_load(FRAMEWORK, list_codeCountry)
-if countryCode_err:
-    ccode=json.load(open("data_files/countryCode_match.json"))
-    for i in ccode:
-        for k,v in i.items():
-            lien.loc[lien.countryCode==k, 'countryCode'] = v
-            entities.loc[entities.countryCode==k, 'countryCode'] = v
-cc_code = (countries[['countryCode', 'country_code_mapping']]
-           .rename(columns={'countryCode':'iso2', 'country_code_mapping':'iso3'})
-           .drop_duplicates())
-
-lien = lien.merge(cc_code, how='left', left_on='countryCode', right_on='iso2').drop(columns='iso2')
-lien = lien.merge(cc_code, how='left', left_on='proposal_countryCode', right_on='iso2').drop(columns='iso2')
-lien = (lien.rename(columns={'iso3_x':'country_code_mapping', 'iso3_y':'proposal_country_code_mapping'})
-        .drop(columns=['countryCode', 'proposal_countryCode']))
+# lien = lien.merge(cc_code, how='left', left_on='countryCode', right_on='iso2').drop(columns='iso2')
+# lien = lien.merge(cc_code, how='left', left_on='proposal_countryCode', right_on='iso2').drop(columns='iso2')
+# lien = (lien.rename(columns={'iso3_x':'country_code_mapping', 'iso3_y':'proposal_country_code_mapping'})
+#         .drop(columns=['countryCode', 'proposal_countryCode']))
 lien.to_pickle(f"{PATH_CLEAN}lien.pkl")
 
-entities = (entities.merge(cc_code, how='left', left_on='countryCode', right_on='iso2').drop(columns='iso2')
-            .rename(columns={'iso3':'country_code_mapping'}))
-
-part = part.merge(cc_code, how='left', left_on='countryCode', right_on='iso2').drop(columns='iso2').rename(columns={'iso3':'country_code_mapping'})
-app1 = app1.merge(cc_code, how='left', left_on='countryCode', right_on='iso2').drop(columns='iso2').rename(columns={'iso3':'country_code_mapping'})
+# entities = (entities.merge(cc_code, how='left', left_on='countryCode', right_on='iso2').drop(columns='iso2')
+#             .rename(columns={'iso3':'country_code_mapping'}))
 
 #ENTITIES +LIEN
-entities = entities_cleaning(entities)
-entities.to_pickle(f"{PATH_SOURCE}entities.pkl")
+# entities = entities_cleaning(entities, lien)
 entities_single = entities_single_create(entities, lien)
+# entities_single = pd.read_pickle(f"{PATH_SOURCE}entities_single.pkl")
 entities_info = entities_info_create(entities_single, lien)
 
 ### step3
@@ -230,7 +233,7 @@ entities_check_null(entities_tmp)
 # traitement catégorie
 entities_tmp = category_woven(entities_tmp, sirene)
 entities_tmp = category_agreg(entities_tmp)
-entities_info = entities_info_add(entities_tmp, entities_info)
+entities_info = entities_info_add(entities_tmp, entities_info, countries)
 entities_info = cordis_type(entities_info)
 
 entities_info = fix_countries(entities_info, countries)
