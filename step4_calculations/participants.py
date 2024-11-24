@@ -13,13 +13,13 @@ def participants_calcul(part_step, part):
     subv_pt = (part_step.loc[part_step.inProject==True, ['project_id', 'generalPic', 'country_code_mapping', 'orderNumber', 'propNlien']]
             .drop_duplicates()
             .merge(part[['project_id', 'generalPic', 'country_code_mapping', 'orderNumber', 'role', 'partnerType', 'erc_role', 'euContribution', 'netEuContribution']], 
-                how='inner',
+                how='left',
                 left_on=['project_id', 'generalPic', 'country_code_mapping', 'orderNumber'],
                 right_on=['project_id', 'generalPic', 'country_code_mapping', 'orderNumber']))
 
     subv_pt['beneficiary_subv'] = np.where(subv_pt['propNlien']>1, subv_pt['euContribution']/subv_pt['propNlien'], subv_pt['euContribution'])
     subv_pt['calculated_fund'] = np.where(subv_pt['propNlien']>1, subv_pt['netEuContribution']/subv_pt['propNlien'], subv_pt['netEuContribution'])
-    subv_pt.drop(['propNlien', 'calculated_pic' ], axis=1, inplace=True)
+    subv_pt.drop(['propNlien'], axis=1, inplace=True)
 
     if len(subv_pt)!=len(part):
         print(f"1- ATTENTION ! participations perdues entre {len(part)} de part1 et {len(subv_pt)} de subv_pt")
@@ -27,7 +27,7 @@ def participants_calcul(part_step, part):
     part_step_first_len=len(part_step)
 
     part_proj = (part_step.merge(subv_pt, how='inner')[
-                ['project_id',  'generalPic', 'orderNumber', 'participant_pic','cordis_is_sme', 
+                ['project_id',  'generalPic', 'orderNumber', 'cordis_is_sme', 
                 'flag_entreprise', 'groupe_id', 'groupe_name', 'groupe_acronym', 'participation_linked',
                 'cordis_type_entity_code', 'cordis_type_entity_name_fr', 'cordis_type_entity_name_en', 'cordis_type_entity_acro',
                 'participation_nuts', 'region_1_name', 'region_2_name', 'regional_unit_name', 

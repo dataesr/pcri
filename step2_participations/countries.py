@@ -97,3 +97,13 @@ def country_load(framework, liste_country):
             print(f"- des valeurs nulles pour ces lignes:\n{pd.DataFrame(countries[countries[v].isnull()][['countryCode',v]])}")
             
     return countries, countryCode_error
+
+def country_old(df):
+    ccode=json.load(open("data_files/countryCode_match.json"))
+    for i in ccode:
+        for k,v in i.items():
+            df.loc[df.countryCode==k, 'countryCode'] = v
+    return df
+
+# def country_iso3(df, cc_code):
+#     return df.merge(cc_code, how='left', left_on='countryCode', right_on='iso2').drop(columns='iso2').rename(columns={'iso3':'country_code_mapping'})

@@ -8,6 +8,9 @@ def merged_partApp(app1, part):
     cols_part = part2.columns
     cols_app = app2.columns
 
+    lien = pd.DataFrame(columns=['project_id', 'orderNumber', 'generalPic', 'participant_pic', 'n_app',
+       'base_only', 'n_part', 'orderNumber_p', 'participant_pic_p'])
+
     '''proposal uniquement'''
     lien1 = (app2
             .merge(part2[['project_id']], how='outer', on='project_id', indicator=True)
@@ -18,10 +21,12 @@ def merged_partApp(app1, part):
             .query('_merge == "left_only"')
             .drop('_merge', axis=1))
     print(f'- applicant uniquement lien1: {len(lien1)} reste à croiser -> app2: {len(app2)}')
+    lien = pd.concat([lien, lien1], ignore_index=True)
 
     '''jointure parfaite'''
     lien2 = part2.merge(app2, how='inner')
     print(f'jointure parfaite -> lien2: {len(lien2)}')
+    lien = pd.concat([lien, lien2], ignore_index=True)
 
     part3 = (part2.merge(lien2[cols_part], how='outer', indicator=True)
              .query('_merge == "left_only"')
@@ -34,6 +39,8 @@ def merged_partApp(app1, part):
     '''jointure sans orderNumber'''
     lien3 = part3.merge(app3, how='inner', on=['project_id', 'generalPic', 'participant_pic'], suffixes=('', '_p'))
     print(f'jointure sans ordernumber -> lien3: {len(lien3)}')
+    if len(lien3)>0:
+        lien = pd.concat([lien, lien3], ignore_index=True)
 
     part4 = part3.merge(lien3[cols_part], how='outer', indicator=True).query('_merge == "left_only"').drop('_merge', axis=1)
     df_app = lien3[['project_id', 'generalPic', 'participant_pic', 'orderNumber_p']].rename(columns=({'orderNumber_p':'orderNumber'}))
@@ -46,6 +53,8 @@ def merged_partApp(app1, part):
     '''jointure sans participant_pic'''
     lien4 = part4.merge(app4, how='inner', on=['project_id', 'generalPic', 'orderNumber'], suffixes=('', '_p'))
     print(f'jointure sans participant_pic -> lien4: {len(lien4)}')
+    if len(lien4)>0:
+        lien = pd.concat([lien, lien4], ignore_index=True)
 
     part5 = (part4.merge(lien4[cols_part], how='outer', indicator=True)
              .query('_merge == "left_only"')
@@ -59,35 +68,50 @@ def merged_partApp(app1, part):
     '''jointure juste generalPic'''
     lien5 = part5.merge(app5, how='inner', on=['project_id', 'generalPic'], suffixes=('', '_p'))
     print(f'jointure seulement avec generalpic -> lien5: {len(lien5)}')
-
     if len(lien5)>0:
-        part6 = (part5.merge(lien5[cols_part], how='outer', indicator=True)
-                 .query('_merge == "left_only"')
-                 .drop('_merge', axis=1))
-        df_app = lien5[['project_id', 'generalPic', 'participant_pic_p', 'orderNumber_p']].rename(columns=({'orderNumber_p':'orderNumber', 'participant_pic_p':'participant_pic'}))
-        app6 = (app5.merge(df_app, how='outer', indicator=True)
+        lien = pd.concat([lien, lien5], ignore_index=True)
+
+    part6 = (part5.merge(lien5[cols_part], how='outer', indicator=True)
                 .query('_merge == "left_only"')
                 .drop('_merge', axis=1))
-        print(f'reste à croiser -> app6: {len(app6)} part6: {len(part6)}')
-        
-        '''jointure juste participant_pic'''
-        lien6 = (part6
-                .merge(app6, how='inner', on=['project_id', 'participant_pic'], suffixes=('', '_p'))
-                .assign(base_only='a_joindre'))
-        print(f'jointure avec seulement participant_pic -> lien6: {len(lien6)}')
+    df_app = lien5[['project_id', 'generalPic', 'participant_pic_p', 'orderNumber_p']].rename(columns=({'orderNumber_p':'orderNumber', 'participant_pic_p':'participant_pic'}))
+    app6 = (app5.merge(df_app, how='outer', indicator=True)
+            .query('_merge == "left_only"')
+            .drop('_merge', axis=1))
+    print(f'reste à croiser -> app6: {len(app6)} part6: {len(part6)}')
     
-        if len(lien6)>0:
-            print('code pour ajouter lien6 à la table lien finale')
-    else:
-        '''jointure juste participant_pic'''
-        lien6 = part5.merge(app5, how='inner', on=['project_id', 'participant_pic'], suffixes=('', '_p'))
-        print(f'jointure avec seulement participant_pic -> lien6: {len(lien6)}')
-        if len(lien6)>0:
-            print('code pour ajouter lien6 à la table lien finale')
+    '''jointure juste participant_pic'''
+    lien6 = (part6
+            .merge(app6, how='inner', on=['project_id', 'participant_pic'], suffixes=('', '_p'))
+            .assign(base_only='a_joindre'))
+    print(f'jointure avec seulement participant_pic -> lien6: {len(lien6)}')
+    if len(lien6)>0:
+        lien = pd.concat([lien, lien6], ignore_index=True)
+        print('code pour ajouter lien6 à la table lien finale')
+
+        part7 = (part6.merge(lien[cols_part], how='outer', indicator=True)
+                    .query('_merge == "left_only"')
+                    .drop('_merge', axis=1))
+        df_app = lien[['project_id', 'generalPic', 'participant_pic_p', 'orderNumber_p']].rename(columns=({'orderNumber_p':'orderNumber', 'participant_pic_p':'participant_pic'}))
+        app7 = (app6.merge(df_app, how='outer', indicator=True)
+                .query('_merge == "left_only"')
+                .drop('_merge', axis=1))
+        print(f'reste à croiser -> app7: {len(app7)} part7: {len(part7)} faire codepour lien7')
+
+    elif (len(part6)>0)|(len(app6)>0):
+        p = pd.concat([part6, app6], ignore_index=True)
+        lien = pd.concat([lien, p], ignore_index=True)
+    # else:
+    #     '''jointure juste participant_pic'''
+    #     lien6 = part5.merge(app5, how='inner', on=['project_id', 'participant_pic'], suffixes=('', '_p'))
+    #     print(f'jointure avec seulement participant_pic -> lien6: {len(lien6)}')
+    #     if len(lien6)>0:
+    #         lien = pd.concat([lien, lien6], ignore_index=True)
+    #         print('code pour ajouter lien6 à la table lien finale')
 
 
-    lien = pd.concat([lien1, lien2, lien3, lien4, app5, part5], ignore_index=True).drop_duplicates()
-    lien = lien.assign(inProposal=np.where(~lien['n_part'].isnull() & lien['n_app'].isnull(), False, True))
+    # lien = pd.concat([lien1, lien2, lien3, lien4, app5, part5], ignore_index=True).drop_duplicates()
+    lien = lien.assign(inProposal=np.where(~lien['n_part'].isnull() & lien['n_app'].isnull(), False, True)).drop_duplicates()
     lien = lien.assign(inProject=np.where(lien['n_part'].isnull() & ~lien['n_app'].isnull(), False, True))
 
     lien['orderNumber_p'] = np.where((lien['orderNumber_p'].isnull()) & (lien['inProposal']==True), lien['orderNumber'], lien['orderNumber_p'])
@@ -117,21 +141,21 @@ def merged_partApp(app1, part):
     
     # add countryCode
     lien = (lien
-            .merge(part[['project_id', 'orderNumber', 'generalPic', 'participant_pic', 'countryCode']],
+            .merge(part[['project_id', 'orderNumber', 'generalPic', 'participant_pic', 'country_code_mapping']],
                    how='left', on=['project_id', 'orderNumber', 'generalPic', 'participant_pic']))
 
     lien = (lien
-            .merge(app1[['project_id', 'orderNumber', 'generalPic', 'participant_pic', 'countryCode']], 
+            .merge(app1[['project_id', 'orderNumber', 'generalPic', 'participant_pic', 'country_code_mapping']], 
                    how='left', left_on=['project_id', 'proposal_orderNumber', 'generalPic', 'proposal_participant_pic'],
                    right_on=['project_id', 'orderNumber', 'generalPic', 'participant_pic'],
                    suffixes=[ '','.y'])
             .drop(columns=[ 'participant_pic.y', 'orderNumber.y'])
-            .rename(columns={'countryCode.y':'proposal_countryCode'}))
+            .rename(columns={'country_code_mapping.y':'proposal_country_code_mapping'}))
 
-    lien.loc[lien.countryCode.isnull(), 'countryCode'] = lien.loc[lien.countryCode.isnull(), 'proposal_countryCode']
+    lien.loc[lien.country_code_mapping.isnull(), 'country_code_mapping'] = lien.loc[lien.country_code_mapping.isnull(), 'proposal_country_code_mapping']
 
-    if any(lien.countryCode.isnull()):
-        print(f"- ATTENTION {lien[lien.countryCode.isnull()].generalPic.nunique()} countryCode missing {lien[lien.countryCode.isnull()].generalPic.unique()}")
+    if any(lien.country_code_mapping.isnull()):
+        print(f"- ATTENTION {lien[lien.country_code_mapping.isnull()].generalPic.nunique()} countryCode missing {lien[lien.country_code_mapping.isnull()].generalPic.unique()}")
 
     # verif que chaque obs contient un calculated pic
     lien_no_pic=len(lien[lien['calculated_pic'].isnull()])
