@@ -24,7 +24,7 @@ def entities_preparation(entities_part, h20):
             'panel_code', 'panel_name', 'panel_regroupement_code', 'panel_regroupement_name',
             'programme_name_en', 'project_id', 'role', 'erc_role', 'ror_category', 
             'stage', 'status_code', 'thema_code', 'thema_name_en', 'topic_code', 'free_keywords', 
-            'operateur_name','operateur_num','operateur_lib', 'entities_name_source', 'entities_acronym_source', 
+            'operateur_name','operateur_num','operateur_lib', 
             'groupe_id', 'groupe_name', 'groupe_acronym', 'groupe_sector',
             'ecorda_date']]
 
@@ -38,7 +38,6 @@ def entities_preparation(entities_part, h20):
     # print(f"3 - comparaison nb couple genpic + country (doit être égal) {len(part[['generalPic','country_code']].drop_duplicates())},{len(entities_info[['generalPic','country_code']].drop_duplicates())}")
 
     entities_part = pd.concat([entities_part, tmp], ignore_index=True)
-    entities_part = entreprise_cat_cleaning(entities_part)
     
     entities_part = entities_part.reindex(sorted(entities_part.columns), axis=1)
     return entities_part
@@ -49,12 +48,13 @@ def entities_ods(entities_participation):
 
     tmp=(entities_participation[
         ['category_woven', 'cordis_is_sme', 'cordis_type_entity_acro', 'stage','acronym',
-        'cordis_type_entity_code', 'cordis_type_entity_name_en', 'entities_name_source',
+        'cordis_type_entity_code', 'cordis_type_entity_name_en', 
         'cordis_type_entity_name_fr', 'extra_joint_organization', 'is_ejo',
-        'country_code', 'country_code_mapping',
+        'country_code', 'country_code_mapping', 'participation_linked',
         'country_group_association_code', 'country_group_association_name_en',
         'country_group_association_name_fr', 'country_name_en',
         'country_name_fr', 'country_name_mapping', 
+        'groupe_id', 'groupe_name', 
         'participation_nuts', 'region_1_name', 'region_2_name', 'regional_unit_name',
         'entities_acronym', 'entities_id', 'entities_name', 'operateur_name',
         'insee_cat_code', 'insee_cat_name', 'participates_as', 'project_id',
@@ -65,7 +65,7 @@ def entities_ods(entities_participation):
         'pilier_name_en', 'pilier_name_fr', 'programme_code', 'programme_name_en', 
         'programme_name_fr', 'thema_code', 'thema_name_fr', 'thema_name_en', 'destination_code',
         'destination_lib', 'destination_name_en','action_code2', 'action_name2', 'free_keywords', 
-        'operateur_num','operateur_lib', 'category_agregation', 'source_id', 'generalPic']]
+        'operateur_num','operateur_lib', 'category_agregation', 'source_id']]
         .rename(columns={ 
             'source_id':'entities_id_source',
             'action_code':'action_id', 
@@ -80,7 +80,6 @@ def entities_ods(entities_participation):
             'country_group_association_name_fr':'country_association_name_fr',
             'with_coord':'flag_coordination',
             'is_ejo':'flag_organization',
-            'generalPic':'pic_number',
             'insee_cat_code':'entreprise_cat_code',
             'insee_cat_name':'entreprise_cat_name'
             }))
@@ -111,6 +110,7 @@ def entities_ods(entities_participation):
 
     for h in tmp.framework.unique():
         x = tmp[(tmp.stage=='successful')&(tmp.framework==h)].drop(columns=['stage'])
+        x = entreprise_cat_cleaning(x)
         chunk_size = int(math.ceil((x.shape[0] / 2)))
         i=0
         for start in range(0, x.shape[0], chunk_size):
