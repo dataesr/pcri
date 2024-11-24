@@ -65,7 +65,7 @@ def ent(participation, entities_info, projects):
         df=df[df.stage==stage_value].merge(entities_info, how='left', on=['generalPic','country_code'])
         
         if any(df.id.str.contains(';', na=False)):
-            print(f"Attention multi id pour une participation, calculs sur les chiffres\n {df.loc[df.id.str.contains(';', na=False), 'id'].drop_duplicates()}")
+            print(f"- Attention multi id pour une participation, calculs sur les chiffres\n {df.loc[df.id.str.contains(';', na=False), 'id'].drop_duplicates()}")
             df['nb'] = df.id.str.split(';').str.len()
             for i in ['coordination_number', 'calculated_fund', 'beneficiary_subv', 'number_involved']:
                 df[i] = np.where(df['nb']>1, df[i]/df['nb'], df[i])
@@ -77,10 +77,10 @@ def ent(participation, entities_info, projects):
     entities_part = pd.concat([entities_eval, entities_signed], ignore_index=True)
 
     # mask=(entities_part.entities_id.str.contains('^gent', na=False))&(~entities_part.entities_acronym_source.isnull())
-    r=(entities_part[['generalPic', 'entities_id','entities_name', 'entities_acronym']]
+    r=(entities_part.loc[~entities_part.entities_name.isnull(), ['generalPic', 'entities_id','entities_name', 'entities_acronym']]
     .drop_duplicates())
 
-    r[['entities_acronym']] = r[['entities_acronym']].fillna('')
+    r['entities_acronym'] = r[['entities_acronym']].fillna('')
     r['entities_name'] = r.apply(lambda x: x['entities_name'] if x["entities_acronym"].upper() in x["entities_name"].upper() else x['entities_name']+' '+x["entities_acronym"].lower(),axis=1)
     entities_part = (entities_part.drop(columns=['entities_name', 'entities_acronym'])
                     .merge(r.drop(columns='entities_acronym'), how='left', on=['generalPic', 'entities_id'])
