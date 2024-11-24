@@ -11,9 +11,9 @@ def collab_base(tab, stage_value:str):
 
     print(f"subv:{'{:,.1f}'.format(tmp['fund'].sum())}")
 
-    tmp['part_num'] = (tmp[["orderNumber", "generalPic", "pic", 'participates_as']]
+    tmp['part_num'] = (tmp[["orderNumber", "generalPic", 'participates_as']]
                                 .apply(lambda row:"-".join(row.values.astype(str)), axis=1))
-    tmp['coord_num'] = (tmp.loc[tmp['role']=='coordinator', ["orderNumber", "generalPic", "pic"]]
+    tmp['coord_num'] = (tmp.loc[tmp['role']=='coordinator', ["orderNumber", "generalPic"]]
                                 .apply(lambda row:"-".join(row.values.astype(str)), axis=1))
 
     copy = (tab[(tab['stage']==stage_value)]
@@ -26,7 +26,7 @@ def collab_base(tab, stage_value:str):
                 )
 
     print(f"subv copy:{'{:,.1f}'.format(copy['fund_collab'].sum())}, size: {len(copy)}")
-    copy['part_num_collab'] = (copy[["orderNumber_collab", "generalPic_collab", "pic_collab", 'participates_as_collab']]
+    copy['part_num_collab'] = (copy[["orderNumber_collab", "generalPic_collab", 'participates_as_collab']]
                                 .apply(lambda row:"-".join(row.values.astype(str)), axis=1))
 
     return tmp.merge(copy, on='project_id')
@@ -34,7 +34,7 @@ def collab_base(tab, stage_value:str):
 def collab_cross(i):
     return (i[~((i['orderNumber']==i['orderNumber_collab']) &
                 (i['generalPic']==i['generalPic_collab']) &
-                (i['pic']==i['pic_collab'])&
+                # (i['pic']==i['pic_collab'])&
                 (i['participates_as']==i['participates_as_collab']))]
                 .groupby(['stage','project_id','country_code', 'participation_nuts','region_1_name', 'extra_joint_organization','country_code_collab',
                         'participation_nuts_collab', 'region_1_name_collab','country_code_mapping_collab', 'participates_as', 'participates_as_collab', 

@@ -88,7 +88,7 @@ def ent(participation, entities_info, projects):
 
     entities_part=(entities_part
                 .drop(columns=
-                ['generalPic','businessName', 'legalName','generalState', 'street',
+                ['generalPic','generalState', 'street',
                 'postalCode','postalBox','webPage','naceCode','gps_loc', 'city', 
                 'countryCode','isNonProfit',  
                 'cat_an','isPublicBody', 'isInternationalOrganisation', 
