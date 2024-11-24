@@ -140,19 +140,12 @@ entities = pd.merge(entities, cc_code, how='left', left_on='countryCode', right_
 # LIEN
 lien = merged_partApp(app1, part)
 lien = nuts_lien(app1, part, lien)
-
-
-# lien = lien.merge(cc_code, how='left', left_on='countryCode', right_on='iso2').drop(columns='iso2')
-# lien = lien.merge(cc_code, how='left', left_on='proposal_countryCode', right_on='iso2').drop(columns='iso2')
-# lien = (lien.rename(columns={'iso3_x':'country_code_mapping', 'iso3_y':'proposal_country_code_mapping'})
-#         .drop(columns=['countryCode', 'proposal_countryCode']))
 lien.to_pickle(f"{PATH_CLEAN}lien.pkl")
 
 # entities = (entities.merge(cc_code, how='left', left_on='countryCode', right_on='iso2').drop(columns='iso2')
 #             .rename(columns={'iso3':'country_code_mapping'}))
 
 #ENTITIES +LIEN
-# entities = entities_cleaning(entities, lien)
 entities_single = entities_single_create(entities, lien)
 # entities_single = pd.read_pickle(f"{PATH_SOURCE}entities_single.pkl")
 entities_info = entities_info_create(entities_single, lien)

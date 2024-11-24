@@ -18,38 +18,48 @@ def entities_missing_country(df):
 
 def entities_load(app1,part):
 
-    entities = unzip_zip(ZIPNAME, f"{PATH_SOURCE}{FRAMEWORK}/", "legalEntities.json", 'utf8')
-    entities = pd.DataFrame(entities)
-    print(f"- first size entities: {len(entities)}")
-    entities = gps_col(entities)
+    df = unzip_zip(ZIPNAME, f"{PATH_SOURCE}{FRAMEWORK}/", "legalEntities.json", 'utf8')
+    df = pd.DataFrame(df)
+    print(f"- first size entities: {len(df)}")
+    df = gps_col(df)
 
-    entities = entities.loc[~entities.generalPic.isnull()]
+    df = df.loc[~df.generalPic.isnull()]
 
     c = ['pic', 'generalPic']
-    entities[c] = entities[c].map(num_to_string)
-    print(f"- size entities {len(entities)}")
-   
+    df[c] = df[c].map(num_to_string)
+    print(f"- size entities {len(df)}")
+        
+    if len(df[df.generalState.isnull()])>0:
+        print("- entities source generalState -> new state (processing into entities_single)")
+    else:
+        print("- ok entities source generalState not null")
+
     # app1/part + lien pour ajout cc et selection des generalPic+pic de entities
     ap=(app1[['generalPic', 'participant_pic', 'countryCode']]
         .drop_duplicates()
-        .rename(columns={'proposal_participant_pic':'pic'}))
-    pp=(part[ ['generalPic', 'participant_pic', 'countryCode']]
+        .rename(columns={'participant_pic':'pic'}))
+    pp=(part[['generalPic', 'participant_pic', 'countryCode']]
         .drop_duplicates()
         .rename(columns={'participant_pic':'pic'}))
     tmp=pd.concat([ap, pp], ignore_index=True).drop_duplicates()
     print(f"- size lien ap+pp+cc (tmp): {len(tmp)}")
 
-    entities = (tmp.merge(entities, how='left', on=['generalPic', 'pic'])
+    entities = (tmp.merge(df, how='left', on=['generalPic', 'pic'])
               .rename(columns={'countryCode_x': 'countryCode'})
               )
     print(f"- size tmp+entities: {len(entities)}")
 
-    if len(tmp)!=len(entities):
-        print(f"1 - ATTENTION missing generalPic into entities")
+    if len(tmp[['generalPic', 'countryCode']].drop_duplicates())!=len(entities[['generalPic', 'countryCode']].drop_duplicates()):
+        print(f"1 - ATTENTION missing generalPic into entities\ntmp={len(tmp[['generalPic', 'countryCode']].drop_duplicates())}, entities={len(entities[['generalPic', 'countryCode']].drop_duplicates())}")
 
     #traietement des cc manquants dans entities à partir de cc ajouté
     entities = entities_missing_country(entities)
     print(f"- END size entities: {len(entities)}")  
+
+    if len(entities[entities.generalState.isnull()])>0:
+        print("- entities cleaned generalState -> new state (processing into entities_single)")
+    else:
+        print("- ok entities cleaned generalState not null")
 
     pic_no_entities = list(set(tmp.generalPic.unique()) - set(entities.generalPic.unique()))
     if len(pic_no_entities) >0:
