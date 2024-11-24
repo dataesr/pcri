@@ -10,12 +10,13 @@ def participants_calcul(part_step, part):
 
     # print(f"calculated_subv, verif des volumes après traitement-> benef_part1:{'{:,.1f}'.format(part1['euContribution'].sum())}, other_part1:{'{:,.1f}'.format(part1['netEuContribution'].sum())}")
 
-    subv_pt = (part_step.loc[part_step.inProject==True, ['project_id', 'generalPic', 'country_code_mapping', 'orderNumber', 'propNlien']]
+    subv_pt = (part_step.loc[part_step.inProject==True, ['project_id', 'generalPic', 'pic_old', 'country_code_mapping', 'orderNumber', 'propNlien',  'n_pic_cc']].drop_duplicates()
             .drop_duplicates()
-            .merge(part[['project_id', 'generalPic', 'country_code_mapping', 'orderNumber', 'role', 'partnerType', 'erc_role', 'euContribution', 'netEuContribution']], 
+            .merge(part.rename(columns={'generalPic':'pic_old'})[
+                ['project_id', 'pic_old', 'country_code_mapping', 'orderNumber', 'role', 'partnerType', 'erc_role', 'euContribution', 'netEuContribution']], 
                 how='left',
-                left_on=['project_id', 'generalPic', 'country_code_mapping', 'orderNumber'],
-                right_on=['project_id', 'generalPic', 'country_code_mapping', 'orderNumber']))
+                left_on=['project_id', 'pic_old', 'country_code_mapping', 'orderNumber'],
+                right_on=['project_id', 'pic_old', 'country_code_mapping', 'orderNumber']))
 
     subv_pt['beneficiary_subv'] = np.where(subv_pt['propNlien']>1, subv_pt['euContribution']/subv_pt['propNlien'], subv_pt['euContribution'])
     subv_pt['calculated_fund'] = np.where(subv_pt['propNlien']>1, subv_pt['netEuContribution']/subv_pt['propNlien'], subv_pt['netEuContribution'])
@@ -28,12 +29,12 @@ def participants_calcul(part_step, part):
 
     part_proj = (part_step.merge(subv_pt, how='inner')[
                 ['project_id',  'generalPic', 'orderNumber', 'cordis_is_sme', 
-                'flag_entreprise', 'groupe_id', 'groupe_name', 'groupe_acronym', 'participation_linked',
+                'flag_entreprise',  'participation_linked',
                 'cordis_type_entity_code', 'cordis_type_entity_name_fr', 'cordis_type_entity_name_en', 'cordis_type_entity_acro',
                 'participation_nuts', 'region_1_name', 'region_2_name', 'regional_unit_name', 
                 'country_code', 'country_code_mapping', 'extra_joint_organization', 'role', 'partnerType', 'erc_role', 
                 'calculated_fund', 'beneficiary_subv']]
-                .rename(columns={'participant_pic':'pic'})
+                # .rename(columns={'participant_pic':'pic'})
                 .assign(stage='successful'))    
 
     if part_step_first_len != len(part_step):
