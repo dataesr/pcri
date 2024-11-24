@@ -98,9 +98,10 @@ def msca_collab(collab):
 
 
 def collab_evolution(collab):
-    col_select=['framework', 'stage','call_year', 'project_id',  'total_cost',
+    col_select=['framework', 'stage','call_year', 'project_id',  
     'extra_joint_organization', 'country_code_collab', 'country_name_fr_collab', 
-    'participates_as', 'participates_as_collab', 'extra_joint_organization_collab','action_code', 'action_name',
+    'participates_as', 'participates_as_collab', 'extra_joint_organization_collab',
+    'action_code', 'action_name',
     'part_num', 'coord_num', 'part_num_collab', 'fund', 'fund_collab' ]
 
 

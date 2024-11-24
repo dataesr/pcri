@@ -57,8 +57,8 @@ def ent(participation, entities_info, projects):
     print("### ENTITIES preparation")
     part=participation[
         ['stage', 'project_id','generalPic', 'role', 'participates_as', 'erc_role', 
-         'with_coord', 'is_ejo', 'country_code', 'participation_nuts', 
-         'region_1_name', 'region_2_name', 'regional_unit_name',
+         'with_coord', 'is_ejo', 'country_code', 'participation_nuts', 'country_code_mapping',
+         'region_1_name', 'region_2_name', 'regional_unit_name','participation_linked',
         'coordination_number', 'calculated_fund', 'beneficiary_subv']].assign(number_involved=1)
 
     def ent_stage(df, stage_value:str):
