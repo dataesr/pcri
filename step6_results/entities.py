@@ -54,7 +54,7 @@ def entities_ods(entities_participation):
         'country_group_association_code', 'country_group_association_name_en',
         'country_group_association_name_fr', 'country_name_en',
         'country_name_fr', 'country_name_mapping', 
-        'groupe_id', 'groupe_name', 
+        'groupe_id', 'groupe_name', 'groupe_acronym',
         'participation_nuts', 'region_1_name', 'region_2_name', 'regional_unit_name',
         'entities_acronym', 'entities_id', 'entities_name', 'operateur_name',
         'insee_cat_code', 'insee_cat_name', 'participates_as', 'project_id',
