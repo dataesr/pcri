@@ -10,7 +10,7 @@ def synthese_preparation(participation, countries):
     cc = countries.drop(columns=['countryCode', 'country_name_mapping','country_code_mapping']).drop_duplicates()
 
     part=(participation
-        .drop(columns=['orderNumber', 'generalPic', 'pic', 'country_code_mapping'])
+        .drop(columns=['orderNumber', 'generalPic', 'country_code_mapping'])
         .assign(number_involved=1)
         .groupby(['stage', 'project_id', 'role','participates_as', 'erc_role', 'cordis_is_sme', 'cordis_type_entity_acro',
         'cordis_type_entity_code', 'cordis_type_entity_name_en', 'extra_joint_organization', 'is_ejo', 'with_coord',

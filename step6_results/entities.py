@@ -79,9 +79,7 @@ def entities_ods(entities_participation):
             'country_group_association_name_en':'country_association_name_en',
             'country_group_association_name_fr':'country_association_name_fr',
             'with_coord':'flag_coordination',
-            'is_ejo':'flag_organization',
-            'insee_cat_code':'entreprise_cat_code',
-            'insee_cat_name':'entreprise_cat_name'
+            'is_ejo':'flag_organization'
             }))
 
     tmp.loc[tmp.entities_id_source=='ror', 'entities_id'] = tmp.loc[tmp.entities_id_source=='ror', 'entities_id'].str.replace("^R", "", regex=True)
@@ -126,7 +124,7 @@ def entities_ods(entities_participation):
         .rename(columns={ 'number_involved':'numberofapplicants'})
         .drop(columns=
             ['country_name_mapping', 'country_association_name_en', 'country_name_en', 
-            'country_code_mapping', 'pilier_name_fr', 'programme_code', 'entities_name_source',
+            'country_code_mapping', 'pilier_name_fr', 'programme_code', 
             'operateur_num','operateur_lib', 'ror_category', 'paysage_category', 'country_association_name_en',
             'country_association_name_fr', 'thema_name_fr', 'destination_lib',
             'programme_name_fr', 'action_group_code', 'action_group_name', 'stage',
