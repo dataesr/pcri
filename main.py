@@ -35,10 +35,10 @@ entities_participation.to_pickle(f"{PATH_CLEAN}entities_participation_current.pk
 print(f"size entities_participation: {len(entities_participation)}")
 entities_ods(entities_participation)
 
-entities_participation = entreprise_cat_cleaning(entities_participation)
-(entities_participation
+# entities_participation = entreprise_cat_cleaning(entities_participation)
+(entreprise_cat_cleaning(entities_participation)
     .drop(columns=['ecorda_date','action_code2','action_name2','beneficiary_subv',
-                'free_keywords', 'abstract', 'acronym', 'entities_name_source', 'generalPic'])
+                'free_keywords', 'abstract', 'acronym', 'generalPic'])
     .to_csv(f"{PATH_CONNECT}entities_participation_current.csv", sep=";", 
             index=False, encoding='UTF-8', na_rep='', decimal='.'))
 

@@ -12,7 +12,7 @@ def erc_ods(msca_erc):
         ['action_code', 'action_name','calculated_fund', 'call_year', 'extra_joint_organization', 'is_ejo',
         'cordis_type_entity_acro', 'cordis_type_entity_code','cordis_type_entity_name_en', 'cordis_type_entity_name_fr',
         'country_group_association_code', 'country_group_association_name_en', 'with_coord',
-        'country_group_association_name_fr', 'country_name_en', 
+        'country_group_association_name_fr', 'country_name_en', 'participation_linked',
         'country_name_fr', 'destination_code', 'destination_name_en', 'erc_role','framework', 'number_involved',
         'panel_code', 'panel_name', 'participates_as', 'project_id', 'role', 'ecorda_date',
         'stage', 'stage_name', 'country_code']]
@@ -85,7 +85,7 @@ def erc_entities(me_entities):
             ['framework','country_name_fr', 'call_year','destination_name_en', 'panel_name', 
             'participates_as', 'erc_role', 'cordis_type_entity_acro', 'cordis_type_entity_code', 'action_code', 'action_name',
             'cordis_type_entity_name_en', 'cordis_type_entity_name_fr',  'role', 'extra_joint_organization', 'is_ejo',
-            'operateur_name', 'paysage_category', 'category_woven', 'entreprise_cat_code', 'entreprise_cat_name',
+            'operateur_name', 'paysage_category', 'category_woven', 'entreprise_type_code', 'entreprise_type_name',
             'entities_name', 'entities_acronym', 'calculated_fund', 'coordination_number', 'number_involved', 'with_coord',
             'project_id', 'participation_nuts', 'region_1_name', 'region_2_name', 'regional_unit_name',
             'country_group_association_name_fr', 'country_name_mapping','country_name_en',

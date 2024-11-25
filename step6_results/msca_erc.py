@@ -13,16 +13,21 @@ def msca_erc_projects(FP6, FP7, h20, projects, part):
         'country_name_fr', 'destination_code', 'destination_detail_code', 
         'destination_detail_name_en', 'destination_name_en',  'number_involved',
         'panel_code', 'panel_name', 'project_id', 'role', 'erc_role', 'flag_entreprise',
-        'stage', 'status_code', 'framework', 'thema_code', 'category_woven', 'category_agregation', 'source_id','ecorda_date']
+        'stage', 'status_code', 'framework', 'thema_code', 'category_woven', 
+        'groupe_id', 'groupe_name', 'participation_linked',
+        'category_agregation', 'source_id','ecorda_date']
 
-    me7= FP7.loc[FP7.thema_code.isin(["ERC","MSCA"]), select_cols]
+    me7= (FP7.loc[FP7.thema_code.isin(["ERC","MSCA"]), list(set(select_cols)
+            .difference(['participation_linked']))])
     me6= (FP6
             .loc[FP6.thema_code.isin(["ERC","MSCA"]), list(set(select_cols)
             .difference(['panel_code', 'panel_name','erc_role', 
                          'extra_joint_organization', 'free_keywords', 
                          'abstract','source_id', 'category_agregation', 
-                         'category_woven', 'flag_entreprise']))])
-    me20=h20.loc[h20.programme_code.isin(['ERC', 'MSCA']), select_cols]
+                         'category_woven', 'flag_entreprise',
+                         'groupe_id', 'groupe_name', 'participation_linked']))])
+    me20=(h20.loc[h20.programme_code.isin(['ERC', 'MSCA']), list(set(select_cols)
+            .difference(['participation_linked']))])
 
 
     projects_m = (projects.assign(framework='Horizon Europe')
@@ -51,8 +56,10 @@ def msca_erc_projects(FP6, FP7, h20, projects, part):
     msca_erc = msca_erc.assign(is_ejo=np.where(msca_erc.extra_joint_organization.isnull(), 'Sans', 'Avec'))
 
     print(f"size projects_MSCA_ERC with others fp: {len(msca_erc)}")
+    # msca_erc = entreprise_cat_cleaning(msca_erc)
     (msca_erc.drop(columns=['ecorda_date', 'free_keywords', 'abstract', 'acronym'])
      .to_csv(PATH_CONNECT+"msca_projects_part.csv", index=False, encoding="UTF-8", sep=";", na_rep='', decimal="."))
+
     return msca_erc
 
 
@@ -97,7 +104,6 @@ def msca_erc_ent(entities_participation):
                     .loc[entities_participation.thema_code.isin(['MSCA','ERC'])])
 
     me_entities = entreprise_cat_cleaning(me_entities)
-    me_entities.rename(columns={'insee_cat_code':'entreprise_cat_code','insee_cat_name':'entreprise_cat_name'}, inplace=True)
 
     print(f"size msca_entities: {len(me_entities)}")
     me_entities.drop(columns=['ecorda_date', 'free_keywords', 'abstract']).to_csv(PATH_CONNECT+"msca_entities.csv", index=False, encoding="UTF-8", sep=";", na_rep='', decimal=".")
