@@ -3,12 +3,15 @@ from config_path import PATH_CLEAN
 from step2_participations.nuts import *
 
 
-def participations_nuts(lien):
+def participations_nuts(df):
     # gestion code nuts
     nuts = pd.read_pickle(f'{PATH_REF}nuts_complet.pkl')
-    temp=lien[['participation_nuts']].drop_duplicates()
-    temp['nuts_code'] = temp.participation_nuts.str.split(';')
-    temp=temp.explode('nuts_code')
+    temp=df[['participation_nuts', 'nutsCode']]
+    temp = temp.assign(n1=df.participation_nuts.str.split(';'), n2=df.nutsCode.str.split(';'))
+    temp=temp.explode('n1').explode('n2')
+
+    temp=temp.drop(columns=['participation_nuts', 'nutsCode'])
+    temp=temp.reset_index().drop_duplicates(subset=['index','n1', 'n2']).set_index('index')
     temp=temp.merge(nuts, how='left', on='nuts_code')
     temp=(temp
         .groupby(['participation_nuts'])

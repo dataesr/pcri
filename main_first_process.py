@@ -145,8 +145,8 @@ lien.to_pickle(f"{PATH_CLEAN}lien.pkl")
 # lien = pd.read_pickle(f"{PATH_CLEAN}lien.pkl")
 
 #ENTITIES +LIEN
-entities_single = entities_single_create(entities, lien)
-# entities_single = pd.read_pickle(f"{PATH_SOURCE}entities_single.pkl")
+# entities_single = entities_single_create(entities, lien)
+entities_single = pd.read_pickle(f"{PATH_SOURCE}entities_single.pkl")
 entities_info = entities_info_create(entities_single, lien)
 
 ### step3
