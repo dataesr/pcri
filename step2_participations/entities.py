@@ -104,7 +104,7 @@ def entities_single_create(df, lien):
 def entities_info_create(entities_single, lien):
     print("\n### ENTITIES INFO")
     entities_info = (entities_single
-                     .drop(['pic', 'cedex', 'countryCode_y','lastUpdateDate'], axis=1)
+                     .drop(['pic', 'cedex','lastUpdateDate'], axis=1)
                      .drop_duplicates())
 
     if len(entities_info[['generalPic', 'country_code_mapping']].drop_duplicates())!=len(lien[['generalPic', 'country_code_mapping']].drop_duplicates()):

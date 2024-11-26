@@ -2,7 +2,7 @@ import pandas as pd, numpy as np
 
 def entities_clean(entities_tmp):
     print("### ENTITIES TMP cleaning name")
-    x=entities_tmp[entities_tmp.entities_name.isnull()]
+    x=entities_tmp.loc[entities_tmp.entities_name.isnull(), ['generalPic', 'legalName', 'businessName', 'entities_id', 'country_code_mapping']].drop_duplicates()
     print(f"- size entities_tmp without entities_name: {len(x)}")
     if not x.empty:
         if any(x.loc[(x.legalName.str.contains("\\00",  na=True))]):
@@ -14,21 +14,31 @@ def entities_clean(entities_tmp):
                 y.at[i, 'businessName'] = row.businessName.replace("\\", "\\u").encode().decode('unicode_escape')
             except:
                 y.at[i, 'businessName'] = np.nan
-        x = x.loc[~x.generalPic.isin(y.generalPic.unique())]
+        x = (x
+            .merge(y[['generalPic', 'entities_id', 'country_code_mapping']], 
+            how='outer', on=['generalPic', 'entities_id', 'country_code_mapping'], indicator=True)
+            .query('_merge!="both"').
+            drop(columns='_merge'))
         x = pd.concat([x, y], ignore_index=True)
 
         x.loc[x.businessName.str.contains('^\\d+$', na=True), 'businessName'] = np.nan
-        liste=['legalName', 'businessName']
-        for i in liste:
-            x[i] = x[i].apply(lambda v: v.capitalize().strip() if isinstance(v, str) else v)
+        x.loc[x.legalName.str.lower()==x.businessName.str.lower(), 'businessName'] = np.nan
+
+        # liste=['legalName', 'businessName']
+        # for i in liste:
+        x['entities_name'] = x['legalName'].apply(lambda v: v.capitalize().strip() if isinstance(v, str) else v)
+        x['entities_acronym'] = x['businessName']
 
         print(f"- End size entities_tmp without entities_name: {len(x)}")
         
-        entities_tmp = entities_tmp.loc[~entities_tmp.generalPic.isin(x.generalPic.unique())]
+        entities_tmp = (entities_tmp
+                        .merge(x[['generalPic', 'entities_id', 'country_code_mapping']], 
+                               how='outer', on=['generalPic', 'entities_id', 'country_code_mapping'], indicator=True)
+                        .query('_merge!="both"').
+                        drop(columns='_merge'))
         entities_tmp = pd.concat([entities_tmp, x], ignore_index=True)
     
-    entities_tmp.loc[entities_tmp.entities_name.isnull(), 'entities_acronym'] = entities_tmp.businessName
-    entities_tmp.loc[(entities_tmp.entities_name.isnull()), 'entities_name'] = entities_tmp.legalName
+        print(f"- End size entities_tmp: {len(entities_tmp)}")
     return entities_tmp
 
 def entities_check_null(entities_tmp):

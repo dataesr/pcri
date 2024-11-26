@@ -1,4 +1,4 @@
-from step3_entities.references import ref_source_load, ref_source_1ere_select
+from step3_entities.references import ref_source_1ere_select
 from step3_entities.entities_select import entities_tmp_create
 from step3_entities.IDlegal_cleaning import legal_id_clean, entities_link, list_to_check
 from step3_entities.ID_checkingRefExist import check_id
