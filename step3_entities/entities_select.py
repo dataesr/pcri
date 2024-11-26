@@ -28,7 +28,6 @@ def entities_tmp_create(entities_info, countries, ref):
     print(f"- End size entities_tmp {len(tmp)}")
     return tmp
 
-
 def entities_for_merge(entities_tmp):
     entities_tmp = entities_tmp[['generalPic','legalName', 'businessName', 'id', 'id_secondaire', 'ZONAGE', 'country_code_mapping', 'countryCode_parent']]
     entities_tmp = entities_tmp.mask(entities_tmp=='')

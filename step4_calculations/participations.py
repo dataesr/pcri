@@ -1,5 +1,25 @@
 import numpy as np, pandas as pd
 from config_path import PATH_CLEAN
+from step2_participations.nuts import *
+
+
+def participations_nuts(lien):
+    # gestion code nuts
+    nuts = pd.read_pickle(f'{PATH_REF}nuts_complet.pkl')
+    temp=lien[['participation_nuts']].drop_duplicates()
+    temp['nuts_code'] = temp.participation_nuts.str.split(';')
+    temp=temp.explode('nuts_code')
+    temp=temp.merge(nuts, how='left', on='nuts_code')
+    temp=(temp
+        .groupby(['participation_nuts'])
+        .agg(lambda x: ';'.join(x.dropna()))
+        .drop(columns='nuts_code')
+        .reset_index()
+        .drop_duplicates())
+    lien = lien.merge(temp, how='left', on='participation_nuts')
+    print(f"size lien after add nuts: {len(lien)}, sans code_nuts: {len(lien.loc[(~lien.participation_nuts.isnull())&(lien.region_1_name.isnull())])}")
+    return lien
+
 
 def entities_with_lien(entities_info, lien, genPic_to_new):
     print("### LIEN + entities_info -> pour calculations")
@@ -18,9 +38,11 @@ def entities_with_lien(entities_info, lien, genPic_to_new):
 
     part_step = (lien.merge(ent_tmp,
                 how='left', on=['generalPic', 'country_code_mapping'])
-                .drop(columns={'n_app', 'n_part', 'participant_pic'})
-                .rename(columns={ 'nutsCode':'entities_nuts', 'nuts_code':'participation_nuts'})   
+                .drop(columns={'n_app', 'n_part', 'participant_pic',  'nuts_participant', 'nuts_applicants'})
+                # .rename(columns={ 'nutsCode':'entities_nuts', 'nuts_code':'participation_nuts'})   
                 .drop_duplicates())
+
+
 
     if len(part_step)==len(lien):
         print(f'1- part_step ({len(part_step)}) = lien')

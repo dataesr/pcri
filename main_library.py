@@ -17,7 +17,7 @@ from step2_participations.entities import *
 from step2_participations.countries import *
 from step3_entities.references import *
 from step3_entities.entities_select import *
-from step3_entities.actualisation import *
+from step3_entities.first_update import *
 from step3_entities.ID_checkingResult import *
 from step3_entities.ID_getRefInformations import *
 from step3_entities.merge_referentiels import *
@@ -32,9 +32,9 @@ from step4_calculations.collaborations import *
 from step5_frameworks.H2020 import *
 from step5_frameworks.FP7 import *
 from step5_frameworks.FP6 import *
-from step5_frameworks.fram_load import framework_load
-from check_url import check_proj_id
-from step6_results.projects import projects_ods
+from step5_frameworks.fram_load import *
+from check_url import *
+from step6_results.projects import *
 from step6_results.collaborations import *
 from step6_results.entities import *
 from step6_results.synthese import *

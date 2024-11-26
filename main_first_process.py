@@ -135,7 +135,7 @@ cc_code = (countries[['countryCode', 'country_code_mapping']]
         .drop_duplicates())
 app1 = pd.merge(app1, cc_code, how='left', left_on='countryCode', right_on='iso2').drop(columns='iso2').rename(columns={'iso3':'country_code_mapping'})
 part = pd.merge(part, cc_code, how='left', left_on='countryCode', right_on='iso2').drop(columns='iso2').rename(columns={'iso3':'country_code_mapping'})
-entities = pd.merge(entities, cc_code, how='left', left_on='countryCode', right_on='iso2').drop(columns='iso2').rename(columns={'iso3':'country_code_mapping'})
+entities = pd.merge(entities, cc_code, how='left', left_on='countryCode', right_on='iso2').drop(columns=['iso2','countryCode_y']).rename(columns={'iso3':'country_code_mapping'})
 
 # LIEN
 lien = merged_partApp(app1, part)
@@ -218,7 +218,7 @@ groupe = pd.read_pickle(f"{PATH_REF}groupe.pkl")
 print(f"taille de entities_tmp avant groupe:{len(entities_tmp)}")
 entities_tmp = merge_groupe(entities_tmp, groupe)
 
-
+#983764495  
 entities_tmp = entities_clean(entities_tmp)
 entities_check_null(entities_tmp)
 
