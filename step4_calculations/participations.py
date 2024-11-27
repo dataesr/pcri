@@ -1,30 +1,33 @@
-import numpy as np, pandas as pd
-from config_path import PATH_CLEAN
-from step2_participations.nuts import *
+# import numpy as np, pandas as pd
+# from config_path import PATH_CLEAN
+# from step2_participations.nuts import *
 
 
 def participations_nuts(df):
+    import pandas as pd
+    from config_path import PATH_REF
     # gestion code nuts
     nuts = pd.read_pickle(f'{PATH_REF}nuts_complet.pkl')
-    temp=df[['participation_nuts', 'nutsCode']]
+    temp=df[['participation_nuts', 'nutsCode']].drop_duplicates()
     temp = temp.assign(n1=df.participation_nuts.str.split(';'), n2=df.nutsCode.str.split(';'))
     temp=temp.explode('n1').explode('n2')
-
-    temp=temp.drop(columns=['participation_nuts', 'nutsCode'])
-    temp=temp.reset_index().drop_duplicates(subset=['index','n1', 'n2']).set_index('index')
-    temp=temp.merge(nuts, how='left', on='nuts_code')
-    temp=(temp
-        .groupby(['participation_nuts'])
-        .agg(lambda x: ';'.join(x.dropna()))
-        .drop(columns='nuts_code')
-        .reset_index()
-        .drop_duplicates())
-    lien = lien.merge(temp, how='left', on='participation_nuts')
-    print(f"size lien after add nuts: {len(lien)}, sans code_nuts: {len(lien.loc[(~lien.participation_nuts.isnull())&(lien.region_1_name.isnull())])}")
-    return lien
+    temp=pd.concat([temp.rename(columns={'n1':'n'}), temp.rename(columns={'n2':'n'})]).drop_duplicates()
+    temp=temp.merge(nuts, how='left', left_on='n', right_on='nuts_code').drop(columns=['nuts_code', 'n1', 'n2'])
+    # temp.loc[temp.participation_nuts.str.contains(';')].sort_values('participation_nuts').head(10)
+    # temp=temp.merge(nuts, how='left', left_on='n', right_on='nuts_code').drop(columns='nuts_code')
+    # temp=(temp
+    #     .groupby(['participation_nuts'])
+    #     .agg(lambda x: ';'.join(x.dropna()))
+    #     .drop(columns='nuts_code')
+    #     .reset_index()
+    #     .drop_duplicates())
+    # lien = lien.merge(temp, how='left', on='participation_nuts')
+    # print(f"size lien after add nuts: {len(lien)}, sans code_nuts: {len(lien.loc[(~lien.participation_nuts.isnull())&(lien.region_1_name.isnull())])}")
+    return temp
 
 
 def entities_with_lien(entities_info, lien, genPic_to_new):
+    
     print("### LIEN + entities_info -> pour calculations")
     print(f"- ETAT avant lien ->\ngeneralPic de lien={lien.generalPic.nunique()},\ngeneralPic de entities_info={entities_info.generalPic.nunique()}")
 
@@ -57,6 +60,8 @@ def proj_no_coord(projects):
     return projects[(projects.thema_code.isin(['ACCELERATOR']))|(projects.destination_code.isin(['PF','COST']))|((projects.thema_code=='ERC')&(projects.destination_code!='SyG'))].project_id.to_list()
 
 def participations_complete(part_prop, part_proj, proj_no_coord):
+    from config_path import PATH_CLEAN
+    import numpy as np, pandas as pd
     print("### PARTICIPATIONS final")
     participation = pd.concat([part_prop, part_proj], ignore_index=True)
 
@@ -87,6 +92,7 @@ def ent(participation, entities_info, projects):
         'coordination_number', 'calculated_fund', 'beneficiary_subv']].assign(number_involved=1)
 
     def ent_stage(df, stage_value:str):
+        import numpy as np
         df=df[df.stage==stage_value].merge(entities_info, how='left', on=['generalPic','country_code'])
         
         if any(df.id.str.contains(';', na=False)):

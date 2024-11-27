@@ -44,11 +44,12 @@ def nuts_lien(app1, part, lien):
     print("\n### NUTS avec LIEN")
     nuts_a=(app1[['project_id', 'orderNumber', 'generalPic', 'participant_pic','nutsCode']]
             .rename(columns={'orderNumber':'proposal_orderNumber',
-                                'participant_pic':'proposal_participant_pic', 
-                                'nutsCode':'nuts_app'})
-            .fillna('')
-            )
+                                'participant_pic':'proposal_participant_pic',
+                                'nutsCode':'nuts_app'
+                                })
 
+            )
+    
     nuts_p=(part[['project_id', 'orderNumber', 'generalPic', 'participant_pic', 'nutsCode']]
             .rename(columns={'nutsCode':'nuts_part', 'participant_pic':'calculated_pic'})
             .drop_duplicates()
@@ -59,12 +60,23 @@ def nuts_lien(app1, part, lien):
     # size nuts_a: 463523, size nuts_p: 103661
     # pp_app: 347165,  pp_part: 88103
     l=len(nuts_a) 
-    nuts_a = nuts_a.merge(pp_app, how='left', on=['project_id', 'generalPic', 'proposal_participant_pic'])
+    nuts_a = (nuts_a.merge(pp_app, 
+                           how='left', 
+                           on=['project_id', 'generalPic', 'proposal_participant_pic'])
+                    )
+    nuts_a['ncount'] = (nuts_a
+                    .groupby(['project_id', 'proposal_orderNumber', 
+                                'generalPic','proposal_participant_pic'], 
+                                as_index=False)['nuts_app']
+                    .transform('count'))
+    
+    nuts_a.nuts_app = nuts_a[['nuts_app', 'nutsCode']].apply(lambda x: ','.join(x.dropna().unique()).split(','), axis=1)
+
     nuts_a.loc[nuts_a.nutsCode.isnull(), 'nuts_code'] = nuts_a.nuts_app
     nuts_a.loc[(nuts_a.nuts_code.isnull())&(nuts_a.nuts_app.isnull()), 'nuts_code'] = nuts_a.nutsCode
     nuts_a.loc[(nuts_a.nuts_code.isnull())&(nuts_a.nutsCode==nuts_a.nuts_app), 'nuts_code'] = nuts_a.nutsCode
     nuts_a.loc[(nuts_a.nuts_code.isnull())&(nuts_a.nuts_app.str[:2]!=nuts_a.nutsCode.str[:2]), 'nuts_code'] = nuts_a.nuts_app+';'+nuts_a.nutsCode
-    nuts_a.loc[(nuts_a.nuts_code.isnull())&(nuts_a.nuts_app.str.len()==nuts_a.nutsCode.str.len()), 'nuts_code'] = nuts_a.nutsCode
+    nuts_a.loc[(nuts_a.nuts_code.isnull())&(nuts_a.nuts_app.str.len()>2)&(nuts_a.nutsCode.str.len()>2), 'nuts_code'] = nuts_a.nuts_app+';'+nuts_a.nutsCode
     nuts_a.loc[(nuts_a.nuts_code.isnull())&(nuts_a.nuts_app.str.len()>nuts_a.nutsCode.str.len()), 'nuts_code'] = nuts_a.nuts_app
     nuts_a.loc[(nuts_a.nuts_code.isnull())&(nuts_a.nuts_app.str.len()<nuts_a.nutsCode.str.len()), 'nuts_code'] = nuts_a.nutsCode
     nuts_a = (nuts_a.drop(columns=['nuts_app','nutsCode'])
