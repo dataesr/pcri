@@ -4,26 +4,32 @@
 
 
 def participations_nuts(df):
-    import pandas as pd
+    import pandas as pd, numpy as np
     from config_path import PATH_REF
     # gestion code nuts
     nuts = pd.read_pickle(f'{PATH_REF}nuts_complet.pkl')
     temp=df[['participation_nuts', 'nutsCode']].drop_duplicates()
-    temp = temp.assign(n1=df.participation_nuts.str.split(';'), n2=df.nutsCode.str.split(';'))
-    temp=temp.explode('n1').explode('n2')
-    temp=pd.concat([temp.rename(columns={'n1':'n'}), temp.rename(columns={'n2':'n'})]).drop_duplicates()
-    temp=temp.merge(nuts, how='left', left_on='n', right_on='nuts_code').drop(columns=['nuts_code', 'n1', 'n2'])
-    # temp.loc[temp.participation_nuts.str.contains(';')].sort_values('participation_nuts').head(10)
-    # temp=temp.merge(nuts, how='left', left_on='n', right_on='nuts_code').drop(columns='nuts_code')
-    # temp=(temp
-    #     .groupby(['participation_nuts'])
-    #     .agg(lambda x: ';'.join(x.dropna()))
-    #     .drop(columns='nuts_code')
-    #     .reset_index()
-    #     .drop_duplicates())
-    # lien = lien.merge(temp, how='left', on='participation_nuts')
-    # print(f"size lien after add nuts: {len(lien)}, sans code_nuts: {len(lien.loc[(~lien.participation_nuts.isnull())&(lien.region_1_name.isnull())])}")
-    return temp
+
+    temp = temp.assign(n1=temp.participation_nuts.str.split(';'), n2=temp.nutsCode.str.split(';'))
+    temp['n1'] = [ [] if (x is np.nan)|(x is None) else x for x in temp['n1'] ]
+    temp['n2'] = [ [] if (x is np.nan)|(x is None) else x for x in temp['n2'] ]
+    temp['n3'] = temp.apply(lambda x: list(set(x['n1'] + x['n2'])), axis=1)
+    temp = temp.explode('n3').drop(columns=['n1', 'n2']).drop_duplicates()
+ 
+    temp=temp.merge(nuts, how='left', left_on='n3', right_on='nuts_code').drop(columns=['nuts_code'])
+ 
+    temp=(temp
+        .groupby(['participation_nuts', 'nutsCode'])
+        .agg(lambda x: ';'.join(x.dropna()))
+        .reset_index()
+        .drop_duplicates())
+    
+    part_step = (part_step
+                 .merge(temp, how='left', on=['participation_nuts', 'nutsCode'])
+                 .drop(columns=['participation_nuts', 'nutsCode'])
+                 .rename(columns={'n3':'participation_nuts'}))
+    print(f"size part_step after add nuts: {len(part_step)}, sans code_nuts: {part_step(part_step.loc[(~part_step.participation_nuts.isnull())&(part_step.region_1_name.isnull())])}")
+    return part_step
 
 
 def entities_with_lien(entities_info, lien, genPic_to_new):
@@ -35,20 +41,21 @@ def entities_with_lien(entities_info, lien, genPic_to_new):
     lien = lien.rename(columns={'generalPic':'pic_old', 'pic_new':'generalPic'})
     lien.loc[lien.generalPic.isnull(), 'generalPic'] = lien.loc[lien.generalPic.isnull(), 'pic_old']
 
-    ent_tmp = entities_info[
+    ent_tmp = (entities_info[
             ['generalPic', 'flag_entreprise',
             'cordis_is_sme', 'cordis_type_entity_code', 'cordis_type_entity_name_fr', 
             'cordis_type_entity_name_en', 'cordis_type_entity_acro', 'nutsCode',
-            'country_code', 'country_code_mapping', 'extra_joint_organization']].drop_duplicates()
+            'country_code', 'country_code_mapping', 'extra_joint_organization']]
+            .drop_duplicates())
     ent_tmp['n_pic_cc'] = ent_tmp.groupby(['generalPic', 'country_code_mapping'])['country_code'].transform('count')
 
     part_step = (lien.merge(ent_tmp,
                 how='left', on=['generalPic', 'country_code_mapping'])
                 .drop(columns={'n_app', 'n_part', 'participant_pic',  'nuts_participant', 'nuts_applicants'})
-                # .rename(columns={ 'nutsCode':'entities_nuts', 'nuts_code':'participation_nuts'})   
+                # .rename(columns={ 'nutsCode':'entities_nuts', 'nuts_code':'participation_nuts'})
                 .drop_duplicates())
 
-
+    part_step = participations_nuts(part_step)
 
     if len(part_step)==len(lien):
         print(f'1- part_step ({len(part_step)}) = lien')
