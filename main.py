@@ -8,10 +8,10 @@ from main_library import *
 # si traitement déjà effectués
 ### si besoin de charger les permiers traitements sns recommencer depuis le debut
         
-projects = pd.read_pickle(f"{PATH_CLEAN}projects_current.pkl")         
-participation = pd.read_pickle(f"{PATH_CLEAN}participation_current.pkl") 
-countries = pd.read_pickle(f"{PATH_CLEAN}country_current.pkl") 
-entities_info = pd.read_pickle(f"{PATH_CLEAN}entities_info_current2.pkl") 
+projects = pd.read_pickle(f"{PATH_CLEAN}projects_current.pkl")
+participation = pd.read_pickle(f"{PATH_CLEAN}participation_current.pkl")
+countries = pd.read_pickle(f"{PATH_CLEAN}country_current.pkl")
+entities_info = pd.read_pickle(f"{PATH_CLEAN}entities_info_current2.pkl")
 calls = pd.read_csv(f"{PATH_CONNECT}calls.csv", sep=";", parse_dates=['call_deadline'])
 
 # step4
