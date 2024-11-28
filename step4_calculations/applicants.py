@@ -35,7 +35,8 @@ def applicants_calcul(part_step, app1):
                 'cordis_type_entity_code', 'cordis_type_entity_name_fr', 'cordis_type_entity_name_en', 'cordis_type_entity_acro', 
                 'participation_nuts', 'region_1_name', 'region_2_name', 'regional_unit_name',
                 'country_code', 'proposal_country_code_mapping', 'extra_joint_organization', 'role', 'partnerType', 'calculated_fund']]
-                .rename(columns={'proposal_orderNumber':'orderNumber', 'proposal_country_code_mapping':'country_code_mapping'})
+                .rename(columns={'proposal_orderNumber':'orderNumber', 
+                                 'proposal_country_code_mapping':'country_code_mapping'})
                 .assign(stage='evaluated'))
 
     if '{:,.1f}'.format(part_prop['calculated_fund'].sum())==app_sum:
