@@ -1,6 +1,6 @@
 import numpy as np, pandas as pd
 from config_path import PATH_ODS
-from functions_shared import order_columns
+from functions_shared import order_columns, zipfile_ods
 from step3_entities.ID_getSourceRef import *
 
 def erc_ods(msca_erc):
@@ -32,8 +32,8 @@ def erc_ods(msca_erc):
     e = e.reindex(sorted(e.columns), axis=1)
     # attention si changement de nom de vars -> la modifier aussi dans pcri_info_columns_order
     e = order_columns(e, 'erc_synthese')
-
-    e.to_csv(f"{PATH_ODS}fr-esr-erc-projects-synthese.csv", sep=';', encoding='UTF-8', index=False, na_rep='', decimal=".")
+    zipfile_ods(e, "fr-esr-erc-projects-synthese")
+    # e.to_csv(f"{PATH_ODS}fr-esr-erc-projects-synthese.csv", sep=';', encoding='UTF-8', index=False, na_rep='', decimal=".")
 
 def erc_evol_ods(msca_resume):
     ## ERC_resume for ODS
@@ -73,8 +73,8 @@ def erc_evol_ods(msca_resume):
     tmp = tmp.reindex(sorted(tmp.columns), axis=1)
     # attention si changement de nom de vars -> la modifier aussi dans pcri_info_columns_order
     tmp = order_columns(tmp, 'erc_evol')    
-        
-    tmp.sort_values(['fund_€_all'], ascending=False).to_csv(f"{PATH_ODS}fr-esr-erc-evolution-pcri.csv", sep=';', encoding='UTF-8', index=False, na_rep='', decimal=".")
+    zipfile_ods(tmp.sort_values(['fund_€_all'], ascending=False), "fr-esr-erc-projects-synthese")
+    # tmp.sort_values(['fund_€_all'], ascending=False).to_csv(f"{PATH_ODS}fr-esr-erc-evolution-pcri.csv", sep=';', encoding='UTF-8', index=False, na_rep='', decimal=".")
 
 def erc_entities(me_entities):
     print("\n### ERC entities")
@@ -116,4 +116,5 @@ def erc_entities(me_entities):
     tmp.loc[(tmp.entities_id_source.isnull())&(tmp.entities_id.str.contains('gent', na=False)), 'entities_id_source'] = 'paysage'
 
     tmp = order_columns(tmp, 'erc_entities')  
-    tmp.to_csv(f"{PATH_ODS}fr-esr-erc-projects-entities.csv", sep=';', encoding='UTF-8', index=False, na_rep='', decimal=".")
+    zipfile_ods(tmp, "fr-esr-erc-projects-entities")
+    # tmp.to_csv(f"{PATH_ODS}fr-esr-erc-projects-entities.csv", sep=';', encoding='UTF-8', index=False, na_rep='', decimal=".")
