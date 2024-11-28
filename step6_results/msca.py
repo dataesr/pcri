@@ -1,6 +1,6 @@
 import numpy as np, pandas as pd
 from config_path import PATH_ODS
-from functions_shared import order_columns
+from functions_shared import order_columns, zipfile_ods
 from step3_entities.ID_getSourceRef import *
 
 def msca_ods(msca_erc):
@@ -33,7 +33,8 @@ def msca_ods(msca_erc):
     m = m.reindex(sorted(m.columns), axis=1)
     # attention si changement de nom de vars -> la modifier aussi dans pcri_info_columns_order
     m = order_columns(m, 'msca_synthese')
-    m.to_csv(f"{PATH_ODS}fr-esr-msca-projects-synthese.csv", sep=';', encoding='UTF-8', index=False, na_rep='', decimal=".")
+    zipfile_ods(m, "fr-esr-msca-projects-synthese")
+    # m.to_csv(f"{PATH_ODS}fr-esr-msca-projects-synthese.csv", sep=';', encoding='UTF-8', index=False, na_rep='', decimal=".")
 
 def msca_evol_ods(msca_resume):
     ## msca_resume for ODS
@@ -72,7 +73,8 @@ def msca_evol_ods(msca_resume):
     tmp = tmp.reindex(sorted(tmp.columns), axis=1)
     # attention si changement de nom de vars -> la modifier aussi dans pcri_info_columns_order
     tmp = order_columns(tmp, 'msca_evol')
-    tmp.sort_values(['fund_€_all'], ascending=False).to_csv(f"{PATH_ODS}fr-esr-msca-evolution-pcri.csv", sep=';', encoding='UTF-8', index=False, na_rep='', decimal=".")
+    zipfile_ods(tmp.sort_values(['fund_€_all'], ascending=False), "fr-esr-msca-evolution-pcri")
+    # tmp.sort_values(['fund_€_all'], ascending=False).to_csv(f"{PATH_ODS}fr-esr-msca-evolution-pcri.csv", sep=';', encoding='UTF-8', index=False, na_rep='', decimal=".")
 
 
 def msca_entities(me_entities):
@@ -117,5 +119,5 @@ def msca_entities(me_entities):
     tmp.loc[(tmp.entities_id_source.isnull())&(tmp.entities_id.str.contains('gent', na=False)), 'entities_id_source'] = 'paysage'
 
     tmp = order_columns(tmp, 'msca_entities')  
-
-    tmp.to_csv(f"{PATH_ODS}fr-esr-msca-projects-entities.csv", sep=';', encoding='UTF-8', index=False, na_rep='', decimal=".")
+    zipfile_ods(tmp, "fr-esr-msca-projects-entities")
+    # tmp.to_csv(f"{PATH_ODS}fr-esr-msca-projects-entities.csv", sep=';', encoding='UTF-8', index=False, na_rep='', decimal=".")
