@@ -69,47 +69,72 @@ def nuts_lien(app1, part, lien):
                                 'generalPic','proposal_participant_pic'], 
                                 as_index=False)['nuts_app']
                     .transform('count'))
-    
-    nuts_a.nuts_app = nuts_a[['nuts_app', 'nutsCode']].apply(lambda x: ','.join(x.dropna().unique()).split(','), axis=1)
 
-    nuts_a.loc[nuts_a.nutsCode.isnull(), 'nuts_code'] = nuts_a.nuts_app
-    nuts_a.loc[(nuts_a.nuts_code.isnull())&(nuts_a.nuts_app.isnull()), 'nuts_code'] = nuts_a.nutsCode
-    nuts_a.loc[(nuts_a.nuts_code.isnull())&(nuts_a.nutsCode==nuts_a.nuts_app), 'nuts_code'] = nuts_a.nutsCode
-    nuts_a.loc[(nuts_a.nuts_code.isnull())&(nuts_a.nuts_app.str[:2]!=nuts_a.nutsCode.str[:2]), 'nuts_code'] = nuts_a.nuts_app+';'+nuts_a.nutsCode
-    nuts_a.loc[(nuts_a.nuts_code.isnull())&(nuts_a.nuts_app.str.len()>2)&(nuts_a.nutsCode.str.len()>2), 'nuts_code'] = nuts_a.nuts_app+';'+nuts_a.nutsCode
-    nuts_a.loc[(nuts_a.nuts_code.isnull())&(nuts_a.nuts_app.str.len()>nuts_a.nutsCode.str.len()), 'nuts_code'] = nuts_a.nuts_app
-    nuts_a.loc[(nuts_a.nuts_code.isnull())&(nuts_a.nuts_app.str.len()<nuts_a.nutsCode.str.len()), 'nuts_code'] = nuts_a.nutsCode
-    nuts_a = (nuts_a.drop(columns=['nuts_app','nutsCode'])
-                    .groupby(['project_id', 'proposal_orderNumber', 'generalPic','proposal_participant_pic'])
-                    .agg(lambda x: ';'.join(x))
+    nuts_a.loc[(nuts_a['nutsCode'].str.len()>2)&(nuts_a['nuts_app'].str.len()==2)&(nuts_a.nuts_app.str[:2]==nuts_a.nutsCode.str[:2]), 'nuts_app'] = np.nan
+    nuts_a.loc[(nuts_a['nutsCode'].str.len()==2)&(nuts_a['nuts_app'].str.len()>2)&(nuts_a.nuts_app.str[:2]==nuts_a.nutsCode.str[:2]), 'nutsCode'] = np.nan
+    
+    nuts_a.nuts_app = (nuts_a[['nuts_app', 'nutsCode']]
+                       .apply(lambda x: ','.join(x.dropna().unique()).split(','), axis=1))
+    nuts_a = (nuts_a.drop(columns=['nutsCode'])
+                    .groupby(['project_id', 'proposal_orderNumber', 'generalPic','proposal_participant_pic'])['nuts_app']
+                    .apply(lambda x: list(set(x.sum())))
                     .reset_index())
+    # nuts_a.loc[nuts_a.nutsCode.isnull(), 'nuts_code'] = nuts_a.nuts_app
+    # nuts_a.loc[(nuts_a.nuts_code.isnull())&(nuts_a.nuts_app.isnull()), 'nuts_code'] = nuts_a.nutsCode
+    # nuts_a.loc[(nuts_a.nuts_code.isnull())&(nuts_a.nutsCode==nuts_a.nuts_app), 'nuts_code'] = nuts_a.nutsCode
+    # nuts_a.loc[(nuts_a.nuts_code.isnull())&(nuts_a.nuts_app.str[:2]!=nuts_a.nutsCode.str[:2]), 'nuts_code'] = nuts_a.nuts_app+';'+nuts_a.nutsCode
+    # nuts_a.loc[(nuts_a.nuts_code.isnull())&(nuts_a.nuts_app.str.len()>2)&(nuts_a.nutsCode.str.len()>2), 'nuts_code'] = nuts_a.nuts_app+';'+nuts_a.nutsCode
+    # nuts_a.loc[(nuts_a.nuts_code.isnull())&(nuts_a.nuts_app.str.len()>nuts_a.nutsCode.str.len()), 'nuts_code'] = nuts_a.nuts_app
+    # nuts_a.loc[(nuts_a.nuts_code.isnull())&(nuts_a.nuts_app.str.len()<nuts_a.nutsCode.str.len()), 'nuts_code'] = nuts_a.nutsCode
+    # nuts_a = (nuts_a.drop(columns=['nutsCode'])
+    #                 .groupby(['project_id', 'proposal_orderNumber', 'generalPic','proposal_participant_pic'])
+    #                 .agg(lambda x: ';'.join(x))
+    #                 .reset_index())
     if len(nuts_a) != l:
             print("1- ATTENTION ! pp_app avec doublon -> revoir le code groupby")
     
     l=len(nuts_p)
     nuts_p = nuts_p.merge(pp_part, how='left', on=['project_id', 'generalPic', 'calculated_pic'])
-    nuts_p.loc[nuts_p.nutsCode.isnull(), 'nuts_code'] = nuts_p.nuts_part
-    nuts_p.loc[(nuts_p.nuts_code.isnull())&(nuts_p.nuts_part.isnull()), 'nuts_code'] = nuts_p.nutsCode
-    nuts_p.loc[(nuts_p.nuts_code.isnull())&(nuts_p.nutsCode==nuts_p.nuts_part), 'nuts_code'] = nuts_p.nutsCode
-    nuts_p.loc[(nuts_p.nuts_code.isnull())&(nuts_p.nuts_part.str[:2]!=nuts_p.nutsCode.str[:2]), 'nuts_code'] = nuts_p.nuts_part+';'+nuts_p.nutsCode
-    nuts_p.loc[(nuts_p.nuts_code.isnull())&(nuts_p.nuts_part.str.len()==nuts_p.nutsCode.str.len()), 'nuts_code'] = nuts_p.nutsCode
-    nuts_p.loc[(nuts_p.nuts_code.isnull())&(nuts_p.nuts_part.str.len()>nuts_p.nutsCode.str.len()), 'nuts_code'] = nuts_p.nuts_part
-    nuts_p.loc[(nuts_p.nuts_code.isnull())&(nuts_p.nuts_part.str.len()<nuts_p.nutsCode.str.len()), 'nuts_code'] = nuts_p.nutsCode
-    nuts_p = (nuts_p.drop(columns=['nuts_part','nutsCode'])
-                    .groupby(['project_id', 'orderNumber', 'generalPic', 'calculated_pic'])
-                    .agg(lambda x: ';'.join(x))
+    
+    nuts_p['ncount'] = (nuts_p
+                    .groupby(['project_id', 'orderNumber', 
+                                'generalPic','calculated_pic'], 
+                                as_index=False)['nuts_part']
+                    .transform('count'))
+
+    nuts_p.loc[(nuts_p['nutsCode'].str.len()>2)&(nuts_p['nuts_part'].str.len()==2)&(nuts_p.nuts_part.str[:2]==nuts_p.nutsCode.str[:2]), 'nuts_part'] = np.nan
+    nuts_p.loc[(nuts_p['nutsCode'].str.len()==2)&(nuts_p['nuts_part'].str.len()>2)&(nuts_p.nuts_part.str[:2]==nuts_p.nutsCode.str[:2]), 'nutsCode'] = np.nan
+    
+    nuts_p.nuts_part = (nuts_p[['nuts_part', 'nutsCode']]
+                       .apply(lambda x: ','.join(x.dropna().unique()).split(','), axis=1))
+    nuts_p = (nuts_p.drop(columns=['nutsCode'])
+                    .groupby(['project_id', 'orderNumber', 'generalPic','calculated_pic'])['nuts_part']
+                    .apply(lambda x: list(set(x.sum())))
                     .reset_index())
+    # nuts_p.loc[nuts_p.nutsCode.isnull(), 'nuts_code'] = nuts_p.nuts_part
+    # nuts_p.loc[(nuts_p.nuts_code.isnull())&(nuts_p.nuts_part.isnull()), 'nuts_code'] = nuts_p.nutsCode
+    # nuts_p.loc[(nuts_p.nuts_code.isnull())&(nuts_p.nutsCode==nuts_p.nuts_part), 'nuts_code'] = nuts_p.nutsCode
+    # nuts_p.loc[(nuts_p.nuts_code.isnull())&(nuts_p.nuts_part.str[:2]!=nuts_p.nutsCode.str[:2]), 'nuts_code'] = nuts_p.nuts_part+';'+nuts_p.nutsCode
+    # nuts_p.loc[(nuts_p.nuts_code.isnull())&(nuts_p.nuts_part.str.len()==nuts_p.nutsCode.str.len()), 'nuts_code'] = nuts_p.nutsCode
+    # nuts_p.loc[(nuts_p.nuts_code.isnull())&(nuts_p.nuts_part.str.len()>nuts_p.nutsCode.str.len()), 'nuts_code'] = nuts_p.nuts_part
+    # nuts_p.loc[(nuts_p.nuts_code.isnull())&(nuts_p.nuts_part.str.len()<nuts_p.nutsCode.str.len()), 'nuts_code'] = nuts_p.nutsCode
+    # nuts_p = (nuts_p.drop(columns=['nuts_part','nutsCode'])
+    #                 .groupby(['project_id', 'orderNumber', 'generalPic', 'calculated_pic'])
+    #                 .agg(lambda x: ';'.join(x))
+    #                 .reset_index())
     if len(nuts_p) != l:
             print("2- ATTENTION ! pp_part avec doublon -> revoir le code groupby")
 
     # lien = lien.reset_index()
     lien = (lien.merge(nuts_p, how='left', on=['project_id', 'orderNumber', 'generalPic', 'calculated_pic'])
             .merge(nuts_a, how='left', on=['project_id', 'proposal_orderNumber', 'generalPic', 'proposal_participant_pic'])
-            .drop_duplicates())
-    
-    lien['participation_nuts'] = lien[['nuts_code_x', 'nuts_code_y']].stack().groupby(level=0).agg(';'.join)
-    lien['participation_nuts'] = lien['participation_nuts'].apply(lambda x: ';'.join(set(x.split(';'))))
+            )
 
-    lien.rename(columns={'nuts_code_x':'nuts_participant', 'nuts_code_y':'nuts_applicants'}, inplace=True)
+    lien['nuts_part'] = [ [] if x is np.nan else x for x in lien['nuts_part'] ]
+    lien['nuts_app'] = [ [] if x is np.nan else x for x in lien['nuts_app'] ]
+ 
+    lien['participation_nuts'] = lien.apply(lambda x: ';'.join(list(set(x['nuts_app'] + x['nuts_part']))), axis=1)
+
+    lien.rename(columns={'nuts_part':'nuts_participant', 'nuts_app':'nuts_applicants'}, inplace=True)
     print(f"- size lien: {len(lien)}")
     return lien
