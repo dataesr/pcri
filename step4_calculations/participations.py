@@ -118,7 +118,7 @@ def ent(participation, entities_info, projects):
     # r=(entities_part.loc[~entities_part.entities_name.isnull(), ['generalPic', 'entities_id','entities_name', 'entities_acronym']]
     # .drop_duplicates())
 
-    entities_part['entities_acronym'] = entities_part[['entities_acronym']].fillna('')
+    # entities_part['entities_acronym'] = entities_part[['entities_acronym']].fillna('')
     # r['entities_name'] = r.apply(lambda x: x['entities_acronym'] if x["entities_name"].isnull() else x['entities_name'], axis=1)
     # r['entities_name'] = r.apply(lambda x: x['entities_name'] if x["entities_acronym"].upper() in x["entities_name"].upper() else x['entities_name']+' '+x["entities_acronym"].lower(),axis=1)
     # entities_part = (entities_part.drop(columns=['entities_name', 'entities_acronym'])
