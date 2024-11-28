@@ -24,12 +24,12 @@ def participations_nuts(df):
         .reset_index()
         .drop_duplicates())
     
-    part_step = (part_step
+    df = (df
                  .merge(temp, how='left', on=['participation_nuts', 'nutsCode'])
                  .drop(columns=['participation_nuts', 'nutsCode'])
                  .rename(columns={'n3':'participation_nuts'}))
-    print(f"size part_step after add nuts: {len(part_step)}, sans code_nuts: {part_step(part_step.loc[(~part_step.participation_nuts.isnull())&(part_step.region_1_name.isnull())])}")
-    return part_step
+    print(f"size part_step after add nuts: {len(df)}, sans code_nuts: {df(df.loc[(~df.participation_nuts.isnull())&(df.region_1_name.isnull())])}")
+    return df
 
 
 def entities_with_lien(entities_info, lien, genPic_to_new):
