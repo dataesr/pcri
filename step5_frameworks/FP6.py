@@ -1,5 +1,5 @@
 import pandas as pd, numpy as np, json
-from config_path import PATH_CLEAN, PATH
+from config_path import PATH_CLEAN, PATH_SOURCE, PATH
 
 def FP6_process():
     print("\n### FP6")
@@ -11,7 +11,7 @@ def FP6_process():
         for i in _FP6.columns:
             _FP6[i] = _FP6[i].apply(lambda x: x.strip() if isinstance(x, str) else x)
         _FP6 = _FP6.reindex(sorted(_FP6.columns), axis=1)
-        print(f"size _FP6: {len(_FP6)}, cols: {_FP6.columns}")
+        print(f"- size _FP6 load: {len(_FP6)},\ncols: {_FP6.columns}")
         return _FP6
 
     _FP6=FP6_load()
@@ -24,7 +24,7 @@ def FP6_process():
                 .rename(columns={'nuts_code_2013':'nuts_code_tmp', 'nutsCode':'nuts_code','lvl1Description':'region_1_name', 'lvl2Description': 'region_2_name', 'lvl3Description':'regional_unit_name'}))
 
         # nuts['region_1_name'] = nuts['region_1_name'].str.title()
-        print(len(nuts))
+        # print(len(nuts))
 
         _FP6.loc[_FP6.NutsCode.str.len()>2, 'nuts_code_tmp'] = _FP6.NutsCode
         print(f"size _FP6 with code after cleanup nuts: {len(_FP6[~_FP6.nuts_code_tmp.isnull()])}")
@@ -65,7 +65,7 @@ def FP6_process():
         if any(x.countryCode.isnull()):
             print(x[x.countryCode.isnull()])
 
-        country = pd.read_csv("C:/Users/zfriant/Documents/OneDrive/PCRI/eCorda_datas/datas_load/H2020/country_current.csv", sep=';', encoding='utf-8')
+        country = pd.read_csv(f"{PATH_SOURCE}H2020/country_current.csv", sep=';', encoding='utf-8')
         x = x.merge(country[['country_code_mapping', 'country_name_mapping', 'country_code']].drop_duplicates(), how='left', on='country_code_mapping')
         x.loc[x.country_code_mapping=='ZOE', 'country_name_mapping'] = 'European organisations area'
 
@@ -110,7 +110,7 @@ def FP6_process():
             .merge(old_country[['countryCode', 'STATUS']].drop_duplicates(), how='left', on='countryCode')
             .rename(columns={'STATUS':'fp_specific_country_status'}))
 
-        print(f"size FP6: {len(_FP6)}\ncols: {_FP6.columns}")
+        print(f"size FP6 with country: {len(_FP6)}\ncols: {_FP6.columns}")
         return _FP6
     _FP6=country(_FP6)
 
@@ -119,7 +119,7 @@ def FP6_process():
         type_entity = pd.read_json(open('data_files/legalEntityType.json', 'r', encoding='UTF-8'))
         _FP6 = _FP6.merge(type_entity, how='left', on='cordis_type_entity_code')
 
-        print(f"size FP6: {len(_FP6)}")
+        print(f"size FP6 with category: {len(_FP6)}")
         return _FP6
     _FP6=category(_FP6)
 
@@ -188,8 +188,13 @@ def FP6_process():
 
 
         FP6 = FP6.merge(destination[['destination_code', 'destination_name_en']], how='left', on='destination_code')
-        FP6 = (FP6.merge(destination.rename(columns={'destination_code':'destination_detail_code', 'destination_name_en':'destination_detail_name_en'})
-                [['destination_detail_code', 'destination_detail_name_en']], how='left', on='destination_detail_code'))
+        FP6 = (FP6
+                .merge(destination
+                .rename(columns={'destination_code':'destination_detail_code', 'destination_name_en':'destination_detail_name_en'})
+                [['destination_detail_code', 'destination_detail_name_en']], how='left', on='destination_detail_code')
+                .drop_duplicates())
+        
+        print(f"- size FP6 after clean thema: {len(FP6.loc[FP6.stage=='successful'])}, fund: {'{:,.1f}'.format(FP6.loc[FP6.stage=='successful', 'subv_obt'].sum())}")
         return FP6
     FP6=themes_act(_FP6)
 
@@ -198,7 +203,7 @@ def FP6_process():
         FP6 = FP6.assign(number_involved=1, with_coord=np.where(FP6.destination_code.isin(['PF']), False, True))
         FP6.loc[FP6.with_coord==False, 'coordination_number'] = 0
 
-        print(f"1 - size project lauréats: {len(FP6.loc[FP6.stage=='successful'])}, fund: {'{:,.1f}'.format(FP6.loc[FP6.stage=='successful', 'calculated_fund'].sum())}")
+        print(f"- size FP6 final: {len(FP6.loc[FP6.stage=='successful'])}, fund: {'{:,.1f}'.format(FP6.loc[FP6.stage=='successful', 'calculated_fund'].sum())}")
         # FP6.info()
         with open(f"{PATH_CLEAN}FP6_data.pkl", 'wb') as file:
             pd.to_pickle(FP6, file)
@@ -231,4 +236,3 @@ def FP6_process():
         with open(file_name, 'wb') as file:
             pd.to_pickle(project, file)
     ods(FP6)
-    return FP6
