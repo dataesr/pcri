@@ -1,10 +1,10 @@
 import pandas as pd, numpy as np, json
-from config_path import PATH_CLEAN
+from config_path import PATH_CLEAN, PATH
 
 def FP6_process():
     print("\n### FP6")
     def FP6_load():
-        FP6_PATH='C:/Users/zfriant/Documents/OneDrive/PCRI/FP6/'
+        FP6_PATH=f'{PATH}FP6/'
         with open(f"{FP6_PATH}FP6_projects.json", 'r', encoding='ANSI') as fp:
             _FP6 = pd.DataFrame(json.load(fp))
         _FP6.columns = _FP6.columns.str.strip()
