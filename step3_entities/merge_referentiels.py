@@ -51,8 +51,8 @@ def merge_paysage(entities_tmp, paysage, cat_filter):
 
     entities_tmp = entities_tmp.drop(['id_clean','name_clean','acronym_clean'], axis=1).drop_duplicates()
 
-    if any(entities_tmp.groupby('generalPic')['generalPic'].transform('count')>1):
-        print(f"- doublons PIC\n{entities_tmp[entities_tmp.groupby('generalPic')['generalPic'].transform('count')>1][['generalPic', 'legalName', 'country_code_mapping', 'id']]}")
+    if ('legalName' in entities_tmp.columns) & (any(entities_tmp.groupby('generalPic')['generalPic'].transform('count')>1)):
+        print(f"- doublons PIC\n{entities_tmp[entities_tmp.groupby('generalPic')['generalPic'].transform('count')>1][['generalPic', 'legalName','country_code_mapping', 'id']]}")
         
     print(f"- End size entities_tmp+paysage_info: {len(entities_tmp)}")
     return entities_tmp
@@ -123,7 +123,7 @@ def merge_sirene(entities_tmp, sirene):
 
     entities_tmp.drop(columns=['nom','sigle', 'orig'], inplace=True)
 
-    if any(entities_tmp.groupby('generalPic')['generalPic'].transform('count')>1):
+    if ('legalName' in entities_tmp.columns)&(any(entities_tmp.groupby('generalPic')['generalPic'].transform('count')>1)):
         print(f"3 - si ++ lignes / pics :\n{entities_tmp[entities_tmp.groupby('generalPic')['generalPic'].transform('count')>1][['generalPic', 'legalName', 'country_code_mapping', 'id']]}")
 
     print(f"- End size entities_tmp+sirene: {len(entities_tmp)}")
