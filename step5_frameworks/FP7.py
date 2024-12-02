@@ -1,5 +1,5 @@
 import requests, pandas as pd
-from config_path import PATH_SOURCE, PATH_CLEAN
+from config_path import PATH_SOURCE, PATH_CLEAN, PATH
 from step3_entities.references import *
 from step3_entities.merge_referentiels import *
 from step3_entities.categories import *
@@ -19,16 +19,17 @@ def FP7_process():
         # traitement ref select le FP, id non null ou/et ZONAGE non null
         ref = ref_source_2d_select(ref_source, FP)
         return ref
-    ref=ref_select('FP7')
+    ref, genPic_to_new=ref_select('FP7')
 
     def FP7_load():
-        FP7_PATH='C:/Users/zfriant/Documents/OneDrive/PCRI/FP7/2022/'
+        FP7_PATH=f'{PATH}FP7/2022/'
         _FP7 = pd.read_pickle(f"{FP7_PATH}FP7_data.pkl")
-        print(f"size _FP7: {len(_FP7)}")
+        print(f"- size _FP7 load: {len(_FP7)}")
         return _FP7
     _FP7=FP7_load()
 
-    def FP7_cleaning(_FP7):
+    country = pd.read_csv(f"{PATH_SOURCE}H2020/country_current.csv", sep=';', encoding='utf-8')
+    def FP7_cleaning(_FP7, country):
         _FP7 = _FP7.loc[~_FP7.status_code.isin(['INELIGIBLE','WITHDRAWN'])]
         _FP7.loc[_FP7.status_code=='Project Closed', 'status_code'] = 'CLOSED'
         _FP7.loc[_FP7.status_code=='Project Terminated', 'status_code'] = 'TERMINATED'
@@ -38,51 +39,50 @@ def FP7_process():
         _FP7.loc[_FP7.role=='participant', 'role'] = 'partner'
         _FP7['coordination_number']=np.where(_FP7['role']=='coordinator', 1, 0)
         _FP7.loc[(_FP7.generalPic=='998133396')&(_FP7.countryCode=='ZZ'), 'country_code_mapping'] = 'USA' # bristol meyer
-        print(f"size _FP7: {len(_FP7)}, size with id: {len(_FP7.loc[~_FP7.id.isnull()])}")
+        print(f"- size _FP7 after clean status: {len(_FP7)}, size with id: {len(_FP7.loc[~_FP7.id.isnull()])}")
         
         zz = _FP7.loc[(_FP7.country_code_mapping=='ZZZ')]
-        print(f"size _FP7 sans country_code: {len(zz)}")
+        print(f"- size _FP7 sans country_code: {len(zz)}")
         zz = ref.loc[ref.generalPic.isin(zz.generalPic.unique())]
         _FP7 = _FP7.merge(zz, how='left', on='generalPic', suffixes=['','_ref'])
         for i in ['id', 'country_code_mapping', 'ZONAGE']:
             _FP7.loc[~_FP7[f"{i}_ref"].isnull(), i] = _FP7[f"{i}_ref"]
         _FP7 = _FP7.drop(_FP7.filter(regex='_ref$').columns, axis=1)
-        print(f"size _FP7: {len(_FP7)}, {_FP7.loc[_FP7.stage=='successful', 'funding'].sum()}")
+        print(f"- size _FP7 with country: {len(_FP7)}, {_FP7.loc[_FP7.stage=='successful', 'funding'].sum()}")
         
         p = _FP7[['generalPic', 'country_code_mapping','country_code']].drop_duplicates()
-        print(f"size de p: {len(p)}")
+        print(f"- size de p: {len(p)}")
         #lien part et ref
         p = p.merge(ref, how='outer', on=['generalPic', 'country_code_mapping'], indicator=True).drop_duplicates()
         p = p.loc[p._merge.isin(['both', 'left_only'])]
-        print(f"cols de p: {p.columns}")
+        # print(f"cols de p: {p.columns}")
 
         # p1 pic+ccm commun
         p1 = p.loc[p['_merge']=='both'].drop(columns=['_merge', 'country_code'])
-        print(f"size p1 pic+cc: {len(p1)}")
+        print(f"- size p1 pic+cc: {len(p1)}")
 
         # p2 pic cc
         p2 = (p.loc[p['_merge']=='left_only'].drop(columns=['_merge', 'id', 'ZONAGE'])
             .merge(ref.rename(columns={'country_code_mapping':'country_code'}), 
                     how='inner', on=['generalPic', 'country_code']).drop_duplicates()
             .drop(columns='country_code'))
-        print(f"size p2 pic cc_parent: {len(p2)}")
+        print(f"- size p2 pic cc_parent: {len(p2)}")
 
         # acteurs sans identifiant dont le pic à plusieurs pays ou le pic certaines participations ont un identifiant et pas d'autres 
         p3 = (p.loc[p['_merge']=='left_only'].drop(columns=['_merge', 'country_code_mapping', 'id', 'ZONAGE'])
             .merge(ref, how='inner', on=['generalPic']).drop_duplicates())
         if not p3.empty:
-            print(f"A faire si possible, vérifier pourquoi des participations avec pic identiques ont un id ou pas nb pic: {len(p3.generalPic.unique())}")
+            print(f"1 - A faire si possible, vérifier pourquoi des participations avec pic identiques ont un id ou pas nb pic: {len(p3.generalPic.unique())}")
 
         if 'p2' in globals() or 'p2' in locals():
             p1 = pd.concat([p1,p2], ignore_index=True).drop_duplicates()
-            print(f"size de new p: {len(p)}, cols: {p.columns}") 
+            print(f"2 - size de new p: {len(p)}, cols: {p.columns}") 
 
         FP7 = (_FP7.drop(columns=['id', 'ZONAGE', 'country_code'])
                 .merge(p1[['generalPic', 'country_code_mapping', 'id', 'ZONAGE']], 
                     how='left', on=['generalPic', 'country_code_mapping']))
-        print(f"size _FP7: {len(_FP7)}, size FP7: {len(FP7)},  size with id: {len(FP7.loc[~FP7.id.isnull()])}")
+        print(f"- size _FP7 with ref: {len(_FP7)}, size FP7: {len(FP7)},  size with id: {len(FP7.loc[~FP7.id.isnull()])}")
         
-        country = pd.read_csv(f"{PATH_SOURCE}H2020/country_current.csv", sep=';', encoding='utf-8')
         FP7 = FP7.merge(country[['country_code_mapping', 'country_name_mapping', 'country_code']].drop_duplicates(), how='left', on='country_code_mapping')
         # FP7.loc[~FP7.ZONAGE.isnull(), 'country_code'] = FP7.ZONAGE
         if any(FP7.country_code.isnull()):
@@ -101,15 +101,15 @@ def FP7_process():
         FP7.loc[FP7.country_code=='ZOE', 'country_name_fr'] = 'Union Européenne'
         FP7.loc[FP7.country_code=='ZOE', 'country_name_en'] = 'European organisations area'
 
-        print(f"size part1: {len(FP7)}, cols: {FP7.columns}")    
-        
+        print(f"- size FP7 with country assoc: {len(FP7)},\ncols: {FP7.columns}")    
         return FP7
-    FP7=FP7_cleaning(_FP7)
+    FP7=FP7_cleaning(_FP7, country)
 
-    def FP7_entities(FP7):
+    def FP7_entities(FP7, country):
+        print("\n## FP7 entities")
         # part.country_code.unique()
         entities = FP7.loc[~FP7.id.isnull(), ['generalPic','id', 'country_code_mapping']].drop_duplicates()
-        print(f"1 - size entities {len(entities)}")
+        print(f"- size entities {len(entities)}")
         if any(entities.id.str.contains(';')):
             entities = entities.assign(id_extend=entities.id.str.split(';')).explode('id_extend')
             entities.loc[(entities.id.str.contains(';', na=False))&(entities.id_extend.str.len()==14), 'id_extend'] = entities.loc[(entities.id.str.contains(';', na=False))&(entities.id_extend.str.len()==14)].id_extend.str[:9]
@@ -118,7 +118,7 @@ def FP7_process():
             print(f"2 - size entities si multi id -> entities_size_to_keep = {entities_size_to_keep}")
 
         ror = pd.read_pickle(f"{PATH_REF}ror_df.pkl")
-        entities_tmp = merge_ror(entities, ror)
+        entities_tmp = merge_ror(entities, ror, country)
         print(f"size entities_tmp after add ror_info: {len(entities_tmp)}, entities_size_to_keep: {entities_size_to_keep}")
 
 
@@ -128,7 +128,9 @@ def FP7_process():
         if any(paysage.groupby('id')['id_clean'].transform('count')>1):
             print(f"1 - paysage doublon oublié: {paysage[paysage.groupby('id')['id_clean'].transform('count')>1][['id', 'id_clean']].sort_values('id')}")
             paysage = paysage.loc[~((paysage.id_clean=='vey7g')&(paysage.id.str.contains('265100057', na=False)))]    
-        cat_filter = category_paysage(paysage)
+        
+        paysage_category = pd.read_pickle(f"{PATH_SOURCE}paysage_category.pkl")
+        cat_filter = category_paysage(paysage_category)
         entities_tmp = merge_paysage(entities_tmp, paysage, cat_filter)
 
         sirene = pd.read_pickle(f"{PATH_REF}sirene_df.pkl")
@@ -146,12 +148,12 @@ def FP7_process():
         entities_tmp.loc[~entities_tmp.siren.isnull(), "siren"] = entities_tmp.loc[~entities_tmp.siren.isnull(), "siren"].str.split().apply(set).str.join(";")
 
         if any(entities_tmp.siren.str.contains(';', na=False)):
-            print("ATTENTION faire code pour traiter deux siren différents -> ce qui serait bizarre qu'il y ait 2 siren")
+            print("1 - ATTENTION faire code pour traiter deux siren différents -> ce qui serait bizarre qu'il y ait 2 siren")
         else:
             ### si besoin de charger groupe
             file_name = f"{PATH_REF}H20_groupe.pkl"
             groupe = pd.read_pickle(file_name)
-            print(f"taille de entities_tmp avant groupe:{len(entities_tmp)}")
+            print(f"2 - taille de entities_tmp avant groupe:{len(entities_tmp)}")
 
             entities_tmp=entities_tmp.merge(groupe, how='left', on='siren')
 
@@ -162,7 +164,7 @@ def FP7_process():
             # entities_tmp.loc[entities_tmp.entities_id.str.contains('gent', na=False), 'siren_cj'] = 'GE_ENT'
             
             # entities_tmp = entities_tmp.drop(['groupe_id','groupe_name','groupe_acronym'], axis=1).drop_duplicates()
-            print(f"taille de entities_tmp après groupe {len(entities_tmp)}")
+            print(f"- size entities_tmp after groupe {len(entities_tmp)}")
 
         entities_tmp = entities_tmp.merge(get_source_ID(entities_tmp, 'entities_id'), how='left', on='entities_id')
             # traitement catégorie
@@ -170,11 +172,12 @@ def FP7_process():
         entities_tmp = category_woven(entities_tmp, sirene)
         entities_tmp = category_agreg(entities_tmp)
         return  entities_tmp
-    entities_tmp=FP7_entities(FP7)
+    entities_tmp=FP7_entities(FP7, country)
 
     # calculs
     def FP7_calcul(FP7, entities_tmp):
-        print(f"size part avant: {len(FP7)}")
+        print("\n## FP7 calculation")
+        print(f"- size part before: {len(FP7)}")
         part1 = (FP7[['project_id', 'participant_order', 'role', 'generalPic', 'global_costs',
             'participant_type_code', 'name_source', 'acronym_source', 'countryCode', 'nutsCode',
             'funding', 'status.x', 'ADRESS', 'city', 'post_code', 'pme', 'stage', 'nom', 'countryCode_parent', 'vat_id',
@@ -204,10 +207,10 @@ def FP7_process():
             part1[i] = np.where(part1['nb']>1, part1[i]/part1['nb'], part1[i])
 
         # 'requestedGrant'
-        print(f"size part après: {len(part1)}")
+        print(f"- size part after: {len(part1)}")
 
         if any(part1.entities_id=='nan')|any(part1.entities_id.isnull()):
-            print(f"attention il reste des entities sans entities_id valides")
+            print(f"1 - attention il reste des entities sans entities_id valides")
         
         type_entity = pd.read_json(open('data_files/legalEntityType.json', 'r', encoding='UTF-8'))
         # part1.loc[part1.participant_type_code=='N/A', 'participant_type_code'] = 'NA'
@@ -224,7 +227,7 @@ def FP7_process():
 
         part1['nuts_code_tmp'] = np.where(part1.nutsCode.str.len()<3, np.nan, part1.nutsCode)
 
-        print(f"size part1 with code after cleanup nuts: {len(part1[~part1.nuts_code_tmp.isnull()])}")
+        print(f"- size part1 with code after cleanup nuts: {len(part1[~part1.nuts_code_tmp.isnull()])}")
 
         nuts = nuts.loc[(nuts.nuts_code_tmp.isin(part1.nuts_code_tmp.unique()))&(~nuts.nuts_code_tmp.isnull())]
         part1 = part1.merge(nuts, how='left', on='nuts_code_tmp').drop_duplicates()
@@ -244,6 +247,7 @@ def FP7_process():
     destination = pd.read_json(open("data_files/destination.json", 'r', encoding='utf-8'))
 
     def themes_cleaning(FP7):
+        print("## FP7 themes")
         proj = (FP7.assign(stage_name=np.where(FP7.stage=='successful', 'projets lauréats', 'projets évalués'))
                 [['project_id', 'stage', 'acronym', 'abstract', 'title', 'call_id', 'stage_name',
                 'call_deadline', 'instrument',  'panel_code', 'panel_name', 'call_year', 'duration', 'status_code', 
@@ -255,7 +259,7 @@ def FP7_process():
         proj.loc[proj.prog_abbr=='PEOPLE', 'thema_code'] = 'MSCA'
         proj.loc[proj.prog_abbr=='ERC', 'thema_code'] = 'ERC'
 
-        print(f"1 - size proj: {len(proj)}")
+        print(f"- size proj: {len(proj)}")
 
         proj = proj.merge(instr, how='left', on='instrument').drop(columns=['name'])
         proj.loc[proj.instrument.str.contains('MC-'), 'action_code'] = 'MSCA'        
@@ -263,7 +267,7 @@ def FP7_process():
         if any(proj.action_code.isnull()):
             print(proj[proj.action_code.isnull()].instrument.unique())   
             
-        print(f"2 - size proj: {len(proj)}")
+        print(f"- size proj: {len(proj)}")
 
         # ERC
         proj = proj.merge(erc_correspondence, how='left', left_on=['instrument'], right_on=['old'])
@@ -283,7 +287,7 @@ def FP7_process():
 
         proj.rename(columns={'instrument':'fp_specific_instrument'}, inplace=True)
 
-        print(f"size proj: {proj.loc[proj.stage=='successful'].project_id.nunique()}, nb project_id: {len(proj.loc[proj.stage=='successful'])}")
+        print(f"- size proj after msca: {proj.loc[proj.stage=='successful'].project_id.nunique()}, nb project_id: {len(proj.loc[proj.stage=='successful'])}")
 
         #euratom
         proj.loc[(proj.pilier.isin(['EURATOM']))&(proj.prog_abbr=='Fission'), 'programme_code'] = 'NFRP'
