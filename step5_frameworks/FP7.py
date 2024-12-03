@@ -329,7 +329,8 @@ def FP7_process():
         proj = proj.merge(destination[['destination_code', 'destination_name_en']], how='left', on='destination_code')
         proj = (proj
                 .merge(destination.rename(columns={'destination_code':'destination_detail_code', 'destination_name_en':'destination_detail_name_en'})
-                [['destination_detail_code', 'destination_detail_name_en']], how='left', on='destination_detail_code'))
+                [['destination_detail_code', 'destination_detail_name_en']], how='left', on='destination_detail_code')
+                .drop_duplicates())
 
         proj.loc[(~proj.thema_code.isin(['MSCA','ERC']))&(proj.destination_name_en.isnull()), 'destination_name_en'] = proj.area_lib
         proj.loc[proj.thema_code.isnull(), 'thema_code'] = proj.prog_abbr
