@@ -82,7 +82,7 @@ print(f"size part {len(part)}")
 
 ##########
 structure = (part
-             .merge(entities_info[['generalPic', 
+             .merge(entities_info[['generalPic', 'legalName', 'businessName',
             'category_woven', 'city', 'country_code_mapping', 'country_code',  'country_name_fr', 
             'id_secondaire', 'entities_id', 'entities_name',  'entities_acronym', 'operateur_num', 'postalCode', 
             'street', 'webPage']], 
@@ -95,7 +95,7 @@ structure = (part
 structure = structure.loc[~structure.entities_name.isnull()].drop_duplicates()
 print(len(structure))
 
-cols = ['department', 'entities_acronym', 'entities_name']
+cols = ['department', 'entities_acronym', 'entities_name', 'legalName', 'businessName']
 for i in cols:
     structure[f"{i}_dup"] = structure.loc[:,i]
 
@@ -133,7 +133,7 @@ def prep_str_col(df, cols):
 
 
 ##########
-cols = ['department_dup','entities_acronym_dup','entities_name_dup','street','city']
+cols = ['department_dup', 'legalName_dup', 'businessName_dup', 'entities_acronym_dup','entities_name_dup','street','city']
 
 structure = prep_str_col(structure, cols)
 
@@ -145,13 +145,13 @@ structure.loc[structure.country_code=='FRA', 'city'] = structure.city.str.replac
 
 ##########
 # creation entities_full = entities_name + entities_acronym et department_tag
-tmp = structure.loc[(structure.entities_name_source_dup!=structure.entities_acronym_source_dup)&(~structure.entities_acronym_source_dup.isnull()), ['generalPic',  'country_code', 'entities_name_source_dup', 'entities_acronym_source_dup']]
-tmp['entities_full'] = [x1 if x2 in x1 else x1+' '+x2 for x1, x2 in zip(tmp['entities_name_source_dup'], tmp['entities_acronym_source_dup'])]
+tmp = structure.loc[(structure.legalName_dup!=structure.businessName_dup)&(~structure.businessName_dup.isnull()), ['generalPic',  'country_code', 'legalName_dup', 'businessName_dup']]
+tmp['entities_full'] = [x1 if x2 in x1 else x1+' '+x2 for x1, x2 in zip(tmp['legalName_dup'], tmp['businessName_dup'])]
 
-if len(structure.drop_duplicates())!=len(structure.merge(tmp[['generalPic', 'country_code', 'entities_name_source_dup', 'entities_acronym_source_dup', 'entities_full']].drop_duplicates(), how='left', on=['generalPic','entities_name_source_dup', 'entities_acronym_source_dup','country_code']).drop_duplicates()):
+if len(structure.drop_duplicates())!=len(structure.merge(tmp[['generalPic', 'country_code', 'legalName_dup', 'businessName_dup', 'entities_full']].drop_duplicates(), how='left', on=['generalPic','businessName_dup', 'legalName_dup','country_code']).drop_duplicates()):
     print("Attention risque de doublon si merge de tmp et structure")
 else:
-    structure = structure.merge(tmp[['generalPic', 'country_code','entities_name_source_dup', 'entities_acronym_source_dup', 'entities_full']].drop_duplicates(), how='left', on=['generalPic','entities_name_source_dup', 'entities_acronym_source_dup', 'country_code']).drop_duplicates()
+    structure = structure.merge(tmp[['generalPic', 'country_code','legalName_dup', 'businessName_dup', 'entities_full']].drop_duplicates(), how='left', on=['generalPic','legalName_dup', 'businessName_dup', 'country_code']).drop_duplicates()
     structure.loc[structure.entities_full.isnull(), 'entities_full'] = structure.entities_name_dup.str.lower()
 
 #############
@@ -167,3 +167,8 @@ structure.loc[structure.category_woven=='Institutions sans but lucratif (ISBL)',
 
 structure['typ_from_lib'] = structure[['org1','org2']].stack().groupby(level=0).agg(' '.join)
 structure.drop(columns=['org1','org2'], inplace=True)
+
+# mots vide à suppr
+# stop_word = pd.read_csv("C:/Users/zfriant/Documents/OneDrive/PCRI/participants/exe/fichiers_parametrage/Liste_mots_vides.csv", sep = ";") 
+# stop_word = stop_word.assign(countryCode=stop_word.pays.str.upper()).merge(countries[['countryCode','country_code']], how='left', on='countryCode').drop(columns=['pays','countryCode'])
+# stop_word = stop_word.assign(country_code= np.where(stop_word.country_code.isnull(), 'ALL', stop_word.country_code))
