@@ -15,6 +15,10 @@ def IDpic(entities_tmp):
         entities_tmp = pd.concat([entities_tmp, dash], ignore_index=True)
         print(f"- size entities_tmp: {len(entities_tmp)}")
 
+
+    # id secondaire : si id empty et not id_secondaire
+    entities_tmp.loc[(entities_tmp.entities_id.isnull())&(~entities_tmp.id_secondaire.isnull()), 'entities_id'] = entities_tmp.id_secondaire
+
     # IDENT pic : corriger appliquer les lignes ci-dessous uniuqument sur entities_id est null ou commence par pic
     entities_tmp.loc[entities_tmp.entities_id.isnull(), 'entities_id'] = "pic"+entities_tmp.generalPic.map(str)
     print(f"- End size entities_tmp: {len(entities_tmp)}")
