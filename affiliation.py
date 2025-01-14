@@ -25,6 +25,7 @@ pp_part = pp_part.rename(columns={'projectNbr':'project_id', 'participantPic':'p
 print(len(pp_part))
 
 ########
+   
 def prep(stage, df):
     test = df.merge(countries[['countryCode', 'country_code_mapping','country_code']], how='left', on='countryCode')
     test = test.assign(stage=stage).drop(columns=['countryCode','orderNumber', 'departmentUniqueId','framework', 'lastUpdateDate' ]).drop_duplicates()
@@ -103,9 +104,12 @@ if any(structure.call_year.isnull()):
 
 
 ##########
+def tokenization(text):
+    if isinstance(text, str):
+        tokens = text.split()
+        return tokens
+    
 def prep_str_col(df, cols):
-    from functions_shared import tokenization
-
     df[cols] = df[cols].apply(lambda x: x.str.lower())
     
     ## caracteres speciaux
