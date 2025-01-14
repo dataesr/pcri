@@ -169,6 +169,119 @@ structure['typ_from_lib'] = structure[['org1','org2']].stack().groupby(level=0).
 structure.drop(columns=['org1','org2'], inplace=True)
 
 # mots vide à suppr
-# stop_word = pd.read_csv("C:/Users/zfriant/Documents/OneDrive/PCRI/participants/exe/fichiers_parametrage/Liste_mots_vides.csv", sep = ";") 
-# stop_word = stop_word.assign(countryCode=stop_word.pays.str.upper()).merge(countries[['countryCode','country_code']], how='left', on='countryCode').drop(columns=['pays','countryCode'])
-# stop_word = stop_word.assign(country_code= np.where(stop_word.country_code.isnull(), 'ALL', stop_word.country_code))
+
+def stop_word(df, cc_iso3 ,cols_list):
+    import re, pandas as pd
+    
+    stop_word=pd.read_json('data_files/stop_word.json')
+
+    for col_ref in cols_list:
+        df[f'{col_ref}_2'] = df[col_ref].apply(lambda x: tokenization(x))
+
+        for i, row in stop_word.iterrows():
+            if row['iso3']=='ALL':
+                w = "\\b"+row['word'].strip()+"\\b"
+                df.loc[~df[f'{col_ref}_2'].isnull(), f'{col_ref}_2'] = df.loc[~df[f'{col_ref}_2'].isnull(), f'{col_ref}_2'].apply(lambda x: [re.sub(w, '',  s) for s in x]).apply(lambda x: list(filter(None, x)))
+            else:
+                mask = df[cc_iso3]==row['iso3']
+                w = "\\b"+row['word'].strip()+"\\b"
+                df.loc[mask&(~df[f'{col_ref}_2'].isnull()), f'{col_ref}_2'] = df.loc[mask&(~df[f'{col_ref}_2'].isnull()), f'{col_ref}_2'].apply(lambda x: [re.sub(w, '',  s) for s in x]).apply(lambda x: list(filter(None, x)))
+
+
+stop_word(structure, 'country_code', ['entities_full', 'department_dup'])
+
+structure['entities_full'] = structure['entities_full_2'].apply(lambda x: ' '.join([s for s in x if s.strip()]))
+structure.loc[(~structure.department_dup.isnull()), 'department_dup'] = structure.loc[(~structure.department_dup.isnull()), 'department_dup_2'].apply(lambda x: ' '.join([s for s in x if s.strip()]))
+
+structure.drop(columns=['department_dup_2', 'entities_full_2'], inplace=True)
+structure.mask(structure=='', inplace=True)
+
+##################################
+#########################
+#################
+### FRANCE
+
+
+structure_fr = structure.loc[structure.country_code=='FRA']
+print(len(structure_fr))
+
+
+#############
+lpattern = ["cnrs", "inria", "inrae", "ifremer", "inserm", "cea", "ens", "fnsp", "cirad", "ird", "chu", "universite", 
+            "pasteur", "curie", "irsn", "onera", "agrocampus", "ed","ecole"]
+pattern_ifremer = "(ifremer)|(in.* fran.* re.* ex.* mer)"
+pattern_cnrs =   "(ce.* na.* (de )?(la )?re.* sc.[a-z]*)|(fr.* na.* sc.* re.* ce.[a-z]*)|(cnrs)"
+pattern_inria =  "(in.* na.* (de )?re.* (en )?in.* (et )?(en )?au.[a-z]*)|(inria)"
+pattern_inrae =   "(in.* na.* (de )?re.* ag.[a-z]*)|(inra)|(inrae)|(irstea)"
+pattern_inserm = "(in.* na.* (de )?(la )?sa.* (et )?(de )?(la )?re.* me.[a-z]*)|(inserm)"
+pattern_cea =    "(co.* (a )?l?\\'?en.* at.[a-z]*)|(\\bcea\\b)"
+pattern_ens =    "(ec.* no.* sup[a-z]*)|(\\bens\\b)"
+pattern_fnsp =   "(fo.* na.* (des )?sc.* po.[a-z]*)|(fnsp)|(sciences po)"
+pattern_cirad =  "(ce.* (de )?co.* in.* (en )?re.* ag.* (pour )?(le )?dev.[a-z]*)|(cirad)"
+pattern_ird =    "(in.* (de )?re.[a-z]* (pour )?(le )?dev.[a-z]*)|\\b(ird)\\b|(i r d)"
+pattern_chu = "((ce.*|ctre|group.*) hos.* (univ.[a-z]*)?)|(univ.* hosp.[a-z]*)|\\b(chu|chr|chru)\\b|(hospice)"
+pattern_universite =   "(univ(ersite|ersity|ersitaire))"
+pattern_pasteur =   "(ins([a-z]*|\\.*) pasteur( de)?( lille)?)|(pasteur inst([a-z]*))"
+pattern_curie =    "(inst([a-z]*|\\.*) curie)|(curie inst([a-z]*))"
+pattern_irsn =   "(in.* (de )?radio.[a-z]* (et )?(de )?sur.[a-z]* nuc.[a-z]*)|(irsn)"
+pattern_onera =  "(onera)|(off.* na.* (d )?etu.* (et )?(de )?rech.* aero.*)"
+pattern_agrocampus = "(agrocampus)"
+pattern_ed = "(doct.* sch.*)|(ec.* doct.*)|\\b(ed)\\b"
+pattern_ecole = "(ecole)"
+
+def qualif_organisation(x):
+    org = []
+    for j in lpattern:
+        pattern = globals()[f"pattern_{j}"]
+        y = re.search(pattern, x)
+        if y:
+            org.append(j)
+    return org
+
+structure_fr['org1'] = structure_fr.apply(lambda x: qualif_organisation(x['department_dup']) if isinstance(x['department_dup'], str) else [], axis=1)
+structure_fr['org2'] = structure_fr.apply(lambda x: qualif_organisation(x['entities_full']) if isinstance(x['entities_full'], str) else [], axis=1)
+structure_fr['org3'] = structure_fr.apply(lambda x: qualif_organisation(x['entities_name_dup']) if isinstance(x['entities_name_dup'], str) else [], axis=1)
+ 
+
+structure_fr['org_from_lib'] = structure_fr.apply(lambda x: sorted(set(x['org1'] + x['org2'] + x['org3'])), axis=1)
+# structure_fr['org_from_lib'] = structure_fr['org_from_lib'].apply(lambda x: ' '.join(x))
+
+structure_fr.drop(columns=['org1', 'org2', 'org3'], inplace=True)
+structure_fr.mask(structure_fr=='', inplace=True)
+
+
+structure_fr=structure_fr.assign(dep_tag=structure_fr.department_dup, lab_tag=structure_fr.entities_full)
+cols = ['dep_tag', 'lab_tag']
+structure_fr[cols] = structure_fr[cols].apply(lambda x: x.str.replace('international research lab', "irl", regex=False))
+structure_fr[cols] = structure_fr[cols].apply(lambda x: x.str.replace('joint research unit', "jru", regex=False))
+structure_fr[cols] = structure_fr[cols].apply(lambda x: x.str.replace('joint research unit', "jru", regex=False))
+structure_fr[cols] = structure_fr[cols].apply(lambda x: x.str.replace('equipe accueil', "ea", regex=False))
+structure_fr[cols] = structure_fr[cols].apply(lambda x: x.str.replace(r"\\bumr(\\s?s\\s?)(u(\\s?)|inserm(\\s?))?(?=(\\d+)?)|\\bu\\s?inserm(\\s?)|\\bunit(e?)(?=(\\s?u?\\s?\\d+))|\\binserm\\s?(umr\\s?(s?)|jru)\\s?(u?)|\\binserm(u?)\\s?(?=\\d+)|\\binserm\\s?un\\s?umr\\s?u?", "u", regex=True))
+for s in ['umr','upr','uar','irl','emr','umi','usr','fre','gdr','fr']:
+    structure_fr[cols] = structure_fr[cols].apply(lambda x: x.str.replace(r'(?<=\\b'+s+')\\s?[a-z]+\\s?(?=\\d+)', " ", regex=True))
+structure_fr[cols] = structure_fr[cols].apply(lambda x: x.str.replace(r"\\bu\\s?cnrs|\\bum\\s+r|\\bcnrs\\s?(?=\\d+)|\\bjru\\s?(cnrs|umr)", "umr", regex=True))
+structure_fr[cols] = structure_fr[cols].apply(lambda x: x.str.replace(r"\\bjru\\s?(umi)", "umi", regex=True))
+structure_fr[cols] = structure_fr[cols].apply(lambda x: x.str.replace(r"(\\bce[a-z]* inv[a-z]* cl[a-z]*)|(\\bcl[a-z]* inv[a-z]* ce[a-z]*)|(\\bce[]* cl[a-z]* inv[a-z]*)", "cic", regex=True))
+structure_fr.loc[structure_fr.org_from_lib.map(lambda x: "inserm" in x), cols] = structure_fr.loc[structure_fr.org_from_lib.map(lambda x: "inserm" in x), cols].apply(lambda x: x.str.replace(r'\\bjru\\b', 'u', regex=True))
+structure_fr.loc[structure_fr.org_from_lib.map(lambda x: "cnrs" in x), cols] = structure_fr.loc[structure_fr.org_from_lib.map(lambda x: "cnrs" in x), cols].apply(lambda x: x.str.replace(r'\\bjru\\b', 'umr', regex=True))
+
+llab = ["umr", "ua", "umrs", "umr s","ea", "u", "gdr", "fre", "fr", "frc", "fed", "je", "us", "ums",
+        "upr","upesa","ifr","umr a","umemi","epi","eac", "ertint", "ur", "ups", "umr m", "umr t",
+        "uar","ert","usr","ura","umr d","rtra","ue","ers","cic","ep","umi", "unit", 'emr', 'irl', 'jru']
+
+def labo_sigle(x):
+    sig = []
+    for i in llab:
+        pattern = r"\b("+i+r")(?=\b|\d+)\s?[a-z]*\s?(\d+)"
+        # pattern=r"\b("+i+r")((\s?\d+)|\s[a-z]*\s(\d+))"
+        y = re.search(pattern, x)
+        if y:
+            sig.append(''.join(y.groups()))
+    return sig
+
+structure_fr['org1'] = structure_fr.apply(lambda x: labo_sigle(x['dep_tag']) if isinstance(x['dep_tag'], str) else [], axis=1)
+structure_fr['org2'] = structure_fr.apply(lambda x: labo_sigle(x['lab_tag']) if isinstance(x['lab_tag'], str) else [], axis=1)
+structure_fr['lab_from_lib'] = structure_fr.apply(lambda x: list(set(x['org1'] + x['org2'])), axis=1)
+# structure_fr['lab_from_lib'] = structure_fr['lab_from_lib'].apply(lambda x: ';'.join(x))
+structure_fr.drop(columns=['org1', 'org2', 'dep_tag', 'lab_tag'], inplace=True)
+structure_fr.mask(structure_fr=='', inplace=True)
