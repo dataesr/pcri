@@ -112,3 +112,7 @@ def entreprise_cat_cleaning(df):
             'insee_cat_name':'entreprise_type_name'})
     return df
 
+def tokenization(text):
+    if isinstance(text, str):
+        tokens = text.split()
+        return tokens
