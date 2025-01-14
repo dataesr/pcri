@@ -73,7 +73,8 @@ def entities_info_add(entities_tmp, entities_info, countries):
             'siret_closeDate', 'cat_an',
             'groupe_name','groupe_acronym', 'groupe_id', 'groupe_sector']],
         how='left', on=['generalPic', 'country_code_mapping'])
-        .drop(columns=['legalName', 'businessName']))
+        # .drop(columns=['legalName', 'businessName'])
+        )
     print(f"- size entities_info + entities_tmp: {len(entities_info)}")
     return entities_info
 
