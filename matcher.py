@@ -25,14 +25,14 @@ def matcher(df, index_line, typ, query, strategies, year=None):
             df.at[index_line, "q"] = 'no' 
 
     except requests.exceptions.HTTPError as http_err:
-        print(f"\n{i} -> HTTP error occurred: {http_err}")
+        print(f"\n{index_line} -> HTTP error occurred: {http_err}")
 #         df=pd.concat([df,df.iloc[index_line]], ignore_index=True)
         df.at[index_line, "q"] = 'err' 
     except requests.exceptions.RequestException as err:
-        print(f"\n{i} -> Error occurred: {err}")
+        print(f"\n{index_line} -> Error occurred: {err}")
 #         df=pd.concat([df,df.iloc[index_line]], ignore_index=True)
         df.at[index_line, "q"] = 'err' 
     except Exception as e:
-        print(f"\n{i} -> An unexpected error occurred: {e}")
+        print(f"\n{index_line} -> An unexpected error occurred: {e}")
 #         df=pd.concat([df,df.iloc[index_line]], ignore_index=True)
-        df.at[index_line, "q"] = 'err' 
+        df.at[index_line, "q"] = 'err'
