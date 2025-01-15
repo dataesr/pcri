@@ -2,7 +2,7 @@ import pandas as pd
 from unidecode import unidecode
 from functions_shared import *
 from constant_vars import ZIPNAME, FRAMEWORK
-from config_path import PATH_SOURCE, PATH_CLEAN
+from config_path import PATH_SOURCE, PATH_CLEAN, PATH_ORG
 
 
 participation = pd.read_pickle(f"{PATH_CLEAN}participation_current.pkl") 
@@ -285,3 +285,29 @@ structure_fr['lab_from_lib'] = structure_fr.apply(lambda x: list(set(x['org1'] +
 # structure_fr['lab_from_lib'] = structure_fr['lab_from_lib'].apply(lambda x: ';'.join(x))
 structure_fr.drop(columns=['org1', 'org2', 'dep_tag', 'lab_tag'], inplace=True)
 structure_fr.mask(structure_fr=='', inplace=True)
+
+print(f"size structure_fr: {len(structure_fr)}")
+
+#######################################################
+#RETOUR ORGANISMES
+
+organisme_back = pd.read_pickle(f"{PATH_ORG}organisme_back.pkl").drop_duplicates()
+organisme_back = organisme_back.drop(columns=['lib_back', 'location_back']).drop_duplicates()
+print(len(organisme_back))
+
+stage_proj = structure_fr[['stage', 'project_id']].drop_duplicates()
+organisme1 = organisme_back.merge(stage_proj, how='inner', on='project_id').drop(columns=['proposal_orderNumber']).query("stage=='successful'").drop_duplicates()
+print(len(organisme1))
+organisme_back.loc[organisme_back.proposal_orderNumber.isnull(), 'proposal_orderNumber'] = organisme_back.orderNumber
+organisme2 = organisme_back.merge(stage_proj, how='inner', on='project_id').drop(columns=['orderNumber']).rename(columns={'proposal_orderNumber':'orderNumber'}).query("stage=='evaluated'").drop_duplicates()
+print(len(organisme2))
+oback = pd.concat([organisme1, organisme2], ignore_index=True)
+oback = (oback.groupby(['stage','project_id', 'generalPic', 'pic', 'orderNumber'], dropna=False)
+         .agg(lambda x: ';'.join(map(str, filter(None, x.dropna().unique())))).reset_index())
+
+oback[['labo_back', 'org_back']] = oback[['labo_back', 'org_back']].apply(lambda x: x.str.lower())
+# oback['labo_back'] = oback.labo_back.str.split(';').tolist()
+    
+oback.mask(oback=='', inplace=True)
+
+###########################################################################################################
