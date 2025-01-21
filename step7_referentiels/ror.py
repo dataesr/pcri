@@ -1,21 +1,22 @@
 
 
 ######### IMPORT
-def ror(ROR_ZEN, countries):
+def ror_import():
     from functions_shared import unzip_zip
     from config_path import PATH
     import requests, pandas as pd
     DUMP_PATH=f'{PATH}referentiel/'
 
-    if ROR_ZEN == True:
-        site = requests.get('https://zenodo.org/api/records/8436953/files')
-        r = site.json()
-        ROR_ZIP = r['entries'][0]['key']
+    site = requests.get('https://zenodo.org/api/records/8436953/files')
+    r = site.json()
+    ROR_ZIP = r['entries'][0]['key']
 
-        response = requests.get(r['entries'][0]['links']['content'])
-        with open(f"{DUMP_PATH}{ROR_ZIP}", 'wb') as f:
-            f.write(response.content)
-    
+    response = requests.get(r['entries'][0]['links']['content'])
+    with open(f"{DUMP_PATH}{ROR_ZIP}", 'wb') as f:
+        f.write(response.cont)
+    return ROR_ZIP                
+
+def ror_prep(ROR_ZIP, countries):
     df=unzip_zip(ROR_ZIP, DUMP_PATH, f"{ROR_ZIP.rsplit('.', 1)[0]}.json", 'utf-8')
 
     ror=pd.json_normalize(df)
