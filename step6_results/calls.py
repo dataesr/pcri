@@ -88,5 +88,12 @@ def calls_all(projects):
     calls_all['theme'] = calls_all.theme.str.replace('CL', 'Cluster')
     calls_all.drop(columns=['year'], inplace=True)
 
-    calls_all.sort_values('call_deadline').to_csv(PATH_CONNECT+"calls_liste.csv", index=False, encoding="UTF-8", sep=";", na_rep='')
+    calls_all['nb']=calls_all.groupby('call_id')['inBase'].transform('nunique')
+
+    calls_all.loc[(calls_all.inBase==True)&(calls_all.nb==1), 'status'] = 'complete'
+    calls_all.loc[(calls_all.nb>1), 'status'] = 'incomplete'
+    calls_all.loc[(calls_all.inBase==False)&(calls_all.nb==1), 'status'] = 'unavailable'
+
+
+    calls_all.sort_values('call_deadline').to_csv(f"{PATH_CONNECT}calls_liste.csv", index=False, encoding="UTF-8", sep=";", na_rep='')
     return calls_all

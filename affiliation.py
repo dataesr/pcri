@@ -1,9 +1,9 @@
-import pandas as pd
+import pandas as pd, time
 from unidecode import unidecode
 from functions_shared import *
 from constant_vars import ZIPNAME, FRAMEWORK
 from config_path import PATH_SOURCE, PATH_CLEAN, PATH_ORG
-
+from matcher import matcher
 
 participation = pd.read_pickle(f"{PATH_CLEAN}participation_current.pkl") 
 entities_info = pd.read_pickle(f"{PATH_CLEAN}entities_info_current2.pkl")
@@ -311,3 +311,319 @@ oback[['labo_back', 'org_back']] = oback[['labo_back', 'org_back']].apply(lambda
 oback.mask(oback=='', inplace=True)
 
 ###########################################################################################################
+
+# MERGE ORGANISMES ET STRUCTURE
+
+tmp = structure_fr.merge(oback, how='outer', on=['stage','project_id','generalPic', 'orderNumber'], indicator=True)
+keep = tmp.loc[tmp._merge!='right_only'] #suppr les lignes oback en +
+
+# traitement cea sans orderNumber
+tmp = tmp.loc[(tmp._merge=='right_only')&(tmp.org_back=='CEA')]
+cea = keep[(keep.generalPic=='999992401')].drop(columns='_merge').sort_values(['project_id','generalPic'])
+print(len(cea))
+cea = cea.drop(columns=list(oback.columns.difference(structure_fr.columns)))
+cea = cea.merge(oback[oback.generalPic=='999992401'].dropna(axis=1, how='all'), how='left', on=['stage','project_id','generalPic'], indicator=True)
+keep = keep[keep.generalPic!='999992401']
+keep = pd.concat([keep, cea], ignore_index=True).drop(columns=['pic', 'role', 'participates_as']).sort_values(['project_id', 'stage', 'generalPic'])
+
+for i in ['rnsr_back','labo_back','org_back', 'city_back']:
+    keep[i] = keep[i].apply(lambda x: x.split(';') if isinstance(x, str) else [])  
+
+print(len(keep))
+
+keep['org_merged'] = keep.apply(lambda x: list(set(x['org_back'] + x['org_from_lib'])), axis=1)
+keep.mask(keep=='', inplace=True)
+
+keep['lab_merged'] = keep.apply(lambda x: list(set(x['labo_back'] + x['lab_from_lib'])), axis=1)
+
+pattern=r'^[0-9]{9}[A-Z]{1}($|;)'
+keep.loc[keep.id_secondaire.str.contains('0', na=True), 'id_secondaire'] = np.nan
+keep['id_secondaire'] = keep['id_secondaire'].apply(lambda x: x.split(';') if isinstance(x, str) else [])
+keep['rnsr_merged'] = keep.id_secondaire.apply(lambda x: [i for i in x if re.search(pattern, i)])
+keep['rnsr_merged'] = keep.apply(lambda x: list(set(x['rnsr_merged'] + x['rnsr_back'])), axis=1)
+keep.mask(keep=='', inplace=True)
+
+################
+labo = keep.loc[((keep.org_merged.str.len() > 0)|(~keep.operateur_num.isnull())), 
+        ['call_year','stage','project_id', 'generalPic', 'entities_full', 'department_dup',
+       'typ_from_lib', 'org_merged', 'rnsr_merged', 'lab_merged',
+       'cp_back', 'city_back', 'operateur_num','category_woven']]
+print(len(labo))
+
+lab_a_ident = (labo.loc[(keep.rnsr_merged.str.len() == 0), 
+                        ['project_id', 'generalPic', 'call_year','department_dup','entities_full','lab_merged', 'city_back']]
+              )
+
+# lab_a_ident['org_merged'] = lab_a_ident['org_merged'].astype(str)          
+lab_a_ident = (lab_a_ident
+                .set_index(['call_year','department_dup','entities_full'])
+                .explode('lab_merged').explode('city_back')
+                .reset_index()
+                .drop_duplicates()
+               )
+print(len(lab_a_ident))
+
+
+#################
+# 1er step matching by id
+ident_by_id = lab_a_ident.loc[~lab_a_ident.lab_merged.isnull(), ['call_year', 'entities_full', 'lab_merged', 'city_back']].drop_duplicates()
+# ident_by_id
+
+#######
+org = ident_by_id.rename(columns={"city_back": "city", "lab_merged": "labo", 'entities_full':'supervisor'})
+for f in ['supervisor', 'labo', 'city']:
+    org[f] = org[f].fillna('')
+org.head()
+
+df=org.assign(match = None)
+lab_id=pd.DataFrame()
+
+######
+
+typ="rnsr"
+now = time.strftime("%H:%M:%S")
+
+for i, row in df.iterrows():
+    query="{} {} {}".format(row['city'], row['labo'], row['supervisor'])
+    strategies = [[['rnsr_code_number', 'rnsr_supervisor_name', 'rnsr_city']],
+                  [['rnsr_code_number', 'rnsr_supervisor_name']],
+                 [['rnsr_code_number', 'rnsr_city']]]
+    matcher(df, i, typ, query, strategies, year=row['call_year'])
+
+###
+
+x=df.loc[df.match.isnull()]
+lab_id=pd.concat([df.loc[~df.match.isnull()], lab_id], ignore_index=True)
+print(len(lab_id))
+
+lab_id['match2'] = lab_id['match'].astype(str)
+lab_id['match2'] = lab_id.groupby('labo', as_index=False).pipe(lambda x: x['match2'].transform('nunique'))
+if len(lab_id.loc[lab_id.match2>1, ['labo','match']].sort_values('labo'))>1:
+    print('un même identifiant de labo a ++ de rnsr: a vérifier')
+else: print('ok')
+
+#save first step into matcher
+lab_id = lab_id.drop(columns=['q', 'match2'])
+lab_id.mask(lab_id=='', inplace=True)
+work_csv(lab_id, 'ident_lab1')
+
+#####
+# 2d step matching by name
+lab_ident1 = lab_a_ident.merge(lab_id, how='left', left_on=['entities_full', 'call_year', 'lab_merged', 'city_back'], right_on=['supervisor', 'call_year', 'labo', 'city'], indicator=True)
+lab_a_ident = lab_ident1.loc[lab_ident1._merge=='left_only'].drop(columns=['_merge', 'match', 'labo', 'city', 'supervisor'])
+ident_by_lib = lab_a_ident[['call_year', 'department_dup', 'lab_merged', 'entities_full', 'city_back']]
+ident_by_lib['labo'] = ident_by_lib[[ 'department_dup', 'lab_merged']].stack().groupby(level=0).apply(lambda x: ' '.join(x))
+org = ident_by_lib.rename(columns={"city_back": "city", 'entities_full':'supervisor'}).drop_duplicates()
+print(len(org))
+for f in ['supervisor', 'labo', 'city']:
+    org[f] = org[f].fillna('')
+
+df=org.assign(match = None)
+
+#######################
+typ="rnsr"
+now = time.strftime("%H:%M:%S")
+
+for i, row in df.iterrows():
+    query="{} {} {}".format(row['city'], row['labo'], row['supervisor'])
+
+    strategies = [
+        [['rnsr_acronym', 'rnsr_name', 'rnsr_supervisor_name']],
+#                   [['rnsr_acronym', 'rnsr_name' 'rnsr_supervisor_name']],
+#                   [['rnsr_name', 'rnsr_supervisor_name', 'rnsr_city']],
+                  [[ 'rnsr_name', 'rnsr_supervisor_name']],
+                 [['rnsr_acronym', 'rnsr_supervisor_name']]
+    ]
+    matcher(df, i, typ, query, strategies, year=row['call_year'])
+
+x=df.loc[df.match.isnull()]
+lab_id=pd.concat([df.loc[~df.match.isnull()], lab_id], ignore_index=True)
+
+lab_id = lab_id.drop(columns=['q'])
+lab_id.mask(lab_id=='', inplace=True)
+lab_id.to_pickle(f"{PATH_WORK}match_lab2.pkl", compression='gzip')
+
+# lab_id=pd.read_csv(f"{PATH_WORK}ident_lab2.csv", sep=';')
+# lab_id['call_year']=lab_id['call_year'].astype(str)
+# lab_id['match'] = lab_id.match.apply(lambda x: ast.literal_eval(x))
+####################################################
+
+lab_ident2 = lab_a_ident.merge(lab_id, how='left', left_on=['entities_full', 'call_year', 'lab_merged', 'city_back', 'department_dup'], right_on=['supervisor', 'call_year',  'lab_merged', 'city', 'department_dup'], indicator=True)
+lab_a_ident = lab_ident2.loc[lab_ident2._merge=='left_only'].drop(columns=['_merge', 'match', 'labo', 'city', 'supervisor'])
+lab_a_ident = lab_a_ident.loc[~lab_a_ident.department_dup.isnull()]
+print(len(lab_a_ident))
+
+df=structure.loc[structure.country_code!='FRA', ['entities_full', 'country_code']].drop_duplicates()
+df=df.fillna('')
+
+###################
+# def string_lang(df, var):
+#     from lingua import Language, LanguageDetectorBuilder
+#     languages=[
+#     Language.ALBANIAN,
+#     Language.ARABIC,
+#     Language.ARMENIAN,
+#     Language.AZERBAIJANI,
+#     Language.BELARUSIAN,
+#     Language.BENGALI,
+#     Language.BOSNIAN,
+#     Language.BULGARIAN,
+#     Language.CATALAN,
+#     Language.CHINESE,
+#     Language.CROATIAN,
+#     Language.CZECH,
+#     Language.DANISH,
+#     Language.ENGLISH,
+#     Language.ESTONIAN,
+#     # Language.FINNISH,
+#     Language.FRENCH,
+#     Language.GERMAN,
+#     Language.GREEK,
+#     Language.HEBREW,
+#     Language.HINDI,
+#     Language.HUNGARIAN,
+#     Language.ICELANDIC,
+#     Language.INDONESIAN,
+#     Language.IRISH,
+#     Language.ITALIAN,
+#     Language.JAPANESE,
+#     Language.KAZAKH,
+#     Language.LATVIAN,
+#     Language.LITHUANIAN,
+#     Language.MACEDONIAN,
+#     Language.MALAY,
+#     Language.POLISH,
+#     Language.PORTUGUESE,
+#     Language.ROMANIAN,
+#     Language.RUSSIAN,
+#     Language.SERBIAN,
+#     Language.SLOVAK,
+#     Language.SLOVENE,
+#     Language.SPANISH,
+#     Language.SWAHILI,
+#     Language.SWEDISH,
+#     Language.THAI,
+#     Language.TURKISH,
+#     Language.UKRAINIAN,
+#     Language.VIETNAMESE]
+    
+#     detector = LanguageDetectorBuilder.from_languages(*languages).with_minimum_relative_distance(0.25).build()
+    
+#     df['lang'] = df[var].apply(lambda x: detector.detect_language_of(x).iso_code_639_1.name if detector.detect_language_of(x) is not None else '')
+#     return df
+
+# def chunks(l, n):
+#     """Yield successive n-sized chunks from l."""
+#     for i in range(0, len(l), n):
+#         yield l[i:i + n]
+
+# def string_trad(df, var, lang_dest):
+#     from googletrans import Translator
+#     translator = Translator()
+
+#     df2 = list(chunks(df.drop_duplicates(), 10))
+#     data_trad=pd.DataFrame()
+#     time.sleep(0.3)
+    
+#     for i in range(0, len(df2)):
+#         print(i)
+#         y = pd.DataFrame(df2[i]).fillna('')
+#         for ind, row in y.iterrows():
+#             if row['lang']:
+#                 src = row['lang'].lower()
+#                 if src != lang_dest: 
+#                     y.at[ind, 'trad'] = translator.translate(row[var], src=src, dest=lang_dest).text
+#                     data_trad = pd.concat([data_trad, y], ignore_index=True)
+#     print(len(data_trad))
+    
+#     return data_trad.drop_duplicates()
+
+# def trad(df, var):
+#     df = string_lang(df, var)
+#     return string_trad(df, var)
+
+# ################################
+# data_lang = string_lang(lab_a_ident, 'department_dup')
+# data_lang = data_lang.loc[data_lang['lang']!='FR']
+# print(len(data_lang))
+
+# data_trad = string_trad(data_lang, 'department_dup', 'fr')
+
+
+# org = data_trad.rename(columns={"trad": "labo", 'entities_full':'supervisor'}).drop_duplicates()
+# print(len(org))
+# for f in ['supervisor', 'labo']:
+#     org[f] = org[f].fillna('')
+# org.head()
+
+# df=org
+# df=df.assign(match = None)
+# lab_id=pd.DataFrame()
+
+# typ="rnsr"
+# now = time.strftime("%H:%M:%S")
+
+# for i, row in df.iterrows():
+#     query="{} {}".format(row['labo'], row['supervisor'])
+#     has_code = isinstance(row['labo'], str)
+#     has_supervisor = isinstance(row['supervisor'], str)
+#     strategies = [
+#         [['rnsr_acronym', 'rnsr_name', 'rnsr_supervisor_name']],
+#                   [[ 'rnsr_name', 'rnsr_supervisor_name']],
+#                  [['rnsr_acronym', 'rnsr_supervisor_name']]
+#     ]
+#     matcher(df, i, typ, query, strategies, year=row['call_year'])
+
+#################################
+# print(len(lab_a_ident))
+# lab_ident3 = lab_a_ident.merge(df, how='left', left_on=['entities_full', 'call_year', 'department_dup', 'lang'], right_on=['supervisor', 'call_year', 'department_dup', 'lang'], indicator=True)
+# print(len(lab_ident3))
+# lab_ident3=lab_ident3.drop(columns=['q', 'supervisor']).rename(columns={'labo':'department_dup_trad'})
+####################################
+
+print(lab_ident1.columns)
+print(lab_ident2.columns)
+# print(lab_ident3.columns)
+
+# lab_ident3 -> libelle traduit ne fonctionne pas avec googletrans pour l'instant
+
+lab_ident = (pd.concat([lab_ident1.loc[lab_ident1._merge=='both'].drop(columns=['supervisor', 'labo', 'city', '_merge']), 
+                       lab_ident2.loc[lab_ident2._merge=='both'].drop(columns=['supervisor', 'labo', 'city', '_merge']), 
+#                        lab_ident3.loc[~lab_ident3.match.isnull()]
+                       ],
+                       ignore_index=True)
+#             .drop(columns=['department_dup_trad', '_merge', 'lang'])
+            )
+lab_ident.loc[lab_ident.match.str.len()>1, 'resultat'] = 'a controler'
+# lab_ident.match = lab_ident.match.apply(lambda x: list(x))
+
+print(len(lab_ident))
+
+lab_ident = (lab_ident.groupby(['call_year', 'entities_full', 'department_dup', 'project_id', 'generalPic'], as_index = False)
+ .agg({'match':'sum', 'resultat': lambda x: ' '.join(x.fillna('').unique()).strip()})          
+)
+lab_ident.mask(lab_ident=='', inplace=True)
+
+#40739 
+keep=keep.merge(lab_ident, how='left', on=['call_year', 'entities_full', 'department_dup', 'project_id', 'generalPic'])
+print(len(keep))
+for i in ['rnsr_merged', 'match']:
+    keep.loc[keep[i].isnull(), i] =keep.loc[keep[i].isnull(), i].apply(lambda x: [])
+
+keep['rnsr_merged'] = keep.apply(lambda x: list(set(x['rnsr_merged'] + x['match'])), axis=1)
+
+print(len(keep))
+
+keep.to_pickle('C:/Users/zfriant/OneDrive/PCRI/participants/matcher_result/structure_fr.pkl')
+
+
+##############################
+# etranger
+
+struct_et = structure.loc[structure.country_code!='FRA']
+print(f"longueur struct etranger: {len(struct_et)}")
+df = (struct_et.loc[struct_et.entities_id.str.contains(r'^[^R0]', regex=True), 
+                    ['entities_full', 'entities_id', 'country_code_mapping', 'country_code', 'city']]
+      .drop_duplicates()
+      .assign(match=None)
+     )
