@@ -25,7 +25,7 @@ def ror_prep(DUMP_PATH, ROR_ZIP, countries):
         'wikipedia_url', 'addresses', 'country.country_code',
         'country.country_name']]
 
-    print(f"vars en list: {ror.columns[ror.applymap(lambda x: isinstance(x, list)).any()]}")
+    print(f"vars en list: {ror.columns[ror.map(lambda x: isinstance(x, list)).any()]}")
 
     ror['links'] = ror['links'].apply(lambda x: ';'.join(x))
     l=['aliases', 'acronyms']
@@ -55,4 +55,6 @@ def ror_prep(DUMP_PATH, ROR_ZIP, countries):
     if len(ror[ror.country_code_map.isnull()])>0:
         print(ror[ror.country_code_map.isnull()][['iso2']].drop_duplicates())
 
-    return ror.mask(ror=='', inplace=True)
+    ror.mask(ror=='', inplace=True)
+
+    return ror

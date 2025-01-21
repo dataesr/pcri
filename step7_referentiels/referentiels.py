@@ -10,10 +10,10 @@ from constant_vars import ZIPNAME, FRAMEWORK
 from config_path import PATH, PATH_SOURCE
 from functions_shared import unzip_zip
 from config_api import *
-from step7_referentiels.countries import ref_countries
+# from step7_referentiels.countries import ref_countries
+from step7_referentiels.ror import ror_import, ror_prep
+from step7_referentiels.sirene import sirene_prep, sirene_refext
 DUMP_PATH=f'{PATH}referentiel/'
-
-# ROR_ZIP='v1.34-2023-10-12-ror-data.zip'
 
 
 pycountry.countries.add_entry(alpha_2="XK", alpha_3="XXK", name="Kosovo")
@@ -25,3 +25,9 @@ countries = (pd.DataFrame(tmp)[['alpha_2', 'alpha_3', 'name']]
             .drop_duplicates()
 )
 print(len(countries))
+
+ROR_ZIPNAME = ror_import(DUMP_PATH)
+ror = ror_prep(DUMP_PATH, ROR_ZIPNAME, countries)
+
+sirene = sirene_refext()
+sirene = sirene_prep(DUMP_PATH, countries)
