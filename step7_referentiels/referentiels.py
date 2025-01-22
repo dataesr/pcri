@@ -29,5 +29,7 @@ print(len(countries))
 ROR_ZIPNAME = ror_import(DUMP_PATH)
 ror = ror_prep(DUMP_PATH, ROR_ZIPNAME, countries)
 
-sirene = sirene_refext()
+sirene = sirene_refext(DUMP_PATH) # -> sirene_ref_moulinette.pkl
 sirene = sirene_prep(DUMP_PATH, countries)
+
+df = rnsr_import()
