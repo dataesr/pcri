@@ -5,7 +5,7 @@ def sirene_refext(DUMP_PATH):
     requests.packages.urllib3.disable_warnings(requests.packages.urllib3.exceptions.InsecureRequestWarning)  
     # from io import (BytesIO, StringIO)
     from config_api import sirene_headers
-    from config_path import PATH, PATH_REF
+    from config_path import PATH_REF
 
     def get_last_info_siret(x):
         tmp = [e for e in x if e.get('dateFin') is None]
@@ -67,11 +67,6 @@ def sirene_refext(DUMP_PATH):
                     rinit = requests.get(url,  headers=sirene_headers, verify=False)
                     
     pd.json_normalize(result).to_pickle(f"{DUMP_PATH}sirene_ref_moulinette.pkl")
-                    
-    return result
-
-
-
 
 
 def sirene_prep(DUMP_PATH, countries):
