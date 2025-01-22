@@ -1,10 +1,10 @@
 # traitement RNSR
 def rnsr_import(DUMP_PATH):
-    import requests, math, pandas as pd, re
+    import pandas as pd, re
     from config_api import scanr_headers
 
     def rnsr_extract(max_results):
-
+        import math, requests
         url = 'http://185.161.45.213/organizations/organizations?where={"rnsr":{"$exists":true}}&'
         url_suffix = 'max_results={}&page={}'
         r = requests.get(url + url_suffix.format(1,1), headers=scanr_headers,  verify=False)
@@ -136,12 +136,12 @@ def rnsr_import(DUMP_PATH):
 
         elem = {k: v for k, v in elem.items() if (v and v != "NaT")}
         rnsr.append(elem)
-        pd.json_normalize(rnsr).to_pickle(f"{DUMP_PATH}rnsr_complet.pkl")
+    pd.json_normalize(rnsr).to_pickle(f"{DUMP_PATH}rnsr_complet.pkl")
+
 
 def rnsr_prep(DUMP_PATH):
     import pandas as pd
     rnsr = pd.read_pickle(f"{DUMP_PATH}rnsr_complet.pkl")
-    rnsr = pd.json_normalize(rnsr)
 
     rnsr.loc[~rnsr.date_end.isnull(), 'date_end'] = rnsr.loc[~rnsr.date_end.isnull()].date_end.astype(int)
     print(len(rnsr))
