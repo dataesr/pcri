@@ -1,21 +1,19 @@
 # traitement RNSR
-def rnsr_import():
-    
-    import re
-    ### Prog extraction données rnsr par API selon le nb de pages ; RNSR COMPLET
+def rnsr_import(DUMP_PATH):
+    import requests, math, pandas as pd, re
+    from config_api import scanr_headers
+
     def rnsr_extract(max_results):
-        import requests, math
-        headers={"accept":"application/json", 'Authorization': 'Basic cm9vdDp0b25uZXJyZTJCcmVzdA=='}
 
         url = 'http://185.161.45.213/organizations/organizations?where={"rnsr":{"$exists":true}}&'
         url_suffix = 'max_results={}&page={}'
-        r = requests.get(url + url_suffix.format(1,1), headers=headers,  verify=False)
+        r = requests.get(url + url_suffix.format(1,1), headers=scanr_headers,  verify=False)
         nb_results = r.json().get("meta").get("total")
         max_page = math.ceil(nb_results / max_results)
 
         result = []    
         for page in range(1, max_page + 1):
-            r = requests.get(url + url_suffix.format(max_results,page), headers=headers,  verify=False)
+            r = requests.get(url + url_suffix.format(max_results,page), headers=scanr_headers,  verify=False)
             try:
                 result += r.json()['data']
                 print(page, end=',')     
@@ -27,6 +25,8 @@ def rnsr_import():
     ### Extraction des données rnsr de dataESR
     max_results = 100
     r = rnsr_extract(max_results)
+
+    ### Prog extraction données rnsr par API selon le nb de pages ; RNSR COMPLET
 
     to_keep=r
     len(to_keep)
@@ -136,14 +136,12 @@ def rnsr_import():
 
         elem = {k: v for k, v in elem.items() if (v and v != "NaT")}
         rnsr.append(elem)
-        
-    return rnsr
+        pd.json_normalize(rnsr).to_pickle(f"{DUMP_PATH}rnsr_complet.pkl")
 
-
-
-
-def rnsr_prep():
-    rnsr = pd.json_normalize(df)
+def rnsr_prep(DUMP_PATH):
+    import pandas as pd
+    rnsr = pd.read_pickle(f"{DUMP_PATH}rnsr_complet.pkl")
+    rnsr = pd.json_normalize(rnsr)
 
     rnsr.loc[~rnsr.date_end.isnull(), 'date_end'] = rnsr.loc[~rnsr.date_end.isnull()].date_end.astype(int)
     print(len(rnsr))

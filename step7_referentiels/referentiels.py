@@ -13,6 +13,7 @@ from config_api import *
 # from step7_referentiels.countries import ref_countries
 from step7_referentiels.ror import ror_import, ror_prep
 from step7_referentiels.sirene import sirene_prep, sirene_refext
+from step7_referentiels.rnsr import rnsr_import
 DUMP_PATH=f'{PATH}referentiel/'
 
 
@@ -29,7 +30,9 @@ print(len(countries))
 ROR_ZIPNAME = ror_import(DUMP_PATH)
 ror = ror_prep(DUMP_PATH, ROR_ZIPNAME, countries)
 
-sirene = sirene_refext(DUMP_PATH) # -> sirene_ref_moulinette.pkl
+sirene_refext(DUMP_PATH) # -> sirene_ref_moulinette.pkl
 sirene = sirene_prep(DUMP_PATH, countries)
 
-df = rnsr_import()
+### Extraction des données rnsr de dataESR
+max_results = 100
+rnsr_import(max_results)
