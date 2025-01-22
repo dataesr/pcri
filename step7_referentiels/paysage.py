@@ -1,14 +1,19 @@
-
-def paysage_import():
+def paysage_import(dataset):
     from config_api import ods_headers
-    import requests, pandas as pd
-    # traitement PAYSAGE
-
-    dataset='structures-de-paysage-v2'
+    import pandas as pd, requests
     url = f"https://data.enseignementsup-recherche.gouv.fr/api/explore/v2.1/catalog/datasets/{dataset}/exports/json"
     response = requests.get(url, headers=ods_headers)
     result=response.json()
-    df = pd.DataFrame(result)
+    return pd.DataFrame(result)
+
+def paysage_prep(DUMP_PATH):
+    from config_api import ods_headers
+    import pandas as pd, numpy as np
+    from urllib.parse import urlparse
+    # traitement PAYSAGE
+
+    dataset='structures-de-paysage-v2'
+    df = paysage_import(dataset)
 
     paysage = df.mask(df=='')
 
@@ -36,10 +41,8 @@ def paysage_import():
 
     # identifiants
     dataset='fr-esr-paysage_structures_identifiants'
-    url = f"https://data.enseignementsup-recherche.gouv.fr/api/explore/v2.1/catalog/datasets/{dataset}/exports/json"
-    response = requests.get(url, headers=ods_headers)
-    result=response.json()
-    ident = pd.DataFrame(result)
+    ident = paysage_import(dataset)
+
     ident['id_value'] = ident.id_value.astype(str)
     ident.loc[ident.id_type=='ror', 'id_value'] = 'R'+ident.id_value
 
@@ -50,8 +53,7 @@ def paysage_import():
     ident = (ident
             .loc[ident.id_type.isin(['ror', 'rnsr','siret', 'rna', 'cnrs-unit']), ['id_paysage', 'id_type', 'id_value']]
             .sort_values('id_type'))
-
-            
+ 
     ident = (pd.concat([ident, s], ignore_index=True)
                     .pivot_table(index='id_paysage',
                             columns='id_type',
@@ -66,3 +68,24 @@ def paysage_import():
                                 'rna':'numero_rna'})
 
     paysage = paysage.merge(ident, how='left', left_on='numero_paysage', right_on='id_paysage')
+
+    # site web
+    dataset='fr-esr-paysage_structures_websites'
+    result = paysage_import(dataset)
+
+    web = pd.DataFrame(result).loc[result.type=='website', ['id_structure_paysage','url','language']].drop_duplicates().sort_values('id_structure_paysage')
+    web.language = web.language.str.lower()
+    print(len(web))
+
+    dup = web.groupby(['id_structure_paysage']).filter(lambda x: x['url'].count() > 1.)
+    dup['web']=dup["url"].astype(str).apply(lambda x: urlparse(x).netloc)
+
+    web = web.merge(dup, how='left', on=['id_structure_paysage', 'url',  'language'])
+    web.loc[web.web.isnull(), 'web'] = web.url
+    web = web.drop(columns=['url', 'language']).drop_duplicates().groupby('id_structure_paysage', as_index=False).agg(lambda x: ';'.join(x))
+    paysage = paysage.merge(web, how='left', left_on='numero_paysage', right_on='id_structure_paysage').drop(columns='id_structure_paysage')
+
+    paysage.mask(paysage=='', inplace=True)
+
+    paysage.to_pickle(f"{DUMP_PATH}paysage_moulinette.pkl")
+    return paysage

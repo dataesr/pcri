@@ -2,7 +2,7 @@
 
 import pandas as pd, pycountry
 from text_to_num import text2num, alpha2digit
-from urllib.parse import urlparse
+
 from IPython.display import HTML
 from pathlib import Path
 
@@ -11,6 +11,7 @@ from config_path import PATH, PATH_SOURCE
 from functions_shared import unzip_zip
 
 # from step7_referentiels.countries import ref_countries
+from functions_shared import work_csv
 from step7_referentiels.ror import ror_import, ror_prep
 from step7_referentiels.sirene import sirene_prep, sirene_refext
 from step7_referentiels.rnsr import rnsr_import, rnsr_prep
@@ -47,6 +48,6 @@ sirene = sirene_prep(DUMP_PATH, countries)
 rnsr_import(DUMP_PATH)
 rnsr = rnsr_prep(DUMP_PATH)
 
-# work_csv(rnsr.loc[(rnsr.code_postal.isnull())|(rnsr.ville.isnull()), ['adresse_full', 'code_postal', 'ville']].drop_duplicates(), 'rnsr_adresse_a_completer')
-# add_ad = pd.read_csv(f"{DUMP_PATH}rnsr_adresse_manquante.csv", encoding='utf-8', sep=';')
+work_csv(rnsr.loc[(rnsr.code_postal.isnull())|(rnsr.ville.isnull()), ['num_nat_struct', 'nom_long','adresse_full', 'code_postal', 'ville']].drop_duplicates(), 'rnsr_adresse_a_completer')
+add_ad = pd.read_csv(f"{DUMP_PATH}rnsr_adresse_manquante.csv",  sep=';', encoding='ANSI')
 # add_ad
