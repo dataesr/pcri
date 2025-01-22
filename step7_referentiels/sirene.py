@@ -7,12 +7,6 @@ def sirene_refext(DUMP_PATH):
     from config_api import sirene_headers
     from config_path import PATH, PATH_REF
 
-    # SIRENE_API_KEY='q2vG3VFlhNw5KyQavyGCm_SZjgAa'
-    # SIRENE_API_SECRET='5lGfedYEn8SPg7K7x_I44jFntd4a'
-    # SIRENE_BASE = "SIRENE"
-    # # my_headers = get_headers(os.environ.get('SIRENE_API_KEY'), os.environ.get('SIRENE_API_SECRET'))
-    # my_headers=get_headers(SIRENE_BASE, SIRENE_API_KEY, SIRENE_API_SECRET, use_csv=False)
-
     def get_last_info_siret(x):
         tmp = [e for e in x if e.get('dateFin') is None]
         tmp = sorted(tmp, key=lambda k: k['dateDebut'], reverse=True)
@@ -104,7 +98,7 @@ def sirene_prep(DUMP_PATH, countries):
     sirene.loc[~sirene['nom_perso'].isnull(), 'uniteLegale.denominationUniteLegale'] = sirene['uniteLegale.denominationUniteLegale']+' '+sirene['nom_perso']
         
     if len(sirene.loc[sirene['uniteLegale.denominationUniteLegale'].isnull()])>0:
-        print(sirene.loc[sirene['uniteLegale.denominationUniteLegale'].isnull()])
+        print(f"siren without denomination_UL: {sirene.loc[sirene['uniteLegale.denominationUniteLegale'].isnull()]}")
     # sirene['nom_long'] = [x1 if x2 in x1 else x1+' '+x2 for x1, x2 in zip(tmp['uniteLegale.denominationUniteLegale'], tmp['entities_acronym_source_dup'])]
 
     sirene = sirene.assign(adresse=sirene[['adresseEtablissement.numeroVoieEtablissement', 
@@ -140,12 +134,15 @@ def sirene_prep(DUMP_PATH, countries):
 
     sirene.mask(sirene=='', inplace=True)
 
-    country_s = pd.read_csv(f"{DUMP_PATH}v_pays_territoire_2024.csv", sep=',', dtype=str)[['COG','CODEISO2']]
+    country_s = pd.read_csv(f"{DUMP_PATH}v_pays_territoire_2024.csv", sep=',', dtype=str)[['COG', 'CRPAY','CODEISO2']]
+    country_s=country_s.merge(country_s[['COG', 'CODEISO2']].drop_duplicates(), how='left', left_on='CRPAY', right_on='COG', suffixes=('','_'))
+    country_s.loc[~country_s.CRPAY.isnull(), 'CODEISO2'] = country_s.CODEISO2_
+    country_s.drop(columns=['COG_', 'CODEISO2_', 'CRPAY'], inplace=True)
     sirene = sirene.merge(country_s, how='left', on='COG').rename(columns={'CODEISO2':'iso2'})
     sirene = sirene.merge(countries[['iso2', 'iso3']], how='left', on='iso2').rename(columns={'iso3':'country_code_map'})
     sirene.loc[sirene.country_code_map.isnull(), 'country_code_map'] = 'FRA'
     if len(sirene[(~sirene.COG.isnull())&((sirene.iso2.isnull())|(sirene.country_code_map.isnull()))])>0:
-        print(sirene[(~sirene.COG.isnull())&((sirene.iso2.isnull())|(sirene.country_code_map.isnull()))].siren.unique())
+        print(f"siren without country_code_map: {sirene[(~sirene.COG.isnull())&((sirene.iso2.isnull())|(sirene.country_code_map.isnull()))].siren.unique()}")
 
     sirene.mask(sirene=='', inplace=True)
     return sirene
