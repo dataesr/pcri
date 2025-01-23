@@ -1,20 +1,18 @@
 
 
-import pandas as pd, pycountry
+import pandas as pd, pycountry, re
 from text_to_num import text2num, alpha2digit
 
 from IPython.display import HTML
 from pathlib import Path
-
-from constant_vars import ZIPNAME, FRAMEWORK
-from config_path import PATH, PATH_SOURCE
-from functions_shared import unzip_zip
+from config_path import PATH
 
 # from step7_referentiels.countries import ref_countries
-from functions_shared import work_csv
+from functions_shared import work_csv, prep_str_col
 from step7_referentiels.ror import ror_import, ror_prep
 from step7_referentiels.sirene import sirene_prep, sirene_refext
 from step7_referentiels.rnsr import rnsr_import, rnsr_prep
+from step7_referentiels.paysage import paysage_prep
 DUMP_PATH=f'{PATH}referentiel/'
 
 
@@ -56,3 +54,29 @@ rnsr = rnsr.merge(add_ad, how='left', on='num_nat_struct')
 rnsr.loc[~rnsr.cp_corr.isnull(), 'code_postal'] = rnsr.cp_corr
 rnsr.loc[~rnsr.city_corr.isnull(), 'ville'] = rnsr.city_corr
 rnsr.loc[~rnsr.country_corr.isnull(), 'country_code_map'] = rnsr.country_corr
+
+paysage = paysage_prep(DUMP_PATH)
+
+
+url='https://docs.google.com/spreadsheet/ccc?key=1FwPq5Qw7Gbgj_sBD6Za4dfDDk6ydozQ99TyRjLkW5d8&output=xls'
+df_geo = pd.read_excel(url, sheet_name='LES_COMMUNES', dtype=str, na_filter=False)
+
+ref_all = pd.concat([ror, rnsr, sirene, paysage], ignore_index=True)
+ref_all = ref_all.drop(columns=['country.country_name', 'com_code','Lieudit_BP', 'COG', 'aliases','cp_corr','city_corr','country_corr'])
+ref_all.mask(ref_all=='', inplace=True)
+ref_all = ref_all.sort_values(['ref', 'num_nat_struct', 'siren', 'numero_paysage', 'numero_ror'])
+
+ref_all.loc[ref_all.country_code_map.isnull(), ['ref']].value_counts()
+
+#lowercase / exochar / unicode / punct
+ref_cols=['nom_long', 'sigle', 'ville', 'adresse', 'adresse_full']
+ref_all = prep_str_col(ref_all, ref_cols)
+
+y = ref_all.loc[(~ref_all.tel.isnull())&(ref_all.country_code_map=='FRA'), ['tel']]
+y['tel_clean']=y.tel.apply(lambda x:[re.sub(r'[^0-9]+', '', i) for i in x])
+y['tel_clean']=y.tel_clean.apply(lambda x: [re.sub(r'^(33|033)', '', i).rjust(10, '0') for i in x])
+y['tel_clean']=y.tel_clean.apply(lambda x: [i[0:10] if (len(i)>10) and (i[0:1]=='0') else i for i in x])
+y['tel_clean']=y.tel_clean.apply(lambda x:[re.sub(r'^0+$', '', i) for i in x])
+y['tel_clean']=y.tel_clean.apply(lambda x: ';'.join(set(x))).str.strip()
+
+ref_all = pd.concat([ref_all, y[['tel_clean']]], axis=1)
