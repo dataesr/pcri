@@ -141,3 +141,21 @@ def prep_str_col(df, cols):
     df[cols] = df[cols].apply(lambda x: x.str.replace('\\s+', ' ', regex=True).str.strip())
 
     return df
+
+def stop_word(df, cc_iso3 ,cols_list):
+    import re, pandas as pd
+    from functions_shared import tokenization
+    
+    stop_word=pd.read_json('data_files/stop_word.json')
+
+    for col_ref in cols_list:
+        df[f'{col_ref}_2'] = df[col_ref].apply(lambda x: tokenization(x))
+
+        for i, row in stop_word.iterrows():
+            if row['iso3']=='ALL':
+                w = "\\b"+row['word'].strip()+"\\b"
+                df.loc[~df[f'{col_ref}_2'].isnull(), f'{col_ref}_2'] = df.loc[~df[f'{col_ref}_2'].isnull(), f'{col_ref}_2'].apply(lambda x: [re.sub(w, '',  s) for s in x]).apply(lambda x: list(filter(None, x)))
+            else:
+                mask = df[cc_iso3]==row['iso3']
+                w = "\\b"+row['word'].strip()+"\\b"
+                df.loc[mask&(~df[f'{col_ref}_2'].isnull()), f'{col_ref}_2'] = df.loc[mask&(~df[f'{col_ref}_2'].isnull()), f'{col_ref}_2'].apply(lambda x: [re.sub(w, '',  s) for s in x]).apply(lambda x: list(filter(None, x)))
