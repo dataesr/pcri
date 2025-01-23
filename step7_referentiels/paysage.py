@@ -1,6 +1,6 @@
 def paysage_import(dataset):
     import pandas as pd, requests
-    from config_api import ods_headers
+    # from config_api import ods_headers
     
     url = f"https://data.enseignementsup-recherche.gouv.fr/api/explore/v2.1/catalog/datasets/{dataset}/exports/json"
     response = requests.get(url, headers=ods_headers)
@@ -29,9 +29,10 @@ def paysage_prep(DUMP_PATH):
                             'address':'adresse',
                             'postalcode' : 'code_postal',
                             'locality':'ville',
+                            'cityid':'com_code',
                             'iso3':'country_code_map'})
             .assign(an_fermeture=df.closuredate.str[0:4], ref='paysage')
-            )[['nom_long', 'numero_paysage', 'an_fermeture', 'sigle', 'adresse', 'code_postal', 'ville', 'country_code_map', 'ref']]
+            )[['nom_long','numero_paysage','an_fermeture','sigle','adresse','code_postal','ville', 'country_code_map', 'com_code','ref']]
 
     paysage.loc[~paysage.an_fermeture.isnull(), 'an_fermeture'] = paysage.loc[~paysage.an_fermeture.isnull()].an_fermeture.astype(int)
 
