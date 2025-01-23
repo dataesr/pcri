@@ -162,6 +162,19 @@ def rnsr_prep(DUMP_PATH):
                     'adresse_full', 'tel', 'email', 'ref']]
 
     rnsr = rnsr.assign(country_code_map = 'FRA')
+    # rnsr.loc[rnsr.com_code.str.startswith('971'), 'country_code_map'] = 'GLP'
+    # rnsr.loc[rnsr.com_code.str.startswith('972'), 'country_code_map'] = 'MTQ'
+    # rnsr.loc[rnsr.com_code.str.startswith('973'), 'country_code_map'] = 'GUY'
+    # rnsr.loc[rnsr.com_code.str.startswith('974'), 'country_code_map'] = 'REU'
+    # rnsr.loc[rnsr.com_code.str.startswith('976'), 'country_code_map'] = 'MYT'
+    # rnsr.loc[rnsr.com_code.str.startswith('975'), 'country_code_map'] = 'SPM'
+    # rnsr.loc[rnsr.com_code.str.startswith('977'), 'country_code_map'] = 'BLM'
+    # rnsr.loc[rnsr.com_code.str.startswith('978'), 'country_code_map'] = 'MAF'
+    # rnsr.loc[rnsr.com_code.str.startswith('984'), 'country_code_map'] = 'ATF'
+    # rnsr.loc[rnsr.com_code.str.startswith('986'), 'country_code_map'] = 'WLF'
+    # rnsr.loc[rnsr.com_code.str.startswith('987'), 'country_code_map'] = 'PYF'
+    # rnsr.loc[rnsr.com_code.str.startswith('988'), 'country_code_map'] = 'NCL'
+    # rnsr.loc[rnsr.com_code.str.startswith('989'), 'country_code_map'] = 'CP'
 
     rnsr.mask(rnsr=='', inplace=True)
     return rnsr
