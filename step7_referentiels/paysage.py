@@ -1,13 +1,13 @@
 def paysage_import(dataset):
-    from config_api import ods_headers
     import pandas as pd, requests
+    from config_api import ods_headers
+    
     url = f"https://data.enseignementsup-recherche.gouv.fr/api/explore/v2.1/catalog/datasets/{dataset}/exports/json"
     response = requests.get(url, headers=ods_headers)
     result=response.json()
     return pd.DataFrame(result)
 
 def paysage_prep(DUMP_PATH):
-    from config_api import ods_headers
     import pandas as pd, numpy as np
     from urllib.parse import urlparse
     # traitement PAYSAGE
