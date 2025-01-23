@@ -50,4 +50,9 @@ rnsr = rnsr_prep(DUMP_PATH)
 
 work_csv(rnsr.loc[(rnsr.code_postal.isnull())|(rnsr.ville.isnull()), ['num_nat_struct', 'nom_long','adresse_full', 'code_postal', 'ville']].drop_duplicates(), 'rnsr_adresse_a_completer')
 add_ad = pd.read_csv(f"{DUMP_PATH}rnsr_adresse_manquante.csv",  sep=';', encoding='ANSI')
-# add_ad
+add_ad = add_ad[['num_nat_struct', 'cp_corr', 'city_corr', 'country_corr']].drop_duplicates()
+
+rnsr = rnsr.merge(add_ad, how='left', on='num_nat_struct')
+rnsr.loc[~rnsr.cp_corr.isnull(), 'code_postal'] = rnsr.cp_corr
+rnsr.loc[~rnsr.city_corr.isnull(), 'ville'] = rnsr.city_corr
+rnsr.loc[~rnsr.country_corr.isnull(), 'country_code_map'] = rnsr.country_corr
