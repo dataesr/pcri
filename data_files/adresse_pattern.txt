@@ -1,0 +1,4 @@
+^((\d+)( )?)*((bis|ter)\b)?
+\b(zac|za|lieu()?dit|allee|avenue|adjudant|batiment|boulevard|bp|commandant|ccial|bureau| [a-z]{1,1}\b|chemin)
+\b(cp|clos|centre|activite|cours|impasse|immeuble|division|docteur|domaine|general|quai)
+\b(commercial|ccial|bureau|quartier|parc|professeur|rue|route|place|lieutenant|regiment|zone( )?activite|zone( )?industrielle)
