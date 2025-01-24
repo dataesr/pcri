@@ -46,7 +46,7 @@ rnsr_import(DUMP_PATH)
 rnsr = rnsr_prep(DUMP_PATH)
 
 work_csv(rnsr.loc[(rnsr.code_postal.isnull())|(rnsr.ville.isnull()), ['num_nat_struct', 'nom_long','adresse_full', 'code_postal', 'ville']].drop_duplicates(), 'rnsr_adresse_a_completer')
-add_ad = pd.read_csv(f"{DUMP_PATH}rnsr_adresse_manquante.csv",  sep=';', encoding='ANSI')
+add_ad = pd.read_csv(f"{DUMP_PATH}rnsr_adresse_manquante.csv",  sep=';', encoding='ANSI', dtype={'cp_corr':str})
 add_ad = add_ad[['num_nat_struct', 'cp_corr', 'city_corr', 'country_corr']].drop_duplicates()
 
 rnsr = rnsr.merge(add_ad, how='left', on='num_nat_struct')
@@ -130,7 +130,7 @@ ref_all.loc[(ref_all.country_code_map=='FRA')|(ref_all.iso2.isin(pays_fr)), 'vil
 mask=((ref_all.country_code_map=='FRA')|(ref_all.iso2.isin(pays_fr)))&(~ref_all.code_postal.isnull())&(ref_all.code_postal.str.len()!=5)
 if len(ref_all.loc[mask])>0:
     print(f"probleme avec le cp à corriger si possible à la source: {ref_all.loc[mask].code_postal.unique()}")
-    print(ref_all.loc[mask&(ref_all.code_postal.str.contains("\\d+")), ['ref','code_postal', 'ville', 'numero_paysage', 'num_nat_struct']])
+    print(f"me souviens plus ce que je veux: {ref_all.loc[mask&(ref_all.code_postal.str.contains("\\d+")), ['ref','code_postal', 'ville', 'numero_paysage', 'num_nat_struct']]}")
 
 ref_all.loc[(ref_all.country_code_map=='FRA')&(~ref_all.code_postal.isnull()), 'code_postal'] = ref_all.loc[(ref_all.country_code_map=='FRA')&(~ref_all.code_postal.isnull()), 'code_postal'].str.replace(r'\\D+', '', regex=True)
 ref_all.loc[~ref_all.code_postal.isnull(), 'departement'] = ref_all.code_postal.str[0:2]
