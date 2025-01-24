@@ -144,8 +144,8 @@ def rnsr_prep(DUMP_PATH):
     rnsr = pd.read_pickle(f"{DUMP_PATH}rnsr_complet.pkl")
 
     rnsr.loc[~rnsr.date_end.isnull(), 'date_end'] = rnsr.loc[~rnsr.date_end.isnull()].date_end.astype(int)
-    print(len(rnsr))
-    print(rnsr.date_end.unique())
+    print(f"size rnsr: {len(rnsr)}")
+    print(f"list of end date: {rnsr.date_end.unique()}")
     rnsr = (rnsr.loc[(rnsr.date_end.isnull())|(rnsr.date_end>2019)]
             .assign(adresse=rnsr.street_num+' '+rnsr.street, ref='rnsr')
         .rename(columns={'rnsr':'num_nat_struct',

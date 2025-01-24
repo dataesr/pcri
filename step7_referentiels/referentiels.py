@@ -125,3 +125,12 @@ ref_all.loc[(ref_all.country_code_map=='FRA')|(ref_all.iso2.isin(pays_fr)), 'vil
 ref_all.loc[(ref_all.country_code_map=='FRA')|(ref_all.iso2.isin(pays_fr)), 'ville'] = ref_all.ville.str.replace('\\bst\\b', 'saint', regex=True).str.strip()
 ref_all.loc[(ref_all.country_code_map=='FRA')|(ref_all.iso2.isin(pays_fr)), 'ville'] = ref_all.ville.str.replace('\\bste\\b', 'sainte', regex=True).str.strip()
 ref_all.loc[(ref_all.country_code_map=='FRA')|(ref_all.iso2.isin(pays_fr)), 'ville_tag'] = ref_all.loc[ref_all.country_code_map=='FRA', 'ville'].str.strip().str.replace(r'\\s+', '-', regex=True)
+
+# code postal - > département
+mask=((ref_all.country_code_map=='FRA')|(ref_all.iso2.isin(pays_fr)))&(~ref_all.code_postal.isnull())&(ref_all.code_postal.str.len()!=5)
+if len(ref_all.loc[mask])>0:
+    print(f"probleme avec le cp à corriger si possible à la source: {ref_all.loc[mask].code_postal.unique()}")
+    print(ref_all.loc[mask&(ref_all.code_postal.str.contains("\\d+")), ['ref','code_postal', 'ville', 'numero_paysage', 'num_nat_struct']])
+
+ref_all.loc[(ref_all.country_code_map=='FRA')&(~ref_all.code_postal.isnull()), 'code_postal'] = ref_all.loc[(ref_all.country_code_map=='FRA')&(~ref_all.code_postal.isnull()), 'code_postal'].str.replace(r'\\D+', '', regex=True)
+ref_all.loc[~ref_all.code_postal.isnull(), 'departement'] = ref_all.code_postal.str[0:2]
