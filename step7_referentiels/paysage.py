@@ -36,7 +36,7 @@ def paysage_prep(DUMP_PATH):
 
     paysage.loc[~paysage.an_fermeture.isnull(), 'an_fermeture'] = paysage.loc[~paysage.an_fermeture.isnull()].an_fermeture.astype(int)
 
-    paysage.loc[paysage.country_code_map.isnull(), 'country_code_map'] = 'FRA'
+    # paysage.loc[paysage.country_code_map.isnull(), 'country_code_map'] = 'FRA'
 
     paysage = paysage[(paysage.an_fermeture.isnull())|(paysage.an_fermeture > 2019)]
 
