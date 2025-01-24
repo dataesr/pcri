@@ -1,9 +1,7 @@
-import zipfile, json, re, os
-import pandas as pd, numpy as np
-from config_path import PATH_WORK, PATH_ODS
-
 # load json file in a zipfile
 def unzip_zip(namezip, path, data, encode):
+    import pandas as pd
+    import zipfile, json
     if 'json' in data:
         with zipfile.ZipFile(f"{path}{namezip}", 'r', metadata_encoding=encode) as z:
             return json.load(z.open(data, 'r'))
@@ -21,16 +19,19 @@ def del_list_in_col(df, var_old:str, var_new:str):
     return df.drop(var_old, axis=1)
 
 def work_csv(df, file_csv_name):
+    from config_path import PATH_WORK
     name = file_csv_name
     return df.to_csv(f"{PATH_WORK}{name}.csv", sep=';', na_rep='', encoding='utf-8', index=False)
 
 def website_to_clean(web_var: str):
+    import re
     pat=re.compile(r"((((https|http)://)?(www\.)?)([\w\d#@%;$()~_?=&]+\.)+([a-z]{2,3}){1}([\w\d:#@%/;$()~_?\+-=\\\.&]+))")
     y= re.search(pat, str(web_var))
     if y is not None:
         return y.group()
     
 def columns_comparison(df, namefile):
+    import numpy as np
     old_cols = np.load(f"data_files/{namefile}.npy").tolist()
     new_cols = df.columns.to_list()
     if any(set(new_cols) - set(old_cols)):
@@ -39,11 +40,12 @@ def columns_comparison(df, namefile):
         print("- no new columns")
 
 def gps_col(df):
+    import re
     print("#FCT gps_col")
     df=df.assign(gps_loc=None)
     for i,row in df.iterrows():
         if row.loc['location'].get('latitude') is not None:
-            df.at[i, 'gps_loc'] = re.search(r'^-?\d+\.?\d{,5}', str(row.loc['location'].get('latitude')))[0]+ "," +re.search(r'^-?\d+\.?\d{,5}', str(row.loc['location'].get('longitude')))[0]
+            df.at[i, 'gps_loc'] = re.search(r"^-?\d+\.?\d{,5}", str(row.loc['location'].get('latitude')))[0]+ "," +re.search(r"^-?\d+\.?\d{,5}", str(row.loc['location'].get('longitude')))[0]
     return df.drop('location', axis=1).drop_duplicates()  
 
 def num_to_string(var):
@@ -54,6 +56,7 @@ def num_to_string(var):
         return str(var).replace('.0', '')
     
 def erc_role(df, projects):
+    import pandas as pd, numpy as np
     print("### ERC ROLE")
     proj_erc = projects.loc[projects.thema_code=='ERC', ['project_id', 'destination_code', 'action_code']]
     df = df.merge(proj_erc, how='left', on='project_id').drop_duplicates()
@@ -71,6 +74,7 @@ def erc_role(df, projects):
     return df
 
 def bugs_excel(df, chemin, name_sheet):
+    import pandas as pd, os
     print("#FCT bugs_excel")
     chemin=f"{chemin}bugs_found.xlsx"
     if not os.path.exists(chemin):
@@ -82,6 +86,7 @@ def bugs_excel(df, chemin, name_sheet):
 
 def order_columns(df, xl_sheetname):
     import pandas as pd
+    from config_path import PATH_ODS
     xl_path = f"{PATH_ODS}colonnes_ordres_par_jeux_ods.xlsx"
     colorder = pd.read_excel(xl_path, sheet_name=xl_sheetname, dtype={'order':int})
     colorder=colorder.sort_values('order')
@@ -91,13 +96,14 @@ def order_columns(df, xl_sheetname):
 
 def zipfile_ods(df, file_export):
     import zipfile
+    from config_path import PATH_ODS
     with zipfile.ZipFile(f'{PATH_ODS}{file_export}.zip', 'w', compression=zipfile.ZIP_DEFLATED) as z:
         with z.open(f'{file_export}.csv', 'w', force_zip64=True) as f:
             df.to_csv(f, sep=';', encoding='utf-8', index=False, na_rep='', decimal=".")
 
 
 def entreprise_cat_cleaning(df):
-
+    import numpy as np
     df.loc[(df.flag_entreprise==True)&(~df.groupe_id.isnull()), 'entities_id'] = df.groupe_id
     df.loc[(df.flag_entreprise==True)&(~df.groupe_id.isnull()), 'entities_name'] = df.groupe_name
     if 'groupe_acronym' in df.columns:
@@ -133,12 +139,12 @@ def prep_str_col(df, cols):
     
     # # #
     df[cols] = df[cols].apply(lambda x: x.str.replace(punct, ' ', regex=True))    
-    df[cols] = df[cols].apply(lambda x: x.str.replace('\\n|\\t|\\r|\\xc2|\\xa9|\\s+', ' ', regex=True).str.strip())
+    df[cols] = df[cols].apply(lambda x: x.str.replace(r"\n|\t|\r|\xc2|\xa9|\s+", ' ', regex=True).str.strip())
     df[cols] = df[cols].apply(lambda x: x.str.lower().str.replace('n/a|ndeg', ' ', regex=True).str.strip())
     df[cols] = df[cols].apply(lambda x: x.str.lower().str.replace('/', ' ').str.strip())
     df[cols] = df[cols].apply(lambda x: x.str.lower().str.replace('\\', ' ').str.strip())
     df[cols] = df[cols].apply(lambda x: x.str.lower().str.replace('"', ' ').str.strip())
-    df[cols] = df[cols].apply(lambda x: x.str.replace('\\s+', ' ', regex=True).str.strip())
+    df[cols] = df[cols].apply(lambda x: x.str.replace(r"\s+", ' ', regex=True).str.strip())
 
     return df
 
@@ -153,9 +159,9 @@ def stop_word(df, cc_iso3 ,cols_list):
 
         for i, row in stop_word.iterrows():
             if row['iso3']=='ALL':
-                w = "\\b"+row['word'].strip()+"\\b"
+                w = r"\b"+row['word'].strip()+r"\b"
                 df.loc[~df[f'{col_ref}_2'].isnull(), f'{col_ref}_2'] = df.loc[~df[f'{col_ref}_2'].isnull(), f'{col_ref}_2'].apply(lambda x: [re.sub(w, '',  s) for s in x]).apply(lambda x: list(filter(None, x)))
             else:
                 mask = df[cc_iso3]==row['iso3']
-                w = "\\b"+row['word'].strip()+"\\b"
+                w = r"\b"+row['word'].strip()+r"\b"
                 df.loc[mask&(~df[f'{col_ref}_2'].isnull()), f'{col_ref}_2'] = df.loc[mask&(~df[f'{col_ref}_2'].isnull()), f'{col_ref}_2'].apply(lambda x: [re.sub(w, '',  s) for s in x]).apply(lambda x: list(filter(None, x)))

@@ -1,6 +1,6 @@
 
 
-import pandas as pd, pycountry, re
+import pandas as pd, pycountry, re, json, numpy as np
 from text_to_num import text2num, alpha2digit
 
 from IPython.display import HTML
@@ -96,20 +96,21 @@ stop_word(ref_all, 'country_code_map', ['nom_long', 'nom_entier', 'adresse', 'ad
 
 
 # extraction du code postal du champs ville 
-ref_all.loc[ref_all.code_postal.isnull(), 'code_postal'] = ref_all.ville.str.extract('(\\d+)')
+ref_all.loc[ref_all.code_postal.isnull(), 'code_postal'] = ref_all.ville.str.extract(r"(\d+)")
 
 #traitement spécifique adresse_full du rnsr
 tmp = ref_all[~ref_all['adresse_full_2'].isnull()][['adresse_full_2']]
 tmp.adresse_full_2 = tmp.adresse_full_2.apply(lambda x: list(filter(None, x))).apply(lambda x: ' '.join(x))
-tmp[['cp_temp', 'ville_temp']] = tmp['adresse_full_2'].str.extract(r'(\\b\\d{5})\\s?([a-z]+(?:\\s?[a-z]+)*)', expand=True)
+tmp[['cp_temp', 'ville_temp']] = tmp['adresse_full_2'].str.extract(r"\s(\d{5})\s?([a-z]+(?:\s?[a-z]+)*)", expand=True)
 
 def match(adr):
-    x = re.search(r'(\\b\\d{1,4})\\s([a-z]+\\s?)+', adr)
+    x = re.search(r"(\b\d{1,4})\s([a-z]+\s?)+", adr)
     if x :
         return(x.group())
     
-tmp['adresse_temp'] = tmp['adresse_full_2'].apply(match)
-ref_all = pd.concat([ref_all.drop(columns='adresse_full_2'), tmp], axis=1)
+tmp['adresse_temp'] = tmp['adresse_full_2'].apply(match)    
+# tmp[['test1', 'test2'] ]= tmp['adresse_full_2'].str.extract(r"(\b\d{1,4})\s([a-z]+\s?)+", expand=True)
+ref_all = pd.concat([ref_all, tmp.drop(columns='adresse_full_2')], axis=1)
 
 ref_all.loc[ref_all.code_postal.isnull(), 'code_postal'] = ref_all.cp_temp
 ref_all.loc[ref_all.ville.isnull(), 'ville'] = ref_all.ville_temp
@@ -122,15 +123,59 @@ cedex="cedax|cedrex|cdexe|cdex|credex|cedex|cedx|cede|ceddex|cdx|cex|cexex|edex"
 ref_all['ville'] = ref_all.ville.str.replace('\\d+', ' ', regex=True).str.strip()
 ref_all.loc[(ref_all.country_code_map=='FRA')|(ref_all.iso2.isin(pays_fr)), 'ville'] = ref_all.ville.str.replace(cedex, ' ', regex=True).str.strip()
 ref_all.loc[(ref_all.country_code_map=='FRA')|(ref_all.iso2.isin(pays_fr)), 'ville'] = ref_all.ville.str.replace('^france$', '', regex=True).str.strip()
-ref_all.loc[(ref_all.country_code_map=='FRA')|(ref_all.iso2.isin(pays_fr)), 'ville'] = ref_all.ville.str.replace('\\bst\\b', 'saint', regex=True).str.strip()
-ref_all.loc[(ref_all.country_code_map=='FRA')|(ref_all.iso2.isin(pays_fr)), 'ville'] = ref_all.ville.str.replace('\\bste\\b', 'sainte', regex=True).str.strip()
-ref_all.loc[(ref_all.country_code_map=='FRA')|(ref_all.iso2.isin(pays_fr)), 'ville_tag'] = ref_all.loc[ref_all.country_code_map=='FRA', 'ville'].str.strip().str.replace(r'\\s+', '-', regex=True)
+ref_all.loc[(ref_all.country_code_map=='FRA')|(ref_all.iso2.isin(pays_fr)), 'ville'] = ref_all.ville.str.replace(r"\bst\b", 'saint', regex=True).str.strip()
+ref_all.loc[(ref_all.country_code_map=='FRA')|(ref_all.iso2.isin(pays_fr)), 'ville'] = ref_all.ville.str.replace(r"\bste\b", 'sainte', regex=True).str.strip()
+ref_all.loc[(ref_all.country_code_map=='FRA')|(ref_all.iso2.isin(pays_fr)), 'ville_tag'] = ref_all.loc[ref_all.country_code_map=='FRA', 'ville'].str.strip().str.replace(r'\s+', '-', regex=True)
 
 # code postal - > département
 mask=((ref_all.country_code_map=='FRA')|(ref_all.iso2.isin(pays_fr)))&(~ref_all.code_postal.isnull())&(ref_all.code_postal.str.len()!=5)
 if len(ref_all.loc[mask])>0:
     print(f"probleme avec le cp à corriger si possible à la source: {ref_all.loc[mask].code_postal.unique()}")
-    print(f"structure avec cp mais à corriger: {ref_all.loc[mask&(ref_all.code_postal.str.contains("\\d+")), ['ref','code_postal', 'ville', 'numero_paysage', 'num_nat_struct']]}")
+    print(f"structure avec cp mais à corriger: {ref_all.loc[mask&(ref_all.code_postal.str.contains(r"\d+")), ['ref','code_postal', 'ville', 'numero_paysage', 'num_nat_struct']]}")
 
-ref_all.loc[(ref_all.country_code_map=='FRA')&(~ref_all.code_postal.isnull()), 'code_postal'] = ref_all.loc[(ref_all.country_code_map=='FRA')&(~ref_all.code_postal.isnull()), 'code_postal'].str.replace(r'\\D+', '', regex=True)
+ref_all.loc[(ref_all.country_code_map=='FRA')&(~ref_all.code_postal.isnull()), 'code_postal'] = ref_all.loc[(ref_all.country_code_map=='FRA')&(~ref_all.code_postal.isnull()), 'code_postal'].str.replace(r"\D+", '', regex=True)
 ref_all.loc[~ref_all.code_postal.isnull(), 'departement'] = ref_all.code_postal.str[0:2]
+
+
+#########
+adr = json.load(open('data_files/ad.json'))
+
+for col_ref in ['adresse_2', 'adresse_full_2']:
+    tmp = ref_all.loc[~ref_all[col_ref].isnull(), [col_ref]]
+    for i in adr :
+        for (k,v) in i.items():
+            tmp[col_ref] = tmp[col_ref].apply(lambda x: [re.sub('^'+k+'$', v, s) for s in x])
+            tmp[col_ref] = tmp[col_ref].apply(lambda x: list(filter(None, x)))
+    
+    ref_all = pd.concat([ref_all.drop(columns=col_ref), tmp], axis=1) 
+    
+    tmp[f'{col_ref}_tag'] = ref_all.loc[~ref_all[col_ref].isnull()][col_ref].apply(lambda x: ' '.join(x))
+    with open("data_files/adresse_pattern.txt", "r") as pats:
+         for n, line in enumerate(pats, start=1):       
+            pat = line.rstrip('\n')
+            tmp[f'{col_ref}_tag'] = tmp[f'{col_ref}_tag'].str.replace(pat,'', regex=True)
+            
+    tmp[f'{col_ref}_tag'] = tmp[f'{col_ref}_tag'].apply(lambda x: alpha2digit(x, 'fr'))
+            
+    ref_all = pd.concat([ref_all.drop(columns=col_ref), tmp], axis=1)
+
+##################
+ref_all.rename(columns={'nom_long':'libelle1'}, inplace=True)
+ref_all['nom_entier_2'] = ref_all.nom_entier_2.apply(lambda x: ' '.join(x) if isinstance(x, list) else x)
+ref_all['etabs_rnsr'] = ref_all.etabs_rnsr.apply(lambda x: ';'.join(x) if isinstance(x, list) else np.nan)
+ref_all['email'] = ref_all.email.apply(lambda x: ';'.join(x) if isinstance(x, list) else np.nan)
+ref_all.loc[ref_all.adresse.isnull(), 'adresse'] = ref_all.adresse_full
+ref_all.loc[ref_all.adresse_2_tag.isnull(), 'adresse'] = ref_all.adresse_full_2_tag
+
+
+############################
+# traitement pays
+
+if len(ref_all.loc[ref_all.country_code_map.isnull(),['ref']].drop_duplicates())>0:
+    print(ref_all.loc[ref_all.country_code_map.isnull(),['ref']].drop_duplicates().value_counts())
+
+ref_all = ref_all.merge(countries[['iso3', 'country_name_en']].drop_duplicates(), how='left', left_on='country_code_map', right_on='iso3')
+
+if any(ref_all.loc[ref_all.country_name_en.isnull()]):
+    print(ref_all.loc[(ref_all.country_name_en.isnull())&(~ref_all.country_code_map.isnull()), ['country_code_map', 'nom_entier', 'numero_paysage','ref']].drop_duplicates())
+    work_csv(ref_all.loc[(ref_all.country_name_en.isnull())&(~ref_all.country_code_map.isnull()), ['numero_paysage','country_code_map', 'nom_entier']].drop_duplicates(), 'paysage_pb_iso3')
