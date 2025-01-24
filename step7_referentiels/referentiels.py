@@ -130,7 +130,7 @@ ref_all.loc[(ref_all.country_code_map=='FRA')|(ref_all.iso2.isin(pays_fr)), 'vil
 mask=((ref_all.country_code_map=='FRA')|(ref_all.iso2.isin(pays_fr)))&(~ref_all.code_postal.isnull())&(ref_all.code_postal.str.len()!=5)
 if len(ref_all.loc[mask])>0:
     print(f"probleme avec le cp à corriger si possible à la source: {ref_all.loc[mask].code_postal.unique()}")
-    print(f"me souviens plus ce que je veux: {ref_all.loc[mask&(ref_all.code_postal.str.contains("\\d+")), ['ref','code_postal', 'ville', 'numero_paysage', 'num_nat_struct']]}")
+    print(f"structure avec cp mais à corriger: {ref_all.loc[mask&(ref_all.code_postal.str.contains("\\d+")), ['ref','code_postal', 'ville', 'numero_paysage', 'num_nat_struct']]}")
 
 ref_all.loc[(ref_all.country_code_map=='FRA')&(~ref_all.code_postal.isnull()), 'code_postal'] = ref_all.loc[(ref_all.country_code_map=='FRA')&(~ref_all.code_postal.isnull()), 'code_postal'].str.replace(r'\\D+', '', regex=True)
 ref_all.loc[~ref_all.code_postal.isnull(), 'departement'] = ref_all.code_postal.str[0:2]
