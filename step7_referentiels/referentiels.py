@@ -179,3 +179,27 @@ ref_all = ref_all.merge(countries[['iso3', 'country_name_en']].drop_duplicates()
 if any(ref_all.loc[ref_all.country_name_en.isnull()]):
     print(ref_all.loc[(ref_all.country_name_en.isnull())&(~ref_all.country_code_map.isnull()), ['country_code_map', 'nom_entier', 'numero_paysage','ref']].drop_duplicates())
     work_csv(ref_all.loc[(ref_all.country_name_en.isnull())&(~ref_all.country_code_map.isnull()), ['numero_paysage','country_code_map', 'nom_entier']].drop_duplicates(), 'paysage_pb_iso3')
+    work_csv(ref_all.loc[(ref_all.country_name_en.isnull())&(ref_all.country_code_map.isnull()), ['ref','country_code_map', 'nom_entier']].drop_duplicates(), 'paysage_without_iso3')
+
+
+###############
+# descriptif moulinette
+
+champs=pd.read_table(
+'C:/Users/zfriant/OneDrive/Matching/Echanges/PCRDT_TEST/ListeChamps.txt', sep='\t')
+print(champs.table.unique())
+for i in ['refext']:
+    print(f"var name:\n{champs.loc[champs.table==i, 'code_champ'].tolist()}\n")
+    print(f"var numerique:\n{champs.loc[(champs.table==i) & (champs.type=='num'), 'code_champ'].tolist()}")
+
+ref_all = ref_all[['ref', 'num_nat_struct', 'numero_ror', 'siren', 'siret', 'numero_rna', 'numero_paysage',  'sigle', 
+         'code_postal',  'ville', 'adresse', 'label_num_ro_rnsr', 'an_fermeture', 'country_code_map', 'country_name_en', 'nom_entier',  'libelle1',
+         'nom_entier_2',  'adresse_2_tag', 'ville_tag', 'etabs_rnsr', 'email','web', 'tel_clean' ]].drop_duplicates()
+
+print(f"{ref_all.info()}\nsize ref_all: {len(ref_all)}")
+
+
+ref_all['p_key'] = range(1, len(ref_all) + 1)
+ref_all.mask(ref_all=='', inplace=True)
+
+ref_all.to_pickle('C:/Users/zfriant/OneDrive/Matching/Echanges/HORIZON/data_py/ref_all.pkl')
