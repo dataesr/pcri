@@ -1,5 +1,5 @@
-import pandas as pd, time
-from unidecode import unidecode
+import pandas as pd, time, re, numpy as np
+# from unidecode import unidecode
 from functions_shared import *
 from constant_vars import ZIPNAME, FRAMEWORK
 from config_path import PATH_SOURCE, PATH_CLEAN, PATH_ORG
@@ -104,44 +104,43 @@ if any(structure.call_year.isnull()):
 
 
 ##########
-def tokenization(text):
-    if isinstance(text, str):
-        tokens = text.split()
-        return tokens
+# def tokenization(text):
+#     if isinstance(text, str):
+#         tokens = text.split()
+#         return tokens
     
-def prep_str_col(df, cols):
-    df[cols] = df[cols].apply(lambda x: x.str.lower())
+# def prep_str_col(df, cols):
+#     df[cols] = df[cols].apply(lambda x: x.str.lower())
     
-    ## caracteres speciaux
-    for i in cols:
-        df.loc[~df[i].isnull(), i] = df[i].astype('str').apply(unidecode)
-        df.loc[~df[i].isnull(), i] = df[i].str.replace('&', 'and')
-        df.loc[~df[i].isnull(), i] = df.loc[~df[i].isnull(), i].apply(lambda x: tokenization(x)).apply(lambda x: [s.replace('.','') for s in x]).apply(lambda x: ' '.join(x))
+#     ## caracteres speciaux
+#     for i in cols:
+#         df.loc[~df[i].isnull(), i] = df[i].astype('str').apply(unidecode)
+#         df.loc[~df[i].isnull(), i] = df[i].str.replace('&', 'and')
+#         df.loc[~df[i].isnull(), i] = df.loc[~df[i].isnull(), i].apply(lambda x: tokenization(x)).apply(lambda x: [s.replace('.','') for s in x]).apply(lambda x: ' '.join(x))
     
-    punct="'|–|,|\\.|:|;|\\!|`|=|\\*|\\+|\\-|‑|\\^|_|~|\\[|\\]|\\{|\\}|\\(|\\)|<|>|@|#|\\$"
+#     punct="'|–|,|\\.|:|;|\\!|`|=|\\*|\\+|\\-|‑|\\^|_|~|\\[|\\]|\\{|\\}|\\(|\\)|<|>|@|#|\\$"
     
-    # # #
-    df[cols] = df[cols].apply(lambda x: x.str.replace(punct, ' ', regex=True))    
-    df[cols] = df[cols].apply(lambda x: x.str.replace('\\n|\\t|\\r|\\xc2|\\xa9|\\s+', ' ', regex=True).str.strip())
-    df[cols] = df[cols].apply(lambda x: x.str.lower().str.replace('n/a|ndeg', ' ', regex=True).str.strip())
-    df[cols] = df[cols].apply(lambda x: x.str.lower().str.replace('/', ' ').str.strip())
-    df[cols] = df[cols].apply(lambda x: x.str.lower().str.replace('\\', ' ').str.strip())
-    df[cols] = df[cols].apply(lambda x: x.str.lower().str.replace('"', ' ').str.strip())
-    df[cols] = df[cols].apply(lambda x: x.str.replace('\\s+', ' ', regex=True).str.strip())
+#     # # #
+#     df[cols] = df[cols].apply(lambda x: x.str.replace(punct, ' ', regex=True))    
+#     df[cols] = df[cols].apply(lambda x: x.str.replace('\\n|\\t|\\r|\\xc2|\\xa9|\\s+', ' ', regex=True).str.strip())
+#     df[cols] = df[cols].apply(lambda x: x.str.lower().str.replace('n/a|ndeg', ' ', regex=True).str.strip())
+#     df[cols] = df[cols].apply(lambda x: x.str.lower().str.replace('/', ' ').str.strip())
+#     df[cols] = df[cols].apply(lambda x: x.str.lower().str.replace('\\', ' ').str.strip())
+#     df[cols] = df[cols].apply(lambda x: x.str.lower().str.replace('"', ' ').str.strip())
+#     df[cols] = df[cols].apply(lambda x: x.str.replace(r"\\s+"', ' ', regex=True).str.strip())
 
-    return df
+#     return df
 
 
 ##########
 cols = ['department_dup', 'legalName_dup', 'businessName_dup', 'entities_acronym_dup','entities_name_dup','street','city']
-
 structure = prep_str_col(structure, cols)
 
 cedex="cedax|cedrex|cdexe|cdex|credex|cedex|cedx|cede|ceddex|cdx|cex|cexex|edex"
-structure.loc[structure.postalCode.isnull(), 'postalCode'] = structure.city.str.extract('(\\d+)')
-structure['city'] = structure.city.str.replace('\\d+', ' ', regex=True).str.strip()
+structure.loc[structure.postalCode.isnull(), 'postalCode'] = structure.city.str.extract(r"(\d+)")
+structure['city'] = structure.city.str.replace(r"\d+", ' ', regex=True).str.strip()
 structure.loc[structure.country_code=='FRA', 'city'] = structure.city.str.replace(cedex, ' ', regex=True).str.strip()
-structure.loc[structure.country_code=='FRA', 'city'] = structure.city.str.replace('^france$', '', regex=True).str.strip()
+structure.loc[structure.country_code=='FRA', 'city'] = structure.city.str.replace(r"^france$", '', regex=True).str.strip()
 
 ##########
 # creation entities_full = entities_name + entities_acronym et department_tag
@@ -156,12 +155,12 @@ else:
 
 #############
 societe = pd.read_table('data_files/societe.txt', header=None)
-structure.loc[structure.entities_full.apply(lambda x: True if re.search(r"(?=\\b("+'|'.join(list(set(societe[0])))+r")\\b)", x) else False), 'org1'] = 'societe'
+structure.loc[structure.entities_full.apply(lambda x: True if re.search(r"(?=\b("+'|'.join(list(set(societe[0])))+r")\b)", x) else False), 'org1'] = 'societe'
 societe = societe.loc[societe[0]!='group']
-structure.loc[(~structure.department_dup.isnull())&(structure.department_dup.apply(lambda x: True if re.search(r"(?=\\b("+'|'.join(list(set(societe[0])))+r")\\b)", str(x)) else False)), 'org1'] = 'societe'
+structure.loc[(~structure.department_dup.isnull())&(structure.department_dup.apply(lambda x: True if re.search(r"(?=\b("+'|'.join(list(set(societe[0])))+r")\b)", str(x)) else False)), 'org1'] = 'societe'
 structure.loc[structure.category_woven=='Entreprise', 'org1'] = 'societe'
 
-las = r"(\\bas(s?)ocia[ctz][aionj]+)|\\b(ev|udruga|sdruzhenie|asbl|aisbl|vzw|biedriba|kyokai|mittetulundusuhing|ry|somateio|egyesulet(e?)|stowarzyszenie|udruzenje|zdruzenie|sdruzeni(e?))\\b|([a-z]*)(verband|vereniging|asotsiatsiya|zdruzenje)\\b|([a-z]*)(verein|forening|yhdistys)([a-z]*)"
+las = r"(\bas(s?)ocia[ctz][aionj]+)|\b(ev|udruga|sdruzhenie|asbl|aisbl|vzw|biedriba|kyokai|mittetulundusuhing|ry|somateio|egyesulet(e?)|stowarzyszenie|udruzenje|zdruzenie|sdruzeni(e?))\b|([a-z]*)(verband|vereniging|asotsiatsiya|zdruzenje)\b|([a-z]*)(verein|forening|yhdistys)([a-z]*)"
 structure.loc[structure.entities_full.apply(lambda x: True if re.search(las , x) else False), 'org2'] = 'association'
 structure.loc[structure.category_woven=='Institutions sans but lucratif (ISBL)', 'org2'] = 'association'
 
@@ -170,22 +169,22 @@ structure.drop(columns=['org1','org2'], inplace=True)
 
 # mots vide à suppr
 
-def stop_word(df, cc_iso3 ,cols_list):
-    import re, pandas as pd
+# def stop_word(df, cc_iso3 ,cols_list):
+#     import re, pandas as pd
     
-    stop_word=pd.read_json('data_files/stop_word.json')
+#     stop_word=pd.read_json('data_files/stop_word.json')
 
-    for col_ref in cols_list:
-        df[f'{col_ref}_2'] = df[col_ref].apply(lambda x: tokenization(x))
+#     for col_ref in cols_list:
+#         df[f'{col_ref}_2'] = df[col_ref].apply(lambda x: tokenization(x))
 
-        for i, row in stop_word.iterrows():
-            if row['iso3']=='ALL':
-                w = "\\b"+row['word'].strip()+"\\b"
-                df.loc[~df[f'{col_ref}_2'].isnull(), f'{col_ref}_2'] = df.loc[~df[f'{col_ref}_2'].isnull(), f'{col_ref}_2'].apply(lambda x: [re.sub(w, '',  s) for s in x]).apply(lambda x: list(filter(None, x)))
-            else:
-                mask = df[cc_iso3]==row['iso3']
-                w = "\\b"+row['word'].strip()+"\\b"
-                df.loc[mask&(~df[f'{col_ref}_2'].isnull()), f'{col_ref}_2'] = df.loc[mask&(~df[f'{col_ref}_2'].isnull()), f'{col_ref}_2'].apply(lambda x: [re.sub(w, '',  s) for s in x]).apply(lambda x: list(filter(None, x)))
+#         for i, row in stop_word.iterrows():
+#             if row['iso3']=='ALL':
+#                 w = "\\b"+row['word'].strip()+"\\b"
+#                 df.loc[~df[f'{col_ref}_2'].isnull(), f'{col_ref}_2'] = df.loc[~df[f'{col_ref}_2'].isnull(), f'{col_ref}_2'].apply(lambda x: [re.sub(w, '',  s) for s in x]).apply(lambda x: list(filter(None, x)))
+#             else:
+#                 mask = df[cc_iso3]==row['iso3']
+#                 w = "\\b"+row['word'].strip()+"\\b"
+#                 df.loc[mask&(~df[f'{col_ref}_2'].isnull()), f'{col_ref}_2'] = df.loc[mask&(~df[f'{col_ref}_2'].isnull()), f'{col_ref}_2'].apply(lambda x: [re.sub(w, '',  s) for s in x]).apply(lambda x: list(filter(None, x)))
 
 
 stop_word(structure, 'country_code', ['entities_full', 'department_dup'])
@@ -256,14 +255,14 @@ structure_fr[cols] = structure_fr[cols].apply(lambda x: x.str.replace('internati
 structure_fr[cols] = structure_fr[cols].apply(lambda x: x.str.replace('joint research unit', "jru", regex=False))
 structure_fr[cols] = structure_fr[cols].apply(lambda x: x.str.replace('joint research unit', "jru", regex=False))
 structure_fr[cols] = structure_fr[cols].apply(lambda x: x.str.replace('equipe accueil', "ea", regex=False))
-structure_fr[cols] = structure_fr[cols].apply(lambda x: x.str.replace(r"\\bumr(\\s?s\\s?)(u(\\s?)|inserm(\\s?))?(?=(\\d+)?)|\\bu\\s?inserm(\\s?)|\\bunit(e?)(?=(\\s?u?\\s?\\d+))|\\binserm\\s?(umr\\s?(s?)|jru)\\s?(u?)|\\binserm(u?)\\s?(?=\\d+)|\\binserm\\s?un\\s?umr\\s?u?", "u", regex=True))
+structure_fr[cols] = structure_fr[cols].apply(lambda x: x.str.replace(r"\bumr(\s?s\s?)(u(\s?)|inserm(\s?))?(?=(\d+)?)|\bu\\s?inserm(\s?)|\bunit(e?)(?=(\s?u?\s?\d+))|\binserm\s?(umr\s?(s?)|jru)\s?(u?)|\binserm(u?)\s?(?=\d+)|\binserm\s?un\s?umr\s?u?", "u", regex=True))
 for s in ['umr','upr','uar','irl','emr','umi','usr','fre','gdr','fr']:
-    structure_fr[cols] = structure_fr[cols].apply(lambda x: x.str.replace(r'(?<=\\b'+s+')\\s?[a-z]+\\s?(?=\\d+)', " ", regex=True))
-structure_fr[cols] = structure_fr[cols].apply(lambda x: x.str.replace(r"\\bu\\s?cnrs|\\bum\\s+r|\\bcnrs\\s?(?=\\d+)|\\bjru\\s?(cnrs|umr)", "umr", regex=True))
-structure_fr[cols] = structure_fr[cols].apply(lambda x: x.str.replace(r"\\bjru\\s?(umi)", "umi", regex=True))
-structure_fr[cols] = structure_fr[cols].apply(lambda x: x.str.replace(r"(\\bce[a-z]* inv[a-z]* cl[a-z]*)|(\\bcl[a-z]* inv[a-z]* ce[a-z]*)|(\\bce[]* cl[a-z]* inv[a-z]*)", "cic", regex=True))
-structure_fr.loc[structure_fr.org_from_lib.map(lambda x: "inserm" in x), cols] = structure_fr.loc[structure_fr.org_from_lib.map(lambda x: "inserm" in x), cols].apply(lambda x: x.str.replace(r'\\bjru\\b', 'u', regex=True))
-structure_fr.loc[structure_fr.org_from_lib.map(lambda x: "cnrs" in x), cols] = structure_fr.loc[structure_fr.org_from_lib.map(lambda x: "cnrs" in x), cols].apply(lambda x: x.str.replace(r'\\bjru\\b', 'umr', regex=True))
+    structure_fr[cols] = structure_fr[cols].apply(lambda x: x.str.replace(r"(?<=\b"+s+r")\s?[a-z]+\s?(?=\d+)", " ", regex=True))
+structure_fr[cols] = structure_fr[cols].apply(lambda x: x.str.replace(r"\bu\s?cnrs|\bum\s+r|\bcnrs\s?(?=\d+)|\bjru\s?(cnrs|umr)", "umr", regex=True))
+structure_fr[cols] = structure_fr[cols].apply(lambda x: x.str.replace(r"\bjru\s?(umi)", "umi", regex=True))
+structure_fr[cols] = structure_fr[cols].apply(lambda x: x.str.replace(r"(\bce[a-z]* inv[a-z]* cl[a-z]*)|(\bcl[a-z]* inv[a-z]* ce[a-z]*)|(\bce[]* cl[a-z]* inv[a-z]*)", "cic", regex=True))
+structure_fr.loc[structure_fr.org_from_lib.map(lambda x: "inserm" in x), cols] = structure_fr.loc[structure_fr.org_from_lib.map(lambda x: "inserm" in x), cols].apply(lambda x: x.str.replace(r"\bjru\b", 'u', regex=True))
+structure_fr.loc[structure_fr.org_from_lib.map(lambda x: "cnrs" in x), cols] = structure_fr.loc[structure_fr.org_from_lib.map(lambda x: "cnrs" in x), cols].apply(lambda x: x.str.replace(r"\bjru\b", 'umr', regex=True))
 
 llab = ["umr", "ua", "umrs", "umr s","ea", "u", "gdr", "fre", "fr", "frc", "fed", "je", "us", "ums",
         "upr","upesa","ifr","umr a","umemi","epi","eac", "ertint", "ur", "ups", "umr m", "umr t",
@@ -273,7 +272,6 @@ def labo_sigle(x):
     sig = []
     for i in llab:
         pattern = r"\b("+i+r")(?=\b|\d+)\s?[a-z]*\s?(\d+)"
-        # pattern=r"\b("+i+r")((\s?\d+)|\s[a-z]*\s(\d+))"
         y = re.search(pattern, x)
         if y:
             sig.append(''.join(y.groups()))
