@@ -3,7 +3,7 @@ pd.options.mode.copy_on_write = True
 from IPython.display import HTML
 # from unidecode import unidecode
 
-from main_library import *
+# from main_library import *
 from matcher import matcher
 from step7_persons.persons import persons_preparation
 from step8_referentiels.referentiels import ref_externe_preparation
@@ -19,9 +19,21 @@ def data_import():
     from config_path import PATH,  PATH_CLEAN
     perso = pd.read_pickle(f"{PATH_CLEAN}perso_app.pkl")
     ref_all = pd.read_pickle("C:/Users/zfriant/OneDrive/Matching/Echanges/HORIZON/data_py/ref_all.pkl")
-
     entities_all = pd.read_pickle(f'{PATH}participants/data_for_matching/entities_all.pkl')
     return perso, ref_all, entities_all
-
 perso, ref_all, entities_all = data_import()
+
 r2 = persons_affiliation(perso, entities_all)
+
+
+# author = {
+# "name": 'elyaakoubi mustapha',
+# "orcid": ''
+# }
+
+
+# import requests
+# # if author.get("orcid"):
+# # Get author by Orcid
+# url = f"https://api.openalex.org/authors/orcid:0000-0002-3398-2341?mailto:bso@recherche.gouv.fr"
+# author_openalex = requests.get(url).json()

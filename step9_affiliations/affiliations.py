@@ -10,6 +10,8 @@ def persons_affiliation(perso, entities_all):
     pp = pp.fillna('')
     pp = pp.loc[pp.orcid_id=='', ['contact', 'orcid_id']].drop_duplicates()
 
+    print(f"info sur pp auteur+orcid: {pp.info()}")
+
     print(time.strftime("%H:%M:%S"))
     result = []
     n = 0
@@ -28,10 +30,10 @@ def persons_affiliation(perso, entities_all):
             # Get author by Orcid
                     url = f"https://api.openalex.org/authors/orcid:{author.get('orcid')}?mailto:bso@recherche.gouv.fr"
                     author_openalex = requests.get(url).json()
-            # else:
-            #        url = f"https://api.openalex.org/authors?search={author.get('name')}"
-            #        if requests.get(url).json().get("results"):
-            #               author_openalex = requests.get(url).json().get("results")[0]
+            else:
+                   url = f"https://api.openalex.org/authors?search={author.get('name')}"
+                   if requests.get(url).json().get("results"):
+                          author_openalex = requests.get(url).json().get("results")[0]
             
         except requests.exceptions.HTTPError as http_err:
             print(f"\n{time.strftime("%H:%M:%S")}, {row} -> HTTP error occurred: {http_err}")
@@ -40,11 +42,11 @@ def persons_affiliation(perso, entities_all):
         except Exception as e:
             print(f"\n{time.strftime("%H:%M:%S")}, {row} -> An unexpected error occurred: {e}")
     
-    print(time.strftime("%H:%M:%S"))
-
-    if author_openalex:
+        if author_openalex:
             author.update({'affiliations':author_openalex.get('affiliations'), 'topics':author_openalex.get('topics'),  'x_concepts':author_openalex.get('x_concepts'), 'orcid_tmp':author_openalex.get('orcid'), 'display_name_alternatives':author_openalex.get('display_name_alternatives')})
             result.append(author)
+
+    print(time.strftime("%H:%M:%S"))
 
     r=pd.DataFrame(result)
     r.loc[r.orcid=='', 'orcid'] = r.orcid_tmp.str.split("/").str[-1]
