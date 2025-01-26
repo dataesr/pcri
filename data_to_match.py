@@ -12,7 +12,7 @@ from step9_affiliations.affiliations import persons_affiliation
 CSV_DATE='20241011'
 
 persons_preparation(CSV_DATE)
-ref_externe_preparation()
+# ref_externe_preparation()
 # entities_preparation()
 
 def data_import():
