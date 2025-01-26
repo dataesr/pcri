@@ -76,4 +76,4 @@ for f in [ 'first_name', 'last_name']:
 perso_app['contact'] = perso_app.last_name.astype(str).str.lower() + ' ' + perso_app.first_name.astype(str).str.lower()
 ##########
 
-perso_app.to_pickle(f"{PATH_WORK}perso_app.pkl")
+perso_app.to_pickle(f"{PATH_CLEAN}perso_app.pkl")
