@@ -72,6 +72,7 @@ def persons_preparation(csv_date):
     for f in [ 'first_name', 'last_name']:
         perso_app[f] = perso_app[f].fillna('')
         perso_app[f] = perso_app[f].str.strip().str.replace(r"\s+", '-', regex=True)
+        perso_app[f] = perso_app[f].str.strip().str.replace(r"-{2,}", '-', regex=True)
 
     perso_app['contact'] = perso_app.last_name.astype(str).str.lower() + ' ' + perso_app.first_name.astype(str).str.lower()
     ##########
