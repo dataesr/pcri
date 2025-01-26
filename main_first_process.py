@@ -1,4 +1,5 @@
 from main_library import *
+pd.options.mode.copy_on_write = True
 
 ################################
 ## data load / adjustements*

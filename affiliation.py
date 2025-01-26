@@ -1,4 +1,6 @@
 import pandas as pd, time, re, numpy as np
+pd.options.mode.copy_on_write = True
+from IPython.display import HTML
 # from unidecode import unidecode
 from functions_shared import *
 from constant_vars import ZIPNAME, FRAMEWORK
@@ -625,3 +627,41 @@ df = (struct_et.loc[struct_et.entities_id.str.contains(r'^[^R0]', regex=True),
       .drop_duplicates()
       .assign(match=None)
      )
+
+typ="ror"
+now = time.strftime("%H:%M:%S")
+
+for i, row in df.iterrows():
+    query="{} {} {}".format(row['city'], row['country_code'], row['entities_full'])
+
+    strategies = [
+        [['ror_name', 'ror_country']],
+        [['ror_name', 'ror_acronym', 'ror_country', 'ror_city']],
+        [['ror_name', 'ror_country', 'ror_city']]
+    ]
+    matcher(df, i, typ, query, strategies)
+
+df = df.loc[~df.match.isnull(), ['match']]
+df.to_pickle(f"{PATH_WORK}match_ror.pkl", compression='gzip')
+struct_et = pd.concat([struct_et, df], axis=1)
+struct_et.loc[struct_et.match.str.len()>1, 'resultat'] = 'a controler'
+struct_et.mask(struct_et=='', inplace=True)
+
+struct_et.to_pickle('C:/Users/zfriant/OneDrive/PCRI/participants/matcher_result/struct_et.pkl')
+
+### si reprise du code en cours chargement des pickles
+# keep = pd.read_pickle('C:/Users/zfriant/Documents/OneDrive/PCRI/participants/matcher_result/structure_fr.pkl')
+# struct_et = pd.read_pickle('C:/Users/zfriant/Documents/OneDrive/PCRI/participants/matcher_result/struct_et.pkl')
+
+entities_all = pd.concat([keep,  struct_et], ignore_index=True, axis=0)
+print(f"size entities_all: {len(entities_all)}")
+
+stop_word(entities_all, 'country_code', ['street'])
+
+tmp=entities_all.loc[(entities_all.country_code=='FRA')&(~entities_all.postalCode.isnull()), ['postalCode']].drop_duplicates()
+tmp['code_postal'] = tmp.postalCode.str.replace(r"\D*", '', regex=True).str.strip()
+tmp['code_postal'] = tmp.code_postal.map(lambda x: np.nan if len(x)!=5. else x)
+
+entities_all = pd.concat([entities_all, tmp], axis=1)
+
+HTML(tmp[['city']].sort_values('city').drop_duplicates().to_html())
