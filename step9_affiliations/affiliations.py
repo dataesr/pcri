@@ -8,9 +8,9 @@ def persons_affiliation(perso, entities_all):
     pp = perso[['project_id','generalPic' ,'contact', 'orcid_id']].drop_duplicates().merge(entities_tmp, how='inner', on=['project_id','generalPic'])
     # pp.mask(pp=='', inplace=True)
     pp = pp.fillna('')
-    pp = pp.loc[pp.orcid_id=='', ['contact', 'orcid_id']].drop_duplicates()
+    # pp = pp.loc[pp.orcid_id=='', ['contact', 'orcid_id']].drop_duplicates()
 
-    print(f"info sur pp auteur+orcid: {pp.info()}")
+    print(f"size pp: {len(pp)}, info sur pp with orcid: {len(pp.loc[pp.orcid_id!=''])}")
 
     print(time.strftime("%H:%M:%S"))
     result = []
