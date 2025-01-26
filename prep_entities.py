@@ -4,7 +4,7 @@ from IPython.display import HTML
 # from unidecode import unidecode
 from functions_shared import *
 from constant_vars import ZIPNAME, FRAMEWORK
-from config_path import PATH_SOURCE, PATH_CLEAN, PATH_ORG, PATH_WORK
+from config_path import PATH, PATH_SOURCE, PATH_CLEAN, PATH_ORG, PATH_WORK
 from matcher import matcher
 
 participation = pd.read_pickle(f"{PATH_CLEAN}participation_current.pkl") 
@@ -104,36 +104,6 @@ for i in cols:
 if any(structure.call_year.isnull()):
     print(f"vérification de l'année (corriger les nuls si existants):\n{structure.call_year.value_counts(dropna=False)}")
 
-
-##########
-# def tokenization(text):
-#     if isinstance(text, str):
-#         tokens = text.split()
-#         return tokens
-    
-# def prep_str_col(df, cols):
-#     df[cols] = df[cols].apply(lambda x: x.str.lower())
-    
-#     ## caracteres speciaux
-#     for i in cols:
-#         df.loc[~df[i].isnull(), i] = df[i].astype('str').apply(unidecode)
-#         df.loc[~df[i].isnull(), i] = df[i].str.replace('&', 'and')
-#         df.loc[~df[i].isnull(), i] = df.loc[~df[i].isnull(), i].apply(lambda x: tokenization(x)).apply(lambda x: [s.replace('.','') for s in x]).apply(lambda x: ' '.join(x))
-    
-#     punct="'|–|,|\\.|:|;|\\!|`|=|\\*|\\+|\\-|‑|\\^|_|~|\\[|\\]|\\{|\\}|\\(|\\)|<|>|@|#|\\$"
-    
-#     # # #
-#     df[cols] = df[cols].apply(lambda x: x.str.replace(punct, ' ', regex=True))    
-#     df[cols] = df[cols].apply(lambda x: x.str.replace('\\n|\\t|\\r|\\xc2|\\xa9|\\s+', ' ', regex=True).str.strip())
-#     df[cols] = df[cols].apply(lambda x: x.str.lower().str.replace('n/a|ndeg', ' ', regex=True).str.strip())
-#     df[cols] = df[cols].apply(lambda x: x.str.lower().str.replace('/', ' ').str.strip())
-#     df[cols] = df[cols].apply(lambda x: x.str.lower().str.replace('\\', ' ').str.strip())
-#     df[cols] = df[cols].apply(lambda x: x.str.lower().str.replace('"', ' ').str.strip())
-#     df[cols] = df[cols].apply(lambda x: x.str.replace(r"\\s+"', ' ', regex=True).str.strip())
-
-#     return df
-
-
 ##########
 cols = ['department_dup', 'legalName_dup', 'businessName_dup', 'entities_acronym_dup','entities_name_dup','street','city']
 structure = prep_str_col(structure, cols)
@@ -170,25 +140,6 @@ structure['typ_from_lib'] = structure[['org1','org2']].stack().groupby(level=0).
 structure.drop(columns=['org1','org2'], inplace=True)
 
 # mots vide à suppr
-
-# def stop_word(df, cc_iso3 ,cols_list):
-#     import re, pandas as pd
-    
-#     stop_word=pd.read_json('data_files/stop_word.json')
-
-#     for col_ref in cols_list:
-#         df[f'{col_ref}_2'] = df[col_ref].apply(lambda x: tokenization(x))
-
-#         for i, row in stop_word.iterrows():
-#             if row['iso3']=='ALL':
-#                 w = "\\b"+row['word'].strip()+"\\b"
-#                 df.loc[~df[f'{col_ref}_2'].isnull(), f'{col_ref}_2'] = df.loc[~df[f'{col_ref}_2'].isnull(), f'{col_ref}_2'].apply(lambda x: [re.sub(w, '',  s) for s in x]).apply(lambda x: list(filter(None, x)))
-#             else:
-#                 mask = df[cc_iso3]==row['iso3']
-#                 w = "\\b"+row['word'].strip()+"\\b"
-#                 df.loc[mask&(~df[f'{col_ref}_2'].isnull()), f'{col_ref}_2'] = df.loc[mask&(~df[f'{col_ref}_2'].isnull()), f'{col_ref}_2'].apply(lambda x: [re.sub(w, '',  s) for s in x]).apply(lambda x: list(filter(None, x)))
-
-
 stop_word(structure, 'country_code', ['entities_full', 'department_dup'])
 
 structure['entities_full'] = structure['entities_full_2'].apply(lambda x: ' '.join([s for s in x if s.strip()]))
@@ -614,7 +565,7 @@ keep['rnsr_merged'] = keep.apply(lambda x: list(set(x['rnsr_merged'] + x['match'
 
 print(len(keep))
 
-keep.to_pickle('C:/Users/zfriant/OneDrive/PCRI/participants/matcher_result/structure_fr.pkl')
+keep.to_pickle(f'{PATH}participants/data_for_matching//structure_fr.pkl')
 
 
 ##############################
@@ -647,7 +598,7 @@ struct_et = pd.concat([struct_et, df], axis=1)
 struct_et.loc[struct_et.match.str.len()>1, 'resultat'] = 'a controler'
 struct_et.mask(struct_et=='', inplace=True)
 
-struct_et.to_pickle('C:/Users/zfriant/OneDrive/PCRI/participants/matcher_result/struct_et.pkl')
+struct_et.to_pickle(f'{PATH}participants/data_for_matching/struct_et.pkl')
 
 ### si reprise du code en cours chargement des pickles
 # keep = pd.read_pickle('C:/Users/zfriant/Documents/OneDrive/PCRI/participants/matcher_result/structure_fr.pkl')
@@ -673,4 +624,6 @@ entities_all.loc[entities_all.country_code=='FRA', 'city'] = entities_all.city.s
 entities_all.loc[entities_all.country_code=='FRA', 'city'] = entities_all.city.str.replace(r"\bste\b", 'sainte', regex=True).str.strip()
 entities_all.loc[entities_all.country_code=='FRA', 'city_tag'] = entities_all.loc[entities_all.country_code=='FRA', 'city'].str.strip().str.replace(r"\s+", '-', regex=True)
 
+
+entities_all.to_pickle(f'{PATH}participants/data_for_matching/entities_all.pkl')
 entities_tmp=entities_all.loc[((entities_all.country_code=='FRA')&(entities_all.rnsr_merged.str.len()==0))|((entities_all.country_code!='FRA')&(entities_all.entities_id.str.contains('pic'))), ['project_id','generalPic','country_code', 'entities_id', 'entities_name']]
