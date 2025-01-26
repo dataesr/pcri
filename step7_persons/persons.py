@@ -61,7 +61,7 @@ def persons_preparation(csv_date):
     def prop_contact(tab):
         from unidecode import unidecode
         cols = ['role', 'first_name', 'last_name','title', 'gender']
-        tab[cols] = tab[cols].applymap(lambda s:s.casefold() if type(s) == str else s)
+        tab[cols] = tab[cols].map(lambda s:s.casefold() if type(s) == str else s)
         for i in cols:
             tab[i] = tab[i].astype('str').apply(unidecode)
         return tab
