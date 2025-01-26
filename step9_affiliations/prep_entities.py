@@ -624,9 +624,3 @@ def entities_preparation():
     entities_all.loc[entities_all.country_code=='FRA', 'city_tag'] = entities_all.loc[entities_all.country_code=='FRA', 'city'].str.strip().str.replace(r"\s+", '-', regex=True)
 
     entities_all.to_pickle(f'{PATH}participants/data_for_matching/entities_all.pkl')
-    
-
-
-#######
-# perso_app = pd.read_pickle(f"{PATH_CLEAN}perso_app.pkl")
-# perso = perso_app[['call_year', 'thema_name_en', 'destination_name_en' ,'project_id', 'country_code', 'generalPic', 'title', 'last_name', 'first_name', 'tel_clean', 'domaine_email', 'contact', 'orcid_id']]
