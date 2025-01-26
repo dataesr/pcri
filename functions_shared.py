@@ -165,3 +165,28 @@ def stop_word(df, cc_iso3 ,cols_list):
                 mask = df[cc_iso3]==row['iso3']
                 w = r"\b"+row['word'].strip()+r"\b"
                 df.loc[mask&(~df[f'{col_ref}_2'].isnull()), f'{col_ref}_2'] = df.loc[mask&(~df[f'{col_ref}_2'].isnull()), f'{col_ref}_2'].apply(lambda x: [re.sub(w, '',  s) for s in x]).apply(lambda x: list(filter(None, x)))
+
+def adr_tag(df, cols_list):
+    import json, re, pandas as pd
+    from text_to_num import alpha2digit
+    
+    adr = json.load(open('data_files/ad.json'))
+
+    for col_ref in cols_list:
+        tmp = df.loc[~df[col_ref].isnull(), [col_ref]]
+        for i in adr :
+            for (k,v) in i.items():
+                tmp[col_ref] = tmp[col_ref].apply(lambda x: [re.sub('^'+k+'$', v, s) for s in x])
+                tmp[col_ref] = tmp[col_ref].apply(lambda x: list(filter(None, x)))
+
+        df = pd.concat([df.drop(columns=col_ref), tmp], axis=1) 
+
+        tmp[f'{col_ref}_tag'] = df.loc[~df[col_ref].isnull()][col_ref].apply(lambda x: ' '.join(x))
+        with open("data_files/adresse_pattern.txt", "r") as pats:
+             for n, line in enumerate(pats, start=1):       
+                pat = line.rstrip('\n')
+                tmp[f'{col_ref}_tag'] = tmp[f'{col_ref}_tag'].str.replace(pat,'', regex=True)
+
+        tmp[f'{col_ref}_tag'] = tmp[f'{col_ref}_tag'].apply(lambda x: alpha2digit(x, 'fr'))
+
+    return pd.concat([df.drop(columns=col_ref), tmp], axis=1)     

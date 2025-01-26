@@ -2,7 +2,7 @@ import pandas as pd, time, re, numpy as np
 # from unidecode import unidecode
 from functions_shared import *
 from constant_vars import ZIPNAME, FRAMEWORK
-from config_path import PATH_SOURCE, PATH_CLEAN, PATH_ORG
+from config_path import PATH_SOURCE, PATH_CLEAN, PATH_ORG, PATH_WORK
 from matcher import matcher
 
 participation = pd.read_pickle(f"{PATH_CLEAN}participation_current.pkl") 
