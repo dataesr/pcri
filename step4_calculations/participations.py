@@ -32,6 +32,7 @@ def participations_nuts(df):
 
 
 def entities_with_lien(entities_info, lien, genPic_to_new):
+    from config_path import PATH_CLEAN
     print("### LIEN + entities_info -> pour calculations")
     print(f"- ETAT avant lien ->\ngeneralPic de lien={lien.generalPic.nunique()},\ngeneralPic de entities_info={entities_info.generalPic.nunique()}")
 
@@ -59,6 +60,8 @@ def entities_with_lien(entities_info, lien, genPic_to_new):
         print(f'1- part_step ({len(part_step)}) = lien')
     else:
         print(f"2- lien={len(lien)}, part_step={len(part_step)}")
+    
+    part_step.to_pickle(f"{PATH_CLEAN}participation_complete.pkl")
     return part_step
 
 def proj_no_coord(projects):

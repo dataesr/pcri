@@ -143,11 +143,11 @@ lien = merged_partApp(app1, part)
 lien = nuts_lien(app1, part, lien)
 lien.to_pickle(f"{PATH_CLEAN}lien.pkl")
 
-# lien = pd.read_pickle(f"{PATH_CLEAN}lien.pkl")
-
-#ENTITIES +LIEN
-# entities_single = entities_single_create(entities, lien)
+#ENTITIES +LIEN -> attention si nouvelle actu relancer entities_single_create
+lien = pd.read_pickle(f"{PATH_CLEAN}lien.pkl")
 entities_single = pd.read_pickle(f"{PATH_SOURCE}entities_single.pkl")
+
+# entities_single = entities_single_create(entities, lien)
 entities_info = entities_info_create(entities_single, lien)
 
 ### step3
@@ -242,6 +242,8 @@ print(entities_info[(entities_info.country_code=='FRA')&(entities_info.entities_
 file_name = f"{PATH_CLEAN}entities_info_current2.pkl"
 with open(file_name, 'wb') as file:
     pd.to_pickle(entities_info, file)
+
+# entities_info = pd.read_pickle(f"{PATH_CLEAN}entities_info_current2.pkl")
 
 # STEP4 - INDICATEURS
 
