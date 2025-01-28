@@ -66,22 +66,78 @@ def entities_preparation():
 
 
     ########
+    if len(participation[['stage','project_id','generalPic','orderNumber', 'country_code','country_code_mapping']].drop_duplicates())!=len(participation[['stage','project_id','generalPic','orderNumber', 'country_code','country_code_mapping','role','participates_as']].drop_duplicates()):
+        print("Attention doublon d'une participation avec ajout de role+participates_as")
+
+    # merge struct (department) with participation
     part = participation[['project_id','generalPic','orderNumber', 'country_code','country_code_mapping','stage']].drop_duplicates()
     print(f"size part {len(part)}")
-    part = (part
+    part1 = (part
             .merge(struct, 
-                how='outer', 
-                left_on=['stage','project_id', 'generalPic', 'orderNumber', 'country_code_mapping'], 
-                right_on=['stage','project_id', 'generalPic', 'orderNumber', 'country_code_mapping_dept'],
-                indicator=True)
+                how='inner', 
+                left_on=['stage','project_id', 'generalPic', 'orderNumber','country_code_mapping'],  
+                right_on=['stage','project_id', 'generalPic', 'orderNumber', 'country_code_mapping_dept'])
             .drop_duplicates())
-    part['nb'] = part.groupby(['stage', 'project_id', 'generalPic', 'orderNumber'])['_merge'].transform('count')
-    part['nb2'] = part.groupby(['stage', 'project_id', 'generalPic', 'orderNumber'])['_merge'].transform('count')
-    part[['country_code','country_code_mapping']] = part[['country_code','country_code_mapping']].fillna(part.groupby(['stage', 'project_id', 'generalPic', 'orderNumber'])[['country_code','country_code_mapping']].ffill())
-    print(f"size part {len(part)}")
+    print(f"size part1 merge_on['stage','project_id', 'generalPic', 'orderNumber','country']:{len(part1)}")
 
-    part = part.loc[~((part.nb2>1)&(part.department.isnull()))]
-    print(f"size part {len(part)}")
+    part2 = (part.merge(part1[['project_id','generalPic','orderNumber', 'country_code','country_code_mapping','stage']], 
+                        how='outer', on=['project_id','generalPic','orderNumber', 'country_code','country_code_mapping','stage'], indicator=True)
+            .query('_merge == "left_only"')
+            .drop('_merge', axis=1)
+            .drop_duplicates()
+            .merge(struct, 
+                how='inner', 
+                left_on=['stage','project_id', 'generalPic', 'orderNumber'],  
+                right_on=['stage','project_id', 'generalPic', 'orderNumber'])
+            .drop_duplicates())
+    print(f"size part2 merge_on['stage','project_id', 'generalPic', 'orderNumber']:{len(part2)}")
+
+    part2 = pd.concat([part1, part2], ignore_index=True, axis=0)
+
+    part3 = (part.merge(part2[['project_id','generalPic','orderNumber', 'country_code','country_code_mapping','stage']], 
+                        how='outer', on=['project_id','generalPic','orderNumber', 'country_code','country_code_mapping','stage'], indicator=True)
+            .query('_merge == "left_only"')
+            .drop('_merge', axis=1)
+            .merge(struct.drop(columns='generalPic'), 
+                how='inner', 
+                left_on=['stage','project_id', 'orderNumber'],  
+                right_on=['stage','project_id', 'orderNumber'])
+            .drop_duplicates())
+    print(f"size part3 merge_on['stage','project_id','orderNumber']:{len(part3)}")
+
+    part3 = pd.concat([part2, part3], ignore_index=True, axis=0)
+    print(f"size part3:{len(part3)}")
+
+    part4 = (part.merge(part3[['project_id','generalPic','orderNumber', 'country_code','country_code_mapping','stage']], 
+                        how='outer', on=['project_id','generalPic','orderNumber', 'country_code','country_code_mapping','stage'], indicator=True)
+            .query('_merge == "left_only"')
+            .drop('_merge', axis=1)
+            .merge(part3.drop(columns='stage'), 
+                how='inner', on=['project_id','generalPic','orderNumber', 'country_code','country_code_mapping']))
+
+    print(f"size part4 merge_on with part3 ['project_id','generalPic','orderNumber', 'country_code','country_code_mapping']:{len(part4)}")
+
+    part4 = pd.concat([part4, part3], ignore_index=True, axis=0)
+    print(f"size part4:{len(part4)}")
+
+    part5 = (part.merge(part4[['project_id','generalPic','orderNumber', 'country_code','country_code_mapping','stage']], 
+                        how='outer', on=['project_id','generalPic','orderNumber', 'country_code','country_code_mapping','stage'], indicator=True)
+            .query('_merge == "left_only"')
+            .drop('_merge', axis=1))
+
+    print(f"size part5 reste participation:{len(part5)}")
+
+    part5 = pd.concat([part4, part5], ignore_index=True, axis=0)
+    print(f"size part5:{len(part5)}")
+
+    part5['nb'] = part5.groupby(['stage', 'project_id', 'generalPic', 'orderNumber'])['stage'].transform('count')
+    part5['nb2'] = part5.groupby(['stage', 'project_id', 'generalPic', 'orderNumber','country_code_mapping'])['stage'].transform('count')
+    part5[['country_code','country_code_mapping']] = part5[['country_code','country_code_mapping']].fillna(part5.groupby(['stage', 'project_id', 'generalPic', 'orderNumber'])[['country_code','country_code_mapping']].ffill())
+    print(f"size part5 {len(part5)}")
+
+    # #remove participation duplicates on ['stage', 'project_id', 'generalPic', 'orderNumber'] and department empty
+    part5 = part5.loc[~((part5.nb>1)&(part5.department.isnull()))]
+    print(f"size part5 {len(part5)}")
 
     ##########
     structure = (part
