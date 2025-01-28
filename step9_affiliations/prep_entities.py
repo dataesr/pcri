@@ -7,8 +7,8 @@ def entities_preparation():
     from config_path import PATH, PATH_SOURCE, PATH_CLEAN, PATH_ORG, PATH_WORK
     from matcher import matcher
 
-    # participation = pd.read_pickle(f"{PATH_CLEAN}participation_current.pkl") 
-    participation = pd.read_pickle(f"{PATH_CLEAN}participation_complete.pkl")
+    participation = pd.read_pickle(f"{PATH_CLEAN}participation_current.pkl") 
+    # participation = pd.read_pickle(f"{PATH_CLEAN}participation_complete.pkl")
     entities_info = pd.read_pickle(f"{PATH_CLEAN}entities_info_current2.pkl")
     # # entities = pd.read_pickle(f"{PATH_WORK}entities_participation_current.pkl")
     proj = pd.read_pickle(f"{PATH_CLEAN}projects_current.pkl")
@@ -20,11 +20,13 @@ def entities_preparation():
     pp_app = unzip_zip(ZIPNAME, f"{PATH_SOURCE}{FRAMEWORK}/", 'proposals_applicants_departments.json', 'utf8')
     pp_app = pd.DataFrame(pp_app)
     pp_app = pp_app.rename(columns={'proposalNbr':'project_id', 'applicantPic':'pic','departmentApplicantName':'department'}).astype(str)
+    pp_app = pp_app.replace({'None': np.nan})
     print(f"size pp_app: {len(pp_app)}")
 
     pp_part = unzip_zip(ZIPNAME, f"{PATH_SOURCE}{FRAMEWORK}/", 'projects_participants_departments.json', 'utf8')
     pp_part = pd.DataFrame(pp_part)
     pp_part = pp_part.rename(columns={'projectNbr':'project_id', 'participantPic':'pic','departmentParticipantName':'department'}).astype(str)
+    pp_part = pp_part.replace({'None': np.nan})
     print(f"size pp_part: {len(pp_part)}")
 
 ########
