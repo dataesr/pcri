@@ -216,29 +216,29 @@ def entities_preparation():
 
 
     #############
-    lpattern = ["cnrs", "inria", "inrae", "ifremer", "inserm", "cea", "ens", "fnsp", "cirad", "ird", "chu", "universite", 
-                "pasteur", "curie", "irsn", "onera", "agrocampus", "ed","ecole"]
-    pattern_ifremer = "(ifremer)|(in.* fran.* re.* ex.* mer)"
-    pattern_cnrs =   "(ce.* na.* (de )?(la )?re.* sc.[a-z]*)|(fr.* na.* sc.* re.* ce.[a-z]*)|(cnrs)"
-    pattern_inria =  "(in.* na.* (de )?re.* (en )?in.* (et )?(en )?au.[a-z]*)|(inria)"
-    pattern_inrae =   "(in.* na.* (de )?re.* ag.[a-z]*)|(inra)|(inrae)|(irstea)"
-    pattern_inserm = "(in.* na.* (de )?(la )?sa.* (et )?(de )?(la )?re.* me.[a-z]*)|(inserm)"
-    pattern_cea =    "(co.* (a )?l?\\'?en.* at.[a-z]*)|(\\bcea\\b)"
-    pattern_ens =    "(ec.* no.* sup[a-z]*)|(\\bens\\b)"
-    pattern_fnsp =   "(fo.* na.* (des )?sc.* po.[a-z]*)|(fnsp)|(sciences po)"
-    pattern_cirad =  "(ce.* (de )?co.* in.* (en )?re.* ag.* (pour )?(le )?dev.[a-z]*)|(cirad)"
-    pattern_ird =    "(in.* (de )?re.[a-z]* (pour )?(le )?dev.[a-z]*)|\\b(ird)\\b|(i r d)"
-    pattern_chu = "((ce.*|ctre|group.*) hos.* (univ.[a-z]*)?)|(univ.* hosp.[a-z]*)|\\b(chu|chr|chru)\\b|(hospice)"
-    pattern_universite =   "(univ(ersite|ersity|ersitaire))"
-    pattern_pasteur =   "(ins([a-z]*|\\.*) pasteur( de)?( lille)?)|(pasteur inst([a-z]*))"
-    pattern_curie =    "(inst([a-z]*|\\.*) curie)|(curie inst([a-z]*))"
-    pattern_irsn =   "(in.* (de )?radio.[a-z]* (et )?(de )?sur.[a-z]* nuc.[a-z]*)|(irsn)"
-    pattern_onera =  "(onera)|(off.* na.* (d )?etu.* (et )?(de )?rech.* aero.*)"
-    pattern_agrocampus = "(agrocampus)"
-    pattern_ed = "(doct.* sch.*)|(ec.* doct.*)|\\b(ed)\\b"
-    pattern_ecole = "(ecole)"
 
     def qualif_organisation(x):
+        lpattern = ["cnrs", "inria", "inrae", "ifremer", "inserm", "cea", "ens", "fnsp", "cirad", "ird", "chu", "universite", 
+                "pasteur", "curie", "irsn", "onera", "agrocampus", "ed","ecole"]
+        pattern_ifremer = "(ifremer)|(in.* fran.* re.* ex.* mer)"
+        pattern_cnrs =   "(ce.* na.* (de )?(la )?re.* sc.[a-z]*)|(fr.* na.* sc.* re.* ce.[a-z]*)|(cnrs)"
+        pattern_inria =  "(in.* na.* (de )?re.* (en )?in.* (et )?(en )?au.[a-z]*)|(inria)"
+        pattern_inrae =   "(in.* na.* (de )?re.* ag.[a-z]*)|(inra)|(inrae)|(irstea)"
+        pattern_inserm = "(in.* na.* (de )?(la )?sa.* (et )?(de )?(la )?re.* me.[a-z]*)|(inserm)"
+        pattern_cea =    "(co.* (a )?l?\\'?en.* at.[a-z]*)|(\\bcea\\b)"
+        pattern_ens =    "(ec.* no.* sup[a-z]*)|(\\bens\\b)"
+        pattern_fnsp =   "(fo.* na.* (des )?sc.* po.[a-z]*)|(fnsp)|(sciences po)"
+        pattern_cirad =  "(ce.* (de )?co.* in.* (en )?re.* ag.* (pour )?(le )?dev.[a-z]*)|(cirad)"
+        pattern_ird =    "(in.* (de )?re.[a-z]* (pour )?(le )?dev.[a-z]*)|\\b(ird)\\b|(i r d)"
+        pattern_chu = "((ce.*|ctre|group.*) hos.* (univ.[a-z]*)?)|(univ.* hosp.[a-z]*)|\\b(chu|chr|chru)\\b|(hospice)"
+        pattern_universite =   "(univ(ersite|ersity|ersitaire))"
+        pattern_pasteur =   "(ins([a-z]*|\\.*) pasteur( de)?( lille)?)|(pasteur inst([a-z]*))"
+        pattern_curie =    "(inst([a-z]*|\\.*) curie)|(curie inst([a-z]*))"
+        pattern_irsn =   "(in.* (de )?radio.[a-z]* (et )?(de )?sur.[a-z]* nuc.[a-z]*)|(irsn)"
+        pattern_onera =  "(onera)|(off.* na.* (d )?etu.* (et )?(de )?rech.* aero.*)"
+        pattern_agrocampus = "(agrocampus)"
+        pattern_ed = "(doct.* sch.*)|(ec.* doct.*)|\\b(ed)\\b"
+        pattern_ecole = "(ecole)"
         org = []
         for j in lpattern:
             pattern = globals()[f"pattern_{j}"]
