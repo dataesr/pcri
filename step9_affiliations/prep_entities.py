@@ -30,10 +30,11 @@ def entities_preparation():
 ########
    
     def prep(stage, df, countries, lien):
+
         test = df.merge(countries[['countryCode', 'country_code_mapping','country_code']], how='left', on='countryCode')
         test = test.assign(stage=stage).drop(columns=['countryCode','orderNumber', 'departmentUniqueId','framework', 'lastUpdateDate' ]).drop_duplicates()
     #     test['nb'] = test.groupby(['project_id', 'generalPic', 'pic'])['department'].transform('count')
-        
+
         if stage=='evaluated':
             tmp=(lien.loc[lien.inProposal==True, ['project_id', 'generalPic', 'proposal_orderNumber','proposal_participant_pic', 'calculated_pic', 'nuts_applicants', 'n_app']]
                 .rename(columns={'nuts_applicants':'entities_nuts', 'proposal_participant_pic':'pic', 'proposal_orderNumber':'orderNumber', 'n_app':'ent_nb'}))
@@ -45,10 +46,10 @@ def entities_preparation():
         
         tmp.entities_nuts=tmp.apply(lambda x: ','.join(x.strip() for x in x.entities_nuts if x.strip()), axis=1)
         return tmp.sort_values('project_id').drop_duplicates()
-    
-#######
-    app=prep('evaluated', pp_app)
-    part=prep('successful', pp_part)
+
+    #######
+    app=prep('evaluated', pp_app, countries, lien)
+    part=prep('successful', pp_part, countries, lien)
     print(f"app {len(app)}, part {len(part)}")
 
     lp = part[['project_id', 'generalPic', 'pic', 'country_code_mapping']].drop_duplicates()
@@ -64,10 +65,7 @@ def entities_preparation():
     if len(participation[['stage','project_id','generalPic','orderNumber', 'country_code','country_code_mapping']].drop_duplicates())!=len(participation[['stage','project_id','generalPic','orderNumber', 'country_code','country_code_mapping','role','participates_as']].drop_duplicates()):
         print("Attention doublon d'une participation avec ajout de role+participates_as")
 
-
     ########
-    if len(participation[['stage','project_id','generalPic','orderNumber', 'country_code','country_code_mapping']].drop_duplicates())!=len(participation[['stage','project_id','generalPic','orderNumber', 'country_code','country_code_mapping','role','participates_as']].drop_duplicates()):
-        print("Attention doublon d'une participation avec ajout de role+participates_as")
 
     # merge struct (department) with participation
     part = participation[['project_id','generalPic','orderNumber', 'country_code','country_code_mapping','stage']].drop_duplicates()
