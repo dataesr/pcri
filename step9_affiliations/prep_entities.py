@@ -147,7 +147,7 @@ def entities_preparation():
                 'street', 'webPage']], 
                 how='left', on=['generalPic', 'country_code_mapping', 'country_code'])
                 .merge(proj[['project_id', 'call_year']].drop_duplicates(), how='left', on=['project_id'])
-                .drop(columns=['pic','_merge', 'nb_stage', 'nb', 'nb2'])
+                .drop(columns=['pic','nb_stage', 'nb', 'nb2'])
                 .drop_duplicates()
                 )
 
