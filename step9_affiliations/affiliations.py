@@ -1,8 +1,12 @@
-def persons_affiliation(perso, entities_all):
+def persons_affiliation(perso, entities_all, country='ALL'):
     from config_path import PATH
     import requests , pandas as pd, time
 
-    entities_tmp=entities_all.loc[((entities_all.country_code=='FRA')&(entities_all.rnsr_merged.str.len()==0))|((entities_all.country_code!='FRA')&(entities_all.entities_id.str.contains('pic'))), ['project_id','generalPic','country_code', 'entities_id', 'entities_name']]
+    if country=='FRA':
+        entities_tmp=entities_all.loc[((entities_all.country_code=='FRA')&(entities_all.rnsr_merged.str.len()==0)), ['project_id','generalPic','country_code', 'entities_id', 'entities_name']]
+    else:
+        entities_tmp=entities_all.loc[((entities_all.country_code=='FRA')&(entities_all.rnsr_merged.str.len()==0))|((entities_all.country_code!='FRA')&(entities_all.entities_id.str.contains('pic'))), ['project_id','generalPic','country_code', 'entities_id', 'entities_name']]
+    
     perso = perso[['call_year', 'thema_name_en', 'destination_name_en' ,'project_id', 'country_code', 'generalPic', 'title', 'last_name', 'first_name', 'tel_clean', 'domaine_email', 'contact', 'orcid_id']]
 
     pp = perso[['project_id','generalPic' ,'contact', 'orcid_id']].drop_duplicates().merge(entities_tmp, how='inner', on=['project_id','generalPic'])
@@ -13,7 +17,7 @@ def persons_affiliation(perso, entities_all):
     print(f"size pp: {len(pp)}, info sur pp with orcid: {len(pp.loc[pp.orcid_id!=''])}")
 
     print(time.strftime("%H:%M:%S"))
-    result = []
+    df=pd.DataFrame()
     n = 0
     for i, row in pp.iterrows():
         n=n+1
@@ -43,11 +47,11 @@ def persons_affiliation(perso, entities_all):
                         author.update(result)
                         df=pd.concat([df, pd.json_normalize(author)])
         except requests.exceptions.HTTPError as http_err:
-            print(f"\n{time.strftime("%H:%M:%S")}-> HTTP error occurred: {http_err}")
+            print(f"\n{time.strftime("%H:%M:%S")}, {row}-> HTTP error occurred: {http_err}")
         except requests.exceptions.RequestException as err:
-            print(f"\n{time.strftime("%H:%M:%S")}-> Error occurred: {err}")                    
+            print(f"\n{time.strftime("%H:%M:%S")}, {row}-> Error occurred: {err}")                    
         except Exception as e:
-            print(f"\n{time.strftime("%H:%M:%S")}-> An unexpected error occurred: {e}")
+            print(f"\n{time.strftime("%H:%M:%S")}, {row}-> An unexpected error occurred: {e}")
         
 
     print(time.strftime("%H:%M:%S"))
