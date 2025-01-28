@@ -1,7 +1,7 @@
 import pandas as pd
 pd.options.mode.copy_on_write = True
 from IPython.display import HTML
-# from unidecode import unidecode
+
 
 # from main_library import *
 from matcher import matcher
@@ -11,29 +11,33 @@ from step9_affiliations.prep_entities import entities_preparation
 from step9_affiliations.affiliations import persons_affiliation
 CSV_DATE='20241011'
 
-persons_preparation(CSV_DATE)
+# persons_preparation(CSV_DATE)
 # ref_externe_preparation()
 # entities_preparation()
 
 def data_import():
     from config_path import PATH,  PATH_CLEAN
     perso = pd.read_pickle(f"{PATH_CLEAN}perso_app.pkl")
+    print(f"size perso init: {len(perso)}")
     ref_all = pd.read_pickle("C:/Users/zfriant/OneDrive/Matching/Echanges/HORIZON/data_py/ref_all.pkl")
+    print(f"size ref_all init: {len(ref_all)}")
     entities_all = pd.read_pickle(f'{PATH}participants/data_for_matching/entities_all.pkl')
+    print(f"size entities_all init: {len(entities_all)}")
     return perso, ref_all, entities_all
 perso, ref_all, entities_all = data_import()
 
-r2 = persons_affiliation(perso, entities_all)
+perso = perso[['project_id', 'generalPic', 'pic', 'role', 'first_name', 'last_name',
+       'title', 'gender','researcher_id', 'orcid_id',
+       'google_scholar_id', 'scopus_author_id', 'stage', 'nb', 'country_code',
+       'call_year', 'thema_name_en', 'destination_name_en', 'tel_clean',
+       'domaine_email', 'contact']].drop_duplicates()
+print(f"size perso for merging: {len(perso)}")
 
 
-# author = {
-# "name": 'elyaakoubi mustapha',
-# "orcid": ''
-# }
+test = entities_all.merge(perso, how='left', on=['project_id', 'generalPic'])
 
+# r2 = persons_affiliation(perso, entities_all, country='FRA')
+# voire comment traiter le retour; pour l'instant ne peut plus utiliser l'api (trop de requetes)
 
-# import requests
-# # if author.get("orcid"):
-# # Get author by Orcid
-# url = f"https://api.openalex.org/authors/orcid:0000-0002-3398-2341?mailto:bso@recherche.gouv.fr"
-# author_openalex = requests.get(url).json()
+aff_by_tel = perso.loc[~perso.tel_clean.isnull()].merge(ref_all.loc[~ref_all.tel_clean.isnull()], how='inner', on='tel_clean')
+print(f"size aff_by_tel: {len(aff_by_tel)}")
