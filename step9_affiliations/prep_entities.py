@@ -7,7 +7,8 @@ def entities_preparation():
     from config_path import PATH, PATH_SOURCE, PATH_CLEAN, PATH_ORG, PATH_WORK
     from matcher import matcher
 
-    participation = pd.read_pickle(f"{PATH_CLEAN}participation_current.pkl") 
+    # participation = pd.read_pickle(f"{PATH_CLEAN}participation_current.pkl") 
+    participation = pd.read_pickle(f"{PATH_CLEAN}participation_complete.pkl")
     entities_info = pd.read_pickle(f"{PATH_CLEAN}entities_info_current2.pkl")
     # # entities = pd.read_pickle(f"{PATH_WORK}entities_participation_current.pkl")
     proj = pd.read_pickle(f"{PATH_CLEAN}projects_current.pkl")
