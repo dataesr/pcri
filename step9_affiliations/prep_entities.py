@@ -140,19 +140,19 @@ def entities_preparation():
     print(f"size part5 {len(part5)}")
 
     ##########
-    structure = (part
+    structure = (part5
                 .merge(entities_info[['generalPic', 'legalName', 'businessName',
                 'category_woven', 'city', 'country_code_mapping', 'country_code',  'country_name_fr', 
                 'id_secondaire', 'entities_id', 'entities_name',  'entities_acronym', 'operateur_num', 'postalCode', 
                 'street', 'webPage']], 
                 how='left', on=['generalPic', 'country_code_mapping', 'country_code'])
                 .merge(proj[['project_id', 'call_year']].drop_duplicates(), how='left', on=['project_id'])
-                .drop(columns=['pic','nb_stage', 'nb', 'nb2'])
+                .drop(columns=['nb_stage', 'nb', 'nb2'])
                 .drop_duplicates()
                 )
 
     structure = structure.loc[~structure.entities_name.isnull()].drop_duplicates()
-    print(len(structure))
+    print(f"size structure + part5: {len(structure)}")
 
     cols = ['department', 'entities_acronym', 'entities_name', 'legalName', 'businessName']
     for i in cols:
