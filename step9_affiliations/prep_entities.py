@@ -338,60 +338,60 @@ def entities_preparation():
     print(f"- size oback: {len(oback)}")
     oback.mask(oback=='', inplace=True)
     
-    return structure_fr, oback
-#     ###########################################################################################################
+    
+    ###########################################################################################################
 
-#     # MERGE ORGANISMES ET STRUCTURE
+    # MERGE ORGANISMES ET STRUCTURE
 
-    tmp = structure_fr.merge(oback, how='outer', on=['stage','project_id','generalPic', 'orderNumber'], indicator=True)
+    tmp = structure_fr.merge(oback, how='outer', on=['stage','project_id','generalPic', 'pic'], indicator=True)
     keep = tmp.loc[tmp._merge!='right_only'] #suppr les lignes oback en +
 
-#     # traitement cea sans orderNumber
-#     tmp = tmp.loc[(tmp._merge=='right_only')&(tmp.org_back=='CEA')]
-#     cea = keep[(keep.generalPic=='999992401')].drop(columns='_merge').sort_values(['project_id','generalPic'])
-#     print(len(cea))
-#     cea = cea.drop(columns=list(oback.columns.difference(structure_fr.columns)))
-#     cea = cea.merge(oback[oback.generalPic=='999992401'].dropna(axis=1, how='all'), how='left', on=['stage','project_id','generalPic'], indicator=True)
-#     keep = keep[keep.generalPic!='999992401']
-#     keep = pd.concat([keep, cea], ignore_index=True).drop(columns=['pic', 'role', 'participates_as']).sort_values(['project_id', 'stage', 'generalPic'])
+    # traitement cea sans orderNumber
+    # tmp = tmp.loc[(tmp._merge=='right_only')&(tmp.org_back=='CEA')]
+    # cea = keep[(keep.generalPic=='999992401')].drop(columns='_merge').sort_values(['project_id','generalPic'])
+    # print(len(cea))
+    # cea = cea.drop(columns=list(oback.columns.difference(structure_fr.columns)))
+    # cea = cea.merge(oback[oback.generalPic=='999992401'].dropna(axis=1, how='all'), how='left', on=['stage','project_id','generalPic'], indicator=True)
+    # keep = keep[keep.generalPic!='999992401']
+    # keep = pd.concat([keep, cea], ignore_index=True).drop(columns=['pic', 'role', 'participates_as']).sort_values(['project_id', 'stage', 'generalPic'])
 
-#     for i in ['rnsr_back','labo_back','org_back', 'city_back']:
-#         keep[i] = keep[i].apply(lambda x: x.split(';') if isinstance(x, str) else [])  
+    for i in ['rnsr_back','labo_back','org_back', 'city_back']:
+        keep[i] = keep[i].apply(lambda x: x.split(';') if isinstance(x, str) else [])  
 
-#     print(len(keep))
+    print(len(keep))
 
-#     keep['org_merged'] = keep.apply(lambda x: list(set(x['org_back'] + x['org_from_lib'])), axis=1)
-#     keep.mask(keep=='', inplace=True)
+    keep['org_merged'] = keep.apply(lambda x: list(set(x['org_back'] + x['org_from_lib'])), axis=1)
+    keep.mask(keep=='', inplace=True)
 
-#     keep['lab_merged'] = keep.apply(lambda x: list(set(x['labo_back'] + x['lab_from_lib'])), axis=1)
+    keep['lab_merged'] = keep.apply(lambda x: list(set(x['labo_back'] + x['lab_from_lib'])), axis=1)
 
-#     pattern=r'^[0-9]{9}[A-Z]{1}($|;)'
-#     keep.loc[keep.id_secondaire.str.contains('0', na=True), 'id_secondaire'] = np.nan
-#     keep['id_secondaire'] = keep['id_secondaire'].apply(lambda x: x.split(';') if isinstance(x, str) else [])
-#     keep['rnsr_merged'] = keep.id_secondaire.apply(lambda x: [i for i in x if re.search(pattern, i)])
-#     keep['rnsr_merged'] = keep.apply(lambda x: list(set(x['rnsr_merged'] + x['rnsr_back'])), axis=1)
-#     keep.mask(keep=='', inplace=True)
+    pattern=r'^[0-9]{9}[A-Z]{1}($|;)'
+    keep.loc[keep.id_secondaire.str.contains('0', na=True), 'id_secondaire'] = np.nan
+    keep['id_secondaire'] = keep['id_secondaire'].apply(lambda x: x.split(';') if isinstance(x, str) else [])
+    keep['rnsr_merged'] = keep.id_secondaire.apply(lambda x: [i for i in x if re.search(pattern, i)])
+    keep['rnsr_merged'] = keep.apply(lambda x: list(set(x['rnsr_merged'] + x['rnsr_back'])), axis=1)
+    keep.mask(keep=='', inplace=True)
 
-#     ################
-#     labo = keep.loc[((keep.org_merged.str.len() > 0)|(~keep.operateur_num.isnull())), 
-#             ['call_year','stage','project_id', 'generalPic', 'entities_full', 'department_dup',
-#         'typ_from_lib', 'org_merged', 'rnsr_merged', 'lab_merged',
-#         'cp_back', 'city_back', 'operateur_num','category_woven']]
-#     print(len(labo))
+    ################
+    labo = keep.loc[((keep.org_merged.str.len() > 0)|(~keep.operateur_num.isnull())), 
+            ['call_year','stage','project_id', 'generalPic', 'entities_full', 'department_dup',
+        'typ_from_lib', 'org_merged', 'rnsr_merged', 'lab_merged',
+        'cp_back', 'city_back', 'operateur_num','category_woven']]
+    print(len(labo))
 
-#     lab_a_ident = (labo.loc[(keep.rnsr_merged.str.len() == 0), 
-#                             ['project_id', 'generalPic', 'call_year','department_dup','entities_full','lab_merged', 'city_back']]
-#                 )
+    lab_a_ident = (labo.loc[(keep.rnsr_merged.str.len() == 0), 
+                            ['project_id', 'generalPic', 'call_year','department_dup','entities_full','lab_merged', 'city_back']]
+                )
 
-#     # lab_a_ident['org_merged'] = lab_a_ident['org_merged'].astype(str)          
-#     lab_a_ident = (lab_a_ident
-#                     .set_index(['call_year','department_dup','entities_full'])
-#                     .explode('lab_merged').explode('city_back')
-#                     .reset_index()
-#                     .drop_duplicates()
-#                 )
-#     print(len(lab_a_ident))
-
+    # lab_a_ident['org_merged'] = lab_a_ident['org_merged'].astype(str)          
+    lab_a_ident = (lab_a_ident
+                    .set_index(['call_year','department_dup','entities_full'])
+                    .explode('lab_merged').explode('city_back')
+                    .reset_index()
+                    .drop_duplicates()
+                )
+    print(len(lab_a_ident))
+    return lab_a_ident
 #     #################
 #     # 1er step matching by id
 #     ident_by_id = lab_a_ident.loc[~lab_a_ident.lab_merged.isnull(), ['call_year', 'entities_full', 'lab_merged', 'city_back']].drop_duplicates()
