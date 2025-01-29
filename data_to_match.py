@@ -2,18 +2,20 @@ import pandas as pd
 pd.options.mode.copy_on_write = True
 from IPython.display import HTML
 
-
-# from main_library import *
 from matcher import matcher
 from step7_persons.persons import persons_preparation
 from step8_referentiels.referentiels import ref_externe_preparation
 from step9_affiliations.prep_entities import entities_preparation
 from step9_affiliations.affiliations import persons_affiliation
+from step9_affiliations.organismes_cleaning import organismes_back
 CSV_DATE='20241011'
+
+organismes_back('2024')
 
 # persons_preparation(CSV_DATE)
 # ref_externe_preparation()
-entities_preparation()
+structure_fr, oback = entities_preparation()
+# structure_fr = org_pattern(structure)
 
 def data_import():
     from config_path import PATH,  PATH_CLEAN
