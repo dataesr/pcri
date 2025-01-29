@@ -10,9 +10,10 @@ from step9_affiliations.affiliations import persons_affiliation
 from step9_affiliations.organismes_cleaning import organismes_back
 CSV_DATE='20241011'
 
-organismes_back('2024')
-
+### one time
+# organismes_back('2024')
 # persons_preparation(CSV_DATE)
+
 # ref_externe_preparation()
 structure_fr, oback = entities_preparation()
 # structure_fr = org_pattern(structure)
