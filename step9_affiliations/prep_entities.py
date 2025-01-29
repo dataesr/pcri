@@ -318,7 +318,8 @@ def entities_preparation():
                   .drop(columns=['proposal_orderNumber'])
                   .query("stage=='successful'")
                   .drop_duplicates())
-    # print(len(organisme1))
+    print(f"- identification orga for successful: {len(organisme1)}")
+
     organisme_back.loc[organisme_back.proposal_orderNumber.isnull(), 'proposal_orderNumber'] = organisme_back.orderNumber
     organisme2 = (organisme_back
                   .merge(stage_proj, how='inner', on='project_id')
@@ -326,7 +327,8 @@ def entities_preparation():
                   .rename(columns={'proposal_orderNumber':'orderNumber'})
                   .query("stage=='evaluated'")
                   .drop_duplicates())
-    # print(len(organisme2))
+    print(f"- identification orga for evaluated: {len(organisme2)}")
+
     oback = pd.concat([organisme1, organisme2], ignore_index=True)
     oback = (oback.groupby(['stage','project_id', 'generalPic', 'pic', 'orderNumber'], dropna=False)
             .agg(lambda x: ';'.join(map(str, filter(None, x.dropna().unique())))).reset_index())

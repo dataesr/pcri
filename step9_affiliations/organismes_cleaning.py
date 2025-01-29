@@ -7,7 +7,7 @@ def organismes_back(year):
     organisme_back = pd.DataFrame()
 
     for org in lo:
-        globals()[f"{org}"] = pd.read_excel(f"{PATH_ORG}w/{org}_{year}.xlsx", dtype=str)
+        globals()[f"{org}"] = pd.read_excel(f"{PATH_ORG}w/{org}_{year}.xlsx", dtype=str, sheet_name='w')
         globals()[f"{org}"] = globals()[f"{org}"].assign(org=org)
         
         cols=['numero_projet','general_pic','proposal_numero_ordre', 'pic_secondaire', 'numero_ordre', 'rôle', 'type de partenaire', 'identifiant', 'loc', 'lib', 'org']
