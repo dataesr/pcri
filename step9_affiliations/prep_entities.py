@@ -343,8 +343,8 @@ def entities_preparation():
 
     # MERGE ORGANISMES ET STRUCTURE
 
-    tmp = structure_fr.merge(oback, how='outer', on=['stage','project_id','generalPic', 'pic'], indicator=True)
-    keep = tmp.loc[tmp._merge!='right_only'] #suppr les lignes oback en +
+    tmp = structure_fr.merge(oback, how='outer', on=['stage','project_id','generalPic', 'pic'], indicator=True, suffixes=('','_y'))
+    keep = tmp.loc[tmp._merge!='right_only'].drop(columns='orderNumber_y') #suppr les lignes oback en +
 
     # traitement cea sans orderNumber
     # tmp = tmp.loc[(tmp._merge=='right_only')&(tmp.org_back=='CEA')]
@@ -358,7 +358,7 @@ def entities_preparation():
     for i in ['rnsr_back','labo_back','org_back', 'city_back']:
         keep[i] = keep[i].apply(lambda x: x.split(';') if isinstance(x, str) else [])  
 
-    print(len(keep))
+    print(f"size keep: {len(keep)}")
 
     keep['org_merged'] = keep.apply(lambda x: list(set(x['org_back'] + x['org_from_lib'])), axis=1)
     keep.mask(keep=='', inplace=True)
@@ -377,7 +377,7 @@ def entities_preparation():
             ['call_year','stage','project_id', 'generalPic', 'entities_full', 'department_dup',
         'typ_from_lib', 'org_merged', 'rnsr_merged', 'lab_merged',
         'cp_back', 'city_back', 'operateur_num','category_woven']]
-    print(len(labo))
+    print(f"size labo dataset: {len(labo)}")
 
     lab_a_ident = (labo.loc[(keep.rnsr_merged.str.len() == 0), 
                             ['project_id', 'generalPic', 'call_year','department_dup','entities_full','lab_merged', 'city_back']]
@@ -390,194 +390,190 @@ def entities_preparation():
                     .reset_index()
                     .drop_duplicates()
                 )
+    print(f"size lab_a_ident: {len(lab_a_ident)}")
+
+    #################
+    # 1er step matching by id
+    ident_by_id = lab_a_ident.loc[~lab_a_ident.lab_merged.isnull(), ['call_year', 'entities_full', 'lab_merged', 'city_back']].drop_duplicates()
+    # ident_by_id
+
+    #######
+    org = ident_by_id.rename(columns={"city_back": "city", "lab_merged": "labo", 'entities_full':'supervisor'})
+    for f in ['supervisor', 'labo', 'city']:
+        org[f] = org[f].fillna('')
+    org.head()
+
+    df=org.assign(match = None)
+    lab_id=pd.DataFrame()
+
+    ######
+
+    typ="rnsr"
+    now = time.strftime("%H:%M:%S")
+
+    for i, row in df.iterrows():
+        query="{} {} {}".format(row['city'], row['labo'], row['supervisor'])
+        strategies = [[['rnsr_code_number', 'rnsr_supervisor_name', 'rnsr_city']],
+                    [['rnsr_code_number', 'rnsr_supervisor_name']],
+                    [['rnsr_code_number', 'rnsr_city']]]
+        matcher(df, i, typ, query, strategies, year=row['call_year'])
+
+    ###
+
+    x=df.loc[df.match.isnull()]
+    lab_id=pd.concat([df.loc[~df.match.isnull()], lab_id], ignore_index=True)
+    print(len(lab_id))
+
+    lab_id['match2'] = lab_id['match'].astype(str)
+    lab_id['match2'] = lab_id.groupby('labo', as_index=False).pipe(lambda x: x['match2'].transform('nunique'))
+    if len(lab_id.loc[lab_id.match2>1, ['labo','match']].sort_values('labo'))>1:
+        print('un même identifiant de labo a ++ de rnsr: a vérifier')
+    else: print('ok')
+
+    #save first step into matcher
+    lab_id = lab_id.drop(columns=['q', 'match2'])
+    lab_id.mask(lab_id=='', inplace=True)
+    work_csv(lab_id, 'ident_lab1')
+
+    #####
+    # 2d step matching by name
+    lab_ident1 = lab_a_ident.merge(lab_id, how='left', left_on=['entities_full', 'call_year', 'lab_merged', 'city_back'], right_on=['supervisor', 'call_year', 'labo', 'city'], indicator=True)
+    lab_a_ident = lab_ident1.loc[lab_ident1._merge=='left_only'].drop(columns=['_merge', 'match', 'labo', 'city', 'supervisor'])
+    ident_by_lib = lab_a_ident[['call_year', 'department_dup', 'lab_merged', 'entities_full', 'city_back']]
+    ident_by_lib['labo'] = ident_by_lib[[ 'department_dup', 'lab_merged']].stack().groupby(level=0).apply(lambda x: ' '.join(x))
+    org = ident_by_lib.rename(columns={"city_back": "city", 'entities_full':'supervisor'}).drop_duplicates()
+    print(len(org))
+    for f in ['supervisor', 'labo', 'city']:
+        org[f] = org[f].fillna('')
+
+    df=org.assign(match = None)
+
+    #######################
+    typ="rnsr"
+    now = time.strftime("%H:%M:%S")
+
+    for i, row in df.iterrows():
+        query="{} {} {}".format(row['city'], row['labo'], row['supervisor'])
+
+        strategies = [
+            [['rnsr_acronym', 'rnsr_name', 'rnsr_supervisor_name']],
+    #                   [['rnsr_acronym', 'rnsr_name' 'rnsr_supervisor_name']],
+    #                   [['rnsr_name', 'rnsr_supervisor_name', 'rnsr_city']],
+                    [[ 'rnsr_name', 'rnsr_supervisor_name']],
+                    [['rnsr_acronym', 'rnsr_supervisor_name']]
+        ]
+        matcher(df, i, typ, query, strategies, year=row['call_year'])
+
+    x=df.loc[df.match.isnull()]
+    lab_id=pd.concat([df.loc[~df.match.isnull()], lab_id], ignore_index=True)
+
+    lab_id = lab_id.drop(columns=['q'])
+    lab_id.mask(lab_id=='', inplace=True)
+    lab_id.to_pickle(f"{PATH_WORK}match_lab2.pkl", compression='gzip')
+
+    # lab_id=pd.read_csv(f"{PATH_WORK}ident_lab2.csv", sep=';')
+    # lab_id['call_year']=lab_id['call_year'].astype(str)
+    # lab_id['match'] = lab_id.match.apply(lambda x: ast.literal_eval(x))
+    ####################################################
+
+    lab_ident2 = lab_a_ident.merge(lab_id, how='left', left_on=['entities_full', 'call_year', 'lab_merged', 'city_back', 'department_dup'], right_on=['supervisor', 'call_year',  'lab_merged', 'city', 'department_dup'], indicator=True)
+    lab_a_ident = lab_ident2.loc[lab_ident2._merge=='left_only'].drop(columns=['_merge', 'match', 'labo', 'city', 'supervisor'])
+    lab_a_ident = lab_a_ident.loc[~lab_a_ident.department_dup.isnull()]
     print(len(lab_a_ident))
-    return lab_a_ident
-#     #################
-#     # 1er step matching by id
-#     ident_by_id = lab_a_ident.loc[~lab_a_ident.lab_merged.isnull(), ['call_year', 'entities_full', 'lab_merged', 'city_back']].drop_duplicates()
-#     # ident_by_id
 
-#     #######
-#     org = ident_by_id.rename(columns={"city_back": "city", "lab_merged": "labo", 'entities_full':'supervisor'})
-#     for f in ['supervisor', 'labo', 'city']:
-#         org[f] = org[f].fillna('')
-#     org.head()
+    df=structure.loc[structure.country_code!='FRA', ['entities_full', 'country_code']].drop_duplicates()
+    df=df.fillna('')
 
-#     df=org.assign(match = None)
-#     lab_id=pd.DataFrame()
-
-#     ######
-
-#     typ="rnsr"
-#     now = time.strftime("%H:%M:%S")
-
-#     for i, row in df.iterrows():
-#         query="{} {} {}".format(row['city'], row['labo'], row['supervisor'])
-#         strategies = [[['rnsr_code_number', 'rnsr_supervisor_name', 'rnsr_city']],
-#                     [['rnsr_code_number', 'rnsr_supervisor_name']],
-#                     [['rnsr_code_number', 'rnsr_city']]]
-#         matcher(df, i, typ, query, strategies, year=row['call_year'])
-
-#     ###
-
-#     x=df.loc[df.match.isnull()]
-#     lab_id=pd.concat([df.loc[~df.match.isnull()], lab_id], ignore_index=True)
-#     print(len(lab_id))
-
-#     lab_id['match2'] = lab_id['match'].astype(str)
-#     lab_id['match2'] = lab_id.groupby('labo', as_index=False).pipe(lambda x: x['match2'].transform('nunique'))
-#     if len(lab_id.loc[lab_id.match2>1, ['labo','match']].sort_values('labo'))>1:
-#         print('un même identifiant de labo a ++ de rnsr: a vérifier')
-#     else: print('ok')
-
-#     #save first step into matcher
-#     lab_id = lab_id.drop(columns=['q', 'match2'])
-#     lab_id.mask(lab_id=='', inplace=True)
-#     work_csv(lab_id, 'ident_lab1')
-
-#     #####
-#     # 2d step matching by name
-#     lab_ident1 = lab_a_ident.merge(lab_id, how='left', left_on=['entities_full', 'call_year', 'lab_merged', 'city_back'], right_on=['supervisor', 'call_year', 'labo', 'city'], indicator=True)
-#     lab_a_ident = lab_ident1.loc[lab_ident1._merge=='left_only'].drop(columns=['_merge', 'match', 'labo', 'city', 'supervisor'])
-#     ident_by_lib = lab_a_ident[['call_year', 'department_dup', 'lab_merged', 'entities_full', 'city_back']]
-#     ident_by_lib['labo'] = ident_by_lib[[ 'department_dup', 'lab_merged']].stack().groupby(level=0).apply(lambda x: ' '.join(x))
-#     org = ident_by_lib.rename(columns={"city_back": "city", 'entities_full':'supervisor'}).drop_duplicates()
-#     print(len(org))
-#     for f in ['supervisor', 'labo', 'city']:
-#         org[f] = org[f].fillna('')
-
-#     df=org.assign(match = None)
-
-#     #######################
-#     typ="rnsr"
-#     now = time.strftime("%H:%M:%S")
-
-#     for i, row in df.iterrows():
-#         query="{} {} {}".format(row['city'], row['labo'], row['supervisor'])
-
-#         strategies = [
-#             [['rnsr_acronym', 'rnsr_name', 'rnsr_supervisor_name']],
-#     #                   [['rnsr_acronym', 'rnsr_name' 'rnsr_supervisor_name']],
-#     #                   [['rnsr_name', 'rnsr_supervisor_name', 'rnsr_city']],
-#                     [[ 'rnsr_name', 'rnsr_supervisor_name']],
-#                     [['rnsr_acronym', 'rnsr_supervisor_name']]
-#         ]
-#         matcher(df, i, typ, query, strategies, year=row['call_year'])
-
-#     x=df.loc[df.match.isnull()]
-#     lab_id=pd.concat([df.loc[~df.match.isnull()], lab_id], ignore_index=True)
-
-#     lab_id = lab_id.drop(columns=['q'])
-#     lab_id.mask(lab_id=='', inplace=True)
-#     lab_id.to_pickle(f"{PATH_WORK}match_lab2.pkl", compression='gzip')
-
-#     # lab_id=pd.read_csv(f"{PATH_WORK}ident_lab2.csv", sep=';')
-#     # lab_id['call_year']=lab_id['call_year'].astype(str)
-#     # lab_id['match'] = lab_id.match.apply(lambda x: ast.literal_eval(x))
-#     ####################################################
-
-#     lab_ident2 = lab_a_ident.merge(lab_id, how='left', left_on=['entities_full', 'call_year', 'lab_merged', 'city_back', 'department_dup'], right_on=['supervisor', 'call_year',  'lab_merged', 'city', 'department_dup'], indicator=True)
-#     lab_a_ident = lab_ident2.loc[lab_ident2._merge=='left_only'].drop(columns=['_merge', 'match', 'labo', 'city', 'supervisor'])
-#     lab_a_ident = lab_a_ident.loc[~lab_a_ident.department_dup.isnull()]
-#     print(len(lab_a_ident))
-
-#     df=structure.loc[structure.country_code!='FRA', ['entities_full', 'country_code']].drop_duplicates()
-#     df=df.fillna('')
-
-#     ###################
-#     #normalement code pour identifier la langue des libellés et affilier avec ror; voir autre repo gitHub he_provisoire
-#    ##############################################################
+    ###################
+    #normalement code pour identifier la langue des libellés et affilier avec ror; voir autre repo gitHub he_provisoire
+   ##############################################################
    
-#     print(lab_ident1.columns)
-#     print(lab_ident2.columns)
-#     # print(lab_ident3.columns)
+    print(lab_ident1.columns)
+    print(lab_ident2.columns)
+    # print(lab_ident3.columns)
 
-#     # lab_ident3 -> libelle traduit ne fonctionne pas avec googletrans pour l'instant
+    # lab_ident3 -> libelle traduit ne fonctionne pas avec googletrans pour l'instant
 
-#     lab_ident = (pd.concat([lab_ident1.loc[lab_ident1._merge=='both'].drop(columns=['supervisor', 'labo', 'city', '_merge']), 
-#                         lab_ident2.loc[lab_ident2._merge=='both'].drop(columns=['supervisor', 'labo', 'city', '_merge']), 
-#     #                        lab_ident3.loc[~lab_ident3.match.isnull()]
-#                         ],
-#                         ignore_index=True)
-#     #             .drop(columns=['department_dup_trad', '_merge', 'lang'])
-#                 )
-#     lab_ident.loc[lab_ident.match.str.len()>1, 'resultat'] = 'a controler'
-#     # lab_ident.match = lab_ident.match.apply(lambda x: list(x))
+    lab_ident = (pd.concat([lab_ident1.loc[lab_ident1._merge=='both'].drop(columns=['supervisor', 'labo', 'city', '_merge']), 
+                        lab_ident2.loc[lab_ident2._merge=='both'].drop(columns=['supervisor', 'labo', 'city', '_merge']), 
+    #                        lab_ident3.loc[~lab_ident3.match.isnull()]
+                        ],
+                        ignore_index=True)
+    #             .drop(columns=['department_dup_trad', '_merge', 'lang'])
+                )
+    lab_ident.loc[lab_ident.match.str.len()>1, 'resultat'] = 'a controler'
+    # lab_ident.match = lab_ident.match.apply(lambda x: list(x))
 
-#     print(len(lab_ident))
+    print(len(lab_ident))
 
-#     lab_ident = (lab_ident.groupby(['call_year', 'entities_full', 'department_dup', 'project_id', 'generalPic'], as_index = False)
-#     .agg({'match':'sum', 'resultat': lambda x: ' '.join(x.fillna('').unique()).strip()})          
-#     )
-#     lab_ident.mask(lab_ident=='', inplace=True)
+    lab_ident = (lab_ident.groupby(['call_year', 'entities_full', 'department_dup', 'project_id', 'generalPic'], as_index = False)
+    .agg({'match':'sum', 'resultat': lambda x: ' '.join(x.fillna('').unique()).strip()})          
+    )
+    lab_ident.mask(lab_ident=='', inplace=True)
 
-#     #40739 
-#     keep=keep.merge(lab_ident, how='left', on=['call_year', 'entities_full', 'department_dup', 'project_id', 'generalPic'])
-#     print(len(keep))
-#     for i in ['rnsr_merged', 'match']:
-#         keep.loc[keep[i].isnull(), i] =keep.loc[keep[i].isnull(), i].apply(lambda x: [])
+    #40739 
+    keep=keep.merge(lab_ident, how='left', on=['call_year', 'entities_full', 'department_dup', 'project_id', 'generalPic'])
+    print(len(keep))
+    for i in ['rnsr_merged', 'match']:
+        keep.loc[keep[i].isnull(), i] =keep.loc[keep[i].isnull(), i].apply(lambda x: [])
 
-#     keep['rnsr_merged'] = keep.apply(lambda x: list(set(x['rnsr_merged'] + x['match'])), axis=1)
+    keep['rnsr_merged'] = keep.apply(lambda x: list(set(x['rnsr_merged'] + x['match'])), axis=1)
 
-#     print(len(keep))
+    print(len(keep))
 
-#     keep.to_pickle(f'{PATH}participants/data_for_matching/structure_fr.pkl')
+    keep.to_pickle(f'{PATH}participants/data_for_matching/structure_fr.pkl')
 
 
-#     ##############################
-#     # etranger
+    ##############################
+    # etranger
 
-#     struct_et = structure.loc[structure.country_code!='FRA']
-#     print(f"longueur struct etranger: {len(struct_et)}")
-#     df = (struct_et.loc[struct_et.entities_id.str.contains(r'^[^R0]', regex=True), 
-#                         ['entities_full', 'entities_id', 'country_code_mapping', 'country_code', 'city']]
-#         .drop_duplicates()
-#         .assign(match=None)
-#         )
+    struct_et = structure.loc[structure.country_code!='FRA']
+    print(f"longueur struct etranger: {len(struct_et)}")
+    df = (struct_et.loc[struct_et.entities_id.str.contains(r'^[^R0]', regex=True), 
+                        ['entities_full', 'entities_id', 'country_code_mapping', 'country_code', 'city']]
+        .drop_duplicates()
+        .assign(match=None)
+        )
 
-#     typ="ror"
-#     now = time.strftime("%H:%M:%S")
+    typ="ror"
+    now = time.strftime("%H:%M:%S")
 
-#     for i, row in df.iterrows():
-#         query="{} {} {}".format(row['city'], row['country_code'], row['entities_full'])
+    for i, row in df.iterrows():
+        query="{} {} {}".format(row['city'], row['country_code'], row['entities_full'])
 
-#         strategies = [
-#             [['ror_name', 'ror_country']],
-#             [['ror_name', 'ror_acronym', 'ror_country', 'ror_city']],
-#             [['ror_name', 'ror_country', 'ror_city']]
-#         ]
-#         matcher(df, i, typ, query, strategies)
+        strategies = [
+            [['ror_name', 'ror_country']],
+            [['ror_name', 'ror_acronym', 'ror_country', 'ror_city']],
+            [['ror_name', 'ror_country', 'ror_city']]
+        ]
+        matcher(df, i, typ, query, strategies)
 
-#     df = df.loc[~df.match.isnull(), ['match']]
-#     df.to_pickle(f"{PATH_WORK}match_ror.pkl", compression='gzip')
-#     struct_et = pd.concat([struct_et, df], axis=1)
-#     struct_et.loc[struct_et.match.str.len()>1, 'resultat'] = 'a controler'
-#     struct_et.mask(struct_et=='', inplace=True)
+    df = df.loc[~df.match.isnull(), ['match']]
+    df.to_pickle(f"{PATH_WORK}match_ror.pkl", compression='gzip')
+    struct_et = pd.concat([struct_et, df], axis=1)
+    struct_et.loc[struct_et.match.str.len()>1, 'resultat'] = 'a controler'
+    struct_et.mask(struct_et=='', inplace=True)
 
-#     struct_et.to_pickle(f'{PATH}participants/data_for_matching/struct_et.pkl')
+    struct_et.to_pickle(f'{PATH}participants/data_for_matching/struct_et.pkl')
 
-#     ### si reprise du code en cours chargement des pickles
-#     # keep = pd.read_pickle('C:/Users/zfriant/Documents/OneDrive/PCRI/participants/matcher_result/structure_fr.pkl')
-#     # struct_et = pd.read_pickle('C:/Users/zfriant/Documents/OneDrive/PCRI/participants/matcher_result/struct_et.pkl')
+    entities_all = pd.concat([keep,  struct_et], ignore_index=True, axis=0)
+    print(f"size entities_all: {len(entities_all)}")
 
-#     entities_all = pd.concat([keep,  struct_et], ignore_index=True, axis=0)
-#     print(f"size entities_all: {len(entities_all)}")
+    stop_word(entities_all, 'country_code', ['street'])
 
-#     stop_word(entities_all, 'country_code', ['street'])
+    tmp=entities_all.loc[(entities_all.country_code=='FRA')&(~entities_all.postalCode.isnull()), ['postalCode']].drop_duplicates()
+    tmp['code_postal'] = tmp.postalCode.str.replace(r"\D*", '', regex=True).str.strip()
+    tmp['code_postal'] = tmp.code_postal.map(lambda x: np.nan if len(x)!=5. else x)
 
-#     tmp=entities_all.loc[(entities_all.country_code=='FRA')&(~entities_all.postalCode.isnull()), ['postalCode']].drop_duplicates()
-#     tmp['code_postal'] = tmp.postalCode.str.replace(r"\D*", '', regex=True).str.strip()
-#     tmp['code_postal'] = tmp.code_postal.map(lambda x: np.nan if len(x)!=5. else x)
+    entities_all = pd.concat([entities_all, tmp], axis=1)
+    HTML(entities_all.loc[(entities_all.country_code=='FRA')&(~entities_all.city.isnull()), ['city']].drop_duplicates().sort_values('city').to_html())
 
-#     entities_all = pd.concat([entities_all, tmp], axis=1)
-#     HTML(entities_all.loc[(entities_all.country_code=='FRA')&(~entities_all.city.isnull()), ['city']].drop_duplicates().sort_values('city').to_html())
+    tmp = entities_all.loc[entities_all.country_code=='FRA', ['street_2']]
+    tmp = adr_tag(tmp, ['street_2'])
+    entities_all = pd.concat([entities_all.drop(columns='street_2'), tmp], axis=1)
 
-#     tmp = entities_all.loc[entities_all.country_code=='FRA', ['street_2']]
-#     tmp = adr_tag(tmp, ['street_2'])
-#     entities_all = pd.concat([entities_all.drop(columns='street_2'), tmp], axis=1)
+    entities_all.loc[entities_all.country_code=='FRA', 'city'] = entities_all.city.str.replace(r"\bst\b", 'saint', regex=True).str.strip()
+    entities_all.loc[entities_all.country_code=='FRA', 'city'] = entities_all.city.str.replace(r"\bste\b", 'sainte', regex=True).str.strip()
+    entities_all.loc[entities_all.country_code=='FRA', 'city_tag'] = entities_all.loc[entities_all.country_code=='FRA', 'city'].str.strip().str.replace(r"\s+", '-', regex=True)
 
-#     entities_all.loc[entities_all.country_code=='FRA', 'city'] = entities_all.city.str.replace(r"\bst\b", 'saint', regex=True).str.strip()
-#     entities_all.loc[entities_all.country_code=='FRA', 'city'] = entities_all.city.str.replace(r"\bste\b", 'sainte', regex=True).str.strip()
-#     entities_all.loc[entities_all.country_code=='FRA', 'city_tag'] = entities_all.loc[entities_all.country_code=='FRA', 'city'].str.strip().str.replace(r"\s+", '-', regex=True)
-
-#     entities_all.to_pickle(f'{PATH}participants/data_for_matching/entities_all.pkl')
+    entities_all.to_pickle(f'{PATH}participants/data_for_matching/entities_all.pkl')
