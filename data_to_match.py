@@ -15,8 +15,10 @@ CSV_DATE='20241011'
 # persons_preparation(CSV_DATE)
 
 # ref_externe_preparation()
-structure_fr, oback = entities_preparation()
-# structure_fr = org_pattern(structure)
+lab_a_ident = entities_preparation()
+ ### si reprise du code en cours chargement des pickles -> entities_all
+# keep = pd.read_pickle(f'{PATH}participants/data_for_matching/structure_fr.pkl')
+# struct_et = pd.read_pickle(f'{PATH}participants/data_for_matching/struct_et.pkl')
 
 def data_import():
     from config_path import PATH,  PATH_CLEAN
