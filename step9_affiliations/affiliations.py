@@ -11,8 +11,6 @@ def openalex_name(author):
                 result = author | {'display_name':author_openalex.get('display_name'),
                                 'openalex_id':author_openalex.get('id'), 
                                 'affiliations':author_openalex.get('affiliations'), 
-                                'institutions':author_openalex.get('affiliations')[0].get('institutions'),
-                                'institutions_years':author_openalex.get('affiliations')[0].get('years'), 
                                 'topics':author_openalex.get('topics'), 
                                 'x_concepts':author_openalex.get('x_concepts'), 
                                 'ids':author_openalex.get('ids'), 
@@ -37,8 +35,6 @@ def openalex_orcid(author):
         result = author | {'display_name':author_openalex.get('display_name'), 
                            'openalex_id':author_openalex.get('id'), 
                            'affiliations':author_openalex.get('affiliations'), 
-                           'institutions':author_openalex.get('affiliations')[0].get('institutions'),
-                           'institutions_years':author_openalex.get('affiliations')[0].get('years'), 
                            'topics':author_openalex.get('topics'),  
                            'x_concepts':author_openalex.get('x_concepts'), 
                            'ids':author_openalex.get('ids'), 
@@ -75,7 +71,7 @@ def persons_affiliation(pp):
             result = openalex_orcid(author)
             if result:
                 df=pd.concat([df, pd.json_normalize(result)])
-            else:
+            elif result is None:
                 result = openalex_name(author)
                 if result:
                     df=pd.concat([df, pd.json_normalize(result)], ignore_index=True)
