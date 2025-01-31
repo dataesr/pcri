@@ -49,7 +49,7 @@ def openalex_orcid(author):
 
 def persons_affiliation(pp):
     from config_path import PATH
-    import requests , pandas as pd, time
+    import  pandas as pd, time
     from step9_affiliations.affiliations import openalex_name, openalex_orcid
 
     print(time.strftime("%H:%M:%S"))
@@ -72,11 +72,11 @@ def persons_affiliation(pp):
             else:
                 result = openalex_name(author)
                 if result:
-                    df=pd.concat([df, pd.json_normalize(result)])
+                    df=pd.concat([df, pd.json_normalize(result)], ignore_index=True)
         if author.get("orcid")=='':
             result = openalex_name(author)
             if result:
-                df=pd.concat([df, pd.json_normalize(result)])
+                df=pd.concat([df, pd.json_normalize(result)], ignore_index=True)
             
         if n==10000:
             df.to_pickle(f'{PATH}participants/data_for_matching/persons_author_1.pkl')
