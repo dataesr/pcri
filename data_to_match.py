@@ -15,7 +15,7 @@ CSV_DATE='20241011'
 # persons_preparation(CSV_DATE)
 
 # ref_externe_preparation()
-lab_a_ident = entities_preparation()
+# entities_preparation()
  ### si reprise du code en cours chargement des pickles -> entities_all
 # keep = pd.read_pickle(f'{PATH}participants/data_for_matching/structure_fr.pkl')
 # struct_et = pd.read_pickle(f'{PATH}participants/data_for_matching/struct_et.pkl')
@@ -39,10 +39,21 @@ perso = perso[['project_id', 'generalPic', 'pic', 'role', 'first_name', 'last_na
 print(f"size perso for merging: {len(perso)}")
 
 
-test = entities_all.merge(perso, how='left', on=['project_id', 'generalPic'])
+### affil perso to struct -> search labo by openalex
+entities_tmp = (
+    entities_all.loc[((entities_all.country_code=='FRA')&(entities_all.rnsr_merged.str.len()==0)),
+                    ['project_id','generalPic', 'pic', 'country_code', 'entities_id', 'entities_name']])
+# entities_tmp=entities_all.loc[((entities_all.country_code=='FRA')&(entities_all.rnsr_merged.str.len()==0))|((entities_all.country_code!='FRA')&(entities_all.entities_id.str.contains('pic'))), ['project_id','generalPic', 'pic', 'country_code', 'entities_id', 'entities_name']]
 
-# r2 = persons_affiliation(perso, entities_all, country='FRA')
+pp = (perso[['project_id','generalPic', 'pic','contact', 'orcid_id']].drop_duplicates()
+      .merge(entities_tmp, how='inner', on=['project_id','generalPic', 'pic']))
+pp = pp.fillna('')
+
+print(f"size pp: {len(pp)}, info sur pp with orcid: {len(pp.loc[pp.orcid_id!=''])}")
+pp = pp.loc[pp.orcid_id!='', ['contact', 'orcid_id']].drop_duplicates()
+r2 = persons_affiliation(pp)
 # voire comment traiter le retour; pour l'instant ne peut plus utiliser l'api (trop de requetes)
 
+### affil perso to ref_all by phone
 aff_by_tel = perso.loc[~perso.tel_clean.isnull()].merge(ref_all.loc[~ref_all.tel_clean.isnull()], how='inner', on='tel_clean')
 print(f"size aff_by_tel: {len(aff_by_tel)}")
