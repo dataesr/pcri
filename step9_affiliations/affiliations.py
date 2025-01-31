@@ -1,7 +1,8 @@
 def openalex_name(author):
+    from config_api import openalex_usermail
     import requests, time
     try:
-        url = f"https://api.openalex.org/authors?filter=display_name.search:{author.get('name')}"
+        url = f"https://api.openalex.org/authors?filter=display_name.search:{author.get('name')}?mailto={openalex_usermail}"
         nb_openalex=requests.get(url).json().get("meta").get('count')
         if nb_openalex>0:
             d=[]
@@ -26,9 +27,10 @@ def openalex_name(author):
     
 
 def openalex_orcid(author):
+    from config_api import openalex_usermail
     import requests, time
     try:
-        url = f"https://api.openalex.org/authors/orcid:{author.get('orcid')}?mailto=zmenesr@gmail.com"
+        url = f"https://api.openalex.org/authors/orcid:{author.get('orcid')}?mailto={openalex_usermail}"
         author_openalex = requests.get(url).json()
         result = author | {'display_name':author_openalex.get('display_name'), 
                            'openalex_id':author_openalex.get('id'), 
