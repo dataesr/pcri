@@ -4,8 +4,8 @@ def openalex_name(author):
     try:
         url = f"https://api.openalex.org/authors?filter=display_name.search:{author.get('name')}?mailto={openalex_usermail}"
         nb_openalex=requests.get(url).json().get("meta").get('count')
+        d=[]
         if nb_openalex>0:
-            d=[]
             for n in range(nb_openalex):
                 author_openalex = requests.get(url).json().get("results")[n]
                 result = author | {'display_name':author_openalex.get('display_name'),
