@@ -14,7 +14,8 @@ def openalex_name(author):
                                 'topics':author_openalex.get('topics'), 
                                 'x_concepts':author_openalex.get('x_concepts'), 
                                 'ids':author_openalex.get('ids'), 
-                                'display_name_alternatives':author_openalex.get('display_name_alternatives')}
+                                'display_name_alternatives':author_openalex.get('display_name_alternatives'),
+                                'match':'name'}
                 d.append(result)
         return d
 
@@ -38,7 +39,8 @@ def openalex_orcid(author):
                            'topics':author_openalex.get('topics'),  
                            'x_concepts':author_openalex.get('x_concepts'), 
                            'ids':author_openalex.get('ids'), 
-                           'display_name_alternatives':author_openalex.get('display_name_alternatives')}
+                           'display_name_alternatives':author_openalex.get('display_name_alternatives'),
+                           'match':'orcid'}
         return result
     
     except requests.exceptions.HTTPError as http_err:
@@ -51,11 +53,11 @@ def openalex_orcid(author):
 
 def persons_affiliation(pp):
     from config_path import PATH
-    import  pandas as pd, time
+    import time, pickle
     from step9_affiliations.affiliations import openalex_name, openalex_orcid
 
     print(time.strftime("%H:%M:%S"))
-    df=pd.DataFrame()
+    rlist=[]
     n = 0
     for _, row in pp.iterrows():
         n=n+1
@@ -70,23 +72,25 @@ def persons_affiliation(pp):
         if author.get("orcid"):
             result = openalex_orcid(author)
             if result:
-                df=pd.concat([df, pd.json_normalize(result)])
+                rlist.append(result)
             elif result is None:
                 result = openalex_name(author)
                 if result:
-                    df=pd.concat([df, pd.json_normalize(result)], ignore_index=True)
+                    rlist.append(result[0])
         if author.get("orcid")=='':
             result = openalex_name(author)
             if result:
-                df=pd.concat([df, pd.json_normalize(result)], ignore_index=True)
+                rlist.append(result[0])
             
         if n==10000:
-            df.to_pickle(f'{PATH}participants/data_for_matching/persons_author_1.pkl')
+            with open(f'{PATH}participants/data_for_matching/persons_author_1.pkl', 'wb') as f:
+                pickle.dump(rlist, f)
 
     print(time.strftime("%H:%M:%S"))
 
     # df.loc[df.orcid=='', 'orcid'] = df.orcid_tmp.str.split("/").str[-1]
     # r2 = r.groupby(['name', 'orcid'])['affiliations'].apply(pd.json_normalize)
     # r2 = df[['name', 'orcid', 'affiliations']]
-    df.to_pickle(f'{PATH}participants/data_for_matching/persons_author.pkl')
-    return df
+    
+    with open(f'{PATH}participants/data_for_matching/persons_author.pkl', 'wb') as f:
+        pickle.dump(rlist, f)
