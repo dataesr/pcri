@@ -1,4 +1,4 @@
-import pandas as pd
+import pandas as pd, pickle
 pd.options.mode.copy_on_write = True
 from IPython.display import HTML
 
@@ -51,12 +51,18 @@ pp = pp.fillna('')
 
 print(f"size pp: {len(pp)}, info sur pp with orcid: {len(pp.loc[pp.orcid_id!=''])}")
 pp = pp.loc[pp.orcid_id!='', ['contact', 'orcid_id']].drop_duplicates().sort_values(['orcid_id', 'contact'])
-r2 = persons_affiliation(pp)
+persons_affiliation(pp)
 # voire comment traiter le retour; pour l'instant ne peut plus utiliser l'api (trop de requetes)
-author_orcid = pd.read_pickle(f"C:/Users/zfriant/OneDrive/PCRI/participants/data_for_matching/persons_author_orcid.pkl")
-author_name = pd.read_pickle(f"C:/Users/zfriant/OneDrive/PCRI/participants/data_for_matching/persons_author.pkl")
 
-author_orcid = pd.read_pickle(f"C:/Users/zfriant/OneDrive/PCRI/participants/data_for_matching/persons_author_orcid.pkl")
+#import result openalexApi ; next request import only "persons_author" and using variable MATCH (orcid, ame) to split data
+with open(f"C:/Users/zfriant/OneDrive/PCRI/participants/data_for_matching/persons_author.pkl", 'rb') as f:
+    author_orcid = pickle.load(f)
+
+
+# author_orcid = pd.read_pickle(f"C:/Users/zfriant/OneDrive/PCRI/participants/data_for_matching/persons_author_orcid.pkl")
+# author_name = pd.read_pickle(f"C:/Users/zfriant/OneDrive/PCRI/participants/data_for_matching/persons_author.pkl")
+
+
 author_orcid = author_orcid.loc[author_orcid.affiliations.str.len()>0, ['name', 'orcid', 'affiliations', 'ids.orcid']]
 author_orcid = author_orcid.explode('affiliations')
 # author_orcid['nb'] = author_orcid.groupby(['name']).transform('size')
