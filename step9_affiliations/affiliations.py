@@ -2,7 +2,7 @@ def openalex_name(author):
     from config_api import openalex_usermail
     import requests, time
     try:
-        url = f"https://api.openalex.org/authors?filter=display_name.search:{author.get('name')}?mailto={openalex_usermail}"
+        url = f"https://api.openalex.org/authors?filter=display_name.search:{author.get('name')}"
         nb_openalex=requests.get(url).json().get("meta").get('count')
         d=[]
         if nb_openalex>0:
