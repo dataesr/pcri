@@ -82,8 +82,8 @@ def persons_affiliation(pp):
             if result:
                 rlist.append(result[0])
             
-        if n==10000:
-            with open(f'{PATH}participants/data_for_matching/persons_author_1.pkl', 'wb') as f:
+        if n % 5000 == 0:
+            with open(f'{PATH}participants/data_for_matching/persons_author_{n}.pkl', 'wb') as f:
                 pickle.dump(rlist, f)
 
     print(time.strftime("%H:%M:%S"))
