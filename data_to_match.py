@@ -8,13 +8,14 @@ from step8_referentiels.referentiels import ref_externe_preparation
 from step9_affiliations.prep_entities import entities_preparation
 from step9_affiliations.affiliations import persons_affiliation
 from step9_affiliations.organismes_cleaning import organismes_back
-CSV_DATE='20241011'
+CSV_DATE='20250121'
 
 ### one time
 # organismes_back('2024')
-# persons_preparation(CSV_DATE)
+persons_preparation(CSV_DATE)
 
 # ref_externe_preparation()
+
 # entities_preparation()
  ### si reprise du code en cours chargement des pickles -> entities_all
 # keep = pd.read_pickle(f'{PATH}participants/data_for_matching/structure_fr.pkl')
@@ -57,7 +58,14 @@ persons_affiliation(pp)
 #import result openalexApi ; next request import only "persons_author" and using variable MATCH (orcid, ame) to split data
 with open(f"C:/Users/zfriant/OneDrive/PCRI/participants/data_for_matching/persons_author.pkl", 'rb') as f:
     author_orcid = pickle.load(f)
-
+author_orcid=pd.json_normalize(author_orcid, record_path=['affiliations'], meta=['name','orcid', 'display_name', 'ids', 'match'])
+author = (author_orcid
+            .rename(columns={
+                    'institution.id':'opa_inst_id', 
+                    'institution.ror':'numero_ror',
+                    'institution.display_name':'entities_name',
+                    'institution.country_code':'country_code'})
+            .drop(columns=['institution.type','institution.lineage']))
 
 # author_orcid = pd.read_pickle(f"C:/Users/zfriant/OneDrive/PCRI/participants/data_for_matching/persons_author_orcid.pkl")
 # author_name = pd.read_pickle(f"C:/Users/zfriant/OneDrive/PCRI/participants/data_for_matching/persons_author.pkl")
