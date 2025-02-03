@@ -6,7 +6,6 @@ def persons_preparation(csv_date):
     from config_path import PATH_SOURCE, PATH_CLEAN, PATH_ORG, PATH_WORK
     from functions_shared import unzip_zip
 
-
     ###############################
     participation = pd.read_pickle(f"{PATH_CLEAN}participation_current.pkl") 
     project = pd.read_pickle(f"{PATH_CLEAN}projects_current.pkl") 
@@ -103,7 +102,6 @@ def persons_preparation(csv_date):
     perso_part = generaPic_remove(perso_part)
     perso_app = generaPic_remove(perso_app)
 
-
     ##############################
     def name_duplicated_remove(df):
         #### cleaning name duplicated by project 
@@ -122,7 +120,8 @@ def persons_preparation(csv_date):
             print(f"3 - size x before remove: {len(x)}")
             x=x.groupby(['project_id','generalPic', 'last_name']).apply(lambda i: i.sort_values('role', key=lambda col: pd.Categorical(col, categories=keep_order, ordered=True)), include_groups=True).reset_index(drop=True)
             for v in ['title', 'gender','phone','email','birth_country_code','nationality_country_code','host_country_code','sending_country_code']:
-                x[v]=x.groupby(['project_id', 'generalPic', 'last_name'])[v].bfill()
+                if v in x.columns:
+                    x[v]=x.groupby(['project_id', 'generalPic', 'last_name'])[v].bfill()
             x=x.groupby(['project_id', 'generalPic', 'last_name']).head(1)
             print(f"3 - size x after remove: {len(x)}")
 
@@ -133,60 +132,50 @@ def persons_preparation(csv_date):
         return df.drop(columns=['_merge'])
 
     perso_part = name_duplicated_remove(perso_part)
-    # perso_app = name_duplicated_remove(perso_app)
-    return perso_part
+    perso_app = name_duplicated_remove(perso_app)
 
+    ####################################
+
+    def perso_participation(df, participation, project, stage):
+        df = (df.merge(participation.loc[participation.stage==stage, ['project_id', 'generalPic', 'country_code']], how='inner', on=['project_id', 'generalPic'])
+                    .merge(project.loc[participation.stage==stage, ['project_id', 'call_year', 'thema_name_en', 'destination_name_en']], how='inner', on=['project_id'])
+        )
+        print(f"size app lien avec participation clean : {len(df)}\ncolumns:{df.columns}")
+        return df
     
+    perso_app = perso_participation(perso_app, participation, project, 'evaluated')
+    perso_part = perso_participation(perso_part, participation, project, 'successful')
 
+    ##################
+    def phone_clean(df):
+        y = df.loc[(df.country_code=='FRA')&(~df.phone.isnull()), ['phone']]
+        y['tel_clean']=y.phone.str.replace(r"(^\++[0-9]{1,3}\s+)", '', regex=True)
+        y['tel_clean']=y.tel_clean.str.replace(r"[^0-9]+", '', regex=True)
+        y['tel_clean']=y.tel_clean.str.replace(r"^(33|033|0033)", '', regex=True).str.rjust(10, '0')
+        y.loc[(y.tel_clean.str.len()>10)&(y.tel_clean.str[0:1]=='0'), 'tel_clean'] = y.tel_clean.str[0:10]
+        y['tel_clean']=y.tel_clean.str.replace(r"^0+$", '', regex=True)
+        # work_csv(y, 'tel_perso')
+        return pd.concat([df, y[['tel_clean']]], axis=1)
 
+    perso_app = phone_clean(perso_app)
+    perso_part = phone_clean(perso_part)
 
+    #######################
+    def mail_clean(df):
+        mail_del=["gmail", "yahoo", "hotmail", "wanadoo", "aol", "free", "skynet", "outlook", "icloud", "googlemail"]
 
+        df['domaine'] = df.email.str.split('@').str[1].str.split('.').str[:-1].fillna('').apply(' '.join)
+        tmp = df.loc[~df.domaine.isnull(), ['domaine']]
 
-    # ####################################
+        for el in mail_del:
+            m = r"^"+el+r"($|\s)"
+            tmp.loc[tmp['domaine'].str.contains(m, case=True, flags=0, na=None, regex=True) == True, 'domaine_email'] = ''
+            tmp.loc[tmp['domaine_email'].isnull(), 'domaine_email'] = tmp['domaine']
 
-    # def perso_participation(df, participation, project, stage):
-    #     df = (df.merge(participation.loc[participation.stage==stage, ['project_id', 'generalPic', 'country_code']], how='inner', on=['project_id', 'generalPic'])
-    #                 .merge(project.loc[participation.stage==stage, ['project_id', 'call_year', 'thema_name_en', 'destination_name_en']], how='inner', on=['project_id'])
-    #     )
-    #     print(f"size app lien avec participation clean : {len(df)}\ncolumns:{df.columns}")
-    #     return df
+        return pd.concat([df, tmp], axis=1).drop(columns='domaine')
     
-    # perso_app = perso_participation(perso_app, participation, project, 'evaluated')
-    # perso_part = perso_participation(perso_part, participation, project, 'successful')
-
-
-    # ##################
-    # def phone_clean(df):
-    #     y = df.loc[(df.country_code=='FRA')&(~df.phone.isnull()), ['phone']]
-    #     y['tel_clean']=y.phone.str.replace(r"(^\++[0-9]{1,3}\s+)", '', regex=True)
-    #     y['tel_clean']=y.tel_clean.str.replace(r"[^0-9]+", '', regex=True)
-    #     y['tel_clean']=y.tel_clean.str.replace(r"^(33|033|0033)", '', regex=True).str.rjust(10, '0')
-    #     y.loc[(y.tel_clean.str.len()>10)&(y.tel_clean.str[0:1]=='0'), 'tel_clean'] = y.tel_clean.str[0:10]
-    #     y['tel_clean']=y.tel_clean.str.replace(r"^0+$", '', regex=True)
-    #     # work_csv(y, 'tel_perso')
-    #     return pd.concat([df, y[['tel_clean']]], axis=1)
-
-    # perso_app = phone_clean(perso_app)
-    # perso_part = phone_clean(perso_part)
-
-    # #######################
-    # def mail_clean(df):
-    #     mail_del=["gmail", "yahoo", "hotmail", "wanadoo", "aol", "free", "skynet", "outlook", "icloud", "googlemail"]
-
-    #     df['domaine'] = df.email.str.split('@').str[1].str.split('.').str[:-1].fillna('').apply(' '.join)
-    #     tmp = df.loc[~df.domaine.isnull(), ['domaine']]
-
-    #     for el in mail_del:
-    #         m = r"^"+el+r"($|\s)"
-    #         tmp.loc[tmp['domaine'].str.contains(m, case=True, flags=0, na=None, regex=True) == True, 'domaine_email'] = ''
-    #         tmp.loc[tmp['domaine_email'].isnull(), 'domaine_email'] = tmp['domaine']
-
-    #     return pd.concat([df, tmp], axis=1).drop(columns='domaine')
-    
-    # perso_app = mail_clean(perso_app)
-    # perso_part = mail_clean(perso_part)
-
-    ###############
-
+    perso_app = mail_clean(perso_app)
+    perso_part = mail_clean(perso_part)
+    ##############
 
     # perso_app.to_pickle(f"{PATH_CLEAN}perso_app.pkl")
