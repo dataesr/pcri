@@ -109,7 +109,7 @@ def persons_preparation(csv_date):
         ## if by project single name but several rows
         # x[x.project_id=='101039481']
 
-        print(x.role.unique())
+        print(df.role.unique())
         keep_order=['principal investigator', 'fellow', 'main_contact']
         if len(df.role.unique()) > len(keep_order):
             print(f"2 - Attention ! un role nouveau dans perso -> {set(df.role.unique())-set(keep_order)}")
