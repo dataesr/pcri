@@ -12,7 +12,7 @@ CSV_DATE='20250121'
 
 ### one time
 # organismes_back('2024')
-persons_preparation(CSV_DATE)
+perso=persons_preparation(CSV_DATE)
 
 # ref_externe_preparation()
 
