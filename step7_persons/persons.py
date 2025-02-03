@@ -83,12 +83,13 @@ def persons_preparation(csv_date):
 
     ################
     def perso_measure(df):
-        df['nb_row_by_pic']=df.groupby(['project_id', 'generalPic'])['generalPic'].transform('count')
-        df['nb_pic_unique']=df.groupby(['project_id'])['generalPic'].transform('nunique')
-        df['nb_name']=df.groupby(['project_id'])['last_name'].transform('count')
-        df['nb_row_by_name']=df.groupby(['project_id', 'last_name'])['last_name'].transform('count')
-        df['nb_row_by_pic_name'] = df.groupby(['project_id', 'generalPic', 'last_name'])['last_name'].transform('count')
-        df['nb_name_unique']=df.groupby(['project_id'])['last_name'].transform('nunique')
+        df['nb_pic_unique']=df.groupby(['project_id'])['generalPic'].transform('nunique') #combien de pics / projet
+        df['nb_name_unique']=df.groupby(['project_id'])['last_name'].transform('nunique') #combien de pics / projet
+        df['nb_row_by_pic']=df.groupby(['project_id', 'generalPic'])['generalPic'].transform('count') #combien de lignes par pic
+        df['nb_name_unique_by_pic']=df.groupby(['project_id', 'generalPic'])['last_name'].transform('nunique')
+        df['nb_row_by_pic_name_unique'] = df.groupby(['project_id', 'generalPic','last_name'])['last_name'].transform('nunique')
+        df['nb_row_by_pic_name'] = df.groupby(['project_id', 'generalPic','last_name'])['last_name'].transform('count')
+        
         print(f"size df: {len(df)}\ncolumns:{df.columns}")
         return df
 
@@ -133,7 +134,7 @@ def persons_preparation(csv_date):
 
     perso_part = name_duplicated_remove(perso_part)
     # perso_app = name_duplicated_remove(perso_app)
-
+    return perso_part
 
     
 
