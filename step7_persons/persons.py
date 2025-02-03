@@ -83,89 +83,102 @@ def persons_preparation(csv_date):
 
     ################
     def perso_measure(df):
-        # df['nb'] = df.groupby(['project_id', 'generalPic', 'pic'])['last_name'].transform('count')
-        df=df.groupby(['project_id', 'last_name']).agg({'last_name':'count'}).rename(columns={'last_name':'nb_row_by_name'}).reset_index()
-        df=df.groupby(['project_id', 'last_name','nb_row']).agg({'last_name':'nunique'}).rename(columns={'last_name':'nb_name_unique'}).reset_index()
-        df.columns
-        print(f"size app: {len(df)}\ncolumns:{df.columns}")
+        df['nb_row_by_pic']=df.groupby(['project_id', 'generalPic'])['generalPic'].transform('count')
+        df['nb_pic_unique']=df.groupby(['project_id'])['generalPic'].transform('nunique')
+        df['nb_name']=df.groupby(['project_id'])['last_name'].transform('count')
+        df['nb_row_by_name']=df.groupby(['project_id', 'last_name'])['last_name'].transform('count')
+        df['nb_row_by_pic_name'] = df.groupby(['project_id', 'generalPic', 'last_name'])['last_name'].transform('count')
+        df['nb_name_unique']=df.groupby(['project_id'])['last_name'].transform('nunique')
+        print(f"size df: {len(df)}\ncolumns:{df.columns}")
         return df
 
     perso_part = perso_measure(perso_part)
     perso_app = perso_measure(perso_app)
+
+    ################
+    def generaPic_remove(df):
+        return df.loc[~((df.nb_pic_unique>0)&(df.generalPic.isnull()))]
+    
+    perso_part = generaPic_remove(perso_part)
+    perso_app = generaPic_remove(perso_app)
+
 
     ##############################
     def name_duplicated_remove(df):
         #### cleaning name duplicated by project 
         ## if by project single name but several rows
         # x[x.project_id=='101039481']
-        print(f"size doublon name by project: {len(x.loc[(x.nb_row>1)&(x.nb_unique==1)])}")
-        x=df.merge(x, how='inner', on=['project_id', 'last_name'])
+
         print(x.role.unique())
         keep_order=['principal investigator', 'fellow', 'main_contact']
-        if len(x.role.unique()) > len(keep_order):
-                    print(f"2 - Attention ! un role nouveau dans perso -> {set(x.role.unique())-set(keep_order)}")
-        else:
+        if len(df.role.unique()) > len(keep_order):
+            print(f"2 - Attention ! un role nouveau dans perso -> {set(df.role.unique())-set(keep_order)}")
+
+        tmp=pd.DataFrame()
+        mask=[(df.nb_name_unique==1)&(df.nb_name>1)&(df.nb_pic_unique==1), (df.nb_name_unique==1)&(df.nb_name>1)&(df.nb_pic_unique>1)&(df.nb_row_by_pic>1)]
+        for i in mask:
+            x=df.loc[i]
             print(f"3 - size x before remove: {len(x)}")
             x=x.groupby(['project_id', 'last_name']).apply(lambda i: i.sort_values('role', key=lambda col: pd.Categorical(col, categories=keep_order, ordered=True)), include_groups=True).reset_index(drop=True)
             x=x.groupby(['project_id', 'last_name']).head(1)
             print(f"3 - size x after remove: {len(x)}")
 
-            df=df[~df.project_id.isin(x.project_id.unique())]
-            return pd.concat([df, x], ignore_index=True)
+            tmp=pd.concat([tmp, x], ignore_index=True)
+        return tmp
 
-    perso_part = name_duplicated_remove(perso_part)
-    perso_app = name_duplicated_remove(perso_app)
-
-
+    tmp1 = name_duplicated_remove(perso_part)
+    # perso_app = name_duplicated_remove(perso_app)
 
 
 
 
 
 
-    ####################################
 
-    def perso_participation(df, participation, project, stage):
-        df = (df.merge(participation.loc[participation.stage==stage, ['project_id', 'generalPic', 'country_code']], how='inner', on=['project_id', 'generalPic'])
-                    .merge(project.loc[participation.stage==stage, ['project_id', 'call_year', 'thema_name_en', 'destination_name_en']], how='inner', on=['project_id'])
-        )
-        print(f"size app lien avec participation clean : {len(df)}\ncolumns:{df.columns}")
-        return df
+
+    # ####################################
+
+    # def perso_participation(df, participation, project, stage):
+    #     df = (df.merge(participation.loc[participation.stage==stage, ['project_id', 'generalPic', 'country_code']], how='inner', on=['project_id', 'generalPic'])
+    #                 .merge(project.loc[participation.stage==stage, ['project_id', 'call_year', 'thema_name_en', 'destination_name_en']], how='inner', on=['project_id'])
+    #     )
+    #     print(f"size app lien avec participation clean : {len(df)}\ncolumns:{df.columns}")
+    #     return df
     
-    perso_app = perso_participation(perso_app, participation, project, 'evaluated')
-    perso_part = perso_participation(perso_part, participation, project, 'successful')
+    # perso_app = perso_participation(perso_app, participation, project, 'evaluated')
+    # perso_part = perso_participation(perso_part, participation, project, 'successful')
 
 
-    ##################
-    def phone_clean(df):
-        y = df.loc[(df.country_code=='FRA')&(~df.phone.isnull()), ['phone']]
-        y['tel_clean']=y.phone.str.replace(r"(^\++[0-9]{1,3}\s+)", '', regex=True)
-        y['tel_clean']=y.tel_clean.str.replace(r"[^0-9]+", '', regex=True)
-        y['tel_clean']=y.tel_clean.str.replace(r"^(33|033|0033)", '', regex=True).str.rjust(10, '0')
-        y.loc[(y.tel_clean.str.len()>10)&(y.tel_clean.str[0:1]=='0'), 'tel_clean'] = y.tel_clean.str[0:10]
-        y['tel_clean']=y.tel_clean.str.replace(r"^0+$", '', regex=True)
-        # work_csv(y, 'tel_perso')
-        return pd.concat([df, y[['tel_clean']]], axis=1)
+    # ##################
+    # def phone_clean(df):
+    #     y = df.loc[(df.country_code=='FRA')&(~df.phone.isnull()), ['phone']]
+    #     y['tel_clean']=y.phone.str.replace(r"(^\++[0-9]{1,3}\s+)", '', regex=True)
+    #     y['tel_clean']=y.tel_clean.str.replace(r"[^0-9]+", '', regex=True)
+    #     y['tel_clean']=y.tel_clean.str.replace(r"^(33|033|0033)", '', regex=True).str.rjust(10, '0')
+    #     y.loc[(y.tel_clean.str.len()>10)&(y.tel_clean.str[0:1]=='0'), 'tel_clean'] = y.tel_clean.str[0:10]
+    #     y['tel_clean']=y.tel_clean.str.replace(r"^0+$", '', regex=True)
+    #     # work_csv(y, 'tel_perso')
+    #     return pd.concat([df, y[['tel_clean']]], axis=1)
 
-    perso_app = phone_clean(perso_app)
-    perso_part = phone_clean(perso_part)
+    # perso_app = phone_clean(perso_app)
+    # perso_part = phone_clean(perso_part)
 
-    #######################
-    def mail_clean(df):
-        mail_del=["gmail", "yahoo", "hotmail", "wanadoo", "aol", "free", "skynet", "outlook", "icloud", "googlemail"]
+    # #######################
+    # def mail_clean(df):
+    #     mail_del=["gmail", "yahoo", "hotmail", "wanadoo", "aol", "free", "skynet", "outlook", "icloud", "googlemail"]
 
-        df['domaine'] = df.email.str.split('@').str[1].str.split('.').str[:-1].fillna('').apply(' '.join)
-        tmp = df.loc[~df.domaine.isnull(), ['domaine']]
+    #     df['domaine'] = df.email.str.split('@').str[1].str.split('.').str[:-1].fillna('').apply(' '.join)
+    #     tmp = df.loc[~df.domaine.isnull(), ['domaine']]
 
-        for el in mail_del:
-            m = r"^"+el+r"($|\s)"
-            tmp.loc[tmp['domaine'].str.contains(m, case=True, flags=0, na=None, regex=True) == True, 'domaine_email'] = ''
-            tmp.loc[tmp['domaine_email'].isnull(), 'domaine_email'] = tmp['domaine']
+    #     for el in mail_del:
+    #         m = r"^"+el+r"($|\s)"
+    #         tmp.loc[tmp['domaine'].str.contains(m, case=True, flags=0, na=None, regex=True) == True, 'domaine_email'] = ''
+    #         tmp.loc[tmp['domaine_email'].isnull(), 'domaine_email'] = tmp['domaine']
 
-        return pd.concat([df, tmp], axis=1).drop(columns='domaine')
+    #     return pd.concat([df, tmp], axis=1).drop(columns='domaine')
     
-    perso_app = mail_clean(perso_app)
-    perso_part = mail_clean(perso_part)
+    # perso_app = mail_clean(perso_app)
+    # perso_part = mail_clean(perso_part)
 
     ###############
 
