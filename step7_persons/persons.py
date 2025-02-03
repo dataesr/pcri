@@ -127,8 +127,8 @@ def persons_preparation(csv_date):
 
             tmp=pd.concat([tmp, x], ignore_index=True)
 
-        df=df.merge(tmp1[['project_id', 'generalPic', 'last_name']].drop_duplicates(), how='outer', on=['project_id', 'generalPic', 'last_name'], indicator=True).query('_merge=="left_only"')
-        df=pd.concat([df, tmp1], ignore_index=True)    
+        df=df.merge(tmp[['project_id', 'generalPic', 'last_name']].drop_duplicates(), how='outer', on=['project_id', 'generalPic', 'last_name'], indicator=True).query('_merge=="left_only"')
+        df=pd.concat([df, tmp], ignore_index=True)    
         return df.drop(columns=['_merge'])
 
     perso_part = name_duplicated_remove(perso_part)
