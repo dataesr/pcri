@@ -1,6 +1,6 @@
 def persons_preparation(csv_date):
 
-    import pandas as pd
+    import pandas as pd, numpy as np
     pd.options.mode.copy_on_write = True
     from constant_vars import ZIPNAME, FRAMEWORK
     from config_path import PATH_SOURCE, PATH_CLEAN, PATH_ORG, PATH_WORK
@@ -39,9 +39,9 @@ def persons_preparation(csv_date):
     def prop_contact(tab):
         from unidecode import unidecode
         cols = ['role', 'first_name', 'last_name','title', 'gender']
-        tab[cols] = tab[cols].map(lambda s:s.casefold() if type(s) == str else s)
+        tab[cols] = tab[cols].map(lambda s:s.casefold() if type(s) == str else np.nan)
         for i in cols:
-            tab[i] = tab[i].astype('str').apply(unidecode)
+            tab.loc[~tab[i].isnull(), i] = tab.loc[~tab[i].isnull(), i].apply(unidecode)
         return tab
 
     perso_app = prop_contact(perso_app)
@@ -140,6 +140,11 @@ def persons_preparation(csv_date):
     perso_app = name_duplicated_remove(perso_app)
 
     ####################################
+    perso_part = perso_measure(perso_part)
+    perso_app = perso_measure(perso_app)
+
+    def PI_duplicated(df):
+
 
     def perso_participation(df, participation, project, stage):
         df = (df.merge(participation.loc[participation.stage==stage, ['project_id', 'generalPic', 'country_code']], how='inner', on=['project_id', 'generalPic'])
