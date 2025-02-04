@@ -114,7 +114,7 @@ def persons_preparation(csv_date):
             print(f"2 - Attention ! un role nouveau dans perso -> {set(df.role.unique())-set(keep_order)}")
 
         tmp=pd.DataFrame()
-        mask=[(df.nb_pic_unique==1)&(df.nb_row_by_pic_name_unique==1)&(df.nb_row_by_pic_name>1)]
+        mask=[(df.nb_row_by_pic_name_unique==1)&(df.nb_row_by_pic_name>1)]
         for i in mask:
             x=df.loc[i]
             print(f"3 - size x before remove: {len(x)}")
@@ -128,7 +128,12 @@ def persons_preparation(csv_date):
             tmp=pd.concat([tmp, x], ignore_index=True)
 
         df=df.merge(tmp[['project_id', 'generalPic', 'last_name']].drop_duplicates(), how='outer', on=['project_id', 'generalPic', 'last_name'], indicator=True).query('_merge=="left_only"')
-        df=pd.concat([df, tmp], ignore_index=True)    
+        df=pd.concat([df, tmp], ignore_index=True)
+
+        if len(df)==0:
+            print(f"ATTENTION table vide après traitement name_duplicated_remove")
+        else:
+            print(f"size après lien avec participation clean : {len(df)}\ncolumns:{df.columns}")  
         return df.drop(columns=['_merge'])
 
     perso_part = name_duplicated_remove(perso_part)
