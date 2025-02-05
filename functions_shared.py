@@ -189,4 +189,4 @@ def adr_tag(df, cols_list):
 
         tmp[f'{col_ref}_tag'] = tmp[f'{col_ref}_tag'].apply(lambda x: alpha2digit(x, 'fr'))
 
-    return pd.concat([df.drop(columns=col_ref), tmp], axis=1)     
+    return pd.concat([df.drop(columns=col_ref), tmp], axis=1)

@@ -100,9 +100,8 @@ def country_load(framework, liste_country):
 
 def country_old(df):
     ccode=json.load(open("data_files/countryCode_match.json"))
-    for i in ccode:
-        for k,v in i.items():
-            df.loc[df.countryCode==k, 'countryCode'] = v
+    for k,v in ccode.items():
+        df.loc[df.countryCode==k, 'countryCode'] = v
     return df
 
 # def country_iso3(df, cc_code):
