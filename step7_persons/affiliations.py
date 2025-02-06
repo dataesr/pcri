@@ -1,5 +1,4 @@
 def openalex_name(author):
-    from config_api import openalex_usermail
     import requests, time
     try:
         url = f"https://api.openalex.org/authors?filter=display_name.search:{author.get('name')}"
@@ -52,9 +51,9 @@ def openalex_orcid(author):
     
 
 def persons_affiliation(pp):
-    from config_path import PATH
+    from config_path import PATH_SOURCE
     import time, pickle
-    from step9_affiliations.affiliations import openalex_name, openalex_orcid
+    from step7_persons.affiliations import openalex_name, openalex_orcid
 
     print(time.strftime("%H:%M:%S"))
     rlist=[]
@@ -82,15 +81,11 @@ def persons_affiliation(pp):
             if result:
                 rlist.append(result[0])
             
-        if n % 5000 == 0:
-            with open(f'{PATH}participants/data_for_matching/persons_author_{n}.pkl', 'wb') as f:
+        if n % 2000 == 0:
+            with open(f'{PATH_SOURCE}persons_author_{n}.pkl', 'wb') as f:
                 pickle.dump(rlist, f)
 
     print(time.strftime("%H:%M:%S"))
-
-    # df.loc[df.orcid=='', 'orcid'] = df.orcid_tmp.str.split("/").str[-1]
-    # r2 = r.groupby(['name', 'orcid'])['affiliations'].apply(pd.json_normalize)
-    # r2 = df[['name', 'orcid', 'affiliations']]
     
-    with open(f'{PATH}participants/data_for_matching/persons_author.pkl', 'wb') as f:
+    with open(f'{PATH_SOURCE}persons_author.pkl', 'wb') as f:
         pickle.dump(rlist, f)
