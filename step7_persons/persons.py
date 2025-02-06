@@ -1,9 +1,10 @@
 def persons_preparation(csv_date):
 
-    import pandas as pd, numpy as np
+    import pandas as pd, numpy as np, warnings
+    warnings.filterwarnings("ignore", "This pattern is interpreted as a regular expression, and has match groups")
     pd.options.mode.copy_on_write = True
-    from constant_vars import ZIPNAME, FRAMEWORK
-    from config_path import PATH_SOURCE, PATH_CLEAN, PATH_ORG, PATH_WORK
+    from constant_vars import FRAMEWORK
+    from config_path import PATH_SOURCE, PATH_CLEAN
     from functions_shared import unzip_zip
 
     ###############################
@@ -21,9 +22,9 @@ def persons_preparation(csv_date):
                 .rename(columns=str.lower)
                 .rename(columns={'project_nbr':'project_id', 'general_pic':'generalPic', 'participant_pic':'pic'})
                 .assign(stage='successful'))
+    print(f"size perso_part import: {len(perso_part)}")
 
     ######################################
-        
     perso_app = unzip_zip(f'he_proposals_ecorda_pd_{csv_date}.zip', f"{PATH_SOURCE}{FRAMEWORK}/", "applicant_persons.csv", 'utf-8')
 
     perso_app = (perso_app.loc[perso_app.FRAMEWORK=='HORIZON',
@@ -33,6 +34,8 @@ def persons_preparation(csv_date):
                 .rename(columns=str.lower)
                 .rename(columns={'proposal_nbr':'project_id', 'general_pic':'generalPic', 'applicant_pic':'pic', 'family_name':'last_name'})
                 .assign(stage='evaluated'))
+    print(f"size perso_app import: {len(perso_app)}")
+
     ######################################
     def country_clean(df, countries):
         import json
@@ -74,9 +77,7 @@ def persons_preparation(csv_date):
     perso_part = prop_contact(perso_part)
     perso_app = prop_contact(perso_app)
 
-
-
-    ########## 
+    ##########
     def contact_name(df):
         for f in ['first_name', 'last_name']:
             df[f] = df[f].fillna('')
@@ -105,6 +106,7 @@ def persons_preparation(csv_date):
                 df.loc[(df.generalPic.isnull())&(~df.generalPic_y.isnull()), 'generalPic'] = df.loc[(df.generalPic.isnull())&(~df.generalPic_y.isnull()), 'generalPic_y'] 
                 df.drop(columns='generalPic_y', inplace=True)
                 print(f"2 - size rows with generelPic null for {stage}: {len(df[df.generalPic.isnull()])}")
+        print(f"size df_{stage} after empty_pic: {len(df)}")
         return df
 
     perso_part = empty_pic(perso_part, participation, 'successful')
@@ -193,7 +195,7 @@ def persons_preparation(csv_date):
         
     perso_part=PI_duplicated(perso_part)
 
-
+    #######################""
     def perso_participation(df, participation, project, stage):
         df=df.loc[df.project_id.isin(participation[participation.stage==stage].project_id.unique())]
         df=df.merge(participation.loc[participation.stage==stage, ['project_id', 'generalPic', 'country_code']], how='outer', on=['project_id', 'generalPic'], indicator=True).query('_merge!="right_only"')
@@ -248,5 +250,44 @@ def persons_preparation(csv_date):
     # add orcid_id (perso_app) into perso_part
 
     perso_part=perso_part.merge(perso_app[['project_id', 'contact', 'orcid_id']], how='left', on=['project_id', 'contact']) 
-    perso_app=perso_app.merge(perso_part[['project_id', 'contact', 'nationality_country_code']], how='left', on=['project_id', 'contact']) 
-    # perso_app.to_pickle(f"{PATH_CLEAN}perso_app.pkl")
+    perso_app=perso_app.merge(perso_part[['project_id', 'contact', 'nationality_country_code']], how='left', on=['project_id', 'contact'])
+
+    ##################
+    # fill missing value with other df part/app
+    def gender_title_missing(part, app):
+        tab=(part[['project_id', 'contact', 'gender','title_clean']]
+        .merge(app[['project_id', 'contact', 'gender', 'title_clean']], 
+                how='inner', on=['project_id', 'contact'], suffixes=('_x','_y'))
+                .drop_duplicates())
+        cl=['gender', 'title_clean']
+        for i in cl:
+            if any(tab.loc[(tab[f"{i}_x"].isnull())&(~tab[f"{i}_y"].isnull())]):
+                tab.loc[(tab[f"{i}_x"].isnull())&(~tab[f"{i}_y"].isnull()), f"{i}_x"] = tab[f"{i}_y"]
+            if any(tab.loc[(~tab[f"{i}_x"].isnull())&(tab[f"{i}_y"].isnull())]):
+                tab.loc[(~tab[f"{i}_x"].isnull())&(tab[f"{i}_y"].isnull()), f"{i}_y"] = tab[f"{i}_x"]
+
+            part = part.merge(tab[['project_id', 'contact', f"{i}_x"]].drop_duplicates(), how='left', on=['project_id', 'contact'])
+            part.loc[part[i].isnull(), i] = part.loc[part[i].isnull(), f"{i}_x"]
+            part.drop(columns=f"{i}_x", inplace=True)
+            app = app.merge(tab[['project_id', 'contact', f"{i}_y"]].drop_duplicates(), how='left', on=['project_id', 'contact'])
+            app.loc[app[i].isnull(), i] = app.loc[app[i].isnull(), f"{i}_y"]
+            app.drop(columns=f"{i}_y", inplace=True)
+
+        return part, app
+
+    perso_part, perso_app = gender_title_missing(perso_part, perso_app)
+
+    (perso_part[['project_id', 'generalPic', 'role', 'first_name', 'last_name',
+        'title_clean', 'gender', 'email', 'tel_clean', 'domaine_email', 'orcid_id', 'birth_country_code',
+        'nationality_country_code', 'host_country_code', 'sending_country_code',
+        'stage', 'contact', 'country_code', 'shift', 'call_year', 'thema_name_en', 'destination_name_en']]
+        .drop_duplicates()
+        .to_pickle(f"{PATH_CLEAN}persons_participants.pkl"))
+
+    (perso_app[['project_id', 'generalPic', 'role', 'first_name', 'last_name', 'nationality_country_code',
+        'title_clean', 'gender', 'tel_clean', 'email', 'domaine_email', 'researcher_id', 'orcid_id',
+        'google_scholar_id', 'scopus_author_id', 'stage',
+        'contact', 'country_code', 'shift', 'call_year', 'thema_name_en', 'destination_name_en']]
+        .drop_duplicates()
+        .to_pickle(f"{PATH_CLEAN}persons_applicants.pkl"))
+
