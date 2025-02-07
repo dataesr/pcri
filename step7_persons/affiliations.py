@@ -60,8 +60,8 @@ def persons_affiliation(pp):
     n = 0
     for _, row in pp.iterrows():
         n=n+1
-        # if n % 100 == 0: 
-        print(f"{n}", end=',')
+        if n % 100 == 0: 
+            print(f"{n}", end=',')
 
         author = {
         "name": row['contact'],
