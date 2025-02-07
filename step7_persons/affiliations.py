@@ -5,7 +5,6 @@ def openalex_name(author):
         nb_openalex=requests.get(url).json().get("meta").get('count')
         dl=[]
         if nb_openalex>0:
-            print(nb_openalex)
             for n in range(nb_openalex): 
                 author_openalex = requests.get(url).json().get("results")[n]
                 if author_openalex.get('affiliations')!=[]:
