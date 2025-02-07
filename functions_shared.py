@@ -190,3 +190,27 @@ def adr_tag(df, cols_list):
         tmp[f'{col_ref}_tag'] = tmp[f'{col_ref}_tag'].apply(lambda x: alpha2digit(x, 'fr'))
 
     return pd.concat([df.drop(columns=col_ref), tmp], axis=1)
+
+def chunkify(df, chunk_size: int):
+    print(f"size df: {df.shape}")
+    start = 0
+    length = df.shape[0]
+    # n_col = df.shape[1]
+    
+    # If DF is smaller than the chunk, return the DF
+    if length <= chunk_size:
+        yield df[:]
+        return
+    # if n_col <= 60:
+    #     print(f"nb of cols: {n_col}")
+    #     yield df[:]
+    #     return
+
+    # Yield individual chunks
+    while start + chunk_size <= length:
+        yield df[start:chunk_size + start]
+        start = start + chunk_size
+
+    # Yield the remainder chunk, if needed
+    if start < length:
+        yield df[start:]
