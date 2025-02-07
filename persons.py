@@ -8,17 +8,25 @@ from step7_persons.affiliations import persons_affiliation
 CSV_DATE='20250121'
 # persons_preparation(CSV_DATE)
 
+
 perso_part = pd.read_pickle(f"{PATH_CLEAN}persons_participants.pkl")
 perso_app = pd.read_pickle(f"{PATH_CLEAN}persons_applicants.pkl")
 
-pp = pd.concat([perso_part[['contact', 'orcid_id', 'country_code']].drop_duplicates(), perso_app[['contact', 'orcid_id', 'country_code']].drop_duplicates()], ignore_index=True)
-pp = perso_part[['contact', 'orcid_id', 'country_code']].fillna('')
+#provisoire
+# project=pd.read_pickle(f"{PATH_CLEAN}projects_current.pkl") 
+# perso_part=perso_part.merge(project[['project_id', 'stage', 'destination_code', 'thema_code']], how ='left', on=['project_id', 'stage'])
+# perso_app=perso_app.merge(project[['project_id', 'stage', 'destination_code', 'thema_code']], how ='left', on=['project_id', 'stage'])
 
-pp=pp.loc[(pp.country_code!='FRA')].sort_values('orcid_id', ascending=False)
+lvar=['contact','orcid_id','country_code','destination_code','thema_code','nationality_country_code']
+pp = pd.concat([perso_part[lvar].drop_duplicates(), perso_app[lvar].drop_duplicates()], ignore_index=True)
+
+mask=(pp.country_code=='FRA')|(pp.nationality_country_code=='FRA')|((pp.country_code!='FRA')&(pp.destination_code.isin(['COG', 'PF', 'STG', 'ADG', 'POC','SyG', 'PERA', 'SJI'])))
+pp=pp.loc[mask].fillna('').sort_values(['country_code','orcid_id'], ascending=False)
 print(f"size pp: {len(pp)}, info sur pp with orcid: {len(pp.loc[pp.orcid_id!=''])}")
 
+pp=pp[pp.country_code!='FRA']
 
-data_chunks=list(chunkify(pp, 10000))
+data_chunks=list(chunkify(pp, 2000))
 for i in range(0, len(data_chunks)):
     print(f"Loop {i}, size data_chunks: {len(data_chunks)}")
     # print(type(data_chunks))
@@ -27,20 +35,25 @@ for i in range(0, len(data_chunks)):
     with open(f"{PATH_API}persons_author_{i}.pkl", 'rb') as f:
         globals()[f"pers_api{i}"] = pickle.load(f)
 
-
+pers_api=[]
+for i in range(0, len(data_chunks)):
+    with open(f"{PATH_API}persons_author_{i}.pkl", 'rb') as f:
+        globals()[f"pers_api{i}"] = pickle.load(f)
+    pers_api.extend(globals()[f"pers_api{i}"])
+    
 # # voire comment traiter le retour; pour l'instant ne peut plus utiliser l'api (trop de requetes)
+pers_api=pd.json_normalize(pers_api, record_path=['affiliations'], meta=['name', 'orcid', 'display_name', 'openalex_id',  'match',  ["ids", "orcid"]],
+        errors='ignore')
 
-# #import result openalexApi ; next request import only "persons_author" and using variable MATCH (orcid, ame) to split data
-# with open(f"C:/Users/zfriant/OneDrive/PCRI/participants/data_for_matching/persons_author.pkl", 'rb') as f:
-#     author_orcid = pickle.load(f)
-# author_orcid=pd.json_normalize(author_orcid, record_path=['affiliations'], meta=['name','orcid', 'display_name', 'ids', 'match'])
-# author = (author_orcid
-#             .rename(columns={
-#                     'institution.id':'opa_inst_id', 
-#                     'institution.ror':'numero_ror',
-#                     'institution.display_name':'entities_name',
-#                     'institution.country_code':'country_code'})
-#             .drop(columns=['institution.type','institution.lineage']))
+pers_api.columns = pers_api.columns.str.replace(r"[.*_]+", '_', regex=True)
+
+pers_api = (pers_api
+            .rename(columns={
+                    'institution_country_code':'country_code'})
+            .drop(columns=['institution_type','institution_lineage']))
+
+for i in ['ids_orcid', 'institution_ror']:
+    pers_api.loc[~pers_api[i].isnull(), i] = pers_api.loc[~pers_api[i].isnull()][i].str.split("/").str[-1]
 
 # # author_orcid = pd.read_pickle(f"C:/Users/zfriant/OneDrive/PCRI/participants/data_for_matching/persons_author_orcid.pkl")
 # # author_name = pd.read_pickle(f"C:/Users/zfriant/OneDrive/PCRI/participants/data_for_matching/persons_author.pkl")
@@ -49,7 +62,3 @@ for i in range(0, len(data_chunks)):
 # author_orcid = author_orcid.loc[author_orcid.affiliations.str.len()>0, ['name', 'orcid', 'affiliations', 'ids.orcid']]
 # author_orcid = author_orcid.explode('affiliations')
 # # author_orcid['nb'] = author_orcid.groupby(['name']).transform('size')
-
-    # df.loc[df.orcid=='', 'orcid'] = df.orcid_tmp.str.split("/").str[-1]
-    # r2 = r.groupby(['name', 'orcid'])['affiliations'].apply(pd.json_normalize)
-    # r2 = df[['name', 'orcid', 'affiliations']]
