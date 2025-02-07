@@ -205,7 +205,7 @@ def persons_preparation(csv_date):
             df.loc[(df._merge=='both')&(df.host_country_code.isnull()), 'host_country_code'] = df.loc[(df._merge=='both')&(df.host_country_code.isnull()), 'country_code']
 
 
-        df=df.merge(project.loc[project.stage==stage, ['project_id', 'call_year', 'thema_name_en', 'destination_name_en']], how='inner', on=['project_id'])
+        df=df.merge(project.loc[project.stage==stage, ['project_id', 'call_year', 'thema_code', 'destination_code']], how='inner', on=['project_id'])
 
         if len(df)==0:
             print(f"ATTENTION table vide après lein avec participation")
