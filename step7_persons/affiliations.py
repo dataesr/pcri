@@ -57,9 +57,9 @@ def openalex_orcid(author):
         return author
     
 
-def persons_affiliation(df, nb):
-    from config_path import PATH_API
-    import time, pickle, requests
+def persons_affiliation(df, nb, path):
+    # from config_path import PATH_API
+    import time, pickle
     from step7_persons.affiliations import openalex_name, openalex_orcid
 
     print(time.strftime("%H:%M:%S"))
@@ -92,7 +92,7 @@ def persons_affiliation(df, nb):
         #     return rlist
 
     nf=f"persons_author_{nb}"
-    with open(f'{PATH_API}{nf}.pkl', 'wb') as f:
+    with open(f'{path}{nf}.pkl', 'wb') as f:
         pickle.dump(rlist, f)
     print(time.strftime("%H:%M:%S"))
 
