@@ -21,13 +21,10 @@ def openalex_name(author):
     
     except requests.exceptions.HTTPError as http_err:
         print(f"\n{time.strftime("%H:%M:%S")}, {author}-> HTTP error occurred: {http_err}")
-        return author
     except requests.exceptions.RequestException as err:
-        print(f"\n{time.strftime("%H:%M:%S")}, {author}-> Error occurred: {err}")
-        return author           
+        print(f"\n{time.strftime("%H:%M:%S")}, {author}-> Error occurred: {err}")         
     except Exception as e:
         print(f"\n{time.strftime("%H:%M:%S")}, {author}-> An unexpected error occurred: {e}")
-        return author
     
 
 def openalex_orcid(author):
@@ -48,13 +45,10 @@ def openalex_orcid(author):
     
     except requests.exceptions.HTTPError as http_err:
         print(f"\n{time.strftime("%H:%M:%S")}, {author}-> HTTP error occurred: {http_err}")
-        return author
     except requests.exceptions.RequestException as err:
-        print(f"\n{time.strftime("%H:%M:%S")}, {author}-> Error occurred: {err}")
-        return author           
+        print(f"\n{time.strftime("%H:%M:%S")}, {author}-> Error occurred: {err}")         
     except Exception as e:
         print(f"\n{time.strftime("%H:%M:%S")}, {author}-> An unexpected error occurred: {e}")
-        return author
     
 
 def persons_affiliation(df, nb, path):
