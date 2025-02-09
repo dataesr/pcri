@@ -15,7 +15,7 @@ def ror_import(DUMP_PATH):
     return ROR_ZIP                
 
 def ror_prep(DUMP_PATH, ROR_ZIP, countries):
-    from functions_shared import unzip_zip
+    from functions_shared import unzip_zip, my_country_code
     import pandas as pd
     df=unzip_zip(ROR_ZIP, DUMP_PATH, f"{ROR_ZIP.rsplit('.', 1)[0]}.json", 'utf-8')
 
@@ -42,19 +42,16 @@ def ror_prep(DUMP_PATH, ROR_ZIP, countries):
                         'country.country_code':'iso2'})
         .assign(ref='ror')
         )
-    # ror['country.country_code'] = ror['country.country_code'].str.replace('GR', 'EL').str.replace('GB', 'UK')
 
     ror.mask(ror=='', inplace=True)
-
-    print(len(ror))
-
+    
     ror = (ror.merge(countries[['iso2', 'iso3']], how='left', on='iso2')
        .rename(columns={'iso3':'country_code_map'})
       )
 
-    if len(ror[ror.country_code_map.isnull()])>0:
+    if any(ror.country_code_map.isnull()):
         print(ror[ror.country_code_map.isnull()][['iso2']].drop_duplicates())
 
     ror.mask(ror=='', inplace=True)
-
+    print(len(ror))
     return ror
