@@ -37,22 +37,23 @@ def persons_preparation(csv_date):
     print(f"size perso_app import: {len(perso_app)}")
 
     ######################################
-    def country_clean(df, countries):
-        import json
+    def country_clean(df, list_var):
+        import json, pandas as pd
+        from config_path import PATH_CLEAN
+        countries = pd.read_pickle(f"{PATH_CLEAN}country_current.pkl")
         dict_c = countries.set_index('countryCode')['country_code_mapping'].to_dict()
-        cl=['birth_country_code','nationality_country_code','host_country_code','sending_country_code']
         ccode=json.load(open("data_files/countryCode_match.json"))
-        for c in cl:
+        for c in list_var:
             for k,v in ccode.items():
                 df.loc[df[c]==k, c] = v
             for k,v in dict_c.items():
                 df.loc[df[c]==k, c] = v
             
-            if any(perso_part[c].str.len()<3):
-                print(f"ATTENTION ! un {c} non reconnu dans df {perso_part.loc[perso_part[c].str.len()<3, ['project_id', c]]}")
+            if any(df[c].str.len()<3):
+                print(f"ATTENTION ! un {c} non reconnu dans df {df.loc[df[c].str.len()<3, [c]]}")
         return df
 
-    perso_part = country_clean(perso_part, countries)
+    perso_part = country_clean(perso_part, ['birth_country_code','nationality_country_code','host_country_code','sending_country_code'])
 
     ####################################
     def title_clean(df):
