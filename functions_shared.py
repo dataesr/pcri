@@ -230,3 +230,29 @@ def country_clean(df, list_var):
         if any(df[c].str.len()<3):
             print(f"ATTENTION ! un {c} non reconnu dans df {df.loc[df[c].str.len()<3, [c]]}")
     return df
+
+def my_country_code():
+    import pycountry, pandas as pd, json, numpy as np
+    pycountry.countries.add_entry(alpha_2="XK", alpha_3="XXK", name="Kosovo")
+    pycountry.countries.add_entry(alpha_2="UK", alpha_3="GBR", name="United Kingdom")
+    pycountry.countries.add_entry(alpha_2="EL", alpha_3="GRC", name="Greece")
+    pycountry.countries.add_entry(alpha_2="AN", alpha_3="ANT", name="Netherlands Antilles (former 2011)")
+    dict1 = [c.__dict__['_fields'] for c in list(pycountry.countries)]
+    df = (pd.DataFrame(dict1)[['alpha_2', 'alpha_3', 'name']]
+                .rename(columns={'alpha_2':'iso2', 'alpha_3':'iso3', 'name':'country_name_en'})
+                .drop_duplicates()
+                .assign(parent_iso2=np.nan)
+        )
+
+    list_var=['iso2']
+    ccode=json.load(open("data_files/countries_parent.json"))
+    for c in list_var:
+        for k,v in ccode.items():
+            df.loc[df[c]==k, 'parent_iso2'] = v
+
+    df.loc[df.parent_iso2.isnull(), 'parent_iso2'] = df.loc[df.parent_iso2.isnull(), 'iso2']
+    df=(df.merge(df[['iso2','iso3']].drop_duplicates().rename(columns={'iso2':'parent_iso2','iso3':'parent_iso3'}), 
+                    how='left', on='parent_iso2'))
+
+    print(len(df))
+    return
