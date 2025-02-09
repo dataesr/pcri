@@ -214,3 +214,19 @@ def chunkify(df, chunk_size: int):
     # Yield the remainder chunk, if needed
     if start < length:
         yield df[start:]
+
+def country_clean(df, list_var):
+    import json, pandas as pd
+    from config_path import PATH_CLEAN
+    countries = pd.read_pickle(f"{PATH_CLEAN}country_current.pkl")
+    dict_c = countries.set_index('countryCode')['country_code_mapping'].to_dict()
+    ccode=json.load(open("data_files/countryCode_match.json"))
+    for c in list_var:
+        for k,v in ccode.items():
+            df.loc[df[c]==k, c] = v
+        for k,v in dict_c.items():
+            df.loc[df[c]==k, c] = v
+        
+        if any(df[c].str.len()<3):
+            print(f"ATTENTION ! un {c} non reconnu dans df {df.loc[df[c].str.len()<3, [c]]}")
+    return df
