@@ -8,7 +8,7 @@ def ref_externe_preparation():
     from config_path import PATH
 
     # from step7_referentiels.countries import ref_countries
-    from functions_shared import work_csv, prep_str_col, stop_word
+    from functions_shared import work_csv, prep_str_col, stop_word, my_country_code
     from step8_referentiels.ror import ror_import, ror_prep
     from step8_referentiels.sirene import sirene_prep, sirene_refext
     from step8_referentiels.rnsr import rnsr_import, rnsr_prep
@@ -24,21 +24,16 @@ def ref_externe_preparation():
                 .rename(columns={'alpha_2':'iso2', 'alpha_3':'iso3', 'name':'country_name_en'})
                 .drop_duplicates()
     )
+
+    my_countries=my_country_code()
     print(len(countries))
 
     ROR_ZIPNAME = ror_import(DUMP_PATH)
-    ror = ror_prep(DUMP_PATH, ROR_ZIPNAME, countries)
+    ror = ror_prep(DUMP_PATH, ROR_ZIPNAME, my_countries)
 
-    if len(ror[ror.country_code_map.isnull()][['country.country_code']].drop_duplicates())>0:
-        print(ror[ror.country_code_map.isnull()][['country.country_code']].drop_duplicates())
-    
-    pays_fr = ["FR","BL","CP","GF","GP","MF","MQ","NC","PF","PM","RE","TF","WF","YT"]
-    ror.loc[ror['iso2'].isin(['MS', 'TC']), 'country_code'] ='GBR'
-    ror.loc[ror['iso2'].isin(['AX']), 'country_code'] ='FIN'
-
-
+    ####
     sirene_refext(DUMP_PATH) # -> sirene_ref_moulinette.pkl
-    sirene = sirene_prep(DUMP_PATH, countries)
+    sirene = sirene_prep(DUMP_PATH, my_countries)
 
     ### Extraction des données rnsr de dataESR
 
