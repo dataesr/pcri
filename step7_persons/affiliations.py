@@ -35,8 +35,6 @@ def openalex_orcid(author):
     try:
         url = f"https://api.openalex.org/authors/orcid:{author.get('orcid')}?mailto={openalex_usermail}"
         author_openalex = requests.get(url).json()
-        author_openalex = requests.get(url).json()
-        print(author_openalex.status_code)
         result = author | {'display_name':author_openalex.get('display_name'), 
                            'openalex_id':author_openalex.get('id'), 
                            'affiliations':author_openalex.get('affiliations'), 
@@ -76,13 +74,6 @@ def persons_affiliation(df, nb, path):
         "orcid": row['orcid_id']
         }
 
-        # if author.get("orcid"):
-        #     result = openalex_orcid(author)
-        #     if result is None:
-        #         result = openalex_name(author)
-        #         rlist.extend(result)
-        #     else:
-        #         rlist.append(result)
         if author.get("orcid"):
             result = openalex_orcid(author)
             if result.get('match'):
