@@ -81,6 +81,9 @@ def persons_affiliation(df, nb, path):
             else:
                 result = openalex_name(author)
                 rlist.extend(result)
+        if author.get("orcid")=='':
+            result = openalex_name(author)
+            rlist.extend(result)
 
     nf=f"persons_author_{nb}"
     with open(f'{path}{nf}.pkl', 'wb') as f:
