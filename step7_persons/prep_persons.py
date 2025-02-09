@@ -65,17 +65,18 @@ def persons_preparation(csv_date):
     perso_app = title_clean(perso_app)
 
     ###############################
-    def prop_contact(tab):
+    def prop_string(tab):
         from unidecode import unidecode
         cols = ['role', 'first_name', 'last_name','title_clean', 'gender']
+        tab.loc[~tab[cols].isnull(), [cols]] = tab.loc[~tab[cols].isnull(), [cols]].str.replace(r"[^\w\s]+", " ", regex=True)
         tab[cols] = tab[cols].map(lambda s:s.casefold() if type(s) == str else s)
         for i in cols:
             # tab[i] = tab[i].apply(unicode if type(s) == str else s)
             tab.loc[~tab[i].isnull(), i] = tab.loc[~tab[i].isnull(), i].apply(unidecode)
         return tab
 
-    perso_part = prop_contact(perso_part)
-    perso_app = prop_contact(perso_app)
+    perso_part = prop_string(perso_part)
+    perso_app = prop_string(perso_app)
 
     ##########
     def contact_name(df):
@@ -85,6 +86,10 @@ def persons_preparation(csv_date):
             df[f] = df[f].str.strip().str.replace(r"-{2,}", '-', regex=True)
 
         df['contact'] = df.last_name.astype(str).str.lower() + ' ' + df.first_name.astype(str).str.lower()
+        
+        str_remove=['not applicable']
+        df['contact'] = df['contact'].str.strip().str.replace(r"\^s+$", '-', regex=True)
+        df = df.loc[~df.contact.isin(str_remove)]
         return df
 
     perso_app = contact_name(perso_app)

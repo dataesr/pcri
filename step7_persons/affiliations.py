@@ -21,18 +21,22 @@ def openalex_name(author):
     
     except requests.exceptions.HTTPError as http_err:
         print(f"\n{time.strftime("%H:%M:%S")}, {author}-> HTTP error occurred: {http_err}")
+        return author
     except requests.exceptions.RequestException as err:
-        print(f"\n{time.strftime("%H:%M:%S")}, {author}-> Error occurred: {err}")         
+        print(f"\n{time.strftime("%H:%M:%S")}, {author}-> Error occurred: {err}")    
+        return author
     except Exception as e:
         print(f"\n{time.strftime("%H:%M:%S")}, {author}-> An unexpected error occurred: {e}")
-    
+        return author
 
 def openalex_orcid(author):
-    # from config_api import openalex_usermail
+    from config_api import openalex_usermail
     import requests, time
     try:
-        url = f"https://api.openalex.org/authors/orcid:{author.get('orcid')}?mailto=zmenesr@gmail.com"
+        url = f"https://api.openalex.org/authors/orcid:{author.get('orcid')}?mailto={openalex_usermail}"
         author_openalex = requests.get(url).json()
+        author_openalex = requests.get(url).json()
+        print(author_openalex.status_code)
         result = author | {'display_name':author_openalex.get('display_name'), 
                            'openalex_id':author_openalex.get('id'), 
                            'affiliations':author_openalex.get('affiliations'), 
@@ -45,10 +49,13 @@ def openalex_orcid(author):
     
     except requests.exceptions.HTTPError as http_err:
         print(f"\n{time.strftime("%H:%M:%S")}, {author}-> HTTP error occurred: {http_err}")
+        return author
     except requests.exceptions.RequestException as err:
-        print(f"\n{time.strftime("%H:%M:%S")}, {author}-> Error occurred: {err}")         
+        print(f"\n{time.strftime("%H:%M:%S")}, {author}-> Error occurred: {err}")
+        return author         
     except Exception as e:
         print(f"\n{time.strftime("%H:%M:%S")}, {author}-> An unexpected error occurred: {e}")
+        return author
     
 
 def persons_affiliation(df, nb, path):
@@ -68,6 +75,14 @@ def persons_affiliation(df, nb, path):
         "name": row['contact'],
         "orcid": row['orcid_id']
         }
+
+        # if author.get("orcid"):
+        #     result = openalex_orcid(author)
+        #     if result is None:
+        #         result = openalex_name(author)
+        #         rlist.extend(result)
+        #     else:
+        #         rlist.append(result)
         if author.get("orcid"):
             result = openalex_orcid(author)
             if result.get('match'):
@@ -75,15 +90,6 @@ def persons_affiliation(df, nb, path):
             else:
                 result = openalex_name(author)
                 rlist.extend(result)
-        # except requests.exceptions.HTTPError as http_err:
-        #     print(f"\n{time.strftime("%H:%M:%S")}, HTTP error occurred: {http_err}")
-        #     return rlist
-        # except requests.exceptions.RequestException as err:
-        #     print(f"\n{time.strftime("%H:%M:%S")}, Error occurred: {err}")
-        #     return rlist           
-        # except Exception as e:
-        #     print(f"\n{time.strftime("%H:%M:%S")}, An unexpected error occurred: {e}")
-        #     return rlist
 
     nf=f"persons_author_{nb}"
     with open(f'{path}{nf}.pkl', 'wb') as f:
