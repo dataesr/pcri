@@ -1,5 +1,3 @@
-
-
 ######### IMPORT
 def ror_import(DUMP_PATH):
     
