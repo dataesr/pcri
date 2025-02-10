@@ -215,20 +215,24 @@ def chunkify(df, chunk_size: int):
     if start < length:
         yield df[start:]
 
-def country_clean(df, list_var):
+def country_iso_shift(df, var, iso2_to3=True):
     import json, pandas as pd
     from config_path import PATH_CLEAN
-    countries = pd.read_pickle(f"{PATH_CLEAN}country_current.pkl")
-    dict_c = countries.set_index('countryCode')['country_code_mapping'].to_dict()
-    ccode=json.load(open("data_files/countryCode_match.json"))
-    for c in list_var:
-        for k,v in ccode.items():
-            df.loc[df[c]==k, c] = v
-        for k,v in dict_c.items():
-            df.loc[df[c]==k, c] = v
-        
-        if any(df[c].str.len()<3):
-            print(f"ATTENTION ! un {c} non reconnu dans df {df.loc[df[c].str.len()<3, [c]]}")
+    from functions_shared import my_country_code
+    countries = my_country_code()
+
+    if iso2_to3:
+        df = df.merge(countries[['iso3', 'iso2']].drop_duplicates(), how='left', left_on=var, right_on='iso2')
+        df.loc[~df.iso3.isnull(), var] = df.loc[~df.iso3.isnull(), 'iso3']
+        df.drop(columns=['iso2', 'iso3'], inplace=True)
+        if any(df[var.str.len()<3]):
+            print(f"ATTENTION ! un {var} non reconnu dans df {df.loc[df[var].str.len()<3, [var]]}")
+    else:
+        df = df.merge(countries[['iso3', 'iso2']].drop_duplicates(), how='left', left_on=var, right_on='iso3')
+        df.loc[~df.iso2.isnull(), var] = df.loc[~df.iso2.isnull(), 'iso2']
+        df.drop(columns=['iso2', 'iso3'], inplace=True)
+        if any(df[var.str.len()>2]):
+            print(f"ATTENTION ! un {var} non reconnu dans df {df.loc[df[var].str.len()>2, [var]]}")
     return df
 
 def my_country_code():
