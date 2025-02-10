@@ -2,7 +2,7 @@ import pandas as pd, pickle
 pd.options.mode.copy_on_write = True
 from IPython.display import HTML
 
-from matcher import matcher
+from api_requests.matcher import matcher
 from step8_referentiels.referentiels import ref_externe_preparation
 from step9_affiliations.prep_entities import entities_preparation
 
