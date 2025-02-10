@@ -218,6 +218,7 @@ def chunkify(df, chunk_size: int):
 def country_iso_shift(df, var, iso2_to3=True):
     from functions_shared import my_country_code
     countries = my_country_code()
+    print(f"size countries in def(country_iso_shift): {len(countries)}\n {countries.columns}")
 
     if iso2_to3:
         df = df.merge(countries[['iso3', 'iso2']].drop_duplicates(), how='left', left_on=var, right_on='iso2')
@@ -256,5 +257,5 @@ def my_country_code():
     df=(df.merge(df[['iso2','iso3']].drop_duplicates().rename(columns={'iso2':'parent_iso2','iso3':'parent_iso3'}), 
                     how='left', on='parent_iso2'))
 
-    print(len(df))
-    return
+    print(f"- def(my_country_code) size df: {len(df)}")
+    return df
