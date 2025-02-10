@@ -5,14 +5,16 @@ def persons_preparation(csv_date):
     pd.options.mode.copy_on_write = True
     from constant_vars import FRAMEWORK
     from config_path import PATH_SOURCE, PATH_CLEAN
-    from functions_shared import unzip_zip, country_clean
+    from functions_shared import unzip_zip, my_country_code, country_iso_shift
 
     ###############################
     participation = pd.read_pickle(f"{PATH_CLEAN}participation_current.pkl") 
     project = pd.read_pickle(f"{PATH_CLEAN}projects_current.pkl")
+    my_countries=my_country_code()
 
     print(f"size participation: {len(participation)}")
     ######################
+    print(f"\n### IMPORT datasets")
     perso_part = unzip_zip(f'he_grants_ecorda_pd_{csv_date}.zip', f"{PATH_SOURCE}{FRAMEWORK}/", "participant_persons.csv", 'utf-8')
     perso_part = (perso_part.loc[perso_part.FRAMEWORK=='HORIZON',
             ['PROJECT_NBR', 'GENERAL_PIC', 'PARTICIPANT_PIC', 'ROLE', 'FIRST_NAME',
@@ -36,25 +38,12 @@ def persons_preparation(csv_date):
     print(f"size perso_app import: {len(perso_app)}")
 
     ######################################
-    # def country_clean(df, list_var):
-    #     import json, pandas as pd
-    #     from config_path import PATH_CLEAN
-    #     countries = pd.read_pickle(f"{PATH_CLEAN}country_current.pkl")
-    #     dict_c = countries.set_index('countryCode')['country_code_mapping'].to_dict()
-    #     ccode=json.load(open("data_files/countryCode_match.json"))
-    #     for c in list_var:
-    #         for k,v in ccode.items():
-    #             df.loc[df[c]==k, c] = v
-    #         for k,v in dict_c.items():
-    #             df.loc[df[c]==k, c] = v
-            
-    #         if any(df[c].str.len()<3):
-    #             print(f"ATTENTION ! un {c} non reconnu dans df {df.loc[df[c].str.len()<3, [c]]}")
-    #     return df
-
-    perso_part = country_clean(perso_part, ['birth_country_code','nationality_country_code','host_country_code','sending_country_code'])
+    print(f"\n### COUNTRY shift iso2 to iso3")
+    for el in ['birth_country_code','nationality_country_code','host_country_code','sending_country_code']:
+        perso_part = country_iso_shift(perso_part, el, iso2_to3=True)
 
     ####################################
+    print(f"\n### TITLE cleaning")
     def title_clean(df):
         df.loc[~df['title'].isnull(), 'title_clean'] = df.loc[~df['title'].isnull(), 'title'].str.replace(r"[^\w\s]+", " ", regex=True)
         df.loc[~df['title_clean'].isnull(), 'title_clean'] = df.loc[~df['title_clean'].isnull(), 'title_clean'].str.replace(r"\s+", " ", regex=True).str.strip()
@@ -65,6 +54,7 @@ def persons_preparation(csv_date):
     perso_app = title_clean(perso_app)
 
     ###############################
+    print(f"\n### STRING cleaning")
     def prop_string(tab):
         from unidecode import unidecode
         cols = ['role', 'first_name', 'last_name','title_clean', 'gender']
@@ -79,6 +69,7 @@ def persons_preparation(csv_date):
     perso_app = prop_string(perso_app)
 
     ##########
+    print(f"\n### CONTACT create")
     def contact_name(df):
         for f in ['first_name', 'last_name']:
             df[f] = df[f].fillna('')
@@ -97,6 +88,7 @@ def persons_preparation(csv_date):
 
 
     # ###########
+    print(f"\n### PIC empty fix")
     # generalPic empty ; replace by pic or fill by generalPic participation
     def empty_pic(df, participation, stage):
         if any(df.generalPic.isnull()):
@@ -118,6 +110,7 @@ def persons_preparation(csv_date):
     perso_app = empty_pic(perso_app, participation, 'evaluated')
 
     ################
+    print(f"\n### CALCULATION measures")
     def perso_measure(df):
         df['nb_pic_unique']=df.groupby(['project_id'])['generalPic'].transform('nunique') #combien de pics / projet
         df['nb_name_unique']=df.groupby(['project_id'])['last_name'].transform('nunique') #combien de pics / projet
@@ -135,6 +128,7 @@ def persons_preparation(csv_date):
     perso_app = perso_measure(perso_app)
 
     ################
+    print(f"\n### without PIC remove")
     def generaPic_remove(df):
         return df.loc[~((df.nb_pic_unique>0)&(df.generalPic.isnull()))]
 
@@ -142,6 +136,7 @@ def persons_preparation(csv_date):
     perso_app = generaPic_remove(perso_app)
 
     ##############################
+    print(f"\n### NAME duplicated remove")
     def name_duplicated_remove(df):
         #### cleaning name duplicated by project 
         ## if by project single name but several rows
@@ -182,6 +177,7 @@ def persons_preparation(csv_date):
     perso_part = perso_measure(perso_part)
     perso_app = perso_measure(perso_app)
 
+    print(f"\n### PI duplicated")
     def PI_duplicated(df):
         if any(df.role=='principal investigator'):
             # select if same person and one PI in a single project 
@@ -200,7 +196,8 @@ def persons_preparation(csv_date):
         
     perso_part=PI_duplicated(perso_part)
 
-    #######################""
+    #######################
+    print(f"\n### PARTICIPATION+PERSO")
     def perso_participation(df, participation, project, stage):
         from step8_referentiels.paysage import paysage_prep
         from config_path import PATH
@@ -225,7 +222,16 @@ def persons_preparation(csv_date):
     perso_part = perso_participation(perso_part, participation, project, 'successful')
     perso_app = perso_participation(perso_app, participation, project, 'evaluated')
 
+    for df in [perso_part, perso_app]:
+        df = (df.merge(my_countries[['iso2', 'iso3']].drop_duplicates(), how='left', left_on='country_code', right_on='iso3')
+                .drop(columns='iso3')
+        )
+        if any(df.iso2.isnull()):
+            print(f"country iso2 missing for iso3 -> {df[df.iso2.isnull()].country_code.unique()}")
+
+
     # ##################
+    print(f"\n### PHONE cleaning")
     def phone_clean(df):
         y = df.loc[(df.country_code=='FRA')&(~df.phone.isnull()), ['phone']]
         y['tel_clean']=y.phone.str.replace(r"(^\++[0-9]{1,3}\s+)", '', regex=True)
@@ -240,6 +246,7 @@ def persons_preparation(csv_date):
     perso_app = phone_clean(perso_app)
 
     # #######################
+    print(f"\n### MAIL cleaning")
     def mail_clean(df):
         mail_del=["gmail", "yahoo", "hotmail", "wanadoo", "aol", "free", "skynet", "outlook", "icloud", "googlemail"]
 
@@ -257,12 +264,13 @@ def persons_preparation(csv_date):
     perso_part = mail_clean(perso_part)
     ##############
     # add orcid_id (perso_app) into perso_part
-
+    print(f"\n### INFO missing between datasets")
     perso_part=perso_part.merge(perso_app[['project_id', 'contact', 'orcid_id']], how='left', on=['project_id', 'contact']) 
     perso_app=perso_app.merge(perso_part[['project_id', 'contact', 'nationality_country_code']], how='left', on=['project_id', 'contact'])
 
     ##################
     # fill missing value with other df part/app
+    print(f"\n### GEBDER/TITLE missing")
     def gender_title_missing(part, app):
         tab=(part[['project_id', 'contact', 'gender','title_clean']]
         .merge(app[['project_id', 'contact', 'gender', 'title_clean']], 
@@ -286,6 +294,7 @@ def persons_preparation(csv_date):
 
     perso_part, perso_app = gender_title_missing(perso_part, perso_app)
 
+    print(f"\n### EXPORT final datasets")
     (perso_part[['project_id', 'generalPic', 'role', 'first_name', 'last_name',
         'title_clean', 'gender', 'email', 'tel_clean', 'domaine_email', 'orcid_id', 'birth_country_code',
         'nationality_country_code', 'host_country_code', 'sending_country_code',
