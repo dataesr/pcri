@@ -216,8 +216,6 @@ def chunkify(df, chunk_size: int):
         yield df[start:]
 
 def country_iso_shift(df, var, iso2_to3=True):
-    import json, pandas as pd
-    from config_path import PATH_CLEAN
     from functions_shared import my_country_code
     countries = my_country_code()
 
