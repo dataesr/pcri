@@ -68,10 +68,10 @@ def persons_preparation(csv_date):
     def prop_string(tab):
         from unidecode import unidecode
         cols = ['role', 'first_name', 'last_name','title_clean', 'gender']
-        tab.loc[~tab[cols].isnull(), [cols]] = tab.loc[~tab[cols].isnull(), [cols]].str.replace(r"[^\w\s]+", " ", regex=True)
         tab[cols] = tab[cols].map(lambda s:s.casefold() if type(s) == str else s)
+                
         for i in cols:
-            # tab[i] = tab[i].apply(unicode if type(s) == str else s)
+            tab.loc[~tab[i].isnull(), i] = tab.loc[~tab[i].isnull(), i].str.replace(r"[^\w\s]+", " ", regex=True)
             tab.loc[~tab[i].isnull(), i] = tab.loc[~tab[i].isnull(), i].apply(unidecode)
         return tab
 
