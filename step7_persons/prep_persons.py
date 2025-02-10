@@ -297,14 +297,14 @@ def persons_preparation(csv_date):
     print(f"\n### EXPORT final datasets")
     (perso_part[['project_id', 'generalPic', 'role', 'first_name', 'last_name',
         'title_clean', 'gender', 'email', 'tel_clean', 'domaine_email', 'orcid_id', 'birth_country_code',
-        'nationality_country_code', 'host_country_code', 'sending_country_code',
+        'nationality_country_code', 'host_country_code', 'sending_country_code', 'iso2',
         'stage', 'contact', 'country_code', 'shift', 'call_year', 'thema_code', 'destination_code']]
         .drop_duplicates()
         .to_pickle(f"{PATH_CLEAN}persons_participants.pkl"))
 
     (perso_app[['project_id', 'generalPic', 'role', 'first_name', 'last_name', 'nationality_country_code',
         'title_clean', 'gender', 'tel_clean', 'email', 'domaine_email', 'researcher_id', 'orcid_id',
-        'google_scholar_id', 'scopus_author_id', 'stage',
+        'google_scholar_id', 'scopus_author_id', 'stage', 'iso2',
         'contact', 'country_code', 'shift', 'call_year', 'thema_code', 'destination_code']]
         .drop_duplicates()
         .to_pickle(f"{PATH_CLEAN}persons_applicants.pkl"))
