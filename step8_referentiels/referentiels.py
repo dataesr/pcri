@@ -16,17 +16,17 @@ def ref_externe_preparation():
     DUMP_PATH=f'{PATH}referentiel/'
 
 
-    pycountry.countries.add_entry(alpha_2="XK", alpha_3="XXK", name="Kosovo")
-    pycountry.countries.add_entry(alpha_2="UK", alpha_3="GBR", name="United Kingdom")
-    pycountry.countries.add_entry(alpha_2="EL", alpha_3="GRC", name="Greece")
-    tmp = [c.__dict__['_fields'] for c in list(pycountry.countries)]
-    countries = (pd.DataFrame(tmp)[['alpha_2', 'alpha_3', 'name']]
-                .rename(columns={'alpha_2':'iso2', 'alpha_3':'iso3', 'name':'country_name_en'})
-                .drop_duplicates()
-    )
+    # pycountry.countries.add_entry(alpha_2="XK", alpha_3="XXK", name="Kosovo")
+    # pycountry.countries.add_entry(alpha_2="UK", alpha_3="GBR", name="United Kingdom")
+    # pycountry.countries.add_entry(alpha_2="EL", alpha_3="GRC", name="Greece")
+    # tmp = [c.__dict__['_fields'] for c in list(pycountry.countries)]
+    # countries = (pd.DataFrame(tmp)[['alpha_2', 'alpha_3', 'name']]
+    #             .rename(columns={'alpha_2':'iso2', 'alpha_3':'iso3', 'name':'country_name_en'})
+    #             .drop_duplicates()
+    # )
 
     my_countries=my_country_code()
-    print(len(countries))
+    print(len(my_countries))
 
     ROR_ZIPNAME = ror_import(DUMP_PATH)
     ror = ror_prep(DUMP_PATH, ROR_ZIPNAME, my_countries)
@@ -36,7 +36,6 @@ def ref_externe_preparation():
     sirene = sirene_prep(DUMP_PATH, my_countries)
 
     ### Extraction des données rnsr de dataESR
-
     rnsr_import(DUMP_PATH)
     rnsr = rnsr_prep(DUMP_PATH)
 

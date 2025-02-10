@@ -5,7 +5,7 @@ def entities_preparation():
     from functions_shared import stop_word, unzip_zip, prep_str_col, work_csv, adr_tag
     from constant_vars import ZIPNAME, FRAMEWORK
     from config_path import PATH, PATH_SOURCE, PATH_CLEAN, PATH_ORG, PATH_WORK
-    from matcher import matcher
+    from api_requests.matcher import matcher
 
     print(f"### IMPORT datasets")
     participation = pd.read_pickle(f"{PATH_CLEAN}participation_current.pkl") 

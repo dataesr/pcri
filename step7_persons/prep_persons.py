@@ -5,12 +5,11 @@ def persons_preparation(csv_date):
     pd.options.mode.copy_on_write = True
     from constant_vars import FRAMEWORK
     from config_path import PATH_SOURCE, PATH_CLEAN
-    from functions_shared import unzip_zip
+    from functions_shared import unzip_zip, country_clean
 
     ###############################
     participation = pd.read_pickle(f"{PATH_CLEAN}participation_current.pkl") 
-    project = pd.read_pickle(f"{PATH_CLEAN}projects_current.pkl") 
-    countries = pd.read_pickle(f"{PATH_CLEAN}country_current.pkl")
+    project = pd.read_pickle(f"{PATH_CLEAN}projects_current.pkl")
 
     print(f"size participation: {len(participation)}")
     ######################
@@ -37,21 +36,21 @@ def persons_preparation(csv_date):
     print(f"size perso_app import: {len(perso_app)}")
 
     ######################################
-    def country_clean(df, list_var):
-        import json, pandas as pd
-        from config_path import PATH_CLEAN
-        countries = pd.read_pickle(f"{PATH_CLEAN}country_current.pkl")
-        dict_c = countries.set_index('countryCode')['country_code_mapping'].to_dict()
-        ccode=json.load(open("data_files/countryCode_match.json"))
-        for c in list_var:
-            for k,v in ccode.items():
-                df.loc[df[c]==k, c] = v
-            for k,v in dict_c.items():
-                df.loc[df[c]==k, c] = v
+    # def country_clean(df, list_var):
+    #     import json, pandas as pd
+    #     from config_path import PATH_CLEAN
+    #     countries = pd.read_pickle(f"{PATH_CLEAN}country_current.pkl")
+    #     dict_c = countries.set_index('countryCode')['country_code_mapping'].to_dict()
+    #     ccode=json.load(open("data_files/countryCode_match.json"))
+    #     for c in list_var:
+    #         for k,v in ccode.items():
+    #             df.loc[df[c]==k, c] = v
+    #         for k,v in dict_c.items():
+    #             df.loc[df[c]==k, c] = v
             
-            if any(df[c].str.len()<3):
-                print(f"ATTENTION ! un {c} non reconnu dans df {df.loc[df[c].str.len()<3, [c]]}")
-        return df
+    #         if any(df[c].str.len()<3):
+    #             print(f"ATTENTION ! un {c} non reconnu dans df {df.loc[df[c].str.len()<3, [c]]}")
+    #     return df
 
     perso_part = country_clean(perso_part, ['birth_country_code','nationality_country_code','host_country_code','sending_country_code'])
 
@@ -203,6 +202,11 @@ def persons_preparation(csv_date):
 
     #######################""
     def perso_participation(df, participation, project, stage):
+        from step8_referentiels.paysage import paysage_prep
+        from config_path import PATH
+        DUMP_PATH=f'{PATH}referentiel/'
+        paysage = paysage_prep(DUMP_PATH)
+        
         df=df.loc[df.project_id.isin(participation[participation.stage==stage].project_id.unique())]
         df=df.merge(participation.loc[participation.stage==stage, ['project_id', 'generalPic', 'country_code']], how='outer', on=['project_id', 'generalPic'], indicator=True).query('_merge!="right_only"')
         df.loc[df._merge=='left_only', 'shift'] = 'past'
@@ -210,11 +214,10 @@ def persons_preparation(csv_date):
         if stage=='successful':
             df.loc[(df._merge=='both')&(df.host_country_code.isnull()), 'host_country_code'] = df.loc[(df._merge=='both')&(df.host_country_code.isnull()), 'country_code']
 
-
         df=df.merge(project.loc[project.stage==stage, ['project_id', 'call_year', 'thema_code', 'destination_code']], how='inner', on=['project_id'])
 
         if len(df)==0:
-            print(f"ATTENTION table vide après lein avec participation")
+            print(f"ATTENTION table vide après lien avec participation")
         else:
             print(f"size app lien avec participation clean : {len(df)}\ncolumns:{df.columns}")
         return df

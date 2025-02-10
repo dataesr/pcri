@@ -125,6 +125,9 @@ app1 = check_multiA_by_proj(app1)
 entities = entities_load(app1, part)
 
 # countries
+
+### a revoir en utilisant la fonction shared my_country_code (pycountry)
+
 list_codeCountry = list(set(entities.countryCode.to_list()+app1.countryCode.to_list()+part.countryCode.to_list()))
 countries, countryCode_err = country_load(FRAMEWORK, list_codeCountry)
 # countries fix old code and add iso3
