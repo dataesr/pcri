@@ -1,9 +1,11 @@
-import pandas as pd, pickle, numpy as np
+import pandas as pd, pickle, numpy as np, warnings, time
+warnings.filterwarnings("ignore", "FutureWarning: Setting an item of incompatible dtype is deprecated and will raise an error in a future version of pandas")
 pd.options.mode.copy_on_write = True
 from config_path import PATH_CLEAN, PATH_API
 from functions_shared import chunkify, work_csv
 from step7_persons.prep_persons import persons_preparation
-from step7_persons.affiliations import persons_affiliation
+# from step7_persons.affiliations import persons_affiliation
+from api_requests.openalex import get_author_from_openalex
 
 CSV_DATE='20250121'
 # persons_preparation(CSV_DATE)
@@ -12,7 +14,6 @@ PATH_PERSONS=f"{PATH_API}persons/"
 perso_part = pd.read_pickle(f"{PATH_CLEAN}persons_participants.pkl")
 perso_app = pd.read_pickle(f"{PATH_CLEAN}persons_applicants.pkl")
 
-participation=pd.read_pickle(f"{PATH_CLEAN}participation_current.pkl") 
 # #provisoire
 # project=pd.read_pickle(f"{PATH_CLEAN}projects_current.pkl") 
 # perso_part=perso_part.merge(project[['project_id', 'stage', 'destination_code', 'thema_code']], how ='left', on=['project_id', 'stage'])
@@ -20,21 +21,37 @@ participation=pd.read_pickle(f"{PATH_CLEAN}participation_current.pkl")
 
 
 #PREPRATION data for request openalex
-lvar=['contact','orcid_id','country_code','destination_code','thema_code','nationality_country_code']
+lvar=['contact','orcid_id','country_code', 'iso2','destination_code','thema_code','nationality_country_code']
 pp = pd.concat([perso_part[lvar].drop_duplicates(), perso_app[lvar].drop_duplicates()], ignore_index=True)
 
 mask=((pp.country_code=='FRA')|(pp.nationality_country_code=='FRA')|(pp.destination_code.isin(['COG', 'PF', 'STG', 'ADG', 'POC','SyG', 'PERA', 'SJI'])))&(~(pp.contact.isnull()&pp.orcid_id.isnull()))
 pp=pp.loc[mask].sort_values(['country_code','orcid_id'], ascending=False).drop_duplicates()
 print(f"size pp: {len(pp)}, info sur pp with orcid: {len(pp.loc[pp.orcid_id.isnull()])}")
 
+def request_openalex(df, iso2):
+    print(time.strftime("%H:%M:%S"))
+    rlist=[]
+    n = 0
+    for _, row in df.iterrows():
+        n=n+1
+        if n % 100 == 0: 
+            print(f"{n}", end=',')
+        if iso2==True:
+            res=get_author_from_openalex(row['orcid_id'], row['contact'], row['iso2'])
+            rlist.extend(res)
+        else:
+            res=get_author_from_openalex(row['orcid_id'], row['contact'], '')
+            rlist.extend(res)
+    print(time.strftime("%H:%M:%S"))
+    return rlist
 
-pp=pp[['contact', 'orcid_id']].fillna('').drop_duplicates().sort_values('orcid_id', ascending=False)
-data_chunks=list(chunkify(pp, 2000))
-for i in range(0, len(data_chunks)):
-    print(f"Loop {i}, size data_chunks: {len(data_chunks)}")
-    # print(type(data_chunks))
-    df_temp = data_chunks[i]
-    persons_affiliation(df_temp, i, PATH_PERSONS)
+erc_msca=pp.loc[pp.thema_code.isin(['ERC', 'MSCA']), ['contact', 'orcid_id']].drop_duplicates()
+print(f"size erc_msca: {len(erc_msca)}")
+em=request_openalex(erc_msca, iso2=False)
+
+tmp1=pp.loc[~pp.thema_code.isin(['ERC', 'MSCA']), ['contact', 'orcid_id', 'iso2']].drop_duplicates()
+print(f"size erc_msca: {len(tmp1)}")
+other=request_openalex(tmp1, iso2=True)
 
 #Return openalex results
 pers_api=[]
