@@ -1,8 +1,6 @@
 
-import math
-import requests
+import math, requests, time
 from retry import retry
-import pandas as pd
 
 @retry(delay=100, tries=3)
 def get_all_from_openalex(url):
@@ -14,8 +12,9 @@ def get_all_from_openalex(url):
     for page in range(2, nb_pages+2):
         url_paged = f'{url}&page={page}'
         res = requests.get(url_paged).json()
-        data += res['results']
-    print(f'{len(data)} results found')
+        if res:
+            data += res['results']
+    # print(f'{len(data)} results found')
     return data
 
 def parse_openalex_author(e, match):
