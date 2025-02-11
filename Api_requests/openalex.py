@@ -9,11 +9,14 @@ def get_all_from_openalex(url):
     data = res['results']
     nb_res = res['meta']['count']
     nb_pages = math.ceil(nb_res/200)
+    print(nb_pages)
     for page in range(2, nb_pages+2):
+        print(f'{page}/{nb_pages}')
         url_paged = f'{url}&page={page}'
         res = requests.get(url_paged).json()
-        if res['results']:
+        if isinstance(res.get('results'), list):
             data += res['results']
+    print(f'{len(data)} results found')
     return data
 
 def parse_openalex_author(e, match):
@@ -27,6 +30,7 @@ def parse_openalex_author(e, match):
 
 def get_author_from_openalex(orcid, full_name, country_code):
     URL_AUTHORS = 'https://api.openalex.org/authors?per_page=200&filter='
+    print(f"For {full_name}")
     if country_code:
         URL_AUTHORS += f'affiliations.institution.country_code:{country_code},'
     if orcid:
