@@ -222,13 +222,15 @@ def persons_preparation(csv_date):
     perso_part = perso_participation(perso_part, participation, project, 'successful')
     perso_app = perso_participation(perso_app, participation, project, 'evaluated')
 
-    for df in [perso_part, perso_app]:
+    def iso2_add(df):
         df = (df.merge(my_countries[['iso2', 'iso3']].drop_duplicates(), how='left', left_on='country_code', right_on='iso3')
                 .drop(columns='iso3')
         )
         if any(df.iso2.isnull()):
             print(f"country iso2 missing for iso3 -> {df[df.iso2.isnull()].country_code.unique()}")
-
+        return df
+    perso_part = iso2_add(perso_part)
+    perso_app = iso2_add(perso_app)
 
     # ##################
     print(f"\n### PHONE cleaning")
@@ -270,7 +272,7 @@ def persons_preparation(csv_date):
 
     ##################
     # fill missing value with other df part/app
-    print(f"\n### GEBDER/TITLE missing")
+    print(f"\n### GENDER/TITLE missing")
     def gender_title_missing(part, app):
         tab=(part[['project_id', 'contact', 'gender','title_clean']]
         .merge(app[['project_id', 'contact', 'gender', 'title_clean']], 
