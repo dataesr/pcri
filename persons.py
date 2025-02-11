@@ -49,10 +49,14 @@ def request_openalex(df, iso2):
 erc_msca=pp.loc[pp.thema_code.isin(['ERC', 'MSCA']), ['contact', 'orcid_id']].drop_duplicates()
 print(f"size erc_msca: {len(erc_msca)}")
 em=request_openalex(erc_msca, iso2=False)
+with open(f'{PATH_PERSONS}persons_authors_erc_{CSV_DATE}.pkl', 'wb') as f:
+    pickle.dump(em, f)
 
 tmp1=pp.loc[~pp.thema_code.isin(['ERC', 'MSCA']), ['contact', 'orcid_id', 'iso2']].drop_duplicates()
 print(f"size erc_msca: {len(tmp1)}")
 other=request_openalex(tmp1, iso2=True)
+with open(f'{PATH_PERSONS}persons_authors_others_{CSV_DATE}.pkl', 'wb') as f:
+    pickle.dump(other, f)
 
 #Return openalex results
 pers_api=[]
