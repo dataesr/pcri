@@ -45,6 +45,7 @@ def request_openalex(df, iso2):
     print(time.strftime("%H:%M:%S"))
     return rlist
 
+#parola joge-a
 erc_msca=pp.loc[pp.thema_code.isin(['ERC', 'MSCA']), ['contact', 'orcid_id']].drop_duplicates()
 print(f"size erc_msca: {len(erc_msca)}")
 em=request_openalex(erc_msca, iso2=False)
