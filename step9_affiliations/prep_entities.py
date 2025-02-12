@@ -5,7 +5,7 @@ def entities_preparation():
     from functions_shared import stop_word, unzip_zip, prep_str_col, work_csv, adr_tag
     from constant_vars import ZIPNAME, FRAMEWORK
     from config_path import PATH, PATH_SOURCE, PATH_CLEAN, PATH_ORG, PATH_WORK
-    from api_requests.matcher import matcher
+    from api_process.matcher import matcher
 
     print(f"### IMPORT datasets")
     participation = pd.read_pickle(f"{PATH_CLEAN}participation_current.pkl") 
@@ -228,25 +228,25 @@ def entities_preparation():
         import re
         lpattern = ["cnrs", "inria", "inrae", "ifremer", "inserm", "cea", "ens", "fnsp", "cirad", "ird", "chu", "universite", 
                 "pasteur", "curie", "irsn", "onera", "agrocampus", "ed","ecole"]
-        ifremer = r"(ifremer)|(in.* fran.* re.* ex.* mer)"
-        cnrs =   r"(ce.* na.* (de )?(la )?re.* sc.[a-z]*)|(fr.* na.* sc.* re.* ce.[a-z]*)|(cnrs)"
-        inria =  r"(in.* na.* (de )?re.* (en )?in.* (et )?(en )?au.[a-z]*)|(inria)"
-        inrae =   r"(in.* na.* (de )?re.* ag.[a-z]*)|(inra)|(inrae)|(irstea)"
-        inserm = r"(in.* na.* (de )?(la )?sa.* (et )?(de )?(la )?re.* me.[a-z]*)|(inserm)"
-        cea =    r"(co.* (a )?l?\'?en.* at.[a-z]*)|(\bcea\b)"
-        ens =    r"(ec.* no.* sup[a-z]*)|(\bens\b)"
-        fnsp =   r"(fo.* na.* (des )?sc.* po.[a-z]*)|(fnsp)|(sciences po)"
-        cirad =  r"(ce.* (de )?co.* in.* (en )?re.* ag.* (pour )?(le )?dev.[a-z]*)|(cirad)"
-        ird =    r"(in.* (de )?re.[a-z]* (pour )?(le )?dev.[a-z]*)|\b(ird)\b|(i r d)"
-        chu = r"((ce.*|ctre|group.*) hos.* (univ.[a-z]*)?)|(univ.* hosp.[a-z]*)|\b(chu|chr|chru)\b|(hospice)"
-        universite =   r"(univ(ersite|ersity|ersitaire))"
+        ifremer =   r"(ifremer)|(in.* fran.* re.* ex.* mer)"
+        cnrs =      r"(ce.* na.* (de )?(la )?re.* sc.[a-z]*)|(fr.* na.* sc.* re.* ce.[a-z]*)|(cnrs)"
+        inria =     r"(in.* na.* (de )?re.* (en )?in.* (et )?(en )?au.[a-z]*)|(inria)"
+        inrae =     r"(in.* na.* (de )?re.* ag.[a-z]*)|(inra)|(inrae)|(irstea)"
+        inserm =    r"(in.* na.* (de )?(la )?sa.* (et )?(de )?(la )?re.* me.[a-z]*)|(inserm)"
+        cea =       r"(co.* (a )?l?\'?en.* at.[a-z]*)|(\bcea\b)"
+        ens =       r"(ec.* no.* sup[a-z]*)|(\bens\b)"
+        fnsp =      r"(fo.* na.* (des )?sc.* po.[a-z]*)|(fnsp)|(sciences po)"
+        cirad =     r"(ce.* (de )?co.* in.* (en )?re.* ag.* (pour )?(le )?dev.[a-z]*)|(cirad)"
+        ird =       r"(in.* (de )?re.[a-z]* (pour )?(le )?dev.[a-z]*)|\b(ird)\b|(i r d)"
+        chu =       r"((ce.*|ctre|group.*) hos.* (univ.[a-z]*)?)|(univ.* hosp.[a-z]*)|\b(chu|chr|chru)\b|(hospice)"
+        universite =r"(univ(ersite|ersity|ersitaire))"
         pasteur =   r"(ins([a-z]*|\.*) pasteur( de)?( lille)?)|(pasteur inst([a-z]*))"
-        curie =    r"(inst([a-z]*|\.*) curie)|(curie inst([a-z]*))"
-        irsn =   r"(in.* (de )?radio.[a-z]* (et )?(de )?sur.[a-z]* nuc.[a-z]*)|(irsn)"
-        onera =  r"(onera)|(off.* na.* (d )?etu.* (et )?(de )?rech.* aero.*)"
-        agrocampus = r"(agrocampus)"
-        ed = r"(doct.* sch.*)|(ec.* doct.*)|\b(ed)\b"
-        ecole = r"(ecole)"
+        curie =     r"(inst([a-z]*|\.*) curie)|(curie inst([a-z]*))"
+        irsn =      r"(in.* (de )?radio.[a-z]* (et )?(de )?sur.[a-z]* nuc.[a-z]*)|(irsn)"
+        onera =     r"(onera)|(off.* na.* (d )?etu.* (et )?(de )?rech.* aero.*)"
+        agrocampus =r"(agrocampus)"
+        ed =        r"(doct.* sch.*)|(ec.* doct.*)|\b(ed)\b"
+        ecole =     r"(ecole)"
 
         org = []
         for pattern_name in lpattern:
