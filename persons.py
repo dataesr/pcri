@@ -5,7 +5,7 @@ from config_path import PATH_CLEAN, PATH_API
 from functions_shared import chunkify, work_csv
 from step7_persons.prep_persons import persons_preparation
 # from step7_persons.affiliations import persons_affiliation
-from api_requests.openalex import get_author_from_openalex
+from api_process.openalex import get_author_from_openalex
 
 CSV_DATE='20250121'
 # persons_preparation(CSV_DATE)
