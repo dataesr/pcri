@@ -5,7 +5,7 @@ from config_path import PATH_CLEAN, PATH_API
 from functions_shared import chunkify, work_csv
 from step7_persons.prep_persons import persons_preparation
 # from step7_persons.affiliations import persons_affiliation
-from api_.openalex import get_author_from_openalex
+from api_process.openalex import get_author_from_openalex
 
 CSV_DATE='20250121'
 # persons_preparation(CSV_DATE)
@@ -49,10 +49,14 @@ def request_openalex(df, iso2):
 erc_msca=pp.loc[pp.thema_code.isin(['ERC', 'MSCA']), ['contact', 'orcid_id']].drop_duplicates()
 print(f"size erc_msca: {len(erc_msca)}")
 em=request_openalex(erc_msca, iso2=False)
+with open(f'{PATH_PERSONS}persons_authors_erc_{CSV_DATE}.pkl', 'wb') as f:
+    pickle.dump(em, f)
 
 tmp1=pp.loc[~pp.thema_code.isin(['ERC', 'MSCA']), ['contact', 'orcid_id', 'iso2']].drop_duplicates()
 print(f"size erc_msca: {len(tmp1)}")
 other=request_openalex(tmp1, iso2=True)
+with open(f'{PATH_PERSONS}persons_authors_other_{CSV_DATE}.pkl', 'wb') as f:
+    pickle.dump(other, f)
 
 #Return openalex results
 pers_api=[]
