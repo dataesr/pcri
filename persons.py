@@ -44,7 +44,7 @@ def request_openalex(df, iso2):
             rlist.extend(res)
 
     if n % 3000 == 0:
-        with open(f'{PATH_PERSONS}persons_authors_{str(n/1000)}_{CSV_DATE}.pkl', 'wb') as f:
+        with open(f'{PATH_PERSONS}persons_authors_{str(n/1000)}.pkl', 'wb') as f:
             pickle.dump(rlist, f)
     print(time.strftime("%H:%M:%S"))
     return rlist
