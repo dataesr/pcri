@@ -1,6 +1,7 @@
 
-import math, requests
+import math, requests, time, pickle
 from retry import retry
+from config_path import PATH_API
 
 @retry(delay=100, tries=3)
 def get_all_from_openalex(url):
@@ -46,3 +47,25 @@ def get_author_from_openalex(orcid, full_name, country_code):
         if len(res) > 0:
             return [parse_openalex_author(e, 'full_name') for e in res]
     return res
+
+def request_openalex(df, iso2):
+    print(time.strftime("%H:%M:%S"))
+    rlist=[]
+    n = 0
+    for _, row in df.iterrows():
+        n=n+1
+        if n % 100 == 0: 
+            print(f"{n}", end=',')
+        if iso2==True:
+            res=get_author_from_openalex(row['orcid_id'], row['contact'], row['iso2'])
+            rlist.extend(res)
+        else:
+            res=get_author_from_openalex(row['orcid_id'], row['contact'], '')
+            rlist.extend(res)
+
+        if n % 3000 == 0:
+            a=str(int(n/1000))
+            with open(f'{PATH_API}persons/persons_authors_{a}.pkl', 'wb') as f:
+                pickle.dump(rlist, f)
+    print(time.strftime("%H:%M:%S"))
+    return rlist
