@@ -63,7 +63,7 @@ def request_openalex(df, iso2):
             res=get_author_from_openalex(row['orcid_id'], row['contact'], '')
             rlist.extend(res)
 
-        if n % 3000 == 0:
+        if n % 2000 == 0:
             a=str(int(n/1000))
             with open(f'{PATH_API}persons/persons_authors_{a}.pkl', 'wb') as f:
                 pickle.dump(rlist, f)
