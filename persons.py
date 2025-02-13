@@ -5,7 +5,7 @@ from config_path import PATH_CLEAN, PATH_API
 from functions_shared import chunkify, work_csv
 from step7_persons.prep_persons import persons_preparation
 # from step7_persons.affiliations import persons_affiliation
-from api_process.openalex import get_author_from_openalex
+from api_process.openalex import request_openalex
 
 CSV_DATE='20250121'
 # persons_preparation(CSV_DATE)
@@ -28,40 +28,24 @@ mask=((pp.country_code=='FRA')|(pp.nationality_country_code=='FRA')|(pp.destinat
 pp=pp.loc[mask].sort_values(['country_code','orcid_id'], ascending=False).drop_duplicates()
 print(f"size pp: {len(pp)}, info sur pp with orcid: {len(pp.loc[pp.orcid_id.isnull()])}")
 
-def request_openalex(df, iso2):
-    print(time.strftime("%H:%M:%S"))
-    rlist=[]
-    n = 0
-    for _, row in df.iterrows():
-        n=n+1
-        if n % 100 == 0: 
-            print(f"{n}", end=',')
-        if iso2==True:
-            res=get_author_from_openalex(row['orcid_id'], row['contact'], row['iso2'])
-            rlist.extend(res)
-        else:
-            res=get_author_from_openalex(row['orcid_id'], row['contact'], '')
-            rlist.extend(res)
 
-        if n % 3000 == 0:
-            a=str(int(3000/1000))
-            with open(f'{PATH_PERSONS}persons_authors_{a}.pkl', 'wb') as f:
-                pickle.dump(rlist, f)
-    print(time.strftime("%H:%M:%S"))
-    return rlist
-
+### search persons into openalex
 #masia odile
+tmp1=pp.loc[~pp.thema_code.isin(['ERC', 'MSCA']), ['contact', 'orcid_id', 'iso2']].drop_duplicates().reset_index(drop=True)
+print(f"size tmp1: {len(tmp1)}")
+# tmp1=tmp1[:2]
+other=request_openalex(tmp1, iso2=True)
+with open(f'{PATH_PERSONS}persons_authors_other_{CSV_DATE}.pkl', 'wb') as f:
+    pickle.dump(other, f)
+
 erc_msca=pp.loc[pp.thema_code.isin(['ERC', 'MSCA']), ['contact', 'orcid_id']].drop_duplicates().reset_index(drop=True)
 print(f"size erc_msca: {len(erc_msca)}")
+# erc_msca=erc_msca[:2]
 em=request_openalex(erc_msca, iso2=False)
 with open(f'{PATH_PERSONS}persons_authors_erc_{CSV_DATE}.pkl', 'wb') as f:
     pickle.dump(em, f)
 
-tmp1=pp.loc[~pp.thema_code.isin(['ERC', 'MSCA']), ['contact', 'orcid_id', 'iso2']].drop_duplicates().reset_index(drop=True)
-print(f"size erc_msca: {len(tmp1)}")
-other=request_openalex(tmp1, iso2=True)
-with open(f'{PATH_PERSONS}persons_authors_other_{CSV_DATE}.pkl', 'wb') as f:
-    pickle.dump(other, f)
+
 
 #Return openalex results
 pers_api=[]
@@ -73,6 +57,7 @@ for i in range(0, 14):
             print(f"- empty list: {globals()[f"pers_api{i}"]}")
         else:
             pers_api.extend(globals()[f"pers_api{i}"])
+
 with open(f'{PATH_PERSONS}persons_authors_{CSV_DATE}.pkl', 'wb') as f:
     pickle.dump(pers_api, f)
 
