@@ -1,4 +1,4 @@
-import pandas as pd, pickle, numpy as np, warnings, time
+import pandas as pd, pickle, numpy as np, warnings, time, os
 warnings.filterwarnings("ignore", "FutureWarning: Setting an item of incompatible dtype is deprecated and will raise an error in a future version of pandas")
 pd.options.mode.copy_on_write = True
 from config_path import PATH_CLEAN, PATH_API
@@ -44,19 +44,20 @@ def request_openalex(df, iso2):
             rlist.extend(res)
 
         if n % 3000 == 0:
-            with open(f'{PATH_PERSONS}persons_authors_{str(n/1000)}.pkl', 'wb') as f:
+            a=str(int(3000/1000))
+            with open(f'{PATH_PERSONS}persons_authors_{a}.pkl', 'wb') as f:
                 pickle.dump(rlist, f)
     print(time.strftime("%H:%M:%S"))
     return rlist
 
-#parola joge-a
-erc_msca=pp.loc[pp.thema_code.isin(['ERC', 'MSCA']), ['contact', 'orcid_id']].drop_duplicates()
+#masia odile
+erc_msca=pp.loc[pp.thema_code.isin(['ERC', 'MSCA']), ['contact', 'orcid_id']].drop_duplicates().reset_index(drop=True)
 print(f"size erc_msca: {len(erc_msca)}")
 em=request_openalex(erc_msca, iso2=False)
 with open(f'{PATH_PERSONS}persons_authors_erc_{CSV_DATE}.pkl', 'wb') as f:
     pickle.dump(em, f)
 
-tmp1=pp.loc[~pp.thema_code.isin(['ERC', 'MSCA']), ['contact', 'orcid_id', 'iso2']].drop_duplicates()
+tmp1=pp.loc[~pp.thema_code.isin(['ERC', 'MSCA']), ['contact', 'orcid_id', 'iso2']].drop_duplicates().reset_index(drop=True)
 print(f"size erc_msca: {len(tmp1)}")
 other=request_openalex(tmp1, iso2=True)
 with open(f'{PATH_PERSONS}persons_authors_other_{CSV_DATE}.pkl', 'wb') as f:
