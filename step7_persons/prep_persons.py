@@ -76,7 +76,7 @@ def persons_preparation(csv_date):
             df[f] = df[f].str.strip().str.replace(r"\s+", '-', regex=True)
             df[f] = df[f].str.strip().str.replace(r"-{2,}", '-', regex=True)
 
-        df['contact'] = df.last_name.astype(str).str.lower() + ' ' + df.first_name.astype(str).str.lower()
+        df['contact'] = df.first_name.astype(str).str.lower() + ' ' + df.last_name.astype(str).str.lower()
         
         str_remove=['not applicable']
         df['contact'] = df['contact'].str.strip().str.replace(r"\^s+$", '-', regex=True)
