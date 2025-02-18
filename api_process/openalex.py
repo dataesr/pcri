@@ -23,8 +23,7 @@ def get_all_from_openalex(url):
 def parse_openalex_author(e, match):
     elt = {'match': match}
     for f in ['id', 'ids', 'orcid', 'display_name', 'display_name_alternatives', 'works_count', 
-            'affiliations', 'last_known_institutions',
-            'topics']:
+            'affiliations', 'last_known_institutions', 'topics']:
         if e.get(f):
             elt[f] = e[f]
     return elt
@@ -48,23 +47,23 @@ def get_author_from_openalex(orcid, full_name, country_code):
             return [parse_openalex_author(e, 'full_name') for e in res]
     return res
 
-def request_openalex(df, iso2):
+def harvest_openalex(df, iso2):
     print(time.strftime("%H:%M:%S"))
     rlist=[]
     n = 0
     for _, row in df.iterrows():
-        n=n+1
+        n = n+1
         if n % 100 == 0: 
             print(f"{n}", end=',')
-        if iso2==True:
-            res=get_author_from_openalex(row['orcid_id'], row['contact'], row['iso2'])
+        if iso2 == True:
+            res = get_author_from_openalex(row['orcid_id'], row['contact'], row['iso2'])
             rlist.extend(res)
         else:
-            res=get_author_from_openalex(row['orcid_id'], row['contact'], '')
+            res = get_author_from_openalex(row['orcid_id'], row['contact'], '')
             rlist.extend(res)
 
         if n % 2000 == 0:
-            a=str(int(n/1000))
+            a = str(int(n/1000))
             with open(f'{PATH_API}persons/persons_authors_{a}.pkl', 'wb') as f:
                 pickle.dump(rlist, f)
     print(time.strftime("%H:%M:%S"))
