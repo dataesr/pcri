@@ -5,7 +5,7 @@ from config_path import PATH_CLEAN, PATH_API
 from functions_shared import chunkify, work_csv
 from step7_persons.prep_persons import persons_preparation
 # from step7_persons.affiliations import persons_affiliation
-from api_process.openalex import request_openalex
+from api_process.openalex import harvest_openalex, persons_files_import
 
 CSV_DATE='20250121'
 # persons_preparation(CSV_DATE)
@@ -13,12 +13,6 @@ CSV_DATE='20250121'
 PATH_PERSONS=f"{PATH_API}persons/"
 perso_part = pd.read_pickle(f"{PATH_CLEAN}persons_participants.pkl")
 perso_app = pd.read_pickle(f"{PATH_CLEAN}persons_applicants.pkl")
-
-# #provisoire
-# project=pd.read_pickle(f"{PATH_CLEAN}projects_current.pkl") 
-# perso_part=perso_part.merge(project[['project_id', 'stage', 'destination_code', 'thema_code']], how ='left', on=['project_id', 'stage'])
-# perso_app=perso_app.merge(project[['project_id', 'stage', 'destination_code', 'thema_code']], how ='left', on=['project_id', 'stage'])
-
 
 #PREPRATION data for request openalex
 lvar=['contact','orcid_id','country_code', 'iso2','destination_code','thema_code','nationality_country_code']
@@ -31,21 +25,22 @@ print(f"size pp: {len(pp)}, info sur pp with orcid: {len(pp.loc[pp.orcid_id.isnu
 
 ### search persons into openalex
 #masia odile
-tmp1=pp.loc[~pp.thema_code.isin(['ERC', 'MSCA']), ['contact', 'orcid_id', 'iso2']].drop_duplicates().reset_index(drop=True)
-print(f"size tmp1: {len(tmp1)}")
+oth=pp.loc[~pp.thema_code.isin(['ERC', 'MSCA']), ['contact', 'orcid_id', 'iso2']].drop_duplicates().reset_index(drop=True)
+print(f"size tmp1: {len(oth)}")
 # tmp1=tmp1[:2]
-other=request_openalex(tmp1, iso2=True)
+other=harvest_openalex(oth, iso2=True)
 with open(f'{PATH_PERSONS}persons_authors_other_{CSV_DATE}.pkl', 'wb') as f:
     pickle.dump(other, f)
 
-erc_msca=pp.loc[pp.thema_code.isin(['ERC', 'MSCA']), ['contact', 'orcid_id']].drop_duplicates().reset_index(drop=True)
-print(f"size erc_msca: {len(erc_msca)}")
+em=pp.loc[pp.thema_code.isin(['ERC', 'MSCA']), ['contact', 'orcid_id']].drop_duplicates().reset_index(drop=True)
+print(f"size erc_msca: {len(em)}")
 # erc_msca=erc_msca[:2]
-em=request_openalex(erc_msca, iso2=False)
+erc_msca=harvest_openalex(em, iso2=False)
 with open(f'{PATH_PERSONS}persons_authors_erc_{CSV_DATE}.pkl', 'wb') as f:
-    pickle.dump(em, f)
+    pickle.dump(erc_msca, f)
 
-
+oth=persons_files_import('other', PATH_PERSONS)
+em=persons_files_import('erc', PATH_PERSONS)
 
 #Return openalex results
 pers_api=[]
