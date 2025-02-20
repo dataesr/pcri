@@ -5,10 +5,11 @@ def persons_preparation(csv_date):
     pd.options.mode.copy_on_write = True
     from constant_vars import FRAMEWORK
     from config_path import PATH_SOURCE, PATH_CLEAN
-    from functions_shared import unzip_zip, my_country_code, country_iso_shift
+    from functions_shared import unzip_zip, my_country_code, country_iso_shift, prop_string
 
     ###############################
-    participation = pd.read_pickle(f"{PATH_CLEAN}participation_current.pkl") 
+    participation = pd.read_pickle(f"{PATH_CLEAN}participation_current.pkl")
+    entities = pd.read_pickle(f"{PATH_CLEAN}entities_info_current2.pkl")
     project = pd.read_pickle(f"{PATH_CLEAN}projects_current.pkl")
     my_countries=my_country_code()
 
@@ -55,18 +56,19 @@ def persons_preparation(csv_date):
 
     ###############################
     print(f"\n### STRING cleaning")
-    def prop_string(tab):
-        from unidecode import unidecode
-        cols = ['role', 'first_name', 'last_name','title_clean', 'gender']
-        tab[cols] = tab[cols].map(lambda s:s.casefold() if type(s) == str else s)
+    # def prop_string(tab):
+    #     from unidecode import unidecode
+    #     cols = ['role', 'first_name', 'last_name','title_clean', 'gender']
+    #     tab[cols] = tab[cols].map(lambda s:s.casefold() if type(s) == str else s)
                 
-        for i in cols:
-            tab.loc[~tab[i].isnull(), i] = tab.loc[~tab[i].isnull(), i].str.replace(r"[^\w\s]+", " ", regex=True)
-            tab.loc[~tab[i].isnull(), i] = tab.loc[~tab[i].isnull(), i].apply(unidecode)
-        return tab
+    #     for i in cols:
+    #         tab.loc[~tab[i].isnull(), i] = tab.loc[~tab[i].isnull(), i].str.replace(r"[^\w\s]+", " ", regex=True)
+    #         tab.loc[~tab[i].isnull(), i] = tab.loc[~tab[i].isnull(), i].apply(unidecode)
+    #     return tab
 
-    perso_part = prop_string(perso_part)
-    perso_app = prop_string(perso_app)
+    cols = ['role', 'first_name', 'last_name','title_clean', 'gender']
+    perso_part = prop_string(perso_part, cols)
+    perso_app = prop_string(perso_app, cols)
 
     ##########
     print(f"\n### CONTACT create")
@@ -198,11 +200,7 @@ def persons_preparation(csv_date):
 
     #######################
     print(f"\n### PARTICIPATION+PERSO")
-    def perso_participation(df, participation, project, stage):
-        from step8_referentiels.paysage import paysage_prep
-        from config_path import PATH
-        DUMP_PATH=f'{PATH}referentiel/'
-        paysage = paysage_prep(DUMP_PATH)
+    def perso_participation(df, participation, project, entities, stage):
         
         df=df.loc[df.project_id.isin(participation[participation.stage==stage].project_id.unique())]
         df=df.merge(participation.loc[participation.stage==stage, ['project_id', 'generalPic', 'country_code']], how='outer', on=['project_id', 'generalPic'], indicator=True).query('_merge!="right_only"')
@@ -213,14 +211,17 @@ def persons_preparation(csv_date):
 
         df=df.merge(project.loc[project.stage==stage, ['project_id', 'call_year', 'thema_code', 'destination_code']], how='inner', on=['project_id'])
 
+        x=entities[['entities_id', 'entities_name', 'generalPic', 'id_secondaire', 'country_code', 'country_code_mapping']].drop_duplicates()
+        df=df.merge(x, how='left', on=['generalPic', 'country_code'])
+
         if len(df)==0:
             print(f"ATTENTION table vide après lien avec participation")
         else:
             print(f"size app lien avec participation clean : {len(df)}\ncolumns:{df.columns}")
         return df
 
-    perso_part = perso_participation(perso_part, participation, project, 'successful')
-    perso_app = perso_participation(perso_app, participation, project, 'evaluated')
+    perso_part = perso_participation(perso_part, participation, project, entities, 'successful')
+    perso_app = perso_participation(perso_app, participation, project, entities, 'evaluated')
 
     def iso2_add(df):
         df = (df.merge(my_countries[['iso2', 'iso3']].drop_duplicates(), how='left', left_on='country_code', right_on='iso3')
@@ -300,14 +301,16 @@ def persons_preparation(csv_date):
     (perso_part[['project_id', 'generalPic', 'role', 'first_name', 'last_name',
         'title_clean', 'gender', 'email', 'tel_clean', 'domaine_email', 'orcid_id', 'birth_country_code',
         'nationality_country_code', 'host_country_code', 'sending_country_code', 'iso2',
-        'stage', 'contact', 'country_code', 'shift', 'call_year', 'thema_code', 'destination_code']]
+        'stage', 'contact', 'country_code', 'shift', 'call_year', 'thema_code', 'destination_code',
+        'entities_id', 'entities_name','id_secondaire', 'country_code_mapping']]
         .drop_duplicates()
         .to_pickle(f"{PATH_CLEAN}persons_participants.pkl"))
 
     (perso_app[['project_id', 'generalPic', 'role', 'first_name', 'last_name', 'nationality_country_code',
         'title_clean', 'gender', 'tel_clean', 'email', 'domaine_email', 'researcher_id', 'orcid_id',
         'google_scholar_id', 'scopus_author_id', 'stage', 'iso2',
-        'contact', 'country_code', 'shift', 'call_year', 'thema_code', 'destination_code']]
+        'contact', 'country_code', 'shift', 'call_year', 'thema_code', 'destination_code',
+        'entities_id', 'entities_name','id_secondaire', 'country_code_mapping']]
         .drop_duplicates()
         .to_pickle(f"{PATH_CLEAN}persons_applicants.pkl"))
 
