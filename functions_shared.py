@@ -237,7 +237,7 @@ def country_iso_shift(df, var, iso2_to3=True):
 
 def my_country_code():
     import pycountry, pandas as pd, json, numpy as np
-    pycountry.countries.add_entry(alpha_2="XK", alpha_3="XXK", name="Kosovo")
+    pycountry.countries.add_entry(alpha_2="XK", alpha_3="XKX", name="Kosovo")
     pycountry.countries.add_entry(alpha_2="UK", alpha_3="GBR", name="United Kingdom")
     pycountry.countries.add_entry(alpha_2="EL", alpha_3="GRC", name="Greece")
     pycountry.countries.add_entry(alpha_2="AN", alpha_3="ANT", name="Netherlands Antilles (former 2011)")
@@ -260,3 +260,12 @@ def my_country_code():
 
     print(f"- def(my_country_code) size df: {len(df)}")
     return df
+
+def prop_string(tab, cols):
+    from unidecode import unidecode
+    tab[cols] = tab[cols].map(lambda s:s.casefold() if type(s) == str else s)
+            
+    for i in cols:
+        tab.loc[~tab[i].isnull(), i] = tab.loc[~tab[i].isnull(), i].str.replace(r"[^\w\s]+", " ", regex=True)
+        tab.loc[~tab[i].isnull(), i] = tab.loc[~tab[i].isnull(), i].apply(unidecode)
+    return tab

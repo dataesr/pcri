@@ -8,7 +8,7 @@ from step7_persons.prep_persons import persons_preparation
 from api_process.openalex import harvest_openalex, persons_files_import
 
 CSV_DATE='20250121'
-# persons_preparation(CSV_DATE)
+persons_preparation(CSV_DATE)
 
 PATH_PERSONS=f"{PATH_API}persons/"
 perso_part = pd.read_pickle(f"{PATH_CLEAN}persons_participants.pkl")
@@ -20,6 +20,7 @@ pp = pd.concat([perso_part[lvar].drop_duplicates(), perso_app[lvar].drop_duplica
 
 mask=((pp.country_code=='FRA')|(pp.nationality_country_code=='FRA')|(pp.destination_code.isin(['COG', 'PF', 'STG', 'ADG', 'POC','SyG', 'PERA', 'SJI'])))&(~(pp.contact.isnull()&pp.orcid_id.isnull()))
 pp=pp.loc[mask].sort_values(['country_code','orcid_id'], ascending=False).drop_duplicates()
+pp['contact']=pp.contact.str.replace('-', ' ')
 print(f"size pp: {len(pp)}, info sur pp with orcid: {len(pp.loc[pp.orcid_id.isnull()])}")
 
 
