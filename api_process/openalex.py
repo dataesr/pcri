@@ -68,18 +68,3 @@ def harvest_openalex(df, iso2):
                 pickle.dump(rlist, f)
     print(time.strftime("%H:%M:%S"))
     return rlist
-
-def persons_files_import(thema, PATH_PERSONS):
-    import re, os
-    fname=''.join([filename for filename in os.listdir(PATH_PERSONS) if thema in filename])
-    print(fname)
-
-    if fname:
-        with open(f"{PATH_PERSONS}{fname}", 'rb') as f:
-            return pickle.load(f)
-
-    if fname == []:
-        fmax=max(int(os.path.splitext(filename)[0].split('_')[-1]) for filename in os.listdir(PATH_PERSONS) if re.search(r"persons_authors_[0-9]+",filename))
-        if fmax:
-            with open(f"{PATH_PERSONS}persons_authors_{fmax}.pkl", 'rb') as f:
-                return pickle.load(f)

@@ -55,7 +55,7 @@ def openalex_orcid(author):
 def persons_affiliation(df, nb, path):
     # from config_path import PATH_API
     import time, pickle, requests
-    from step7_persons.affiliations import openalex_name, openalex_orcid
+    from step7_persons.affiliations_old import openalex_name, openalex_orcid
 
     print(time.strftime("%H:%M:%S"))
     rlist=[]
