@@ -56,10 +56,10 @@ def harvest_openalex(df, iso2):
         if n % 100 == 0: 
             print(f"{n}", end=',')
         if iso2 == True:
-            res = get_author_from_openalex(row['orcid_id'], row['contact'], row['iso2'])
+            res = get_author_from_openalex(row['orcid_id'], row['contact2'], row['iso2'])
             rlist.extend(res)
         else:
-            res = get_author_from_openalex(row['orcid_id'], row['contact'], '')
+            res = get_author_from_openalex(row['orcid_id'], row['contact2'], '')
             rlist.extend(res)
 
         if n % 2000 == 0:
