@@ -19,22 +19,16 @@ def affiliations(df, PATH_PERSONS, CSV_DATE):
     import pandas as pd, pickle
     from api_process.openalex import harvest_openalex
     
-    #PREPRATION data for request openalex
-    lvar=['contact2','orcid_id','country_code', 'iso2','destination_code','thema_code','nationality_country_code']
-    mask=((df.country_code=='FRA')|(df.nationality_country_code=='FRA')|(df.destination_code.isin(['COG', 'PF', 'STG', 'ADG', 'POC','SyG', 'PERA', 'SJI'])))&~((df.contact2.isnull())&(df.orcid_id.isnull()))
-    pp=pp.loc[mask, lvar].sort_values(['country_code','orcid_id'], ascending=False).drop_duplicates()
-    print(f"size pp: {len(pp)}, info sur pp with orcid: {len(pp.loc[pp.orcid_id.isnull()])}")
-
     ### search persons into openalex
     #masia odile
-    oth=pp.loc[~pp.thema_code.isin(['ERC', 'MSCA']), ['contact2', 'orcid_id', 'iso2']].drop_duplicates().reset_index(drop=True)
+    oth=df.loc[~df.thema_code.isin(['ERC', 'MSCA']), ['contact2', 'orcid_id', 'iso2']].drop_duplicates().reset_index(drop=True)
     print(f"size tmp1: {len(oth)}")
     # tmp1=tmp1[:2]
     other=harvest_openalex(oth, iso2=True)
     with open(f'{PATH_PERSONS}persons_authors_other_{CSV_DATE}.pkl', 'wb') as f:
         pickle.dump(other, f)
 
-    em=pp.loc[pp.thema_code.isin(['ERC', 'MSCA']), ['contact2', 'orcid_id']].drop_duplicates().reset_index(drop=True)
+    em=df.loc[df.thema_code.isin(['ERC', 'MSCA']), ['contact2', 'orcid_id']].drop_duplicates().reset_index(drop=True)
     print(f"size erc_msca: {len(em)}")
     # erc_msca=erc_msca[:2]
     erc_msca=harvest_openalex(em, iso2=False)
