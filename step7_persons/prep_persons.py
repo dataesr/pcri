@@ -266,12 +266,24 @@ def persons_preparation(csv_date):
     perso_app = mail_clean(perso_app)
     perso_part = mail_clean(perso_part)
     ##############
+
+    def nationality_clean(df):
+        filter_df=df.loc[(df.nationality_country_code.isnull()), ['generalPic', 'contact']].drop_duplicates().assign(fill_nat=True)
+        df=df.merge(filter_df, how='left', on=['generalPic', 'contact'])
+        df['rows_by_picContact']=df.groupby(['generalPic', 'contact'], dropna=False)['nationality_country_code'].transform('nunique')
+        df.loc[(df.fill_nat==True)&(df.rows_by_picContact==1), 'nationality_country_code']=df.loc[(df.fill_nat==True)&(df.rows_by_picContact==1)].sort_values(['generalPic', 'contact', 'nationality_country_code']).groupby(['generalPic', 'contact'], group_keys=True)['nationality_country_code'].ffill()
+        df.drop(columns='rows_by_picContact', inplace=True)
+        return df
+    
+    perso_part = nationality_clean(perso_part)
+    #################
+
     # add orcid_id (perso_app) into perso_part
     print(f"\n### INFO missing between datasets")
     perso_part=perso_part.merge(perso_app[['project_id', 'contact', 'orcid_id']], how='left', on=['project_id', 'contact']) 
     perso_app=perso_app.merge(perso_part[['project_id', 'contact', 'nationality_country_code']], how='left', on=['project_id', 'contact'])
-
     ##################
+    
     # fill missing value with other df part/app
     print(f"\n### GENDER/TITLE missing")
     def gender_title_missing(part, app):
