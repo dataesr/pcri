@@ -218,7 +218,7 @@ def persons_preparation(csv_date):
             print(f"ATTENTION table vide après lien avec participation")
         else:
             print(f"size app lien avec participation clean : {len(df)}\ncolumns:{df.columns}")
-        return df
+        return df.drop(columns=['_merge'])
 
     perso_part = perso_participation(perso_part, participation, project, entities, 'successful')
     perso_app = perso_participation(perso_app, participation, project, entities, 'evaluated')
@@ -279,12 +279,12 @@ def persons_preparation(csv_date):
     #################
 
     def orcid_id_fill(df):
+        print(df.columns)
         temp=df.groupby(['generalPic', 'contact', 'domaine_email'], dropna=False)['orcid_id'].nunique(dropna=False).reset_index()
         temp=temp[temp.orcid_id>1].drop(columns='orcid_id')
         df=df.merge(temp, how='left', on=['generalPic', 'contact', 'domaine_email'], indicator=True)
-        df.loc[df._merge=='both', 'orcid_id'] = df.loc[df._merge=='both'].sort_values(['generalPic', 'contact2', 'domaine_email', 'orcid_id']).groupby(['generalPic', 'contact2', 'domaine_email'],  group_keys=True)['orcid_id'].ffill()
-        df.drop(columns='_merge', inplcae=True)
-        return df
+        df.loc[df._merge=='both', 'orcid_id'] = df.loc[df._merge=='both'].sort_values(['generalPic', 'contact', 'domaine_email', 'orcid_id']).groupby(['generalPic', 'contact', 'domaine_email'], group_keys=True)['orcid_id'].ffill()
+        return df.drop(columns='_merge')
     
     perso_app = orcid_id_fill(perso_app)
     #################
