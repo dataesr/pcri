@@ -278,6 +278,17 @@ def persons_preparation(csv_date):
     perso_part = nationality_clean(perso_part)
     #################
 
+    def orcid_id_fill(df):
+        temp=df.groupby(['generalPic', 'contact', 'domaine_email'], dropna=False)['orcid_id'].nunique(dropna=False).reset_index()
+        temp=temp[temp.orcid_id>1].drop(columns='orcid_id')
+        df=df.merge(temp, how='left', on=['generalPic', 'contact', 'domaine_email'], indicator=True)
+        df.loc[df._merge=='both', 'orcid_id'] = df.loc[df._merge=='both'].sort_values(['generalPic', 'contact2', 'domaine_email', 'orcid_id']).groupby(['generalPic', 'contact2', 'domaine_email'],  group_keys=True)['orcid_id'].ffill()
+        df.drop(columns='_merge', inplcae=True)
+        return df
+    
+    perso_app = orcid_id_fill(perso_app)
+    #################
+
     # add orcid_id (perso_app) into perso_part
     print(f"\n### INFO missing between datasets")
     perso_part=perso_part.merge(perso_app[['project_id', 'contact', 'orcid_id']], how='left', on=['project_id', 'contact']) 
