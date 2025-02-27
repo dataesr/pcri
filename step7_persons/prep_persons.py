@@ -226,9 +226,10 @@ def persons_preparation(csv_date):
     def iso2_add(df):
         df = (df.merge(my_countries[['iso2', 'iso3']].drop_duplicates(), how='left', left_on='country_code', right_on='iso3')
                 .drop(columns='iso3')
+                .rename(columns={'iso2':'country_code2'})
         )
-        if any(df.iso2.isnull()):
-            print(f"country iso2 missing for iso3 -> {df[df.iso2.isnull()].country_code.unique()}")
+        if any(df.country_code2.isnull()):
+            print(f"country country_code2 missing for iso3 -> {df[df.country_code2.isnull()].country_code.unique()}")
         return df
     perso_part = iso2_add(perso_part)
     perso_app = iso2_add(perso_app)
@@ -324,7 +325,7 @@ def persons_preparation(csv_date):
     print(f"\n### EXPORT final datasets")
     (perso_part[['project_id', 'generalPic', 'role', 'first_name', 'last_name',
         'title_clean', 'gender', 'email', 'tel_clean', 'domaine_email', 'orcid_id', 'birth_country_code',
-        'nationality_country_code', 'host_country_code', 'sending_country_code', 'iso2',
+        'nationality_country_code', 'host_country_code', 'sending_country_code', 'country_code2',
         'stage', 'contact', 'country_code', 'shift', 'call_year', 'thema_code', 'destination_code',
         'entities_id', 'entities_name','id_secondaire', 'country_code_mapping']]
         .drop_duplicates()
@@ -332,7 +333,7 @@ def persons_preparation(csv_date):
 
     (perso_app[['project_id', 'generalPic', 'role', 'first_name', 'last_name', 'nationality_country_code',
         'title_clean', 'gender', 'tel_clean', 'email', 'domaine_email', 'researcher_id', 'orcid_id',
-        'google_scholar_id', 'scopus_author_id', 'stage', 'iso2',
+        'google_scholar_id', 'scopus_author_id', 'stage', 'country_code2',
         'contact', 'country_code', 'shift', 'call_year', 'thema_code', 'destination_code',
         'entities_id', 'entities_name','id_secondaire', 'country_code_mapping']]
         .drop_duplicates()
