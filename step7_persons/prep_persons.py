@@ -56,16 +56,6 @@ def persons_preparation(csv_date):
 
     ###############################
     print(f"\n### STRING cleaning")
-    # def prop_string(tab):
-    #     from unidecode import unidecode
-    #     cols = ['role', 'first_name', 'last_name','title_clean', 'gender']
-    #     tab[cols] = tab[cols].map(lambda s:s.casefold() if type(s) == str else s)
-                
-    #     for i in cols:
-    #         tab.loc[~tab[i].isnull(), i] = tab.loc[~tab[i].isnull(), i].str.replace(r"[^\w\s]+", " ", regex=True)
-    #         tab.loc[~tab[i].isnull(), i] = tab.loc[~tab[i].isnull(), i].apply(unidecode)
-    #     return tab
-
     cols = ['role', 'first_name', 'last_name','title_clean', 'gender']
     perso_part = prop_string(perso_part, cols)
     perso_app = prop_string(perso_app, cols)
@@ -140,9 +130,6 @@ def persons_preparation(csv_date):
     ##############################
     print(f"\n### NAME duplicated remove")
     def name_duplicated_remove(df):
-        #### cleaning name duplicated by project 
-        ## if by project single name but several rows
-        # x[x.project_id=='101039481']
 
         print(df.role.unique())
         keep_order=['principal investigator', 'fellow', 'main_contact']
@@ -204,7 +191,7 @@ def persons_preparation(csv_date):
         
         df=df.loc[df.project_id.isin(participation[participation.stage==stage].project_id.unique())]
         df=df.merge(participation.loc[participation.stage==stage, ['project_id', 'generalPic', 'country_code']], how='outer', on=['project_id', 'generalPic'], indicator=True).query('_merge!="right_only"')
-        df.loc[df._merge=='left_only', 'shift'] = 'past'
+        df.loc[df._merge=='left_only', 'institution_shift'] = 'past'
 
         if stage=='successful':
             df.loc[(df._merge=='both')&(df.host_country_code.isnull()), 'host_country_code'] = df.loc[(df._merge=='both')&(df.host_country_code.isnull()), 'country_code']
@@ -224,7 +211,8 @@ def persons_preparation(csv_date):
         if len(temp)==0:
             print(f"ATTENTION table vide après lien avec participation")
         else:
-            print(f"size app lien avec participation clean : {len(temp)}\ncolumns:{temp.columns}")
+            temp=temp.loc[~temp.country_code.isnull()]
+            print(f"size temp final without country_code null: {len(temp)}\ncolumns:{temp.columns}")
         return temp.drop(columns=['_merge'])
 
     perso_part = perso_participation(perso_part, participation, project, entities, 'successful')
@@ -333,7 +321,7 @@ def persons_preparation(csv_date):
     (perso_part[['project_id', 'generalPic', 'role', 'first_name', 'last_name',
         'title_clean', 'gender', 'email', 'tel_clean', 'domaine_email', 'orcid_id', 'birth_country_code',
         'nationality_country_code', 'host_country_code', 'sending_country_code', 'country_code2',
-        'stage', 'contact', 'country_code', 'shift', 'call_year', 'thema_code', 'destination_code',
+        'stage', 'contact', 'country_code', 'institution_shift', 'call_year', 'thema_code', 'destination_code',
         'entities_id', 'entities_name','id_secondaire', 'country_code_mapping']]
         .drop_duplicates()
         .to_pickle(f"{PATH_CLEAN}persons_participants.pkl"))
@@ -341,7 +329,7 @@ def persons_preparation(csv_date):
     (perso_app[['project_id', 'generalPic', 'role', 'first_name', 'last_name', 'nationality_country_code',
         'title_clean', 'gender', 'tel_clean', 'email', 'domaine_email', 'researcher_id', 'orcid_id',
         'google_scholar_id', 'scopus_author_id', 'stage', 'country_code2',
-        'contact', 'country_code', 'shift', 'call_year', 'thema_code', 'destination_code',
+        'contact', 'country_code', 'institution_shift', 'call_year', 'thema_code', 'destination_code',
         'entities_id', 'entities_name','id_secondaire', 'country_code_mapping']]
         .drop_duplicates()
         .to_pickle(f"{PATH_CLEAN}persons_applicants.pkl"))
