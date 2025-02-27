@@ -210,15 +210,22 @@ def persons_preparation(csv_date):
             df.loc[(df._merge=='both')&(df.host_country_code.isnull()), 'host_country_code'] = df.loc[(df._merge=='both')&(df.host_country_code.isnull()), 'country_code']
 
         df=df.merge(project.loc[project.stage==stage, ['project_id', 'call_year', 'thema_code', 'destination_code']], how='inner', on=['project_id'])
+        print(f"- size df after merge participation+project: {len(df)}")
 
         x=entities[['entities_id', 'entities_name', 'generalPic', 'id_secondaire', 'country_code', 'country_code_mapping']].drop_duplicates()
-        df=df.merge(x, how='left', on=['generalPic', 'country_code'])
+        temp=df[~df.country_code.isnull()].merge(x, how='left', on=['generalPic', 'country_code'])
+        if any(df.country_code.isnull()):
+            temp2=df[df.country_code.isnull()].drop(columns='country_code').merge(x, how='left', on='generalPic')
+            temp=pd.concat([temp, temp2], ignore_index=True)
+            print(f"- size temp after merge entities with country_na: {len(temp)}")
+        else:
+            print(f"- size temp after merge entities: {len(temp)}")
 
-        if len(df)==0:
+        if len(temp)==0:
             print(f"ATTENTION table vide après lien avec participation")
         else:
-            print(f"size app lien avec participation clean : {len(df)}\ncolumns:{df.columns}")
-        return df.drop(columns=['_merge'])
+            print(f"size app lien avec participation clean : {len(temp)}\ncolumns:{temp.columns}")
+        return temp.drop(columns=['_merge'])
 
     perso_part = perso_participation(perso_part, participation, project, entities, 'successful')
     perso_app = perso_participation(perso_app, participation, project, entities, 'evaluated')
