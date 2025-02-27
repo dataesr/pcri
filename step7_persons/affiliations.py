@@ -45,7 +45,7 @@ def persons_api_simplify(df):
             for aff in p["affiliations"]:  
                 res={"institution_name":aff.get('institution').get("display_name"),
                 "institution_ror":aff.get('institution').get("ror"),
-                "institution_country":aff.get('institution').get("country_code"),
+                "institution_country2":aff.get('institution').get("country_code"),
                 "years":aff.get("years")}
                 p['institutions'].append(res)
     
@@ -83,11 +83,13 @@ def persons_results_clean(df):
     df['institution_ror'] = 'R'+ df['institution_ror'].astype(str)
 
     df['years']=df['years'].map(lambda liste: ';'.join(str(x) for x in liste))
-    df=df[['display_name', 'orcid_openalex', 'years', 'institution_ror', 'institution_name', 'institution_country', 'rows_by_name_orcid']]
+    df=df[['display_name', 'orcid_openalex', 'years', 'institution_ror', 'institution_name', 'institution_country2', 'rows_by_name_orcid']]
     my_countries=my_country_code()
     df=(df.merge(my_countries[['iso2', 'iso3', 'parent_iso3']].drop_duplicates(), 
-                 how='left', left_on='institution_country', right_on='iso2')
+                 how='left', left_on='institution_country2', right_on='iso2')
         .drop(columns=['iso2'])
+        .rename(columns={'iso3':'institution_country_map',
+                         'parent_iso3':'institution_country'})
         )
 
     from step8_referentiels.paysage import paysage_prep
