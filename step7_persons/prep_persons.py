@@ -279,11 +279,12 @@ def persons_preparation(csv_date):
     #################
 
     def orcid_id_fill(df):
-        print(df.columns)
-        temp=df.groupby(['generalPic', 'contact', 'domaine_email'], dropna=False)['orcid_id'].nunique(dropna=False).reset_index()
+        print("### orcid fillna")
+        temp=df.groupby(['generalPic', 'contact'], dropna=False)['orcid_id'].nunique(dropna=False).reset_index()
+        print(temp[temp.orcid_id>2])
         temp=temp[temp.orcid_id>1].drop(columns='orcid_id')
-        df=df.merge(temp, how='left', on=['generalPic', 'contact', 'domaine_email'], indicator=True)
-        df.loc[df._merge=='both', 'orcid_id'] = df.loc[df._merge=='both'].sort_values(['generalPic', 'contact', 'domaine_email', 'orcid_id']).groupby(['generalPic', 'contact', 'domaine_email'], group_keys=True)['orcid_id'].ffill()
+        df=df.merge(temp, how='left', on=['generalPic', 'contact'], indicator=True)
+        df.loc[df._merge=='both', 'orcid_id'] = df.loc[df._merge=='both'].sort_values(['generalPic', 'contact', 'orcid_id']).groupby(['generalPic', 'contact'], group_keys=True)['orcid_id'].ffill()
         return df.drop(columns='_merge')
     
     perso_app = orcid_id_fill(perso_app)
