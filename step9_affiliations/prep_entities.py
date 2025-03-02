@@ -17,6 +17,7 @@ def entities_preparation():
 
     countries = pd.read_pickle(f"{PATH_CLEAN}country_current.pkl")
     lien = pd.read_pickle(f"{PATH_CLEAN}lien.pkl")
+    persons = pd.read_pickle(f"{PATH_CLEAN}persons_current.pkl")
 
     pp_app = unzip_zip(ZIPNAME, f"{PATH_SOURCE}{FRAMEWORK}/", 'proposals_applicants_departments.json', 'utf8')
     pp_app = pd.DataFrame(pp_app)
@@ -575,5 +576,16 @@ def entities_preparation():
     entities_all.loc[entities_all.country_code=='FRA', 'city'] = entities_all.city.str.replace(r"\bst\b", 'saint', regex=True).str.strip()
     entities_all.loc[entities_all.country_code=='FRA', 'city'] = entities_all.city.str.replace(r"\bste\b", 'sainte', regex=True).str.strip()
     entities_all.loc[entities_all.country_code=='FRA', 'city_tag'] = entities_all.loc[entities_all.country_code=='FRA', 'city'].str.strip().str.replace(r"\s+", '-', regex=True)
+
+    #######
+    print("### add personns")
+
+
+# créer le prog pourla prochaine fois
+
+    ###################
+
+
+
 
     entities_all.to_pickle(f'{PATH}participants/data_for_matching/entities_all.pkl')

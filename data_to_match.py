@@ -28,8 +28,10 @@ def data_import():
     print(f"size ref_all init: {len(ref_all)}")
     entities_all = pd.read_pickle(f'{PATH}participants/data_for_matching/entities_all.pkl')
     print(f"size entities_all init: {len(entities_all)}")
+    persons = pd.read_pickle(f"{PATH_CLEAN}persons_current.pkl")
+    print(f"size persons: {len(persons)}")
     return perso, ref_all, entities_all
-perso, ref_all, entities_all = data_import()
+perso, ref_all, entities_all, persons = data_import()
 
 perso = perso[['project_id', 'generalPic', 'pic', 'role', 'first_name', 'last_name',
        'title', 'gender','researcher_id', 'orcid_id',
