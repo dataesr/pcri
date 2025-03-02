@@ -49,17 +49,7 @@ result=result[~result.astype(str).duplicated()]
 
 ## provisoire
 result=pd.read_pickle(f"{PATH_PERSONS}persons_{CSV_DATE}.pkl")
-
-# lvar=['project_id', 'generalPic', 'role', 'contact',
-#        'title_clean', 'gender', 'email', 'tel_clean', 'domaine_email',
-#        'orcid_id', 'birth_country_code', 'nationality_country_code',
-#        'host_country_code', 'sending_country_code', 'iso2', 'stage', 'contact2',
-#        'country_code', 'shift', 'call_year', 'thema_code', 'destination_code',
-#        'entities_id', 'entities_name', 'id_secondaire', 'country_code_mapping']
-
-# mask=((pp.country_code=='FRA')|(pp.nationality_country_code=='FRA')|(pp.destination_code.isin(['COG', 'PF', 'STG', 'ADG', 'POC','SyG', 'PERA', 'SJI'])))&(~(pp.contact.isnull()&pp.orcid_id.isnull()))
-# df=pp.loc[mask, lvar].sort_values(['country_code','orcid_id'], ascending=False).drop_duplicates()
-
+######################################################################
 
 # merge match orcid
 df=pp.merge(result[result.match=='orcid'], how='left', left_on=['orcid_id'], right_on=['orcid_openalex'], indicator=True)
@@ -152,5 +142,28 @@ pers_result_merged=(pd.concat([df_orcid, df1], ignore_index=True)[
                      'num_nat_struct']]
                     .drop_duplicates())
 print(f"size pers_result_merged : {len(pers_result_merged)}")
+# pd.to_pickle(pers_result_merged, f"{PATH_CLEAN}persons_{CSV_DATE}.pkl")
 
-pd.to_pickle(pers_result_merged, f"{PATH_CLEAN}persons_current.pkl")
+
+temp=(pers_result_merged.groupby(['stage', 'project_id', 'generalPic', 'contact', 'contact2'], as_index=False)[['orcid_clean', 'num_nat_struct']]
+     .agg(lambda x: ';'.join( x.dropna().unique()))
+     .drop_duplicates())
+
+
+pp=pp.merge(temp, how='outer', on=['stage', 'project_id', 'generalPic', 'contact', 'contact2'], indicator=True)
+
+pp1=pp[pp._merge=='both']
+print(len(pp1))
+pp2=(pp[pp._merge!='both'].drop(columns=['orcid_clean', 'num_nat_struct', '_merge'])
+    .merge(temp[['project_id', 'contact', 'contact2', 'orcid_clean']].drop_duplicates(), how='outer', on=['project_id', 'contact', 'contact2'], indicator=True)
+    .query('_merge=="both"'))
+pp1=pd.concat([pp1,pp2], ignore_index=True)
+
+res=(pp.drop(columns="_merge").merge(pp1[['stage', 'project_id', 'generalPic', 'contact', 'contact2']]
+    .drop_duplicates(), how='outer', 
+    on=['stage', 'project_id', 'generalPic', 'contact', 'contact2'], indicator=True)
+    .query('_merge=="left_only"'))
+res=pd.concat([res, pp1], ignore_index=True)
+print(len(res))
+
+pd.to_pickle(res, f"{PATH_CLEAN}persons_current.pkl")
