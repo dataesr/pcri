@@ -9,7 +9,7 @@ from step7_persons.affiliations import affiliations, persons_files_import, perso
 CSV_DATE='20250121'
 
 #######
-persons_preparation(CSV_DATE)
+# persons_preparation(CSV_DATE)
 #######
 
 PATH_PERSONS=f"{PATH_API}persons/"
@@ -64,91 +64,93 @@ result=pd.read_pickle(f"{PATH_PERSONS}persons_{CSV_DATE}.pkl")
 # merge match orcid
 df=pp.merge(result[result.match=='orcid'], how='left', left_on=['orcid_id'], right_on=['orcid_openalex'], indicator=True)
 df_orcid=df[df._merge=='both']
-print(len(df_orcid))
+print(f" size match orcid: {len(df_orcid)}, size match orcid with entities equals: {len(df_orcid[(df_orcid.entities_id==df_orcid.numero_paysage)|(df_orcid.entities_id==df_orcid.numero_ror)])}")
 
-def test(df):
+def flter_year(df):
      df.replace(to_replace=[None, 'None'], value=np.nan, inplace=True)
      df['filt_year']=df.apply(lambda x: x['call_year'] in x['years'], axis=1)
      df.drop_duplicates(inplace=True)
      df=df.loc[(df.filt_year==True)].drop(columns='years').drop_duplicates()
      print(len(df))
      return df
-df_orcid=test(df_orcid)
+df_orcid=flter_year(df_orcid)
+print(f"size df_orcid same year: {len(df_orcid)}")
+
+# find new id for pic id
+df_picid=df_orcid.loc[(df_orcid.country_code==df_orcid.institution_country)&(df_orcid.entities_id.str.startswith('pic', na=False)), 
+        ['generalPic', 'entities_name','id_secondaire', 'institution_ror', 'institution_name',
+        'institution_country','numero_ror', 'numero_paysage', 'num_nat_struct']].drop_duplicates()
 
 # data with nns
-df_nns=(df_orcid.loc[(~df_orcid.num_nat_struct.isnull())&(df_orcid.id_secondaire.isnull()), 
-     ['project_id','generalPic', 'contact2', 'orcid_id', 'num_nat_struct']]
-     .drop_duplicates())
+df_nns=df_orcid.loc[(~df_orcid.num_nat_struct.isnull())&(df_orcid.id_secondaire.isnull())].drop_duplicates()
+print(f"size df_nns_orcid: {len(df_nns)}")
 
+# liste complète orcid_id match
+df_orcid=(pd.concat(
+     [df_orcid.loc[(df_orcid.entities_id==df_orcid.numero_paysage)|(df_orcid.entities_id==df_orcid.numero_ror)], 
+      df_nns], ignore_index=True)
+      .drop_duplicates())
+df_orcid=df_orcid.assign(orcid_clean=df_orcid.orcid_id, common=True)
+print(f"size df_orcid: {len(df_orcid)}")
+
+#####################################################
 # full_name
 df=(df.loc[df._merge!='both'].drop(columns=result.columns).drop_duplicates()
-    .merge(result[result.match=='full_name'], 
+          .merge(result[result.match=='full_name'], 
            how='inner', 
            left_on=['contact2', 'country_code'], 
-           right_on=['display_name','institution_country']))
-df_name=test(df)
+           right_on=['display_name','institution_country'])
+           .drop(columns='_merge'))
+print(f"size df name: {len(df)}, size match name with entities equals: {len(df[(df.entities_id==df.numero_paysage)|(df.entities_id==df.numero_ror)])}")
+
+df_name=flter_year(df)
+print(f"size df name same year: {len(df_name)}")
 
 # select rows with entities equal
 df1=(df_name.loc[(df_name.entities_id==df_name.numero_paysage)|(df_name.entities_id==df_name.numero_ror),
      ['generalPic', 'contact2', 'orcid_openalex', 'orcid_id']]
      .drop_duplicates())
 
+# selectrows with nns conditions pic+contact with good entities match 
 df2=df_name.merge(df1, how='inner', on=['generalPic', 'contact2', 'orcid_openalex', 'orcid_id'])
-df2=(df2.loc[~df2.num_nat_struct.isnull(),
-      ['project_id','generalPic', 'contact2', 'orcid_id', 'orcid_openalex', 'num_nat_struct']]
-     .drop_duplicates())
+df2=df2.loc[~df2.num_nat_struct.isnull()]
 
+df1=pd.concat([df_name.loc[(df_name.entities_id==df_name.numero_paysage)|(df_name.entities_id==df_name.numero_ror)], df2], ignore_index=True).drop_duplicates()
 
+def orcid_clean(df):
+     df['orcid_na']=np.where(df.orcid_id.isnull(), True, False)
+     df['common']=np.where(df.orcid_id==df.orcid_openalex, True, False)
+     df.loc[df.common==True, 'orcid_clean']=df.loc[df.common==True, 'orcid_id']
+     df['orcid_id_nb']=df.groupby(['generalPic', 'contact2'], dropna=False)['orcid_id'].transform('nunique')
+     df['orcid_openalex_nb']=df.groupby(['generalPic', 'contact2'], dropna=False)['orcid_openalex'].transform('nunique')
 
+     df.loc[(df.common==False)&(df.orcid_openalex_nb==1), 'orcid_clean']=df.loc[(df.common==False)&(df.orcid_openalex_nb==1), 'orcid_openalex']
+     df['orcid_clean'] = df.sort_values(['generalPic', 'contact2', 'orcid_clean']).groupby(['generalPic', 'contact2'], group_keys=True)['orcid_clean'].ffill()
+     df.loc[(df.orcid_openalex_nb==0)&(df.orcid_id_nb==1), 'orcid_clean']=df.loc[(df.orcid_openalex_nb==0)&(df.orcid_id_nb==1), 'orcid_id']
+     df['orcid_clean'] = df.sort_values(['generalPic', 'contact2', 'orcid_clean']).groupby(['generalPic', 'contact2'], group_keys=True)['orcid_clean'].ffill()
+     df.loc[(df.orcid_openalex_nb>1)&(df.orcid_id_nb==1)&(df.common==False), 'orcid_clean']=df.loc[(df.orcid_openalex_nb>1)&(df.orcid_id_nb==1)&(df.common==False), 'orcid_id']
+     df['orcid_clean'] = df.sort_values(['generalPic', 'contact2', 'orcid_clean']).groupby(['generalPic', 'contact2'], group_keys=True)['orcid_clean'].ffill()
+      
+     temp=df.loc[~df.orcid_clean.isnull(), ['generalPic', 'contact2', 'orcid_clean']].drop_duplicates().rename(columns={'contact2':'contact3', 'orcid_clean':'orcid_clean3'})
+     temp1=df.loc[df.orcid_clean.isnull()].merge(temp, how='inner', on=['generalPic'])[['generalPic', 'contact2', 'contact3', 'orcid_clean3']]
+     temp1['filt_name']=temp1.apply(lambda x: True if (x['contact2'] in x['contact3'])|(x['contact3'] in x['contact2']) else False, axis=1)
+     temp1=temp1.loc[temp1.filt_name==True, ['generalPic', 'contact2', 'orcid_clean3']].drop_duplicates()
+     df=df.merge(temp1, how='left', on=['generalPic', 'contact2'])
+     df.loc[df.orcid_clean.isnull(), 'orcid_clean'] = df.loc[df.orcid_clean.isnull(), 'orcid_clean3']
+     df.loc[~df.orcid_clean3.isnull(), 'orcid_merged_fuzzy_name']=True
+     
+     return df.drop(columns=['orcid_clean3'])
 
+df1=orcid_clean(df1)
+print(f"size df name : {len(df1)}")
 
-# traitement orcid pas facile
-df['orcid_na']=np.where(df.orcid_id.isnull(), True, False)
-df['common']=np.where(df.orcid_id==df.orcid_openalex, True, False)
-df.loc[df.common==True, 'orcid_clean']=df.loc[df.common==True, 'orcid_id']
-df.loc[((df.entities_id==df.numero_paysage)|(df.entities_id==df.numero_ror))]
+pers_result_merged=(pd.concat([df_orcid, df1], ignore_index=True)[
+                    ['stage','project_id', 'generalPic', 'role','title_clean', 'gender', 'email', 'tel_clean', 
+                    'domaine_email','birth_country_code', 'nationality_country_code','sending_country_code',
+                    'contact', 'country_code', 'institution_shift','entities_id', 
+                    'country_code_mapping','contact2', 'match','orcid_clean', 'common','orcid_merged_fuzzy_name',
+                     'num_nat_struct']]
+                    .drop_duplicates())
+print(f"size pers_result_merged : {len(pers_result_merged)}")
 
-
-df.loc[(df.orcid_na==False)&(df.orcid_openalex.isnull()), 'orcid_clean']=df.loc[(df.orcid_na==False)&(df.orcid_openalex.isnull()), 'orcid_id']
-df['orcid_clean'] = df.sort_values(['generalPic', 'contact', 'orcid_clean']).groupby(['generalPic', 'contact'], group_keys=True)['orcid_clean'].ffill()
-
-df.loc[(df.entities_id==df.numero_paysage)|(df.entities_id==df.numero_ror)]
-
-
-
-df['orcid_id_nb']=df.groupby(['generalPic', 'contact'], dropna=False)['orcid_id'].transform('nunique')
-# df=df.merge(x, how='left', on=['generalPic', 'contact'])
-df['orcid_openalex_nb']=df.groupby(['generalPic', 'contact'], dropna=False)['orcid_openalex'].transform('nunique')
-# df=df.merge(x, how='left', on=['generalPic', 'contact'])
-
-
-#same entities
-df1=df.loc[(df.entities_id==df.numero_paysage)|(df.entities_id==df.numero_ror)]
-
-
-temp=df.groupby(['generalPic', 'contact'], dropna=False)['orcid_openalex'].nunique(dropna=False).reset_index()
-temp=temp[temp.orcid_openalex>1].drop(columns='orcid_openalex')
-df=df.merge(temp, how='left', on=['generalPic', 'contact'], indicator=True)
-df.loc[df._merge=='both', 'orcid_openalex'] = df.loc[df._merge=='both'].sort_values(['generalPic', 'contact', 'orcid_openalex']).groupby(['generalPic', 'contact'], group_keys=True)['orcid_openalex'].ffill()
-df.drop(columns='_merge', inplace=True)
-
-df=df.assign(orcid_clean=np.where(df.orcid_openalex.isnull(), df.orcid_id, df.orcid_openalex))
-
-
-#same entities
-df1=df.loc[(df.entities_id==df.numero_paysage)]
-df1=(df1.assign(orcid_clean=np.where(df1.orcid_openalex.isnull(), df1.orcid_id, df1.orcid_openalex))
-     .drop(columns=['orcid_id', 'rows_by_name_orcid', 'orcid_openalex'])
-     .drop_duplicates()
-     [['project_id', 'generalPic', 'contact', 'domaine_email', 'entities_id', 'orcid_clean']])
-
-# not same entities
-df2=df.loc[(df.entities_id==df.numero_ror)]
-
-
-
-
-#extract entities_id begun by PIC
-work_csv(df.loc[df.entities_id.str.startswith('pic', na=False), 
-        ['generalPic', 'entities_name','id_secondaire', 'institution_ror', 'institution_name',
-        'institution_country','numero_ror', 'numero_paysage', 'num_nat_struct']].drop_duplicates(), 'verif_id_struct_from openalex')
+pd.to_pickle(pers_result_merged, f"{PATH_CLEAN}persons_current.pkl")
