@@ -2,7 +2,7 @@ import pandas as pd, pickle
 pd.options.mode.copy_on_write = True
 from IPython.display import HTML
 
-from api_requests.matcher import matcher
+# from api_requests.matcher import matcher
 from step8_referentiels.referentiels import ref_externe_preparation
 from step9_affiliations.prep_entities import entities_preparation
 
@@ -21,25 +21,22 @@ from step9_affiliations.organismes_cleaning import organismes_back
 # struct_et = pd.read_pickle(f'{PATH}participants/data_for_matching/struct_et.pkl')
 
 def data_import():
-    from config_path import PATH,  PATH_CLEAN
-    perso = pd.read_pickle(f"{PATH_CLEAN}perso_app.pkl")
-    print(f"size perso init: {len(perso)}")
+    from config_path import PATH_MATCH,  PATH_CLEAN
+    # perso = pd.read_pickle(f"{PATH_CLEAN}perso_app.pkl")
+    # print(f"size perso init: {len(perso)}")
     ref_all = pd.read_pickle("C:/Users/zfriant/OneDrive/Matching/Echanges/HORIZON/data_py/ref_all.pkl")
     print(f"size ref_all init: {len(ref_all)}")
-    entities_all = pd.read_pickle(f'{PATH}participants/data_for_matching/entities_all.pkl')
+    entities_all = pd.read_pickle(f'{PATH_MATCH}entities_all.pkl')
     print(f"size entities_all init: {len(entities_all)}")
-    persons = pd.read_pickle(f"{PATH_CLEAN}persons_current.pkl")
-    print(f"size persons: {len(persons)}")
-    return perso, ref_all, entities_all
-perso, ref_all, entities_all, persons = data_import()
+    perso = pd.read_pickle(f"{PATH_CLEAN}persons_current.pkl")
+    print(f"size persons: {len(perso)}")
+    return ref_all, entities_all, perso
+ref_all, entities_all, perso = data_import()
 
-perso = perso[['project_id', 'generalPic', 'pic', 'role', 'first_name', 'last_name',
-       'title', 'gender','researcher_id', 'orcid_id',
-       'google_scholar_id', 'scopus_author_id', 'stage', 'nb', 'country_code',
-       'call_year', 'thema_name_en', 'destination_name_en', 'tel_clean',
-       'domaine_email', 'contact']].drop_duplicates()
+perso = perso[['project_id', 'generalPic', 'stage', 'tel_clean',
+       'domaine_email', 'contact', 'num_nat_struct']].drop_duplicates()
 print(f"size perso for merging: {len(perso)}")
-
+perso.mask(perso == '', inplace=True)
 
 ### affil perso to struct -> search labo by openalex
 entities_tmp = (
