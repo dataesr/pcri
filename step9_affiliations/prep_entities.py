@@ -4,7 +4,7 @@ def entities_preparation():
     from IPython.display import HTML
     from functions_shared import stop_word, unzip_zip, prep_str_col, work_csv, adr_tag
     from constant_vars import ZIPNAME, FRAMEWORK
-    from config_path import PATH, PATH_SOURCE, PATH_CLEAN, PATH_ORG, PATH_WORK
+    from config_path import PATH_MATCH, PATH_SOURCE, PATH_CLEAN, PATH_ORG, PATH_WORK
     from api_process.matcher import matcher
 
     print(f"### IMPORT datasets")
@@ -522,7 +522,7 @@ def entities_preparation():
 
     print(len(keep))
 
-    keep.to_pickle(f'{PATH}participants/data_for_matching/structure_fr.pkl')
+    keep.to_pickle(f'{PATH_MATCH}structure_fr.pkl')
 
 
     ##############################
@@ -555,7 +555,7 @@ def entities_preparation():
     struct_et.loc[struct_et.match.str.len()>1, 'resultat'] = 'a controler'
     struct_et.mask(struct_et=='', inplace=True)
 
-    struct_et.to_pickle(f'{PATH}participants/data_for_matching/struct_et.pkl')
+    struct_et.to_pickle(f'{PATH_MATCH}struct_et.pkl')
 
     entities_all = pd.concat([keep,  struct_et], ignore_index=True, axis=0)
     print(f"size entities_all: {len(entities_all)}")
@@ -588,4 +588,4 @@ def entities_preparation():
 
 
 
-    entities_all.to_pickle(f'{PATH}participants/data_for_matching/entities_all.pkl')
+    entities_all.to_pickle(f'{PATH_MATCH}entities_all.pkl')
