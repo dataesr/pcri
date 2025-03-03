@@ -5,7 +5,7 @@ def ref_externe_preparation():
 
     # from IPython.display import HTML
     # from pathlib import Path
-    from config_path import PATH
+    from config_path import PATH, PATH_MATCH
 
     # from step7_referentiels.countries import ref_countries
     from functions_shared import work_csv, prep_str_col, stop_word, my_country_code
@@ -196,4 +196,4 @@ def ref_externe_preparation():
     ref_all['p_key'] = range(1, len(ref_all) + 1)
     ref_all.mask(ref_all=='', inplace=True)
 
-    ref_all.to_pickle('C:/Users/zfriant/OneDrive/Matching/Echanges/HORIZON/data_py/ref_all.pkl')
+    ref_all.to_pickle(f"{PATH_MATCH}ref_all.pkl")
