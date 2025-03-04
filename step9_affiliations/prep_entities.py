@@ -17,7 +17,7 @@ def entities_preparation():
 
     countries = pd.read_pickle(f"{PATH_CLEAN}country_current.pkl")
     lien = pd.read_pickle(f"{PATH_CLEAN}lien.pkl")
-    persons = pd.read_pickle(f"{PATH_CLEAN}persons_current.pkl")
+    perso = pd.read_pickle(f"{PATH_CLEAN}persons_current.pkl")
 
     pp_app = unzip_zip(ZIPNAME, f"{PATH_SOURCE}{FRAMEWORK}/", 'proposals_applicants_departments.json', 'utf8')
     pp_app = pd.DataFrame(pp_app)
@@ -557,9 +557,67 @@ def entities_preparation():
 
     struct_et.to_pickle(f'{PATH_MATCH}struct_et.pkl')
 
+
+    ############################################
+    print("### create entities_all")
+
     entities_all = pd.concat([keep,  struct_et], ignore_index=True, axis=0)
     print(f"size entities_all: {len(entities_all)}")
 
+
+    ########
+    print("## add PERSO")
+    perso = (perso[['project_id', 'generalPic', 'stage', 'tel_clean', 'email',
+       'domaine_email', 'contact', 'num_nat_struct']]
+       .drop_duplicates()
+       .mask(perso == ''))
+
+    print(f"size perso for merging: {len(perso)}")
+    var_perso=['tel_clean', 'domaine_email', 'contact', 'num_nat_struct', 'email']
+    perso=(perso.groupby(['project_id', 'generalPic', 'stage'], as_index=False)[var_perso]
+        .agg(lambda x: ';'.join( x.dropna().unique()))
+        .drop_duplicates())
+
+    print(f"size entities_all before perso: {len(entities_all)}")
+    tmp=(entities_all.drop(columns='_merge')
+        .merge(perso, how='left', on=['project_id','generalPic', 'stage'], indicator=True))
+    print(f"size entities_all after perso: {len(tmp)}")
+
+    tmp1=tmp[tmp._merge=='both']
+
+    var_perso.append('_merge')
+    var_perso.remove('contact')
+    tmp2=(tmp[tmp._merge=='left_only']
+        .drop(columns=var_perso)
+        .merge(perso.drop(columns=['stage'])
+        .drop_duplicates(), how='inner', on=['project_id','generalPic', 'contact']))
+
+    if len(tmp2)>0:
+        # tmp=pd.concat([tmp[tmp._merge=='left_only'], tmp1, tmp2], ignore_index=True)
+        print(f"A verifier code si tmp2 n'est pas null: {len(tmp)}")
+    else:
+        entities_all=pd.concat([tmp[tmp._merge=='left_only'], tmp1], ignore_index=True)
+        print(f"size entities_all after perso clean: {len(tmp)}")
+
+    entities_all=entities_all.mask(entities_all=='')
+    entities_all.loc[entities_all.rnsr_back.str.len()>0, 'source_rnsr'] = 'orga'
+    entities_all.loc[(entities_all.source_rnsr.isnull())&(entities_all.rnsr_merged.str.len()>0), 'source_rnsr'] = 'corda'
+    entities_all.loc[(entities_all.source_rnsr.isnull())&(~entities_all.num_nat_struct.isnull()), 'source_rnsr'] = 'openalex'
+    entities_all.loc[entities_all.source_rnsr=='openalex', 'resultat'] = 'a controler'
+
+    entities_all['num_nat_struct'] = entities_all['num_nat_struct'].map(lambda x: x.split(';') if isinstance(x, str) else [])
+    entities_all.loc[entities_all.rnsr_merged.isnull(), 'rnsr_merged'] = entities_all.loc[entities_all.rnsr_merged.isnull(),'rnsr_merged'].apply(lambda x: [])
+
+    entities_all.loc[(entities_all.source_rnsr=='corda')|(entities_all.source_rnsr=='openalex'), 'rnsr_merged'] = entities_all.apply(lambda x: list(set(x['rnsr_merged'] + x['num_nat_struct'])), axis=1)
+
+    for i in ['rnsr_merged', 'org_merged', 'lab_merged']:
+        entities_all[i]=entities_all[i].fillna('')
+        entities_all.loc[entities_all[i].str.len()==0, i]=''
+
+    entities_all[['rnsr_merged', 'org_merged', 'lab_merged']]=entities_all[['rnsr_merged', 'org_merged', 'lab_merged']].map(lambda x: ' '.join(filter(None, x)))
+
+    ########
+    print("## geoloc cleaning")
     stop_word(entities_all, 'country_code', ['street'])
 
     tmp=entities_all.loc[(entities_all.country_code=='FRA')&(~entities_all.postalCode.isnull()), ['postalCode']].drop_duplicates()
@@ -576,16 +634,6 @@ def entities_preparation():
     entities_all.loc[entities_all.country_code=='FRA', 'city'] = entities_all.city.str.replace(r"\bst\b", 'saint', regex=True).str.strip()
     entities_all.loc[entities_all.country_code=='FRA', 'city'] = entities_all.city.str.replace(r"\bste\b", 'sainte', regex=True).str.strip()
     entities_all.loc[entities_all.country_code=='FRA', 'city_tag'] = entities_all.loc[entities_all.country_code=='FRA', 'city'].str.strip().str.replace(r"\s+", '-', regex=True)
-
-    #######
-    print("### add personns")
-
-
-# créer le prog pourla prochaine fois
-
-    ###################
-
-
 
 
     entities_all.to_pickle(f'{PATH_MATCH}entities_all.pkl')
