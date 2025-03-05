@@ -69,3 +69,9 @@ resume(projects_current)
 pc = evol_preparation(FP6, FP7, h20, projects_current)
 evolution_FP(pc, countries)
 evolution_type(FP6, FP7, h20, projects_current)
+
+#####################
+# persons
+# script persons.py
+# ATTENTION ! long api requests
+# revise load results
