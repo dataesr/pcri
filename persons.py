@@ -145,18 +145,21 @@ print(f"size pers_result_merged : {len(pers_result_merged)}")
 # pd.to_pickle(pers_result_merged, f"{PATH_CLEAN}persons_{CSV_DATE}.pkl")
 
 
-temp=(pers_result_merged.groupby(['stage', 'project_id', 'generalPic', 'contact', 'contact2'], as_index=False)[['orcid_clean', 'num_nat_struct']]
-     .agg(lambda x: ';'.join( x.dropna().unique()))
-     .drop_duplicates())
-
+temp=(pers_result_merged.groupby(['stage', 'project_id', 'generalPic', 'contact', 'contact2'], as_index=False)[
+     ['orcid_clean', 'num_nat_struct']]
+     .agg(lambda x: list(set( x.dropna())))
+     # .agg(lambda x: ';'.join( x.dropna().unique()))
+     )
+temp=temp[~temp.astype(str).duplicated()]
 
 pp=pp.merge(temp, how='outer', on=['stage', 'project_id', 'generalPic', 'contact', 'contact2'], indicator=True)
 
 pp1=pp[pp._merge=='both']
 print(len(pp1))
 pp2=(pp[pp._merge!='both'].drop(columns=['orcid_clean', 'num_nat_struct', '_merge'])
-    .merge(temp[['project_id', 'contact', 'contact2', 'orcid_clean']].drop_duplicates(), how='outer', on=['project_id', 'contact', 'contact2'], indicator=True)
+    .merge(temp[['project_id', 'contact', 'contact2', 'orcid_clean']], how='outer', on=['project_id', 'contact', 'contact2'], indicator=True)
     .query('_merge=="both"'))
+pp2=pp2[~pp2.astype(str).duplicated()]
 pp1=pd.concat([pp1,pp2], ignore_index=True)
 
 res=(pp.drop(columns="_merge").merge(pp1[['stage', 'project_id', 'generalPic', 'contact', 'contact2']]
