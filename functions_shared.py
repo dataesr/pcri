@@ -188,6 +188,10 @@ def adr_tag(df, cols_list):
                 tmp[f'{col_ref}_tag'] = tmp[f'{col_ref}_tag'].str.replace(pat,'', regex=True)
 
         tmp[f'{col_ref}_tag'] = tmp[f'{col_ref}_tag'].apply(lambda x: alpha2digit(x, 'fr'))
+        tmp[f'{col_ref}_tag'] = tmp[f'{col_ref}_tag'].str.replace('[0-9]+','', regex=True)
+        tmp[f'{col_ref}_tag'] = tmp[f'{col_ref}_tag'].str.strip()
+        
+        tmp.loc[(tmp.country_code!='FRA')&(~tmp[f'{col_ref}_tag'].isnull()), f'{col_ref}_tag'] = tmp.loc[(tmp.country_code!='FRA')&(~tmp[f'{col_ref}_tag'].isnull())][f'{col_ref}_tag'].str.split(' ').apply(lambda x: [w for w in x if len(w) > 2])
 
     return pd.concat([df.drop(columns=col_ref), tmp], axis=1)
 
