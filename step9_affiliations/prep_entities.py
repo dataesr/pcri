@@ -602,11 +602,6 @@ def entities_preparation():
 
     entities_all.loc[(entities_all.source_rnsr=='corda')|(entities_all.source_rnsr=='openalex'), 'rnsr_merged'] = entities_all.apply(lambda x: list(set(x['rnsr_merged'] + x['num_nat_struct'])), axis=1)
 
-    for i in ['rnsr_merged', 'org_merged', 'lab_merged']:
-        entities_all[i]=entities_all[i].fillna('')
-        entities_all.loc[entities_all[i].str.len()==0, i]=''
-
-    entities_all[['rnsr_merged', 'org_merged', 'lab_merged']]=entities_all[['rnsr_merged', 'org_merged', 'lab_merged']].map(lambda x: ' '.join(filter(None, x)))
 
     ########
     print("## geoloc cleaning")
