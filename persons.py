@@ -147,10 +147,10 @@ print(f"size pers_result_merged : {len(pers_result_merged)}")
 
 temp=(pers_result_merged.groupby(['stage', 'project_id', 'generalPic', 'contact', 'contact2'], as_index=False)[
      ['orcid_clean', 'num_nat_struct']]
-     .agg(lambda x: list(set( x.dropna())))
-     # .agg(lambda x: ';'.join( x.dropna().unique()))
+     # .agg(lambda x: list(set( x.dropna())))
+     .agg(lambda x: ';'.join( x.dropna().unique()))
+     .drop_duplicates()
      )
-temp=temp[~temp.astype(str).duplicated()]
 
 pp=pp.merge(temp, how='outer', on=['stage', 'project_id', 'generalPic', 'contact', 'contact2'], indicator=True)
 
