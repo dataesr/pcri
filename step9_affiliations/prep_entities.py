@@ -348,15 +348,6 @@ def entities_preparation():
     tmp = structure_fr.merge(oback, how='outer', on=['stage','project_id','generalPic', 'pic'], indicator=True, suffixes=('','_y'))
     keep = tmp.loc[tmp._merge!='right_only'].drop(columns='orderNumber_y') #suppr les lignes oback en +
 
-    # traitement cea sans orderNumber
-    # tmp = tmp.loc[(tmp._merge=='right_only')&(tmp.org_back=='CEA')]
-    # cea = keep[(keep.generalPic=='999992401')].drop(columns='_merge').sort_values(['project_id','generalPic'])
-    # print(len(cea))
-    # cea = cea.drop(columns=list(oback.columns.difference(structure_fr.columns)))
-    # cea = cea.merge(oback[oback.generalPic=='999992401'].dropna(axis=1, how='all'), how='left', on=['stage','project_id','generalPic'], indicator=True)
-    # keep = keep[keep.generalPic!='999992401']
-    # keep = pd.concat([keep, cea], ignore_index=True).drop(columns=['pic', 'role', 'participates_as']).sort_values(['project_id', 'stage', 'generalPic'])
-
     for i in ['rnsr_back','labo_back','org_back', 'city_back']:
         keep[i] = keep[i].apply(lambda x: x.split(';') if isinstance(x, str) else [])  
 
@@ -632,7 +623,7 @@ def entities_preparation():
     # tmp = adr_tag(tmp, ['street_2'])
     # entities_all = pd.concat([entities_all.drop(columns='street_2'), tmp], axis=1)
 
-    tmp = entities_all[['street_2']].drop_duplicates()
+    tmp = entities_all[['country_code','street_2']]
     tmp = adr_tag(tmp, ['street_2'])
     entities_all = pd.concat([entities_all.drop(columns='street_2'), tmp], axis=1)
 
