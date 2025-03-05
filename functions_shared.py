@@ -193,7 +193,7 @@ def adr_tag(df, cols_list):
         
         df = pd.concat([df.drop(columns=[col_ref]), tmp], axis=1)
 
-        df.loc[(df.country_code!='FRA')&(~df[f'{col_ref}_tag'].isnull()), f'{col_ref}_tag'] = df.loc[(df.country_code!='FRA')&(~df[f'{col_ref}_tag'].isnull())][f'{col_ref}_tag'].str.split(' ').apply(lambda x: [w for w in x if len(w) > 2])
+        df.loc[(df.country_code!='FRA')&(~df[f'{col_ref}_tag'].isnull()), f'{col_ref}_tag'] = df.loc[(df.country_code!='FRA')&(~df[f'{col_ref}_tag'].isnull())][f'{col_ref}_tag'].str.split(' ').apply(lambda x: ' '.join([w for w in x if len(w) > 2]))
 
     return df
 
