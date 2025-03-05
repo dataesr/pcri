@@ -9,7 +9,7 @@ from step7_persons.affiliations import affiliations, persons_files_import, perso
 CSV_DATE='20250121'
 
 #######
-# persons_preparation(CSV_DATE)
+persons_preparation(CSV_DATE)
 #######
 
 PATH_PERSONS=f"{PATH_API}persons/"
