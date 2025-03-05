@@ -2,3 +2,8 @@
 \b(zac|za|lieu()?dit|allee|avenue|adjudant|batiment|boulevard|bp|commandant|ccial|bureau| [a-z]{1,1}\b|chemin)
 \b(cp|clos|centre|activite|cours|impasse|immeuble|division|docteur|domaine|general|quai)
 \b(commercial|ccial|bureau|quartier|parc|professeur|rue|route|place|lieutenant|regiment|zone( )?activite|zone( )?industrielle)
+\b(platz|strasse|aadress|street|floor|ave|road|quarter|square|box|weg|district|rruga|building|administrative|entrance|park|zoning|str|parkring|tower|area|ring|alle|vej|plads|sal|katu|rantakatu|tie|way|unit|block|hall|office|city|suite|lane|court|laan|vei|gate|storgata|vag|gata|highway)
+\b(via|avenida|paseo|plaza|rua|edificio|estrada|calle|avda|planta|poligono|parque|carrer|carretera|ctra|oficina|piso|placa|edif|barrio|numero|edifici|esc|passeig|zona)
+\b(viale|piazza|corso|localita|piazzale|calea|etaj|bulevardul|camera|piata[bloc]sector)
+\b(leoforos|odos|kai|utca|maakond|linnaosa|mnt|harju|kesklinna|pst|ulica|cesta|avenija|grada|ilica|lok|aleja|plac|aleje|rynek)
+\b(etage|chaussee|bus|boite|bte|zone|cantonale)
