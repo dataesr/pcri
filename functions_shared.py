@@ -179,7 +179,7 @@ def adr_tag(df, cols_list):
                 tmp[col_ref] = tmp[col_ref].apply(lambda x: [re.sub('^'+k+'$', v, s) for s in x])
                 tmp[col_ref] = tmp[col_ref].apply(lambda x: list(filter(None, x)))
 
-        df = pd.concat([df.drop(columns=col_ref), tmp], axis=1) 
+        df = pd.concat([df.drop(columns=[col_ref]), tmp], axis=1) 
 
         tmp[f'{col_ref}_tag'] = df.loc[~df[col_ref].isnull()][col_ref].apply(lambda x: ' '.join(x))
         with open("data_files/adresse_pattern.txt", "r") as pats:
@@ -191,9 +191,11 @@ def adr_tag(df, cols_list):
         tmp[f'{col_ref}_tag'] = tmp[f'{col_ref}_tag'].str.replace('[0-9]+','', regex=True)
         tmp[f'{col_ref}_tag'] = tmp[f'{col_ref}_tag'].str.strip()
         
-        tmp.loc[(tmp.country_code!='FRA')&(~tmp[f'{col_ref}_tag'].isnull()), f'{col_ref}_tag'] = tmp.loc[(tmp.country_code!='FRA')&(~tmp[f'{col_ref}_tag'].isnull())][f'{col_ref}_tag'].str.split(' ').apply(lambda x: [w for w in x if len(w) > 2])
+        df = pd.concat([df.drop(columns=[col_ref]), tmp], axis=1)
 
-    return pd.concat([df.drop(columns=col_ref), tmp], axis=1)
+        df.loc[(df.country_code!='FRA')&(~df[f'{col_ref}_tag'].isnull()), f'{col_ref}_tag'] = df.loc[(df.country_code!='FRA')&(~df[f'{col_ref}_tag'].isnull())][f'{col_ref}_tag'].str.split(' ').apply(lambda x: [w for w in x if len(w) > 2])
+
+    return df
 
 def chunkify(df, chunk_size: int):
     print(f"size df: {df.shape}")
