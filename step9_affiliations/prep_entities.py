@@ -176,6 +176,7 @@ def entities_preparation():
     cedex="cedax|cedrex|cdexe|cdex|credex|cedex|cedx|cede|ceddex|cdx|cex|cexex|edex"
     structure.loc[structure.postalCode.isnull(), 'postalCode'] = structure.city.str.extract(r"(\d+)")
     structure['city'] = structure.city.str.replace(r"\d+", ' ', regex=True).str.strip()
+    structure['city'] = structure['city'].str.replace(r"\s+", '-', regex=True).str.strip()
     structure.loc[structure.country_code=='FRA', 'city'] = structure.city.str.replace(cedex, ' ', regex=True).str.strip()
     structure.loc[structure.country_code=='FRA', 'city'] = structure.city.str.replace(r"^france$", '', regex=True).str.strip()
 
@@ -375,7 +376,7 @@ def entities_preparation():
 
     ################
     labo = keep.loc[((keep.org_merged.str.len() > 0)|(~keep.operateur_num.isnull())), 
-            ['call_year','stage','project_id', 'generalPic', 'entities_full', 'department_dup',
+        ['call_year','stage','project_id', 'generalPic', 'entities_full', 'department_dup',
         'typ_from_lib', 'org_merged', 'rnsr_merged', 'lab_merged',
         'cp_back', 'city_back', 'operateur_num','category_woven']]
     print(f"size labo dataset: {len(labo)}")
@@ -520,7 +521,7 @@ def entities_preparation():
 
     keep['rnsr_merged'] = keep.apply(lambda x: list(set(x['rnsr_merged'] + x['match'])), axis=1)
 
-    print(len(keep))
+    print(f"size keep: {len(keep)}\nkep columns -> check if orderNumber_x/y and fix it:\n{keep.columns}")
 
     keep.to_pickle(f'{PATH_MATCH}structure_fr.pkl')
 
@@ -627,13 +628,16 @@ def entities_preparation():
     entities_all = pd.concat([entities_all, tmp], axis=1)
     HTML(entities_all.loc[(entities_all.country_code=='FRA')&(~entities_all.city.isnull()), ['city']].drop_duplicates().sort_values('city').to_html())
 
-    tmp = entities_all.loc[entities_all.country_code=='FRA', ['street_2']]
+    # tmp = entities_all.loc[entities_all.country_code=='FRA', ['street_2']]
+    # tmp = adr_tag(tmp, ['street_2'])
+    # entities_all = pd.concat([entities_all.drop(columns='street_2'), tmp], axis=1)
+
+    tmp = entities_all[['street_2']].drop_duplicates()
     tmp = adr_tag(tmp, ['street_2'])
     entities_all = pd.concat([entities_all.drop(columns='street_2'), tmp], axis=1)
 
+
     entities_all.loc[entities_all.country_code=='FRA', 'city'] = entities_all.city.str.replace(r"\bst\b", 'saint', regex=True).str.strip()
     entities_all.loc[entities_all.country_code=='FRA', 'city'] = entities_all.city.str.replace(r"\bste\b", 'sainte', regex=True).str.strip()
-    entities_all.loc[entities_all.country_code=='FRA', 'city_tag'] = entities_all.loc[entities_all.country_code=='FRA', 'city'].str.strip().str.replace(r"\s+", '-', regex=True)
-
 
     entities_all.to_pickle(f'{PATH_MATCH}entities_all.pkl')
