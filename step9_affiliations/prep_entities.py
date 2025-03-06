@@ -591,15 +591,15 @@ def entities_preparation():
         print(f"size entities_all after perso clean: {len(tmp)}")
 
     entities_all=entities_all.mask(entities_all=='')
-    entities_all.loc[entities_all.rnsr_back.str.len()>0, 'source_rnsr'] = 'orga'
-    entities_all.loc[(entities_all.source_rnsr.isnull())&(entities_all.rnsr_merged.str.len()>0), 'source_rnsr'] = 'corda'
-    entities_all.loc[(entities_all.source_rnsr.isnull())&(~entities_all.num_nat_struct.isnull()), 'source_rnsr'] = 'openalex'
-    entities_all.loc[entities_all.source_rnsr=='openalex', 'resultat'] = 'a controler'
+    entities_all.loc[entities_all.rnsr_back.str.len()>0, 'method'] = 'orga'
+    entities_all.loc[(entities_all.method.isnull())&(entities_all.rnsr_merged.str.len()>0), 'method'] = 'corda'
+    entities_all.loc[(entities_all.method.isnull())&(~entities_all.num_nat_struct.isnull()), 'method'] = 'openalex'
+    entities_all.loc[entities_all.method=='openalex', 'resultat'] = 'a controler'
 
     entities_all['num_nat_struct'] = entities_all['num_nat_struct'].map(lambda x: x.split(';') if isinstance(x, str) else [])
     entities_all.loc[entities_all.rnsr_merged.isnull(), 'rnsr_merged'] = entities_all.loc[entities_all.rnsr_merged.isnull(),'rnsr_merged'].apply(lambda x: [])
 
-    entities_all.loc[(entities_all.source_rnsr=='corda')|(entities_all.source_rnsr=='openalex'), 'rnsr_merged'] = entities_all.apply(lambda x: list(set(x['rnsr_merged'] + x['num_nat_struct'])), axis=1)
+    entities_all.loc[(entities_all.method=='corda')|(entities_all.method=='openalex'), 'rnsr_merged'] = entities_all.apply(lambda x: list(set(x['rnsr_merged'] + x['num_nat_struct'])), axis=1)
 
 
     ########
