@@ -174,7 +174,7 @@ def entities_preparation():
     structure = prep_str_col(structure, cols)
 
     cedex="cedax|cedrex|cdexe|cdex|credex|cedex|cedx|cede|ceddex|cdx|cex|cexex|edex"
-    structure.loc[structure.postalCode.isnull(), 'postalCode'] = structure.city.str.extract(r"(\d+)")
+    structure.loc[structure.postalCode.isnull(), 'postalCode'] = structure.loc[structure.postalCode.isnull()].city.str.extract(r"(\d+)")
     structure['city'] = structure.city.str.replace(r"\d+", ' ', regex=True).str.strip()
     structure.loc[structure.country_code=='FRA', 'city'] = structure.city.str.replace(cedex, ' ', regex=True).str.strip()
     structure.loc[structure.country_code=='FRA', 'city'] = structure.city.str.replace(r"^france$", '', regex=True).str.strip()
@@ -610,7 +610,9 @@ def entities_preparation():
     tmp['code_postal'] = tmp.postalCode.str.replace(r"\D*", '', regex=True).str.strip()
     tmp['code_postal'] = tmp.code_postal.map(lambda x: np.nan if len(x)!=5. else x)
 
-    entities_all = pd.concat([entities_all, tmp], axis=1)
+    entities_all = pd.concat([entities_all, tmp.drop(columns='postalCode')], axis=1)
+    entities_all.loc[entities_all.code_postal.isnull(), 'code_postal'] = entities_all.loc[entities_all.code_postal.isnull(), 'postalCode']
+
     HTML(entities_all.loc[(entities_all.country_code=='FRA')&(~entities_all.city.isnull()), ['city']].drop_duplicates().sort_values('city').to_html())
 
     # tmp = entities_all.loc[entities_all.country_code=='FRA', ['street_2']]
