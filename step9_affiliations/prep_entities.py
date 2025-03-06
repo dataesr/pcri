@@ -176,7 +176,6 @@ def entities_preparation():
     cedex="cedax|cedrex|cdexe|cdex|credex|cedex|cedx|cede|ceddex|cdx|cex|cexex|edex"
     structure.loc[structure.postalCode.isnull(), 'postalCode'] = structure.city.str.extract(r"(\d+)")
     structure['city'] = structure.city.str.replace(r"\d+", ' ', regex=True).str.strip()
-    structure['city'] = structure['city'].str.replace(r"\s+", '-', regex=True).str.strip()
     structure.loc[structure.country_code=='FRA', 'city'] = structure.city.str.replace(cedex, ' ', regex=True).str.strip()
     structure.loc[structure.country_code=='FRA', 'city'] = structure.city.str.replace(r"^france$", '', regex=True).str.strip()
 
@@ -623,7 +622,9 @@ def entities_preparation():
     entities_all = pd.concat([entities_all.drop(columns='street_2'), tmp], axis=1)
 
 
-    entities_all.loc[entities_all.country_code=='FRA', 'city'] = entities_all.city.str.replace(r"\bst\b", 'saint', regex=True).str.strip()
-    entities_all.loc[entities_all.country_code=='FRA', 'city'] = entities_all.city.str.replace(r"\bste\b", 'sainte', regex=True).str.strip()
+    entities_all.loc[entities_all.country_code.isin(['FRA','BEL','LUX']), 'city'] = entities_all.city.str.replace(r"\bst\b", 'saint', regex=True).str.strip()
+    entities_all.loc[entities_all.country_code.isin(['FRA','BEL','LUX']), 'city'] = entities_all.city.str.replace(r"\bste\b", 'sainte', regex=True).str.strip()
+
+    entities_all.loc[~entities_all.city.isnull(), 'city_tag'] = entities_all.loc[~entities_all.city.isnull()].city.str.replace(r"\s+", '-', regex=True)
 
     entities_all.to_pickle(f'{PATH_MATCH}entities_all.pkl')
