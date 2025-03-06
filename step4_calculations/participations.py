@@ -83,6 +83,8 @@ def participations_complete(part_prop, part_proj, proj_no_coord):
             .assign(is_ejo=np.where(participation.extra_joint_organization.isnull(), 'Sans', 'Avec')))
  
     participation.rename(columns={'partnerType':'participates_as'}, inplace=True)
+    participation['participation_linked'] = participation['project_id']+"-"+participation['orderNumber']
+    
 
     print(f"- size participation: {len(participation)}")
 

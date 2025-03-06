@@ -29,7 +29,7 @@ def participants_calcul(part_step, part):
 
     part_proj = (part_step.merge(subv_pt, how='inner')[
                 ['project_id',  'generalPic', 'orderNumber', 'cordis_is_sme', 
-                'flag_entreprise',  'participation_linked',
+                'flag_entreprise', 
                 'cordis_type_entity_code', 'cordis_type_entity_name_fr', 'cordis_type_entity_name_en', 'cordis_type_entity_acro',
                 'participation_nuts', 'region_1_name', 'region_2_name', 'regional_unit_name', 
                 'country_code', 'country_code_mapping', 'extra_joint_organization', 'role', 'partnerType', 'erc_role', 
