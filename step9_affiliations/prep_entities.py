@@ -310,7 +310,7 @@ def entities_preparation():
     #RETOUR ORGANISMES
     print("### add data from organisme")
     organisme_back = pd.read_pickle(f"{PATH_ORG}organisme_back.pkl").drop_duplicates()
-    organisme_back = organisme_back.drop(columns=['lib_back', 'location_back']).drop_duplicates()
+    organisme_back = organisme_back.drop(columns=['lib_back', 'location_back', 'role', 'participates_as']).drop_duplicates()
     print(f"- size imported dataset: {len(organisme_back)}")
 
     stage_proj = structure_fr[['stage', 'project_id']].drop_duplicates()
