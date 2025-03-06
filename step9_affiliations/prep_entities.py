@@ -606,12 +606,12 @@ def entities_preparation():
     print("## geoloc cleaning")
     stop_word(entities_all, 'country_code', ['street'])
 
-    tmp=entities_all.loc[(entities_all.country_code=='FRA')&(~entities_all.postalCode.isnull()), ['postalCode']].drop_duplicates()
-    tmp['code_postal'] = tmp.postalCode.str.replace(r"\D*", '', regex=True).str.strip()
-    tmp['code_postal'] = tmp.code_postal.map(lambda x: np.nan if len(x)!=5. else x)
+    entities_all.loc[(entities_all.country_code=='FRA')&(~entities_all.postalCode.isnull()), 'code_postal'] = entities_all.loc[(entities_all.country_code=='FRA')&(~entities_all.postalCode.isnull())].postalCode.str.replace(r"\D*", '', regex=True).str.strip()
+    entities_all.loc[(~entities_all.code_postal.isnull()), 'code_postal'] = entities_all.loc[(~entities_all.code_postal.isnull())].code_postal.map(lambda x: np.nan if len(x)!=5. else x)
 
-    entities_all = pd.concat([entities_all, tmp.drop(columns='postalCode')], axis=1)
     entities_all.loc[entities_all.code_postal.isnull(), 'code_postal'] = entities_all.loc[entities_all.code_postal.isnull(), 'postalCode']
+    entities_all.loc[(~entities_all.code_postal.isnull())&(entities_all.country_code=='FRA'), 'dep_code'] = entities_all.loc[(~entities_all.code_postal.isnull())&(entities_all.country_code=='FRA')].code_postal.str[0:1]
+
 
     HTML(entities_all.loc[(entities_all.country_code=='FRA')&(~entities_all.city.isnull()), ['city']].drop_duplicates().sort_values('city').to_html())
 
