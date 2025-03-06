@@ -621,7 +621,7 @@ def entities_preparation():
 
     tmp = entities_all[['country_code','street_2']]
     tmp = adr_tag(tmp, ['street_2'])
-    entities_all = pd.concat([entities_all.drop(columns='street_2'), tmp], axis=1)
+    entities_all = pd.concat([entities_all.drop(columns='street_2'), tmp.drop(columns='country_code')], axis=1)
 
 
     entities_all.loc[entities_all.country_code.isin(['FRA','BEL','LUX']), 'city'] = entities_all.city.str.replace(r"\bst\b", 'saint', regex=True).str.strip()
