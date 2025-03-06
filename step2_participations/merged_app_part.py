@@ -136,8 +136,8 @@ def merged_partApp(app1, part):
     length_lien=len(lien)
     # print(lien[lien['n_lien']>1])
 
-    lien.loc[lien.inProject==True, 'participation_linked'] = lien['project_id']+"-"+lien['orderNumber']
-    lien.loc[lien.inProposal==True, 'participation_linked'] = lien['project_id']+"-"+lien['proposal_orderNumber']
+#     lien.loc[lien.inProject==True, 'participation_linked'] = lien['project_id']+"-"+lien['orderNumber']
+#     lien.loc[lien.inProposal==True, 'participation_linked'] = lien['project_id']+"-"+lien['proposal_orderNumber']
     
     # add countryCode
     lien = (lien
