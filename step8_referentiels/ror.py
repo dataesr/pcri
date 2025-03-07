@@ -35,7 +35,7 @@ def ror_prep(DUMP_PATH, ROR_ZIP, countries):
     ror = (ror[['numero_ror', 'name', 'links', 'aliases', 'acronyms',  'ville', 
                 'country.country_code', 'country.country_name']]
         .rename(columns={'name':'nom_long', 
-                            'acronyms':'sigle',
+                        'acronyms':'sigle',
                         'links':'web',
                         'country.country_code':'iso2'})
         .assign(ref='ror')
@@ -43,9 +43,10 @@ def ror_prep(DUMP_PATH, ROR_ZIP, countries):
 
     ror.mask(ror=='', inplace=True)
     
-    ror = (ror.merge(countries[['iso2', 'iso3']], how='left', on='iso2')
-       .rename(columns={'iso3':'country_code_map'})
-      )
+    ror = ror.merge(countries[['iso2', 'iso3', 'parent_iso3']], how='left', on='iso2')
+    ror = ror.merge(countries[['parent_iso3', 'country_name_en']].drop_duplicates(), how='left', on='parent_iso3')
+    ror = (ror.rename(columns={'iso3':'country_code_map', 'parent_iso3':'country_code'})
+           .drop(columns=['aliases','country.country_name']))
 
     if any(ror.country_code_map.isnull()):
         print(ror[ror.country_code_map.isnull()][['iso2']].drop_duplicates())
