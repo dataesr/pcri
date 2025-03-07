@@ -6,6 +6,12 @@ load_dotenv()
 
 
 def get_mires():
+    import requests, pandas as pd
+    from config_api import paysage_headers
+    from config_path import PATH_REF
+    from dotenv import load_dotenv
+    load_dotenv()
+
     ## liste opérateurs de la MIRES
     paysage_mires = pd.DataFrame()
 
@@ -35,58 +41,72 @@ def get_mires():
         pd.to_pickle(paysage_mires, file)
     return paysage_mires
 
-def ID_to_IDpaysage(lid_source, siren_siret):
-        print("## harvest IDpaysage from ID")
-        paysage_liste = list(set([i['api_id'] for i in lid_source if not i['source_id'] in ['ror', 'siren', 'paysage']]))
-        print(f"- start paysage liste: {len(paysage_liste)}")
-        if 'siren_siret' in globals() or 'siren_siret' in locals():
-            paysage_liste = list(set(paysage_liste+siren_siret))
-        print(f"- new paysage liste with siren_siret: {len(paysage_liste)}")
+def ID_to_IDpaysage(lid_source, siren_siret=[]):
+    import time, requests, pandas as pd
+    from config_api import paysage_headers
+    from config_path import PATH_SOURCE
+    from dotenv import load_dotenv
+    load_dotenv()
 
-        print(time.strftime("%H:%M:%S"))
-        paysage_id = []
-        n=0
-        for i in paysage_liste:
-            n=n+1
-            if n % 100 == 0: 
-                print(f"{n}", end=',')
+    
+    print("## harvest IDpaysage from ID")
+    paysage_liste = list(set([i['api_id'] for i in lid_source if not i['source_id'] in ['ror', 'siren', 'paysage']]))
+    print(f"- start paysage liste: {len(paysage_liste)}")
+    if 'siren_siret' in globals() or 'siren_siret' in locals():
+        paysage_liste = list(set(paysage_liste+siren_siret))
+    print(f"- new paysage liste with siren_siret: {len(paysage_liste)}")
 
-            time.sleep(0.2)
-            try:
-                url1 = url = f'https://api.paysage.dataesr.ovh/identifiers?filters[value]={str(i)}'
-                rinit = requests.get(url1, headers=paysage_headers, verify=False)
-                r = rinit.json()['data']
-                if r:
-                    for item in r:
-                        response={'id_source':i, 'id_paysage':item.get('resourceId'), 'status':item.get('active'), 'end':item.get('endDate')}
-                        paysage_id.append(response)
-                else:
-                    response={'id_source':i, 'status':'non'}
+    print(time.strftime("%H:%M:%S"))
+    paysage_id = []
+    n=0
+    for i in paysage_liste:
+        n=n+1
+        if n % 100 == 0: 
+            print(f"{n}", end=',')
+
+        time.sleep(0.2)
+        try:
+            url1 = url = f'https://api.paysage.dataesr.ovh/identifiers?filters[value]={str(i)}'
+            rinit = requests.get(url1, headers=paysage_headers, verify=False)
+            r = rinit.json()['data']
+            if r:
+                for item in r:
+                    response={'id_source':i, 'id_paysage':item.get('resourceId'), 'status':item.get('active'), 'end':item.get('endDate')}
                     paysage_id.append(response)
+            else:
+                response={'id_source':i, 'status':'non'}
+                paysage_id.append(response)
 
-            except requests.exceptions.HTTPError as http_err:
-                print(f"\n{i} -> HTTP error occurred: {http_err}")
-                paysage_liste.append(str(i))
-            except requests.exceptions.RequestException as err:
-                print(f"\n{i} -> Error occurred: {err}")
-                paysage_liste.append(str(i))
-            except Exception as e:
-                print(f"\n{i} -> An unexpected error occurred: {e}")
-                         
-        print(f"1 - resultat id entities paysagés {len(paysage_id)}")
-        print(time.strftime("%H:%M:%S"))
-        
-        file_name = f"{PATH_SOURCE}paysage_id.pkl"
-        with open(file_name, 'wb') as file:
-            pd.to_pickle(paysage_id, file)
+        except requests.exceptions.HTTPError as http_err:
+            print(f"\n{i} -> HTTP error occurred: {http_err}")
+            paysage_liste.append(str(i))
+        except requests.exceptions.RequestException as err:
+            print(f"\n{i} -> Error occurred: {err}")
+            paysage_liste.append(str(i))
+        except Exception as e:
+            print(f"\n{i} -> An unexpected error occurred: {e}")
+                        
+    print(f"1 - resultat id entities paysagés {len(paysage_id)}")
+    print(time.strftime("%H:%M:%S"))
+    
+    file_name = f"{PATH_SOURCE}paysage_id.pkl"
+    with open(file_name, 'wb') as file:
+        pd.to_pickle(paysage_id, file)
 
-        paysage_id = pd.DataFrame(paysage_id)
-        paysage_id = paysage_id[~paysage_id.id_paysage.isnull()]
-        return paysage_id
+    paysage_id = pd.DataFrame(paysage_id)
+    paysage_id = paysage_id[~paysage_id.id_paysage.isnull()]
+    return paysage_id
 
     ###############################
 
 def IDpaysage_status(lid_source, paysage_id):
+
+    import requests, pandas as pd
+    from config_api import paysage_headers
+    from dotenv import load_dotenv
+    load_dotenv()
+
+
     print("## control IDpaysage status")
     paysage_id = pd.DataFrame(paysage_id)
     paysage_id = paysage_id[~paysage_id.id_paysage.isnull()]
@@ -125,6 +145,12 @@ def IDpaysage_status(lid_source, paysage_id):
 ###############################
 
 def IDpaysage_successor(paysage_id):
+    import time, requests, pandas as pd, copy
+    from config_api import paysage_headers
+    from dotenv import load_dotenv
+    load_dotenv()
+
+
     # traitement des successeurs
     print("## IDpaysage successors")
     paysage_relat = paysage_id['id_paysage'].dropna().unique().astype(str).tolist()
