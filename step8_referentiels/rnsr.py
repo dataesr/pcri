@@ -150,17 +150,16 @@ def rnsr_prep(DUMP_PATH):
             .assign(adresse=rnsr.street_num+' '+rnsr.street, ref='rnsr')
         .rename(columns={'rnsr':'num_nat_struct',
                         'name':'nom_long',
-                            'acronym':'sigle',
-                            'date_end':'an_fermeture',
-                            'sigles_rnsr':'label_num_ro_rnsr',
-                            'tutelle_name':'etabs_rnsr',
-                            'city':'ville',
-                            'cp' : 'code_postal'})
+                        'acronym':'sigle',
+                        'date_end':'an_fermeture',
+                        'sigles_rnsr':'label_num_ro_rnsr',
+                        'tutelle_name':'etabs_rnsr',
+                        'city':'ville',
+                        'cp' : 'code_postal'})
                             
-        )[['num_nat_struct', 'an_fermeture', 'nom_long',  'sigle', 'label_num_ro_rnsr', 
-                    'etabs_rnsr', 'ville', 'com_code', 'adresse', 'code_postal', 
-                    'adresse_full', 'tel', 'email', 'ref']]
+        )[['num_nat_struct', 'an_fermeture', 'nom_long', 'sigle', 'label_num_ro_rnsr', 
+            'etabs_rnsr', 'ville', 'com_code', 'adresse', 'code_postal', 
+            'adresse_full', 'tel', 'email', 'ref']]
 
-    rnsr = rnsr.assign(country_code_map = 'FRA')
     rnsr.mask(rnsr=='', inplace=True)
     return rnsr
