@@ -275,3 +275,11 @@ def prop_string(tab, cols):
         tab.loc[~tab[i].isnull(), i] = tab.loc[~tab[i].isnull(), i].str.replace(r"[^\w\s]+", " ", regex=True)
         tab.loc[~tab[i].isnull(), i] = tab.loc[~tab[i].isnull(), i].apply(unidecode)
     return tab
+
+def com_iso3():
+    import pandas as pd
+    url='https://docs.google.com/spreadsheet/ccc?key=1FwPq5Qw7Gbgj_sBD6Za4dfDDk6ydozQ99TyRjLkW5d8&output=xls'
+    com_iso = pd.read_excel(url, sheet_name='LES_COMMUNES', dtype=str, na_filter=False)
+    com_iso=com_iso[['COM_CODE', 'ISO_3']].drop_duplicates()
+    com_iso.columns=com_iso.columns.str.lower()
+    return com_iso
