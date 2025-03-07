@@ -1,5 +1,5 @@
 
-def ref_externe_preparation():
+def ref_externe_preparation(rnsr_adr_corr=False, sirene_load=False):
     import pandas as pd, pycountry, re, json, numpy as np
     from text_to_num import alpha2digit
 
@@ -15,16 +15,6 @@ def ref_externe_preparation():
     from step8_referentiels.paysage import paysage_prep
     DUMP_PATH=f'{PATH}referentiel/'
 
-
-    # pycountry.countries.add_entry(alpha_2="XK", alpha_3="XXK", name="Kosovo")
-    # pycountry.countries.add_entry(alpha_2="UK", alpha_3="GBR", name="United Kingdom")
-    # pycountry.countries.add_entry(alpha_2="EL", alpha_3="GRC", name="Greece")
-    # tmp = [c.__dict__['_fields'] for c in list(pycountry.countries)]
-    # countries = (pd.DataFrame(tmp)[['alpha_2', 'alpha_3', 'name']]
-    #             .rename(columns={'alpha_2':'iso2', 'alpha_3':'iso3', 'name':'country_name_en'})
-    #             .drop_duplicates()
-    # )
-
     my_countries=my_country_code()
     print(len(my_countries))
 
@@ -32,45 +22,44 @@ def ref_externe_preparation():
     ror = ror_prep(DUMP_PATH, ROR_ZIPNAME, my_countries)
 
     ####
-    sirene_refext(DUMP_PATH) # -> sirene_ref_moulinette.pkl
+    if sirene_load==True:
+        sirene_refext(DUMP_PATH) # -> sirene_ref_moulinette.pkl
     sirene = sirene_prep(DUMP_PATH, my_countries)
 
     ### Extraction des données rnsr de dataESR
     rnsr_import(DUMP_PATH)
-    rnsr = rnsr_prep(DUMP_PATH)
+    rnsr = rnsr_prep(DUMP_PATH, my_countries, rnsr_adr_corr)
 
-    work_csv(rnsr.loc[(rnsr.code_postal.isnull())|(rnsr.ville.isnull()), ['num_nat_struct', 'nom_long','adresse_full', 'code_postal', 'ville']].drop_duplicates(), 'rnsr_adresse_a_completer')
-    add_ad = pd.read_csv(f"{DUMP_PATH}rnsr_adresse_manquante.csv",  sep=';', encoding='ANSI', dtype={'cp_corr':str})
-    add_ad = add_ad[['num_nat_struct', 'cp_corr', 'city_corr', 'country_corr']].drop_duplicates()
+    # work_csv(rnsr.loc[(rnsr.code_postal.isnull())|(rnsr.ville.isnull()), ['num_nat_struct', 'nom_long','adresse_full', 'code_postal', 'ville']].drop_duplicates(), 'rnsr_adresse_a_completer')
+    # add_ad = pd.read_csv(f"{DUMP_PATH}rnsr_adresse_manquante.csv",  sep=';', encoding='ANSI', dtype={'cp_corr':str})
+    # add_ad = add_ad[['num_nat_struct', 'cp_corr', 'city_corr', 'country_corr']].drop_duplicates()
 
-    rnsr = rnsr.merge(add_ad, how='left', on='num_nat_struct')
-    rnsr.loc[~rnsr.cp_corr.isnull(), 'code_postal'] = rnsr.cp_corr
-    rnsr.loc[~rnsr.city_corr.isnull(), 'ville'] = rnsr.city_corr
-    rnsr.loc[~rnsr.country_corr.isnull(), 'country_code_map'] = rnsr.country_corr
+    # rnsr = rnsr.merge(add_ad, how='left', on='num_nat_struct')
+    # rnsr.loc[~rnsr.cp_corr.isnull(), 'code_postal'] = rnsr.cp_corr
+    # rnsr.loc[~rnsr.city_corr.isnull(), 'ville'] = rnsr.city_corr
+    # rnsr.loc[~rnsr.country_corr.isnull(), 'country_code_map'] = rnsr.country_corr
 
     ######
     # paysage
-    paysage = paysage_prep(DUMP_PATH)
+    paysage = paysage_prep(DUMP_PATH, my_countries)
 
     ######
     # table all
     ref_all = pd.concat([ror, rnsr, sirene, paysage], ignore_index=True)
-    ref_all = ref_all.drop(columns=['country.country_name', 'Lieudit_BP', 'COG', 'aliases','cp_corr','city_corr','country_corr'])
     ref_all.mask(ref_all=='', inplace=True)
     ref_all = ref_all.sort_values(['ref', 'num_nat_struct', 'siren', 'numero_paysage', 'numero_ror'])
 
-    url='https://docs.google.com/spreadsheet/ccc?key=1FwPq5Qw7Gbgj_sBD6Za4dfDDk6ydozQ99TyRjLkW5d8&output=xls'
-    df_geo = pd.read_excel(url, sheet_name='LES_COMMUNES', dtype=str, na_filter=False)
-    ref_all = ref_all.merge(df_geo[['COM_CODE', 'ISO_3']], how='left', left_on='com_code', right_on='COM_CODE')
-    ref_all.loc[~ref_all.ISO_3.isnull(), 'country_code_map'] = ref_all.ISO_3
+    # com_iso=com_iso3()
+    # ref_all = ref_all.merge(com_iso, how='left', on='com_code')
+    # ref_all.loc[~ref_all.iso_3.isnull(), 'country_code_map'] = ref_all.iso_3
 
-    ref_all.loc[ref_all.country_code_map.isnull(), ['ref']].value_counts()
+    # ref_all.loc[ref_all.country_code_map.isnull(), ['ref']].value_counts()
 
     #lowercase / exochar / unicode / punct
     ref_cols=['nom_long', 'sigle', 'ville', 'adresse', 'adresse_full']
     ref_all = prep_str_col(ref_all, ref_cols)
 
-    y = ref_all.loc[(~ref_all.tel.isnull())&(ref_all.country_code_map=='FRA'), ['tel']]
+    y = ref_all.loc[(~ref_all.tel.isnull())&(ref_all.country_code=='FRA'), ['tel']]
     y['tel_clean']=y.tel.apply(lambda x:[re.sub(r'[^0-9]+', '', i) for i in x])
     y['tel_clean']=y.tel_clean.apply(lambda x: [re.sub(r'^(33|033)', '', i).rjust(10, '0') for i in x])
     y['tel_clean']=y.tel_clean.apply(lambda x: [i[0:10] if (len(i)>10) and (i[0:1]=='0') else i for i in x])
@@ -115,21 +104,22 @@ def ref_externe_preparation():
     # nettoyage de ville
     cedex="cedax|cedrex|cdexe|cdex|credex|cedex|cedx|cede|ceddex|cdx|cex|cexex|edex"
     ref_all['ville'] = ref_all.ville.str.replace('\\d+', ' ', regex=True).str.strip()
-    ref_all.loc[(ref_all.country_code_map=='FRA')|(ref_all.iso2.isin(pays_fr)), 'ville'] = ref_all.ville.str.replace(cedex, ' ', regex=True).str.strip()
-    ref_all.loc[(ref_all.country_code_map=='FRA')|(ref_all.iso2.isin(pays_fr)), 'ville'] = ref_all.ville.str.replace('^france$', '', regex=True).str.strip()
-    ref_all.loc[(ref_all.country_code_map=='FRA')|(ref_all.iso2.isin(pays_fr)), 'ville'] = ref_all.ville.str.replace(r"\bst\b", 'saint', regex=True).str.strip()
-    ref_all.loc[(ref_all.country_code_map=='FRA')|(ref_all.iso2.isin(pays_fr)), 'ville'] = ref_all.ville.str.replace(r"\bste\b", 'sainte', regex=True).str.strip()
-    ref_all.loc[(ref_all.country_code_map=='FRA')|(ref_all.iso2.isin(pays_fr)), 'ville_tag'] = ref_all.loc[ref_all.country_code_map=='FRA', 'ville'].str.strip().str.replace(r'\s+', '-', regex=True)
+    ref_all.loc[(ref_all.country_code=='FRA'), 'ville'] = ref_all.loc[ref_all.country_code=='FRA', 'ville'].str.replace(cedex, ' ', regex=True).str.strip()
+    ref_all.loc[(ref_all.country_code=='FRA'), 'ville'] = ref_all.loc[ref_all.country_code=='FRA', 'ville'].str.replace('^france$', '', regex=True).str.strip()
+    ref_all.loc[(ref_all.country_code=='FRA'), 'ville'] = ref_all.loc[ref_all.country_code=='FRA', 'ville'].str.replace(r"\bst\b", 'saint', regex=True).str.strip()
+    ref_all.loc[(ref_all.country_code=='FRA'), 'ville'] = ref_all.loc[ref_all.country_code=='FRA', 'ville'].str.replace(r"\bste\b", 'sainte', regex=True).str.strip()
+    ref_all.loc[(ref_all.country_code=='FRA'), 'ville_tag'] = ref_all.loc[ref_all.country_code=='FRA', 'ville'].str.strip().str.replace(r'\s+', '-', regex=True)
 
     # code postal - > département
-    mask=((ref_all.country_code_map=='FRA')|(ref_all.iso2.isin(pays_fr)))&(~ref_all.code_postal.isnull())&(ref_all.code_postal.str.len()!=5)
+    mask=(ref_all.country_code=='FRA')&(~ref_all.code_postal.isnull())&(ref_all.code_postal.str.len()!=5)
     if len(ref_all.loc[mask])>0:
         print(f"probleme avec le cp à corriger si possible à la source: {ref_all.loc[mask].code_postal.unique()}")
         print(f"structure avec cp mais à corriger: {ref_all.loc[mask&(ref_all.code_postal.str.contains(r"\d+")), ['ref','code_postal', 'ville', 'numero_paysage', 'num_nat_struct']]}")
 
-    ref_all.loc[(ref_all.country_code_map=='FRA')&(~ref_all.code_postal.isnull()), 'code_postal'] = ref_all.loc[(ref_all.country_code_map=='FRA')&(~ref_all.code_postal.isnull()), 'code_postal'].str.replace(r"\D+", '', regex=True)
+    ref_all.loc[(ref_all.country_code=='FRA')&(~ref_all.code_postal.isnull()), 'code_postal'] = ref_all.loc[(ref_all.country_code=='FRA')&(~ref_all.code_postal.isnull()), 'code_postal'].str.replace(r"\D+", '', regex=True)
     ref_all.loc[~ref_all.code_postal.isnull(), 'departement'] = ref_all.code_postal.str[0:2]
 
+    ref_all.loc[ref_all.country_code=='FRA', 'dep_code'] =ref_all.loc[ref_all.country_code=='FRA'].code_postal.str[0:2] 
 
     #########
     adr = json.load(open('data_files/ad.json'))
@@ -168,12 +158,12 @@ def ref_externe_preparation():
     if len(ref_all.loc[ref_all.country_code_map.isnull(),['ref']].drop_duplicates())>0:
         print(ref_all.loc[ref_all.country_code_map.isnull(),['ref']].drop_duplicates().value_counts())
 
-    ref_all = ref_all.merge(countries[['iso3', 'country_name_en']].drop_duplicates(), how='left', left_on='country_code_map', right_on='iso3')
+    # ref_all = ref_all.merge(countries[['iso3', 'country_name_en']].drop_duplicates(), how='left', left_on='country_code_map', right_on='iso3')
 
     if any(ref_all.loc[ref_all.country_name_en.isnull()]):
-        print(ref_all.loc[(ref_all.country_name_en.isnull())&(~ref_all.country_code_map.isnull()), ['country_code_map', 'nom_entier', 'numero_paysage','ref']].drop_duplicates())
-        work_csv(ref_all.loc[(ref_all.country_name_en.isnull())&(~ref_all.country_code_map.isnull()), ['numero_paysage','country_code_map', 'nom_entier']].drop_duplicates(), 'paysage_pb_iso3')
-        work_csv(ref_all.loc[(ref_all.country_name_en.isnull())&(ref_all.country_code_map.isnull()), ['ref','country_code_map', 'nom_entier']].drop_duplicates(), 'paysage_without_iso3')
+        print(ref_all.loc[(ref_all.country_name_en.isnull())&(~ref_all.country_code.isnull()), ['country_code_map', 'nom_entier', 'numero_paysage','ref']].drop_duplicates())
+        work_csv(ref_all.loc[(ref_all.country_name_en.isnull())&(~ref_all.country_code.isnull()), ['numero_paysage','country_code_map', 'nom_entier']].drop_duplicates(), 'paysage_pb_iso3')
+        work_csv(ref_all.loc[(ref_all.country_name_en.isnull())&(ref_all.country_code.isnull()), ['ref','country_code_map', 'nom_entier']].drop_duplicates(), 'paysage_without_iso3')
 
 
     ###############
@@ -186,9 +176,11 @@ def ref_externe_preparation():
         print(f"var name:\n{champs.loc[champs.table==i, 'code_champ'].tolist()}\n")
         print(f"var numerique:\n{champs.loc[(champs.table==i) & (champs.type=='num'), 'code_champ'].tolist()}")
 
-    ref_all = ref_all[['ref', 'num_nat_struct', 'numero_ror', 'siren', 'siret', 'numero_rna', 'numero_paysage',  'sigle', 
-            'code_postal',  'ville', 'adresse', 'label_num_ro_rnsr', 'an_fermeture', 'country_code_map', 'country_name_en', 'nom_entier',  'libelle1',
-            'nom_entier_2',  'adresse_2_tag', 'ville_tag', 'etabs_rnsr', 'email','web', 'tel_clean' ]].drop_duplicates()
+    ref_all = ref_all[
+        ['ref', 'num_nat_struct', 'numero_ror', 'siren', 'siret', 'numero_rna', 'numero_paysage',  
+        'sigle', 'nom_entier',  'libelle1', 'nom_entier_2', 'adresse_2_tag', 'ville_tag', 'etabs_rnsr', 'email','web', 'tel_clean',
+        'code_postal',  'ville', 'adresse', 'label_num_ro_rnsr', 'an_fermeture', 'country_code_map', 'country_code', 'country_name_en', 
+        ]].drop_duplicates()
 
     print(f"{ref_all.info()}\nsize ref_all: {len(ref_all)}")
 
