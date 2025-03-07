@@ -184,7 +184,8 @@ def rnsr_prep(DUMP_PATH, countries, corr=False):
     rnsr = rnsr.merge(countries[['iso3', 'parent_iso3']], how='left', on='iso3')
     rnsr.loc[rnsr.parent_iso3.isnull(), 'parent_iso3'] = 'FRA'
     rnsr = rnsr.merge(countries[['parent_iso3', 'country_name_en']], how='left', on='parent_iso3')
-    rnsr.rename(columns={'iso3':'country_code_map', 'parent_iso3':'country_code'}, inplace=True)
+    rnsr = (rnsr.rename(columns={'iso3':'country_code_map', 'parent_iso3':'country_code'})
+            .drop(columns=['cp_corr','city_corr','country_corr']))
 
     rnsr.mask(rnsr=='', inplace=True)
     return rnsr
