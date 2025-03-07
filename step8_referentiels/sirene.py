@@ -106,26 +106,27 @@ def sirene_prep(DUMP_PATH, countries):
 
     sirene.loc[sirene['adresseEtablissement.libelleCommuneEtablissement'].isnull(), 'adresseEtablissement.libelleCommuneEtablissement'] = sirene['adresseEtablissement.libelleCommuneEtrangerEtablissement']
 
-    sirene = (sirene[['siren', 'siret', 'dateFin',
-            'uniteLegale.denominationUniteLegale','uniteLegale.sigleUniteLegale', 
-            'uniteLegale.identifiantAssociationUniteLegale',
-            'adresseEtablissement.complementAdresseEtablissement', 'adresse',
+    sirene = (sirene[
+        ['siren', 'siret', 'dateFin',
+        'uniteLegale.denominationUniteLegale','uniteLegale.sigleUniteLegale', 
+        'uniteLegale.identifiantAssociationUniteLegale',
+        'adresseEtablissement.complementAdresseEtablissement', 'adresse',
         'adresseEtablissement.codePostalEtablissement',
         'adresseEtablissement.libelleCommuneEtablissement',  
         'adresseEtablissement.codeCommuneEtablissement',
         'adresseEtablissement.codePaysEtrangerEtablissement']]
-            .rename(columns={'dateFin':'an_fermeture',
-                            'uniteLegale.identifiantAssociationUniteLegale':'numero_rna',
-                            'uniteLegale.denominationUniteLegale':'nom_long',
-                            'uniteLegale.sigleUniteLegale':'sigle',
-                            'adresseEtablissement.complementAdresseEtablissement':'Lieudit_BP',
-                            'adresseEtablissement.codePostalEtablissement':'code_postal',
-                            'adresseEtablissement.libelleCommuneEtablissement':'ville',
-                            'adresseEtablissement.codeCommuneEtablissement':'com_code',
-                            'adresseEtablissement.codePaysEtrangerEtablissement':'COG'
-                            })
-            .assign(ref='sirene')
-            .drop_duplicates())
+        .rename(columns={'dateFin':'an_fermeture',
+                        'uniteLegale.identifiantAssociationUniteLegale':'numero_rna',
+                        'uniteLegale.denominationUniteLegale':'nom_long',
+                        'uniteLegale.sigleUniteLegale':'sigle',
+                        'adresseEtablissement.complementAdresseEtablissement':'Lieudit_BP',
+                        'adresseEtablissement.codePostalEtablissement':'code_postal',
+                        'adresseEtablissement.libelleCommuneEtablissement':'ville',
+                        'adresseEtablissement.codeCommuneEtablissement':'com_code',
+                        'adresseEtablissement.codePaysEtrangerEtablissement':'COG'
+                        })
+        .assign(ref='sirene')
+        .drop_duplicates())
 
     sirene.mask(sirene=='', inplace=True)
 
@@ -134,8 +135,11 @@ def sirene_prep(DUMP_PATH, countries):
     country_s.loc[~country_s.CRPAY.isnull(), 'CODEISO2'] = country_s.CODEISO2_
     country_s.drop(columns=['COG_', 'CODEISO2_', 'CRPAY'], inplace=True)
     sirene = sirene.merge(country_s, how='left', on='COG').rename(columns={'CODEISO2':'iso2'})
-    sirene = sirene.merge(countries[['iso2', 'iso3']], how='left', on='iso2').rename(columns={'iso3':'country_code_map'})
-    sirene.loc[sirene.country_code_map.isnull(), 'country_code_map'] = 'FRA'
+    sirene = sirene.merge(countries[['iso2', 'iso3', 'parent_iso3']], how='left', on='iso2')
+    sirene = sirene.merge(countries[['parent_iso3', 'country_name_en']], how='left', on='parent_iso3')
+    sirene.loc[sirene.parent_iso3.isnull(), 'parent_iso3'] = 'FRA'
+    sirene.rename(columns={'iso3':'country_code_map', 'parent_iso3':'country_code'}, inplace=True)
+    # sirene.loc[sirene.country_code_map.isnull(), 'country_code_map'] = 'FRA'
     if len(sirene[(~sirene.COG.isnull())&((sirene.iso2.isnull())|(sirene.country_code_map.isnull()))])>0:
         print(f"siren without country_code_map: {sirene[(~sirene.COG.isnull())&((sirene.iso2.isnull())|(sirene.country_code_map.isnull()))].siren.unique()}")
 
