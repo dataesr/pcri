@@ -143,14 +143,15 @@ def sirene_prep(DUMP_PATH, countries):
     sirene.loc[~sirene.iso_3.isnull(), 'iso3'] = sirene.loc[~sirene.iso_3.isnull(), 'iso_3'] 
     sirene.loc[sirene.iso3.isnull(), 'iso3'] = 'FRA'
 
-    sirene = (sirene.merge(countries[['iso3','parent_iso3']], how='left', on='iso3')
-              .merge(countries[['parent_iso3', 'country_name_en']].drop_duplicates(), how='left', on='parent_iso3'))
+    sirene = sirene.merge(countries[['iso3','parent_iso3']], how='left', on='iso3')
+    sirene = sirene.rename(columns={'iso3':'country_code_map', 'parent_iso3':'country_code'})        
+    sirene = sirene.merge(countries[['iso3', 'country_name_en']].drop_duplicates(), how='left', left_on='country_code', right_on='iso3')
 
-    if len(sirene[(~sirene.COG.isnull())&((sirene.iso2.isnull())|(sirene.iso3.isnull()))])>0:
-        print(f"siren without country_code_map: {sirene[(~sirene.COG.isnull())&((sirene.iso2.isnull())|(sirene.iso3.isnull()))].siren.unique()}")
+    if len(sirene[(~sirene.COG.isnull())&((sirene.iso2.isnull())|(sirene.country_code_map.isnull()))])>0:
+        print(f"siren without country_code_map: {sirene[(~sirene.COG.isnull())&((sirene.iso2.isnull())|(sirene.country_code_map.isnull()))].siren.unique()}")
 
-    sirene = (sirene.rename(columns={'iso3':'country_code_map', 'parent_iso3':'country_code'})
-              .drop(columns=['iso_3', 'iso2','COG','Lieudit_BP']))
+    
+    sirene.drop(columns=['iso_3', 'iso3', 'iso2','COG','Lieudit_BP'], inplace=True)
 
     sirene.mask(sirene=='', inplace=True)
     return sirene
