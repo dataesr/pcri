@@ -34,8 +34,9 @@ def paysage_prep(DUMP_PATH, countries):
             )[['nom_long','numero_paysage','an_fermeture','sigle','adresse','code_postal','ville', 'iso3', 'com_code','ref']]
 
     paysage=paysage.merge(countries[['iso3', 'parent_iso3']].drop_duplicates(), how='left', on='iso3')
-    paysage=paysage.merge(countries[['parent_iso3', 'country_name_en']].drop_duplicates(), on='parent_iso3')
     paysage.rename(columns={'iso3':'country_code_map', 'parent_iso3':'country_code'})
+    paysage=paysage.merge(countries[['iso3', 'country_name_en']].drop_duplicates(), left_on='country_code', right_on='iso3')
+    
 
 # paysage.loc[paysage.country_code_map.isnull(), 'country_code_map'] = 'FRA'
 
