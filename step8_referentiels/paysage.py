@@ -7,7 +7,7 @@ def paysage_import(dataset):
     result=response.json()
     return pd.DataFrame(result)
 
-def paysage_prep(DUMP_PATH, my_countries):
+def paysage_prep(DUMP_PATH, countries):
     import pandas as pd, numpy as np
     from urllib.parse import urlparse
     # traitement PAYSAGE
@@ -33,8 +33,8 @@ def paysage_prep(DUMP_PATH, my_countries):
             .assign(an_fermeture=df.closuredate.str[0:4], ref='paysage')
             )[['nom_long','numero_paysage','an_fermeture','sigle','adresse','code_postal','ville', 'iso3', 'com_code','ref']]
 
-    paysage=paysage.merge(my_countries[['iso3', 'parent_iso3']].drop_duplicates(), how='left', on='iso3')
-    paysage=paysage.merge(my_countries[['parent_iso3', 'country_name_en']].drop_duplicates(), on='parent_iso3')
+    paysage=paysage.merge(countries[['iso3', 'parent_iso3']].drop_duplicates(), how='left', on='iso3')
+    paysage=paysage.merge(countries[['parent_iso3', 'country_name_en']].drop_duplicates(), on='parent_iso3')
     paysage.rename(columns={'iso3':'country_code_map', 'parent_iso3':'country_code'})
 
 # paysage.loc[paysage.country_code_map.isnull(), 'country_code_map'] = 'FRA'
