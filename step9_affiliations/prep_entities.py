@@ -184,10 +184,13 @@ def entities_preparation():
     tmp = structure.loc[(structure.legalName_dup!=structure.businessName_dup)&(~structure.businessName_dup.isnull()), ['generalPic',  'country_code', 'legalName_dup', 'businessName_dup']]
     tmp['entities_full'] = [x1 if x2 in x1 else x1+' '+x2 for x1, x2 in zip(tmp['legalName_dup'], tmp['businessName_dup'])]
 
+
+
     if len(structure.drop_duplicates())!=len(structure.merge(tmp[['generalPic', 'country_code', 'legalName_dup', 'businessName_dup', 'entities_full']].drop_duplicates(), how='left', on=['generalPic','businessName_dup', 'legalName_dup','country_code']).drop_duplicates()):
         print("- Attention risque de doublon si merge de tmp et structure")
     else:
         structure = structure.merge(tmp[['generalPic', 'country_code','legalName_dup', 'businessName_dup', 'entities_full']].drop_duplicates(), how='left', on=['generalPic','legalName_dup', 'businessName_dup', 'country_code']).drop_duplicates()
+        structure = structure.mask(structure=='')
         structure.loc[structure.entities_full.isnull(), 'entities_full'] = structure.entities_name_dup.str.lower()
 
     #############
@@ -563,10 +566,13 @@ def entities_preparation():
        .drop_duplicates()
        .mask(perso == ''))
 
+    perso[['tel_clean','email','num_nat_struct']] = perso[['tel_clean','email','num_nat_struct']].replace(r"\s+", "", regex=True)
+    perso[['contact','domaine_email']] = perso[['contact','domaine_email']].replace(r"\s+", "-", regex=True)
+    
     print(f"size perso for merging: {len(perso)}")
     var_perso=['tel_clean', 'domaine_email', 'contact', 'num_nat_struct', 'email']
     perso=(perso.groupby(['project_id', 'generalPic', 'stage'], as_index=False)[var_perso]
-        .agg(lambda x: ';'.join( x.dropna().unique()))
+        .agg(lambda x: ' '.join( x.dropna().unique()))
         .drop_duplicates())
 
     print(f"size entities_all before perso: {len(entities_all)}")
@@ -615,9 +621,6 @@ def entities_preparation():
 
     HTML(entities_all.loc[(entities_all.country_code=='FRA')&(~entities_all.city.isnull()), ['city']].drop_duplicates().sort_values('city').to_html())
 
-    # tmp = entities_all.loc[entities_all.country_code=='FRA', ['street_2']]
-    # tmp = adr_tag(tmp, ['street_2'])
-    # entities_all = pd.concat([entities_all.drop(columns='street_2'), tmp], axis=1)
 
     tmp = entities_all[['country_code','street_2']]
     tmp = adr_tag(tmp, ['street_2'])
