@@ -1,5 +1,5 @@
-import re, pandas as pd
 def sourcer_ID(df_id:list) -> list:
+    import re
     print("### sourcer les identifiants pour getInformations")
     liste = list(set(df_id))
     source = {'^[0-9]{9}$':'siren', 
@@ -22,6 +22,7 @@ def sourcer_ID(df_id:list) -> list:
 
 
 def get_source_ID(df, var_id):
+    import pandas as pd
     l=list(set(df[var_id].unique()))   
     l=sourcer_ID(l)
     return pd.DataFrame(l).rename(columns={'api_id':var_id})
