@@ -179,7 +179,8 @@ def ref_externe_preparation(rnsr_adr_corr=False, sirene_load=False):
     ref_all = ref_all[
         ['ref', 'num_nat_struct', 'numero_ror', 'siren', 'siret', 'numero_rna', 'numero_paysage',  
         'sigle', 'nom_entier',  'libelle1', 'nom_entier_2', 'adresse_2_tag', 'ville_tag', 'etabs_rnsr', 'email','web', 'tel_clean',
-        'code_postal',  'ville', 'adresse', 'label_num_ro_rnsr', 'an_fermeture', 'country_code_map', 'country_code', 'country_name_en', 
+        'code_postal',  'ville', 'adresse', 'label_num_ro_rnsr', 'an_fermeture', 'dep_code',
+        'country_code_map', 'country_code', 'country_name_en'
         ]].drop_duplicates()
 
     print(f"{ref_all.info()}\nsize ref_all: {len(ref_all)}")
