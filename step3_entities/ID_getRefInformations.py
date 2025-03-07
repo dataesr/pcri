@@ -1,8 +1,8 @@
 from config_api import sirene_headers, scanr_headers, paysage_headers
 from config_path import PATH_SOURCE, PATH_WORK, PATH_REF
-from api_requests.ror import *
-from api_requests.sirene import *
-from api_requests.paysage import *
+from api_process.ror import *
+from api_process.sirene import *
+from api_process.paysage import *
 from dotenv import load_dotenv
 load_dotenv()
 
