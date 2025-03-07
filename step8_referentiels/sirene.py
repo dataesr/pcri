@@ -144,7 +144,7 @@ def sirene_prep(DUMP_PATH, countries):
     sirene.loc[sirene.iso3.isnull(), 'iso3'] = 'FRA'
 
     sirene = (sirene.merge(countries[['iso3','parent_iso3']], how='left', on='iso3')
-              .merge(countries[['parent_iso3', 'country_name_en']], how='left', on='parent_iso3'))
+              .merge(countries[['parent_iso3', 'country_name_en']].drop_duplicates(), how='left', on='parent_iso3'))
 
     if len(sirene[(~sirene.COG.isnull())&((sirene.iso2.isnull())|(sirene.iso3.isnull()))])>0:
         print(f"siren without country_code_map: {sirene[(~sirene.COG.isnull())&((sirene.iso2.isnull())|(sirene.iso3.isnull()))].siren.unique()}")
