@@ -145,11 +145,12 @@ def sirene_prep(DUMP_PATH, countries):
 
     sirene = (sirene.merge(countries[['iso3','parent_iso3']], how='left', on='iso3')
               .merge(countries[['parent_iso3', 'country_name_en']], how='left', on='parent_iso3'))
+
+    if len(sirene[(~sirene.COG.isnull())&((sirene.iso2.isnull())|(sirene.iso3.isnull()))])>0:
+        print(f"siren without country_code_map: {sirene[(~sirene.COG.isnull())&((sirene.iso2.isnull())|(sirene.iso3.isnull()))].siren.unique()}")
+
     sirene = (sirene.rename(columns={'iso3':'country_code_map', 'parent_iso3':'country_code'})
               .drop(columns=['iso_3', 'iso2','COG','Lieudit_BP']))
-    
-    if len(sirene[(~sirene.COG.isnull())&((sirene.iso2.isnull())|(sirene.country_code_map.isnull()))])>0:
-        print(f"siren without country_code_map: {sirene[(~sirene.COG.isnull())&((sirene.iso2.isnull())|(sirene.country_code_map.isnull()))].siren.unique()}")
 
     sirene.mask(sirene=='', inplace=True)
     return sirene
