@@ -136,8 +136,8 @@ def sirene_prep(DUMP_PATH, countries):
     country_s.drop(columns=['COG_', 'CODEISO2_', 'CRPAY'], inplace=True)
     sirene = sirene.merge(country_s, how='left', on='COG').rename(columns={'CODEISO2':'iso2'})
     sirene = sirene.merge(countries[['iso2', 'iso3', 'parent_iso3']], how='left', on='iso2')
-    sirene = sirene.merge(countries[['parent_iso3', 'country_name_en']], how='left', on='parent_iso3')
     sirene.loc[sirene.parent_iso3.isnull(), 'parent_iso3'] = 'FRA'
+    sirene = sirene.merge(countries[['parent_iso3', 'country_name_en']], how='left', on='parent_iso3')
     sirene.rename(columns={'iso3':'country_code_map', 'parent_iso3':'country_code'}, inplace=True)
     # sirene.loc[sirene.country_code_map.isnull(), 'country_code_map'] = 'FRA'
     if len(sirene[(~sirene.COG.isnull())&((sirene.iso2.isnull())|(sirene.country_code_map.isnull()))])>0:
