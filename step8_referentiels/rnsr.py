@@ -159,7 +159,7 @@ def rnsr_prep(DUMP_PATH, countries, corr=False):
                         'cp' : 'code_postal'})
                             
         )[['num_nat_struct', 'an_fermeture', 'nom_long', 'sigle', 'label_num_ro_rnsr', 
-            'etabs_rnsr', 'ville', 'com_code', 'adresse', 'code_postal', 
+            'etabs_rnsr', 'ville', 'com_code', 'adresse', 'code_postal',
             'adresse_full', 'tel', 'email', 'ref']]
     
     if corr==True:
