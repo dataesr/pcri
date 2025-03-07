@@ -41,20 +41,12 @@ def get_mires():
         pd.to_pickle(paysage_mires, file)
     return paysage_mires
 
-def ID_to_IDpaysage(lid_source, siren_siret=[]):
-    import time, requests, pandas as pd
+
+def get_IDpaysage(paysage_liste):
+    import time, requests
     from config_api import paysage_headers
-    from config_path import PATH_SOURCE
     from dotenv import load_dotenv
     load_dotenv()
-
-    
-    print("## harvest IDpaysage from ID")
-    paysage_liste = list(set([i['api_id'] for i in lid_source if not i['source_id'] in ['ror', 'siren', 'paysage']]))
-    print(f"- start paysage liste: {len(paysage_liste)}")
-    if 'siren_siret' in globals() or 'siren_siret' in locals():
-        paysage_liste = list(set(paysage_liste+siren_siret))
-    print(f"- new paysage liste with siren_siret: {len(paysage_liste)}")
 
     print(time.strftime("%H:%M:%S"))
     paysage_id = []
@@ -66,7 +58,7 @@ def ID_to_IDpaysage(lid_source, siren_siret=[]):
 
         time.sleep(0.2)
         try:
-            url1 = url = f'https://api.paysage.dataesr.ovh/identifiers?filters[value]={str(i)}'
+            url1 = f'https://api.paysage.dataesr.ovh/identifiers?filters[value]={str(i)}'
             rinit = requests.get(url1, headers=paysage_headers, verify=False)
             r = rinit.json()['data']
             if r:
@@ -88,6 +80,22 @@ def ID_to_IDpaysage(lid_source, siren_siret=[]):
                         
     print(f"1 - resultat id entities paysagés {len(paysage_id)}")
     print(time.strftime("%H:%M:%S"))
+    return paysage_id
+
+
+def ID_to_IDpaysage(lid_source, siren_siret=[]):
+    import pandas as pd
+    from config_path import PATH_SOURCE
+    from api_process.paysage import get_IDpaysage
+
+    print("## harvest IDpaysage from ID")
+    paysage_liste = list(set([i['api_id'] for i in lid_source if not i['source_id'] in ['ror', 'siren', 'paysage']]))
+    print(f"- start paysage liste: {len(paysage_liste)}")
+    if 'siren_siret' in globals() or 'siren_siret' in locals():
+        paysage_liste = list(set(paysage_liste+siren_siret))
+    print(f"- new paysage liste with siren_siret: {len(paysage_liste)}")
+
+    paysage_id = get_IDpaysage(paysage_liste)
     
     file_name = f"{PATH_SOURCE}paysage_id.pkl"
     with open(file_name, 'wb') as file:
