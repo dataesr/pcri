@@ -139,8 +139,9 @@ def rnsr_import(DUMP_PATH):
     pd.json_normalize(rnsr).to_pickle(f"{DUMP_PATH}rnsr_complet.pkl")
 
 
-def rnsr_prep(DUMP_PATH):
-    import pandas as pd
+def rnsr_prep(DUMP_PATH, countries, corr=False):
+    import pandas as pd, sys
+    from functions_shared import com_iso3, work_csv
     rnsr = pd.read_pickle(f"{DUMP_PATH}rnsr_complet.pkl")
 
     rnsr.loc[~rnsr.date_end.isnull(), 'date_end'] = rnsr.loc[~rnsr.date_end.isnull()].date_end.astype(int)
@@ -160,6 +161,30 @@ def rnsr_prep(DUMP_PATH):
         )[['num_nat_struct', 'an_fermeture', 'nom_long', 'sigle', 'label_num_ro_rnsr', 
             'etabs_rnsr', 'ville', 'com_code', 'adresse', 'code_postal', 
             'adresse_full', 'tel', 'email', 'ref']]
+    
+    if corr==True:
+        if len(rnsr.loc[(rnsr.code_postal.isnull())|(rnsr.ville.isnull())])>0:
+            work_csv(rnsr.loc[(rnsr.code_postal.isnull())|(rnsr.ville.isnull()), ['num_nat_struct', 'nom_long','adresse_full', 'code_postal', 'ville']].drop_duplicates(), 'rnsr_adresse_a_completer')
+            sys.exit("ATTENTION ! fix rnsr adresses into data_work -> rnsr_adresse_a_completer")
+        else:
+            print("RNSR not fix address")
+
+    add_ad = pd.read_csv(f"{DUMP_PATH}rnsr_adresse_manquante.csv",  sep=';', encoding='ANSI', dtype={'cp_corr':str})
+    add_ad = add_ad[['num_nat_struct', 'cp_corr', 'city_corr', 'country_corr']].drop_duplicates()
+
+    rnsr = rnsr.merge(add_ad, how='left', on='num_nat_struct')
+    rnsr.loc[~rnsr.cp_corr.isnull(), 'code_postal'] = rnsr.cp_corr
+    rnsr.loc[~rnsr.city_corr.isnull(), 'ville'] = rnsr.city_corr
+    # rnsr.loc[~rnsr.country_corr.isnull(), 'iso3'] = rnsr.country_corr
+
+    com_iso=com_iso3()
+    rnsr = rnsr.merge(com_iso, how='left', on='com_code')
+    rnsr.loc[~rnsr.country_corr.isnull(), 'iso_3'] = rnsr.loc[~rnsr.country_corr.isnull(), 'country_corr']
+
+    rnsr = rnsr.merge(countries[['iso3', 'parent_iso3']], how='left', on='iso3')
+    rnsr.loc[rnsr.parent_iso3.isnull(), 'parent_iso3'] = 'FRA'
+    rnsr = rnsr.merge(countries[['parent_iso3', 'country_name_en']], how='left', on='parent_iso3')
+    rnsr.rename(columns={'iso3':'country_code_map', 'parent_iso3':'country_code'}, inplace=True)
 
     rnsr.mask(rnsr=='', inplace=True)
     return rnsr
