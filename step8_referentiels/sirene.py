@@ -71,6 +71,7 @@ def sirene_refext(DUMP_PATH):
 
 def sirene_prep(DUMP_PATH, countries):
     import pandas as pd
+    from functions_shared import com_iso3
     df = pd.read_pickle(f"{DUMP_PATH}sirene_ref_moulinette.pkl")
 
     sirene = df.loc[df['statutDiffusionEtablissement']!='P']
@@ -135,11 +136,18 @@ def sirene_prep(DUMP_PATH, countries):
     country_s.loc[~country_s.CRPAY.isnull(), 'CODEISO2'] = country_s.CODEISO2_
     country_s.drop(columns=['COG_', 'CODEISO2_', 'CRPAY'], inplace=True)
     sirene = sirene.merge(country_s, how='left', on='COG').rename(columns={'CODEISO2':'iso2'})
-    sirene = sirene.merge(countries[['iso2', 'iso3', 'parent_iso3']], how='left', on='iso2')
-    sirene.loc[sirene.parent_iso3.isnull(), 'parent_iso3'] = 'FRA'
-    sirene = sirene.merge(countries[['parent_iso3', 'country_name_en']], how='left', on='parent_iso3')
-    sirene.rename(columns={'iso3':'country_code_map', 'parent_iso3':'country_code'}, inplace=True)
-    # sirene.loc[sirene.country_code_map.isnull(), 'country_code_map'] = 'FRA'
+
+    sirene = sirene.merge(countries[['iso2', 'iso3']], how='left', on='iso2')
+    com_iso=com_iso3()
+    sirene = sirene.merge(com_iso, how='left', on='com_code')
+    sirene.loc[~sirene.iso_3.isnull(), 'iso3'] = sirene.loc[~sirene.iso_3.isnull(), 'iso_3'] 
+    sirene.loc[sirene.iso3.isnull(), 'iso3'] = 'FRA'
+
+    sirene = (sirene.merge(countries[['iso3','parent_iso3']], how='left', on='iso3')
+              .merge(countries[['parent_iso3', 'country_name_en']], how='left', on='parent_iso3'))
+    sirene = (sirene.rename(columns={'iso3':'country_code_map', 'parent_iso3':'country_code'})
+              .drop(columns=['iso_3', 'iso2']))
+    
     if len(sirene[(~sirene.COG.isnull())&((sirene.iso2.isnull())|(sirene.country_code_map.isnull()))])>0:
         print(f"siren without country_code_map: {sirene[(~sirene.COG.isnull())&((sirene.iso2.isnull())|(sirene.country_code_map.isnull()))].siren.unique()}")
 
