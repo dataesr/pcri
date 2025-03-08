@@ -9,6 +9,7 @@ def paysage_import(dataset):
 
 def paysage_prep(DUMP_PATH, countries):
     import pandas as pd, numpy as np
+    from functions_shared import com_iso3
     from urllib.parse import urlparse
     # traitement PAYSAGE
 
@@ -33,13 +34,16 @@ def paysage_prep(DUMP_PATH, countries):
             .assign(an_fermeture=df.closuredate.str[0:4], ref='paysage')
             )[['nom_long','numero_paysage','an_fermeture','sigle','adresse','code_postal','ville', 'iso3', 'com_code','ref']]
 
+
+    com_iso=com_iso3()
+    paysage = paysage.merge(com_iso, how='left', on='com_code')
+    paysage.loc[~paysage.iso_3.isnull(), 'iso3'] = paysage.loc[~paysage.iso_3.isnull(), 'iso_3']
+
     paysage=paysage.merge(countries[['iso3', 'parent_iso3']].drop_duplicates(), how='left', on='iso3')
-    paysage.rename(columns={'iso3':'country_code_map', 'parent_iso3':'country_code'}, inplace=True)
+    paysage=paysage.rename(columns={'iso3':'country_code_map', 'parent_iso3':'country_code'}).drop(columns='iso_3')
+    paysage.loc[paysage.country_code.isnull(), 'country_code'] = 'FRA'
     paysage=paysage.merge(countries[['iso3', 'country_name_en']].drop_duplicates(), left_on='country_code', right_on='iso3')
     
-
-# paysage.loc[paysage.country_code_map.isnull(), 'country_code_map'] = 'FRA'
-
     paysage.loc[~paysage.an_fermeture.isnull(), 'an_fermeture'] = paysage.loc[~paysage.an_fermeture.isnull()].an_fermeture.astype(int)
     paysage = paysage[(paysage.an_fermeture.isnull())|(paysage.an_fermeture > 2019)]
 
