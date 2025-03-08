@@ -1,37 +1,12 @@
 
 # traitement SIRENE
-def sirene_refext(DUMP_PATH):
+from retry import retry
+@retry(delay=100, tries=3)
+
+def sirene_import(DUMP_PATH):
     import requests, pandas as pd
-    requests.packages.urllib3.disable_warnings(requests.packages.urllib3.exceptions.InsecureRequestWarning)  
-    # from io import (BytesIO, StringIO)
     from config_api import sirene_headers
     from config_path import PATH_REF
-
-    def get_last_info_siret(x):
-        tmp = [e for e in x if e.get('dateFin') is None]
-        tmp = sorted(tmp, key=lambda k: k['dateDebut'], reverse=True)
-        if len(tmp)>0:
-            return tmp[0]
-        tmp = sorted(x, key=lambda k: k['dateFin'], reverse=True)
-        if len(tmp)>0:
-            return tmp[0]
-        return {}
-
-    def harvest_data():
-        for e in range(rinit.json().get("header").get("nombre")):
-            r2 = rinit.json()['etablissements'][e]
-            period = r2.get("nombrePeriodesEtablissement")
-            response_for_this_siret = [] 
-            for j in range(period):
-                try:
-                    rj = r2.get('periodesEtablissement')[j]
-                    response_for_this_siret.append(rj)
-                except:
-                    pass
-            response_siret = get_last_info_siret(response_for_this_siret)
-            r2.pop('periodesEtablissement')
-            r2.update(response_siret)
-            return r2
 
     S_PKL = pd.read_pickle(f'{PATH_REF}sirene_df.pkl').naf_et.unique()
     CHAMPS="""siren, dateCreationUniteLegale, siret, dateCreationEtablissement, sigleUniteLegale, denominationUniteLegale, 
@@ -55,16 +30,89 @@ def sirene_refext(DUMP_PATH):
 
         if rinit.status_code == 200:
             if max_rec <= 1000:
-                result.append(harvest_data())
+                result.append(rinit.json().get('etablissements'))
 
 
             if max_rec > 1000:   
                 while rinit.json().get("header").get("nombre") > 0:
-                    result.append(harvest_data())
+                    result.append(rinit.json().get('etablissements'))
 
                     cur = rinit.json().get('header').get('curseurSuivant')
                     url=f'https://api.insee.fr/entreprises/sirene/siret?q={q}&nombre=1000&champs={CHAMPS}&curseur={cur}' 
                     rinit = requests.get(url,  headers=sirene_headers, verify=False)
+                    
+    pd.json_normalize(result).to_pickle(f"{DUMP_PATH}sirene_ref_moulinette.pkl")
+
+
+def sirene_refext(DUMP_PATH):
+    import requests, pandas as pd
+    requests.packages.urllib3.disable_warnings(requests.packages.urllib3.exceptions.InsecureRequestWarning)  
+    from config_api import sirene_headers
+    from config_path import PATH_REF
+
+    def get_last_info_siret(x):
+        tmp = [e for e in x if e.get('dateFin') is None]
+        tmp = sorted(tmp, key=lambda k: k['dateDebut'], reverse=True)
+        if len(tmp)>0:
+            return tmp[0]
+        tmp = sorted(x, key=lambda k: k['dateFin'], reverse=True)
+        if len(tmp)>0:
+            return tmp[0]
+        return {}
+
+    def harvest_data(r):
+        period = r.get("nombrePeriodesEtablissement")
+        response_for_this_siret = [] 
+        for j in range(period):
+            try:
+                rj = r.get('periodesEtablissement')[j]
+                response_for_this_siret.append(rj)
+            except:
+                pass
+        response_siret = get_last_info_siret(response_for_this_siret)
+        r.pop('periodesEtablissement')
+        r.update(response_siret)
+        return r
+
+    S_PKL = pd.read_pickle(f'{PATH_REF}sirene_df.pkl').naf_et.unique()
+    CHAMPS="""siren, dateCreationUniteLegale, siret, dateCreationEtablissement, sigleUniteLegale, denominationUniteLegale, 
+    nomUniteLegale,
+    prenom1UniteLegale, categorieEntreprise,categorieJuridiqueUniteLegale,activitePrincipaleUniteLegale,
+    identifiantAssociationUniteLegale,
+    codeCommuneEtablissement,numeroVoieEtablissement,typeVoieEtablissement, libelleVoieEtablissement,complementAdresseEtablissement,
+    codePostalEtablissement,libelleCommuneEtablissement,codePaysEtrangerEtablissement,libelleCommuneEtrangerEtablissement,
+    enseigne1Etablissement,enseigne2Etablissement,enseigne3Etablissement,denominationUsuelleEtablissement,activitePrincipaleEtablissement,
+    dateDebut,nombrePeriodesEtablissement,statutDiffusionEtablissement""".replace('\n','')
+
+    result = []
+
+    for i in S_PKL:
+        q=f'periode(etatAdministratifEtablissement:A AND activitePrincipaleEtablissement:{i}) AND etablissementSiege:true'
+        url=f'https://api.insee.fr/entreprises/sirene/siret?q={q}&nombre=1000&champs={CHAMPS}&curseur=*' 
+        rinit = requests.get(url,  headers=sirene_headers, verify=False)
+        max_rec = rinit.json().get("header").get("total")
+        print(f"{rinit.json().get('header')}, {q}")
+
+
+        if rinit.status_code == 200:
+            r=rinit.json()['etablissements']
+            nb=int(rinit.json().get("header").get("nombre"))
+
+            if max_rec <= 1000:
+                for e in range(0, nb):
+                    result.append(harvest_data(r[e]))
+
+
+            if max_rec > 1000:   
+                while nb > 0:
+                    for e in range(0, nb):
+                        result.append(harvest_data(r[e]))
+
+                    cur = rinit.json().get('header').get('curseurSuivant')
+                    url=f'https://api.insee.fr/entreprises/sirene/siret?q={q}&nombre=1000&champs={CHAMPS}&curseur={cur}' 
+                    rinit = requests.get(url,  headers=sirene_headers, verify=False)
+                    r=rinit.json()['etablissements']
+                    nb=int(rinit.json().get("header").get("nombre"))
                     
     pd.json_normalize(result).to_pickle(f"{DUMP_PATH}sirene_ref_moulinette.pkl")
 
