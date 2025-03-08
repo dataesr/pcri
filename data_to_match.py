@@ -1,4 +1,4 @@
-import pandas as pd, pickle, numpy as np
+import pandas as pd, pickle, numpy as np, datetime
 pd.options.mode.copy_on_write = True
 from IPython.display import HTML
 
@@ -7,86 +7,46 @@ from step8_referentiels.referentiels import ref_externe_preparation
 from step9_affiliations.prep_entities import entities_preparation
 from functions_shared import work_csv
 from step9_affiliations.organismes_cleaning import organismes_back
+from step9_affiliations.dataset_describe import dataset_decribe
 
-
-### one time
+######### one time
 # organismes_back('2024')
 
-
-# ref_externe_preparation()
+######### si actualisation -> rnsr_adr_corr = true pour nettoyer les adresses problématiques du rnsr
+####### sirene_load = true si besoin de charger les données du SI sirene
+# ref_externe_preparation(rnsr_adr_corr=False, sirene_load=False, rnsr_load=False)
 
 # entities_preparation()
- ### si reprise du code en cours chargement des pickles -> entities_all
+######## si reprise du code en cours chargement des pickles -> entities_all
 # keep = pd.read_pickle(f'{PATH}participants/data_for_matching/structure_fr.pkl')
 # struct_et = pd.read_pickle(f'{PATH}participants/data_for_matching/struct_et.pkl')
 
 def data_import():
     from config_path import PATH_MATCH,  PATH_CLEAN
+    proj = pd.read_pickle(f"{PATH_CLEAN}projects_current.pkl")
     ref_all = pd.read_pickle(f"{PATH_MATCH}ref_all.pkl")
     print(f"size ref_all init: {len(ref_all)}")
     entities_all = pd.read_pickle(f'{PATH_MATCH}entities_all.pkl')
     print(f"size entities_all init: {len(entities_all)}")
     # pers = pd.read_pickle(f"{PATH_CLEAN}persons_current.pkl")
     # print(f"size persons: {len(pers)}")
-    return ref_all, entities_all
-ref_all, entities_all = data_import()
-
-# perso = (perso[['project_id', 'generalPic', 'stage', 'tel_clean', 'email',
-#        'domaine_email', 'contact', 'num_nat_struct']]
-#        .mask(perso == ''))
-
-# var_perso=['tel_clean', 'domaine_email', 'contact', 'num_nat_struct', 'email']
-# perso=(pers
-#     .mask(pers == '')
-#     .groupby(['project_id', 'generalPic', 'stage'], as_index=False)[var_perso]
-#     .agg(lambda x: ';'.join( x.dropna().unique()))
-#     .drop_duplicates())
-    
-#         #    .agg(lambda x: x.split(';') if isinstance(x, str) else [])
-# # perso=perso[~perso.astype(str).duplicated()]
-# print(f"size perso for merging: {len(perso)}")
-
-# print(f"size entities_all before perso: {len(entities_all)}")
-# tmp=(entities_all.drop(columns='_merge')
-#     .merge(perso, how='left', on=['project_id','generalPic', 'stage'], indicator=True))
-# print(f"size entities_all after perso: {len(tmp)}")
-
-# tmp1=tmp[tmp._merge=='both']
-
-# var_perso.append('_merge')
-# var_perso.remove('contact')
-# tmp2=(tmp[tmp._merge=='left_only']
-#     .drop(columns=var_perso)
-#     .merge(perso.drop(columns=['stage'])
-#     .drop_duplicates(), how='inner', on=['project_id','generalPic', 'contact']))
-
-# if len(tmp2)>0:
-#     # tmp=pd.concat([tmp[tmp._merge=='left_only'], tmp1, tmp2], ignore_index=True)
-#     print(f"A verifier code si tmp2 n'est pas null: {len(tmp)}")
-# else:
-#     tmp=pd.concat([tmp[tmp._merge=='left_only'], tmp1], ignore_index=True)
-#     print(f"size entities_all after perso clean: {len(tmp)}")
-
-# #############
-# #merge des nouveaux nns
-
-# tmp=tmp.mask(tmp=='')
-# tmp['num_nat_struct'] = tmp['num_nat_struct'].map(lambda x: x.split(';') if isinstance(x, str) else [])
-
-# tmp.loc[tmp.rnsr_back.str.len()>0, 'method'] = 'orga'
-# tmp.loc[(tmp.method.isnull())&(tmp.rnsr_merged.str.len()>0), 'method'] = 'corda'
-# tmp.loc[(tmp.method.isnull())&(tmp.num_nat_struct.str.len()>0), 'method'] = 'openalex'
-# tmp.loc[(tmp.method=='corda')&(tmp.num_nat_struct.str.len()>0), 'method'] = tmp.method+';openalex'
-# tmp.loc[tmp.method.str.contains('openalex', na=False), 'resultat'] = 'a controler'
+    return ref_all, entities_all, proj
+ref_all, entities_all, proj = data_import()
 
 
-# tmp.loc[tmp.rnsr_merged.isnull(), 'rnsr_merged'] = tmp.loc[tmp.rnsr_merged.isnull(),'rnsr_merged'].apply(lambda x: [])
-# tmp.loc[(tmp.method=='corda')|(tmp.method=='openalex'), 'rnsr_merged'] = tmp.apply(lambda x: list(set(x['rnsr_merged'] + x['num_nat_struct'])), axis=1)
+#############################
+tmp=entities_all.copy()
+print(f"size entities_all: {len(tmp)}")
 
+print("## create p_key/p_key_id")
+tmp['p_key_id'] = tmp.project_id+'-'+tmp.orderNumber+'-'+tmp.generalPic
+tmp['part_order'] = tmp.project_id+'-'+tmp.orderNumber
+tmp['p_key']=tmp.reset_index().index+1
+tmp['p_key'] = tmp['p_key'].astype(int)
 
 ### affiliations by mail
 def get_id_by_var(df, var):
-    temp=df.loc[(~df[var].isnull())&(df.rnsr_merged.str.len()==0)][var].str.split(';').explode()
+    temp=df.loc[(~df[var].isnull())&(df.rnsr_merged.str.len()==0)][var].str.split(' ').explode()
     res=ref_all.loc[(~ref_all[var].isnull())&(ref_all[var].isin(temp))]
 
     ref=list(set(res.ref))
@@ -101,65 +61,118 @@ def get_id_by_var(df, var):
 
     res=res[get_id_by_ref(var_keep, ref)]
 
-    df=df.assign(temp_tmp=df[var].str.split(';'), nns_temp=np.nan)
+    df=df.assign(temp_tmp=df[var].str.split(' '), nns_temp=np.nan)
     for i, row in res.iterrows():
         df.loc[~df[var].isnull(), 'nns_temp'] = df.loc[~df[var].isnull()].apply(lambda x: row['num_nat_struct'] if row[var] in x['temp_tmp'] else x['nns_temp'], axis=1)
 
-    df['nns_temp'] = df['nns_temp'].map(lambda x: x.split(';') if isinstance(x, str) else [])
+    df['nns_temp'] = df['nns_temp'].map(lambda x: x.split(' ') if isinstance(x, str) else [])
     df.loc[(df.nns_temp.str.len()>0)&(df.method!='orga'), 'rnsr_merged'] = df.apply(lambda x: list(set(x['rnsr_merged'] + x['nns_temp'])), axis=1)
     df.loc[(df.nns_temp.str.len()>0)&(df.method.isnull()), 'method'] = var
-    df.loc[(df.nns_temp.str.len()>0)&(~df.method.isin([var, 'orga'])), 'method'] = df.method+f';{var}'
+    df.loc[(df.nns_temp.str.len()>0)&(~df.method.isin([var, 'orga'])), 'method'] = df.method+f' {var}'
     return df
 
-tmp=get_id_by_var(entities_all, 'email')
+print("## match mail/tel")
+tmp=get_id_by_var(tmp, 'email')
 tmp=get_id_by_var(tmp, 'tel_clean')
 
 
-
-for i in ['rnsr_merged', 'org_merged', 'lab_merged']:
+for i in ['rnsr_merged', 'org_merged', 'lab_merged','org_back','rnsr_back','labo_back','city_back']:
     tmp[i]=tmp[i].fillna('')
     tmp.loc[tmp[i].str.len()==0, i]=''
 
-tmp[['rnsr_merged', 'org_merged', 'lab_merged']]=tmp[['rnsr_merged', 'org_merged', 'lab_merged']].map(lambda x: ' '.join(filter(None, x)))
+tmp[['lab_merged','rnsr_merged','org_merged','org_back','rnsr_back','labo_back','city_back']]=tmp[['lab_merged','rnsr_merged','org_merged','org_back','rnsr_back','labo_back','city_back']].map(lambda x: ' '.join(filter(None, x)))
+# tmp[['lab_merged',]]=tmp[['lab_merged']].map(lambda x: '|'.join(filter(None, x)))
+
+tmp.loc[~tmp.typ_from_lib.isnull(), 'org_merged'] = tmp.loc[~tmp.typ_from_lib.isnull(), 'org_merged'] +' '+tmp.loc[~tmp.typ_from_lib.isnull(), 'typ_from_lib'] 
+
+
+###########################################
+# create orig_ref
+print("## create orig_ref and several vars ID by orig")
+source = {'^[0-9]{9}$':'siren', 
+            '^[0-9]{14}$':'siret', 
+            '^[W|w]([A-Z0-9]{8})[0-9]{1}$':'rna', 
+            '^[0-9]{9}[A-Z]{1}$':'rnsr', 
+            '^R0([a-zA-Z0-9]{6})[0-9]{2}$':'ror', 
+            '^([a-zA-Z0-9]{5})$':'paysage', 
+            '^pic[0-9]{9}$':'pic', 
+            '^[0-9]{7}[A-Z]{1}':'uai', 
+            '^grid':'grid', 
+            '^F[0-9]{2}([a-zA-Z0-9]{7})':'finess'}
+
+
+for k,v in source.items():
+    tmp.loc[tmp.entities_id.str.match(k, na=False), 'orig_ref'] = v
+tmp.loc[tmp.orig_ref.isin(['pic','grid']), 'orig_ref']=np.nan
+
+df =(tmp.loc[~tmp.orig_ref.isnull(), ['p_key', 'orig_ref', 'entities_id']]
+    .fillna('')
+    .pivot(
+    index=["p_key"], columns=["orig_ref"], values=["entities_id"]
+))
+df.columns = [f"{b}" for a, b in df.columns]
+df=df.reset_index()
+
+tmp=tmp.merge(df, how='left', on='p_key')
+
+print("## create rattachement/a_controler")
+tmp=tmp.assign(rattachement=np.where(tmp.orig_ref.isnull(), 0,1),
+               a_controler=np.where(tmp.resultat.isnull(), 0,1))
+
+#######################################
+#######################
+
+print("## merge entities_full+departement_dup")
+# tmp.loc[(~tmp.department_dup.isnull()), 'entities_full'] = tmp.loc[~tmp.department_dup.isnull()].entities_full +' '+tmp.loc[~tmp.department_dup.isnull()].department_dup
+y=tmp.loc[(tmp.entities_full!=tmp.department_dup)&(~tmp.department_dup.isnull())&(~tmp.entities_full.isnull()), ['p_key', 'entities_full', 'department_dup']]
+
+y['entities_full'] = [x1 if x2 in x1 else x1+' '+x2 for x1, x2 in zip(y['entities_full'], y['department_dup'])]
+
+tmp=tmp.merge(y, how='left', on='p_key', suffixes=('', '_y'))
+tmp.loc[~tmp.entities_full_y.isnull(), 'entities_full'] = tmp.loc[~tmp.entities_full_y.isnull(), 'entities_full_y']
+
+print("## create keymaster (famille) and grp")
+for i in ['entities_full', 'street_2_tag', 'city_tag']:
+    tmp[i]=tmp[i].fillna('')
+tmp['keymaster'] = tmp.entities_full+tmp.street_2_tag+tmp.city_tag
+tmp['keymaster'] = tmp.keymaster.str.replace(r"\s+", '', regex=True)
+tmp['grp'] = tmp.groupby('keymaster').ngroup()
 
 
 
+#########################################
+print("## add info project/date")
+tmp=tmp.merge(proj[['project_id', 'stage', 'acronym', 'thema_name_en']], how='left', on=['project_id', 'stage'])
+tmp['date_modif'] = datetime.datetime.today().strftime('%Y-%m-%d')
 
-tmp[['project_id', 
-    'generalPic', 
-    'orderNumber', 
-    'country_code', 
-    'country_name_fr', 
-    'entities_full',
-    'stage', 
-    'role',  
-    'org_merged', 
-    'lab_merged', 
-    'rnsr_merged', 
-    'match', 
-    'webPage', 
-    'email',
-    'resultat',
-    'postalCode', 
-    'code_postal', 
-    'street_2', 
-    'street_2_tag',
-    'city',
-    'city_tag',
-    'domaine_email', 
-    'contact',  
-    'method']]
+print(f"size entities complete: {len(tmp)}")
 
+############################################
 
+def cols_selet_and_rename(df, table_out):
+    from config_path import PATH_MATCH
+    xl_path = f"{PATH_MATCH}vars_rename.xlsx"
+    tt = pd.read_excel(xl_path, sheet_name=table_out)
+    d = dict(zip(tt['col_in'], tt['col_out']))
+    df = df[tt.col_in.tolist()]
+    df = df.rename(columns=d)
+    return df
 
-tmp.rename(columns={'webPage':'web',
-                'street':'adresse',
-                'entities_full':'nom_entier',
-                'generalPic'
-                }
-            )
+tmp=cols_selet_and_rename(tmp, 'participants')
+
+## prepare match with ref_all
+
+def data_id(df, key_unit, var_orig, vars_id):
+    tmp_id=pd.DataFrame()
+    for i in vars_id:
+        tmp_id=pd.concat([tmp_id, df.loc[~df[i].isnull(), [key_unit, var_orig, i]].rename(columns={i:'id_merge', var_orig:'orig'})])
+    tmp_id=tmp_id.loc[~tmp_id.id_merge.str.startswith('pic', na=False)].drop_duplicates()
+    return tmp_id
+
+vars_id=['ref_id', 'ror', 'rna', 'paysage', 'num_nat_struct', 'siret', 'siren']
+tid=data_id(tmp, 'p_key', 'orig_ref', vars_id)
 
 
-
-# from config_path import PATH_MATCH
-# et=pd.read_pickle(f'{PATH_MATCH}struct_et.pkl')
+vars_id=['num_nat_struct', 'numero_ror', 'siren', 'siret', 'numero_rna',
+       'numero_paysage']
+tidr=data_id(ref_all, 'p_key', 'ref', vars_id)
