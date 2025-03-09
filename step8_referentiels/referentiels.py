@@ -1,5 +1,5 @@
 
-def ref_externe_preparation(rnsr_adr_corr=False, sirene_load=False):
+def ref_externe_preparation(rnsr_adr_corr=False, rnsr_load=False, sirene_load=False):
     import pandas as pd, pycountry, re, json, numpy as np
     from text_to_num import alpha2digit
 
@@ -10,7 +10,7 @@ def ref_externe_preparation(rnsr_adr_corr=False, sirene_load=False):
     # from step7_referentiels.countries import ref_countries
     from functions_shared import work_csv, prep_str_col, stop_word, my_country_code
     from step8_referentiels.ror import ror_import, ror_prep
-    from step8_referentiels.sirene import sirene_prep, sirene_refext
+    from step8_referentiels.sirene import sirene_prep, sirene_import, sirene_full
     from step8_referentiels.rnsr import rnsr_import, rnsr_prep
     from step8_referentiels.paysage import paysage_prep
     DUMP_PATH=f'{PATH}referentiel/'
@@ -23,21 +23,14 @@ def ref_externe_preparation(rnsr_adr_corr=False, sirene_load=False):
 
     ####
     if sirene_load==True:
-        sirene_refext(DUMP_PATH) # -> sirene_ref_moulinette.pkl
+        sirene_import(f'{PATH}referentiel/') # -> sirene_ref_moulinette.pkl
+        sirene_full(DUMP_PATH)
     sirene = sirene_prep(DUMP_PATH, my_countries)
 
     ### Extraction des données rnsr de dataESR
-    rnsr_import(DUMP_PATH)
+    if rnsr_load==True:
+        rnsr_import(DUMP_PATH)
     rnsr = rnsr_prep(DUMP_PATH, my_countries, rnsr_adr_corr)
-
-    # work_csv(rnsr.loc[(rnsr.code_postal.isnull())|(rnsr.ville.isnull()), ['num_nat_struct', 'nom_long','adresse_full', 'code_postal', 'ville']].drop_duplicates(), 'rnsr_adresse_a_completer')
-    # add_ad = pd.read_csv(f"{DUMP_PATH}rnsr_adresse_manquante.csv",  sep=';', encoding='ANSI', dtype={'cp_corr':str})
-    # add_ad = add_ad[['num_nat_struct', 'cp_corr', 'city_corr', 'country_corr']].drop_duplicates()
-
-    # rnsr = rnsr.merge(add_ad, how='left', on='num_nat_struct')
-    # rnsr.loc[~rnsr.cp_corr.isnull(), 'code_postal'] = rnsr.cp_corr
-    # rnsr.loc[~rnsr.city_corr.isnull(), 'ville'] = rnsr.city_corr
-    # rnsr.loc[~rnsr.country_corr.isnull(), 'country_code_map'] = rnsr.country_corr
 
     ######
     # paysage
@@ -48,12 +41,6 @@ def ref_externe_preparation(rnsr_adr_corr=False, sirene_load=False):
     ref_all = pd.concat([ror, rnsr, sirene, paysage], ignore_index=True)
     ref_all.mask(ref_all=='', inplace=True)
     ref_all = ref_all.sort_values(['ref', 'num_nat_struct', 'siren', 'numero_paysage', 'numero_ror'])
-
-    # com_iso=com_iso3()
-    # ref_all = ref_all.merge(com_iso, how='left', on='com_code')
-    # ref_all.loc[~ref_all.iso_3.isnull(), 'country_code_map'] = ref_all.iso_3
-
-    # ref_all.loc[ref_all.country_code_map.isnull(), ['ref']].value_counts()
 
     #lowercase / exochar / unicode / punct
     ref_cols=['nom_long', 'sigle', 'ville', 'adresse', 'adresse_full']
@@ -169,12 +156,12 @@ def ref_externe_preparation(rnsr_adr_corr=False, sirene_load=False):
     ###############
     # descriptif moulinette
 
-    champs=pd.read_table(
-    'C:/Users/zfriant/OneDrive/Matching/Echanges/PCRDT_TEST/ListeChamps.txt', sep='\t')
-    print(champs.table.unique())
-    for i in ['refext']:
-        print(f"var name:\n{champs.loc[champs.table==i, 'code_champ'].tolist()}\n")
-        print(f"var numerique:\n{champs.loc[(champs.table==i) & (champs.type=='num'), 'code_champ'].tolist()}")
+    # champs=pd.read_table(
+    # 'C:/Users/zfriant/OneDrive/Matching/Echanges/PCRDT_TEST/ListeChamps.txt', sep='\t')
+    # print(champs.table.unique())
+    # for i in ['refext']:
+    #     print(f"var name:\n{champs.loc[champs.table==i, 'code_champ'].tolist()}\n")
+    #     print(f"var numerique:\n{champs.loc[(champs.table==i) & (champs.type=='num'), 'code_champ'].tolist()}")
 
     ref_all = ref_all[
         ['ref', 'num_nat_struct', 'numero_ror', 'siren', 'siret', 'numero_rna', 'numero_paysage',  
@@ -182,6 +169,8 @@ def ref_externe_preparation(rnsr_adr_corr=False, sirene_load=False):
         'code_postal',  'ville', 'adresse', 'label_num_ro_rnsr', 'an_fermeture', 'dep_code',
         'country_code_map', 'country_code', 'country_name_en'
         ]].drop_duplicates()
+
+    ref_all['etabs_rnsr'] = np.nan
 
     print(f"{ref_all.info()}\nsize ref_all: {len(ref_all)}")
 
