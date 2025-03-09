@@ -2,53 +2,13 @@
 # traitement SIRENE
 from retry import retry
 @retry(delay=100, tries=3)
-
 def sirene_import(DUMP_PATH):
-    import requests, pandas as pd
-    from config_api import sirene_headers
-    from config_path import PATH_REF
-
-    S_PKL = pd.read_pickle(f'{PATH_REF}sirene_df.pkl').naf_et.unique()
-    CHAMPS="""siren, dateCreationUniteLegale, siret, dateCreationEtablissement, sigleUniteLegale, denominationUniteLegale, 
-    nomUniteLegale,
-    prenom1UniteLegale, categorieEntreprise,categorieJuridiqueUniteLegale,activitePrincipaleUniteLegale,
-    identifiantAssociationUniteLegale,
-    codeCommuneEtablissement,numeroVoieEtablissement,typeVoieEtablissement, libelleVoieEtablissement,complementAdresseEtablissement,
-    codePostalEtablissement,libelleCommuneEtablissement,codePaysEtrangerEtablissement,libelleCommuneEtrangerEtablissement,
-    enseigne1Etablissement,enseigne2Etablissement,enseigne3Etablissement,denominationUsuelleEtablissement,activitePrincipaleEtablissement,
-    dateDebut,nombrePeriodesEtablissement,statutDiffusionEtablissement""".replace('\n','')
-
-    result = []
-
-    for i in S_PKL:
-        q=f'periode(etatAdministratifEtablissement:A AND activitePrincipaleEtablissement:{i}) AND etablissementSiege:true'
-        url=f'https://api.insee.fr/entreprises/sirene/siret?q={q}&nombre=1000&champs={CHAMPS}&curseur=*' 
-        rinit = requests.get(url,  headers=sirene_headers, verify=False)
-        max_rec = rinit.json().get("header").get("total")
-        print(f"{rinit.json().get('header')}, {q}")
-
-
-        if rinit.status_code == 200:
-            if max_rec <= 1000:
-                result.append(rinit.json().get('etablissements'))
-
-
-            if max_rec > 1000:   
-                while rinit.json().get("header").get("nombre") > 0:
-                    result.append(rinit.json().get('etablissements'))
-
-                    cur = rinit.json().get('header').get('curseurSuivant')
-                    url=f'https://api.insee.fr/entreprises/sirene/siret?q={q}&nombre=1000&champs={CHAMPS}&curseur={cur}' 
-                    rinit = requests.get(url,  headers=sirene_headers, verify=False)
-                    
-    pd.json_normalize(result).to_pickle(f"{DUMP_PATH}sirene_ref_moulinette.pkl")
-
-
-def sirene_refext(DUMP_PATH):
     import requests, pandas as pd
     requests.packages.urllib3.disable_warnings(requests.packages.urllib3.exceptions.InsecureRequestWarning)  
     from config_api import sirene_headers
     from config_path import PATH_REF
+    from retry import retry
+    @retry(delay=100, tries=3)
 
     def get_last_info_siret(x):
         tmp = [e for e in x if e.get('dateFin') is None]
@@ -74,7 +34,9 @@ def sirene_refext(DUMP_PATH):
         r.update(response_siret)
         return r
 
-    S_PKL = pd.read_pickle(f'{PATH_REF}sirene_df.pkl').naf_et.unique()
+    S_PKL = pd.read_pickle(f'{PATH_REF}sirene_df.pkl').sort_values('naf_et')
+    S_PKL = S_PKL.loc[~S_PKL.naf_et.isnull()].naf_et.unique()
+
     CHAMPS="""siren, dateCreationUniteLegale, siret, dateCreationEtablissement, sigleUniteLegale, denominationUniteLegale, 
     nomUniteLegale,
     prenom1UniteLegale, categorieEntreprise,categorieJuridiqueUniteLegale,activitePrincipaleUniteLegale,
@@ -84,8 +46,6 @@ def sirene_refext(DUMP_PATH):
     enseigne1Etablissement,enseigne2Etablissement,enseigne3Etablissement,denominationUsuelleEtablissement,activitePrincipaleEtablissement,
     dateDebut,nombrePeriodesEtablissement,statutDiffusionEtablissement""".replace('\n','')
 
-    result = []
-
     for i in S_PKL:
         q=f'periode(etatAdministratifEtablissement:A AND activitePrincipaleEtablissement:{i}) AND etablissementSiege:true'
         url=f'https://api.insee.fr/entreprises/sirene/siret?q={q}&nombre=1000&champs={CHAMPS}&curseur=*' 
@@ -93,34 +53,54 @@ def sirene_refext(DUMP_PATH):
         max_rec = rinit.json().get("header").get("total")
         print(f"{rinit.json().get('header')}, {q}")
 
-
+        result = []
         if rinit.status_code == 200:
             r=rinit.json()['etablissements']
             nb=int(rinit.json().get("header").get("nombre"))
-
-            if max_rec <= 1000:
-                for e in range(0, nb):
-                    result.append(harvest_data(r[e]))
-
-
-            if max_rec > 1000:   
-                while nb > 0:
+            try:
+                if max_rec <= 1000:
                     for e in range(0, nb):
                         result.append(harvest_data(r[e]))
 
-                    cur = rinit.json().get('header').get('curseurSuivant')
-                    url=f'https://api.insee.fr/entreprises/sirene/siret?q={q}&nombre=1000&champs={CHAMPS}&curseur={cur}' 
-                    rinit = requests.get(url,  headers=sirene_headers, verify=False)
-                    r=rinit.json()['etablissements']
-                    nb=int(rinit.json().get("header").get("nombre"))
-                    
-    pd.json_normalize(result).to_pickle(f"{DUMP_PATH}sirene_ref_moulinette.pkl")
+                if max_rec > 1000:   
+                    while nb > 0:
+                        for e in range(0, nb):
+                            result.append(harvest_data(r[e]))
 
+                        cur = rinit.json().get('header').get('curseurSuivant')
+                        url=f'https://api.insee.fr/entreprises/sirene/siret?q={q}&nombre=1000&champs={CHAMPS}&curseur={cur}' 
+                        rinit = requests.get(url,  headers=sirene_headers, verify=False)
+                        r=rinit.json()['etablissements']
+                        nb=int(rinit.json().get("header").get("nombre"))
+            
+            except requests.exceptions.HTTPError as http_err:
+                print(f"\n{i} -> HTTP error occurred: {http_err}")
+            except requests.exceptions.RequestException as err:
+                print(f"\n{i} -> Error occurred: {err}")
+            except Exception as e:
+                print(f"\n{i} -> An unexpected error occurred: {e}")
+                    
+        pd.json_normalize(result).to_pickle(f"{DUMP_PATH}sirene/sirene_{i}.pkl")
+
+def sirene_full(DUMP_PATH):
+    import os, pandas as pd
+    p=f"{DUMP_PATH}sirene/"
+    file_import=[]
+    for i in os.listdir(p):
+        if os.path.isfile(os.path.join(p,i)) and 'sirene_' in i:
+            delete=['55','56','68','77','78','92','93','96','47.99']
+            if (i.split('_')[1][0:2] not in delete) & (i.split('_')[1][0:5] not in delete) :
+                print(i)
+                df2=pd.read_pickle(f"{p}{i}")
+                file_import.append(df2)
+    x=pd.concat(file_import, ignore_index=True)
+    x.to_pickle(f"{DUMP_PATH}sirene_ref.pkl")
+    return x
 
 def sirene_prep(DUMP_PATH, countries):
     import pandas as pd
     from functions_shared import com_iso3
-    df = pd.read_pickle(f"{DUMP_PATH}sirene_ref_moulinette.pkl")
+    df = pd.read_pickle(f"{DUMP_PATH}sirene_ref.pkl")
 
     sirene = df.loc[df['statutDiffusionEtablissement']!='P']
 
