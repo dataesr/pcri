@@ -4,10 +4,9 @@ from config_path import PATH_WORK
 def merge_ror(entities_tmp, ror, countries):
     print("### merge ROR")
     ccode=json.load(open("data_files/countryCode_match.json"))
-    for i in ccode:
-        for k,v in i.items():
-            ror.loc[ror.country_code==k, 'country_code'] = v
-            ror.loc[ror.country_code==k, 'country_code'] = v
+    for k,v in ccode.items():
+        ror.loc[ror.country_code==k, 'country_code'] = v
+        ror.loc[ror.country_code==k, 'country_code'] = v
     ror = (ror
            .merge(countries[['countryCode', 'country_code_mapping']], 
                   how='left', left_on='country_code', right_on='countryCode')
