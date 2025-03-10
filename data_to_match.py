@@ -3,6 +3,7 @@ pd.options.mode.copy_on_write = True
 from IPython.display import HTML
 
 # from api_requests.matcher import matcher
+from config_path import PATH
 from step8_referentiels.referentiels import ref_externe_preparation
 from step9_affiliations.prep_entities import entities_preparation
 from functions_shared import work_csv
@@ -14,7 +15,7 @@ from step9_affiliations.dataset_describe import dataset_decribe
 
 ######### si actualisation -> rnsr_adr_corr = true pour nettoyer les adresses problématiques du rnsr
 ####### sirene_load = true si besoin de charger les données du SI sirene
-# ref_externe_preparation(rnsr_adr_corr=False, sirene_load=False, rnsr_load=False)
+ref_externe_preparation(rnsr_adr_corr=False, rnsr_load=True, sirene_load=False)
 
 # entities_preparation()
 ######## si reprise du code en cours chargement des pickles -> entities_all
@@ -145,6 +146,10 @@ print("## add info project/date")
 tmp=tmp.merge(proj[['project_id', 'stage', 'acronym', 'thema_name_en']], how='left', on=['project_id', 'stage'])
 tmp['date_modif'] = datetime.datetime.today().strftime('%Y-%m-%d')
 
+
+#provisoire
+tmp=tmp.assign(entities_full_2=tmp.entities_full)
+
 print(f"size entities complete: {len(tmp)}")
 
 ############################################
@@ -161,7 +166,6 @@ def cols_selet_and_rename(df, table_out):
 tmp=cols_selet_and_rename(tmp, 'participants')
 
 ## prepare match with ref_all
-
 def data_id(df, key_unit, var_orig, vars_id):
     tmp_id=pd.DataFrame()
     for i in vars_id:
@@ -172,7 +176,69 @@ def data_id(df, key_unit, var_orig, vars_id):
 vars_id=['ref_id', 'ror', 'rna', 'paysage', 'num_nat_struct', 'siret', 'siren']
 tid=data_id(tmp, 'p_key', 'orig_ref', vars_id)
 
-
 vars_id=['num_nat_struct', 'numero_ror', 'siren', 'siret', 'numero_rna',
        'numero_paysage']
 tidr=data_id(ref_all, 'p_key', 'ref', vars_id)
+
+x=tid.merge(tidr.rename(columns={'p_key':'p_key_ref'}), how='left', on=['orig','id_merge'], indicator=True)
+
+if 'left_only' in x._merge.unique():
+    print(f"ids without ref in ref_all WHY ! {x[x._merge=='left_only'].id_merge.unique()}")
+
+x['last_freq']=x.groupby('p_key_ref')['p_key'].transform('count')
+# create rel_mesr
+ref_mesr_pcrdt=(x.loc[x._merge=='both', ['p_key_ref', 'last_freq']].drop_duplicates()
+                .merge(ref_all, how='inner', left_on='p_key_ref', right_on='p_key')
+                .drop(columns='p_key_ref'))
+
+ref_mesr_pcrdt=cols_selet_and_rename(ref_mesr_pcrdt, 'ref_mesr_pcrdt')
+
+ref_mesr_pcrdt=(ref_mesr_pcrdt
+                .assign(
+                id_ref=ref_mesr_pcrdt.reset_index().index+1, 
+                date_creation=datetime.datetime.today().strftime('%Y-%m-%d'),
+                date_modif=datetime.datetime.today().strftime('%Y-%m-%d'),
+                fusionne=np.nan, id_fusion=np.nan, id_pere=np.nan))
+
+y=x[['p_key', 'p_key_ref']].merge(ref_mesr_pcrdt[['id_ref', 'p_key_ref']], how='inner', on='p_key_ref')
+y[['p_key_ref', 'id_ref']] = y[['p_key_ref', 'id_ref']] .astype('Int64')
+
+tmp=tmp.merge(y, how='left', on='p_key')
+
+
+
+def dataset_decribe(df,table_output):
+    import io, pandas as pd, numpy as np
+    buffer = io.StringIO()
+    df.info(buf=buffer)
+    s = buffer.getvalue()
+
+    lines = s.splitlines()
+    column_info = []
+    # Analyser chaque ligne pour extraire les informations nécessaires
+    for line in lines[5:]:  # Ignorer les premières lignes (généralement des en-têtes)
+        parts = line.split()
+        if len(parts) >= 5:
+            col_order = int(parts[0])+1
+            col_name = parts[1]
+            col_nobs = parts[2]
+            col_type = parts[4]
+            column_info.append({'VARNUM':col_order,'code_champ_tech':col_name,'NOBS':col_nobs,'type':col_type})
+    tmp=pd.DataFrame(column_info)
+    tmp.loc[tmp.type=='object', 'type']='char'
+    tmp.loc[tmp.type.str.startswith('int'), 'type']='num'
+    return tmp
+
+from constant_vars import FRAMEWORK
+PATH_GILB="C:/Users/zfriant/Gilberinette/Echanges/{FRAMEWORK}/"
+
+p=dataset_decribe(tmp, 'participants')
+r=dataset_decribe(tmp, 'refext')
+rmp=dataset_decribe(tmp, 'ref_mesr_pcrdt')
+champs=pd.concat([p,r,rmp], ignore_index=True)
+
+
+champs.to_csv(f'{PATH_GILB}ListeChamps.txt', sep='\t', index=False)
+tmp.to_csv(f'{PATH_GILB}PARTICIPANTS.txt', sep='\t', index=False)
+ref_mesr_pcrdt.to_csv(f'{PATH_GILB}REF_MESR_PCRDT.txt', sep='\t', index=False)
+ref_all.to_csv(f'{PATH_GILB}REFEXT.txt', sep='\t', index=False)
