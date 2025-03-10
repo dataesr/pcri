@@ -59,7 +59,7 @@ def erc_role(df, projects):
     import pandas as pd, numpy as np
     print("### ERC ROLE")
     proj_erc = projects.loc[projects.thema_code=='ERC', ['stage', 'project_id', 'destination_code', 'action_code']]
-    df = df.merge(proj_erc, how='left', on=['stage', 'project_id']).drop_duplicates()
+    df = df.merge(proj_erc, how='left', on='project_id').drop_duplicates()
     df = df.assign(erc_role='partner')
 
     # if 'app1' in globals():
