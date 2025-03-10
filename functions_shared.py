@@ -58,14 +58,14 @@ def num_to_string(var):
 def erc_role(df, projects):
     import pandas as pd, numpy as np
     print("### ERC ROLE")
-    proj_erc = projects.loc[projects.thema_code=='ERC', ['project_id', 'destination_code', 'action_code']]
-    df = df.merge(proj_erc, how='left', on='project_id').drop_duplicates()
+    proj_erc = projects.loc[projects.thema_code=='ERC', ['stage', 'project_id', 'destination_code', 'action_code']]
+    df = df.merge(proj_erc, how='left', on=['stage', 'project_id']).drop_duplicates()
     df = df.assign(erc_role='partner')
 
-    if 'app1' in globals():
-        df.loc[(df.destination_code=='SyG')&((df.partnerType=='host')|(df.role=='coordinator')), 'erc_role'] = 'PI'
-    elif 'part' in globals():
-        df.loc[(df.destination_code=='SyG')&(df.partnerType=='beneficiary')&(pd.to_numeric(df.orderNumber, errors='coerce')<5.), 'erc_role'] = 'PI'
+    # if 'app1' in globals():
+    df.loc[(df.stage=='evaluated')&(df.destination_code=='SyG')&((df.partnerType=='host')|(df.role=='coordinator')), 'erc_role'] = 'PI'
+    # elif 'part' in globals():
+    df.loc[df.stage=='successful')&((df.destination_code=='SyG')&(df.partnerType=='beneficiary')&(pd.to_numeric(df.orderNumber, errors='coerce')<5.), 'erc_role'] = 'PI'
     
     df.loc[(df.destination_code!='SyG')&(df.role=='coordinator'), 'erc_role'] = 'PI'
     df.loc[(df.destination_code=='ERC-OTHERS'), 'erc_role'] = np.nan
