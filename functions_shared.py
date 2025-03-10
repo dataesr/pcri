@@ -65,7 +65,7 @@ def erc_role(df, projects):
     # if 'app1' in globals():
     df.loc[(df.stage=='evaluated')&(df.destination_code=='SyG')&((df.partnerType=='host')|(df.role=='coordinator')), 'erc_role'] = 'PI'
     # elif 'part' in globals():
-    df.loc[df.stage=='successful')&((df.destination_code=='SyG')&(df.partnerType=='beneficiary')&(pd.to_numeric(df.orderNumber, errors='coerce')<5.), 'erc_role'] = 'PI'
+    df.loc[(df.stage=='successful')&(df.destination_code=='SyG')&(df.partnerType=='beneficiary')&(pd.to_numeric(df.orderNumber, errors='coerce')<5.), 'erc_role'] = 'PI'
     
     df.loc[(df.destination_code!='SyG')&(df.role=='coordinator'), 'erc_role'] = 'PI'
     df.loc[(df.destination_code=='ERC-OTHERS'), 'erc_role'] = np.nan
