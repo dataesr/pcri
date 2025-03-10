@@ -101,8 +101,7 @@ def participants_load(proj):
         tot_pid = len(part[['projectNbr','orderNumber', 'generalPic', 'participantPic', 'partnerRole', 'partnerType']].drop_duplicates())
         part = part.rename(columns={"projectNbr": "project_id", "participantPic": "participant_pic", 
                                     'partnerRole': 'role', 'participantLegalName': 'name'})
-        part = part.assign(stage='successful')  
-    
+
         # remove participant with partnerRemovalStatus not null
         print(f"- subv_net avant traitement: {'{:,.1f}'.format(part['netEuContribution'].sum())}")
         length_removalstatus=len(part[~part['partnerRemovalStatus'].isnull()])
