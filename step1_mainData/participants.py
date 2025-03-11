@@ -3,7 +3,7 @@ from config_path import PATH_SOURCE
 from functions_shared import bugs_excel
 import pandas as pd, numpy as np
 
-def part_role_type(df):
+def part_role_type(df, projects):
     print("### Participants ROLE")
     df.loc[:,'role'] = df.loc[:,'role'].str.lower()
 # traitement ROLE
@@ -26,6 +26,20 @@ def part_role_type(df):
     else:
         print(f"- Attention ! il existe une modalité en plus dans la var partnerType des participants {df.loc[~df['partnerType'].isnull()].partnerType.value_counts()}")
     print(f"- size part after role: {len(df)}")
+
+
+    proj_erc = projects.loc[(projects.stage=='successful')&(projects.thema_code=='ERC'), ['stage', 'project_id', 'destination_code', 'action_code']]
+    df = df.merge(proj_erc, how='left', on='project_id').drop_duplicates()
+    df = df.assign(erc_role='other')
+    df.loc[(df.destination_code=='SyG')&(df.partnerType=='beneficiary')&(pd.to_numeric(df.orderNumber, errors='coerce')<5.), 'erc_role'] = 'PI'
+    df.loc[(df.destination_code!='SyG')&(df.role=='coordinator'), 'erc_role'] = 'PI'
+    df.loc[(df.destination_code=='ERC-OTHER')|(df.destination_code.isnull()), 'erc_role'] = np.nan
+    df.loc[(df.destination_code=='SyG')&(df.role=='coordinator'), 'role'] = 'CO-PI'
+    df.loc[(df.erc_role=='PI')&(df.role!='CO-PI'), 'role'] = 'PI'
+
+    df[['destination_code', 'partnerType', 'role', 'erc_role']].drop_duplicates().sort_values(['destination_code', 'partnerType', 'role', 'erc_role'])
+
+
     return df
 
 def check_multiP_by_proj(df):
