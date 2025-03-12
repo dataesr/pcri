@@ -4,7 +4,7 @@ from config_path import PATH_SOURCE
 import numpy as np, pandas as pd
 from functions_shared import bugs_excel
 
-def app_role_type (df):
+def app_role_type (df, projects):
     print("### applicants ROLE")
     df.loc[:,'role'] = df.loc[:,'role'].str.lower() 
   
@@ -15,7 +15,17 @@ def app_role_type (df):
         df.loc[df['role'] != 'coordinator', 'role'] = 'partner'
     else:
         print(f"- Attention ! il existe une modalité en plus dans la var ROLE dans les applicants {df['role'].unique()}")
-    return df
+    
+    proj_erc = projects.loc[(projects.stage=='evaluated')&(projects.thema_code=='ERC'), ['project_id', 'destination_code']]
+    df = df.merge(proj_erc, how='left', on='project_id').drop_duplicates()
+    df = df.assign(erc_role='other')
+    df.loc[(df.stage=='evaluated')&(df.destination_code=='SyG')&((df.partnerType=='host')|(df.role=='coordinator')), 'erc_role'] = 'PI'
+    df.loc[(df.stage=='evaluated')&(df.destination_code=='SyG')&((df.partnerType=='host')|(df.role=='coordinator')), 'erc_role'] = 'PI'
+    df.loc[(df.destination_code!='SyG')&(df.role=='coordinator'), 'erc_role'] = 'PI'
+    df.loc[(df.destination_code=='SyG')&(df.role=='coordinator'), 'role'] = 'CO-PI'
+    df.loc[(df.erc_role=='PI')&(df.role!='CO-PI'), 'role'] = 'PI'
+    df.loc[(df.destination_code=='ERC-OTHER'), 'erc_role'] = np.nan
+    return df.drop(columns=['destination_code'])
 
 def part_miss_app(tmp, df):
     if len(tmp)>0:
