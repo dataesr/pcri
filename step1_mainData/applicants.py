@@ -18,13 +18,12 @@ def app_role_type (df, projects):
     
     proj_erc = projects.loc[(projects.stage=='evaluated')&(projects.thema_code=='ERC'), ['project_id', 'destination_code']]
     df = df.merge(proj_erc, how='left', on='project_id').drop_duplicates()
-    df = df.assign(erc_role='other')
-    df.loc[(df.stage=='evaluated')&(df.destination_code=='SyG')&((df.partnerType=='host')|(df.role=='coordinator')), 'erc_role'] = 'PI'
-    df.loc[(df.stage=='evaluated')&(df.destination_code=='SyG')&((df.partnerType=='host')|(df.role=='coordinator')), 'erc_role'] = 'PI'
-    df.loc[(df.destination_code!='SyG')&(df.role=='coordinator'), 'erc_role'] = 'PI'
+    df.loc[~df.destination_code.isnull(), 'erc_role'] = 'other'
+    df.loc[(df.destination_code=='SyG')&((df.partnerType=='host')|(df.role=='coordinator')), 'erc_role'] = 'PI'
+    df.loc[(~df.destination_code.isnull())&(~df.destination_code.isin(['SyG', 'ERC-OTHER']))&(df.role=='coordinator'), 'erc_role'] = 'PI'
     df.loc[(df.destination_code=='SyG')&(df.role=='coordinator'), 'role'] = 'CO-PI'
     df.loc[(df.erc_role=='PI')&(df.role!='CO-PI'), 'role'] = 'PI'
-    df.loc[(df.destination_code=='ERC-OTHER'), 'erc_role'] = np.nan
+    df.loc[df.destination_code=='ERC-OTHER', 'erc_role'] = np.nan
     return df.drop(columns=['destination_code'])
 
 def part_miss_app(tmp, df):
