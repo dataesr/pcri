@@ -37,10 +37,7 @@ def part_role_type(df, projects):
     df.loc[(df.destination_code=='SyG')&(df.role=='coordinator'), 'role'] = 'CO-PI'
     df.loc[(df.erc_role=='PI')&(df.role!='CO-PI'), 'role'] = 'PI'
 
-    # df[['destination_code', 'partnerType', 'role', 'erc_role']].drop_duplicates().sort_values(['destination_code', 'partnerType', 'role', 'erc_role'])
-
-
-    return df
+    return df.drop(columns=['stage', 'destination_code', 'action_code'])
 
 def check_multiP_by_proj(df):
     print("\n### check unicité des participants/projets")
