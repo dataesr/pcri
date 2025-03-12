@@ -85,8 +85,7 @@ part = participants_load(proj)
 # conserve uniquement les projets présents dans proposals et applicants
 part = part.loc[part.project_id.isin(projects.project_id.unique())]
 print(f"- size part hors proj manquant: {len(part)}")
-part = part_role_type(part)
-part = erc_role(part, projects)
+part = part_role_type(part, projects)
 
 #### APPLICANTS
 app = applicants_load(prop)
@@ -109,8 +108,7 @@ app1 = app1.merge(acc, how='left', on=['project_id', 'role'])
 app1.loc[app1.requestedGrant.isnull(), 'requestedGrant'] = app1.GRANT_REQUESTED
 app1.drop(columns=['GRANT_REQUESTED'], inplace=True)
 
-app1 = app_role_type(app1)
-app1 = erc_role(app1, projects)
+app1 = app_role_type(app1, projects)
 
 del app
 
