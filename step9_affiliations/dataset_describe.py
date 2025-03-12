@@ -1,5 +1,5 @@
-def dataset_decribe(df):
-    import io
+def dataset_decribe(df,table_output):
+    import io, pandas as pd, numpy as np
     buffer = io.StringIO()
     df.info(buf=buffer)
     s = buffer.getvalue()
@@ -33,6 +33,6 @@ def dataset_decribe(df):
 
     tmp['NPOS'] = tmp.LENGTH.cumsum()-tmp.LENGTH
     tmp[['LENGTH', 'NPOS']] = tmp[['LENGTH', 'NPOS']].astype(int)
-    tmp=tmp.insert(loc=0, column='table', value='refext')
+    tmp=tmp.insert(loc=0, column='table', value=table_output)
     print(tmp)
     return tmp
