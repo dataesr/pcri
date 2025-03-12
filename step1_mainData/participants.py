@@ -27,12 +27,11 @@ def part_role_type(df, projects):
         print(f"- Attention ! il existe une modalité en plus dans la var partnerType des participants {df.loc[~df['partnerType'].isnull()].partnerType.value_counts()}")
     print(f"- size part after role: {len(df)}")
 
-
     proj_erc = projects.loc[(projects.stage=='successful')&(projects.thema_code=='ERC'), ['project_id', 'destination_code']]
     df = df.merge(proj_erc, how='left', on='project_id').drop_duplicates()
-    df = df.assign(erc_role='other')
+    df.loc[~df.destination_code.isnull(), 'erc_role'] = 'other'
     df.loc[(df.destination_code=='SyG')&(df.partnerType=='beneficiary')&(pd.to_numeric(df.orderNumber, errors='coerce')<5.), 'erc_role'] = 'PI'
-    df.loc[(df.destination_code!='SyG')&(df.role=='coordinator'), 'erc_role'] = 'PI'
+    df.loc[(~df.destination_code.isnull())&(~df.destination_code.isin(['SyG', 'ERC-OTHER']))&(df.role=='coordinator'), 'erc_role'] = 'PI'
     df.loc[(df.destination_code=='SyG')&(df.role=='coordinator'), 'role'] = 'CO-PI'
     df.loc[(df.erc_role=='PI')&(df.role!='CO-PI'), 'role'] = 'PI'
     df.loc[(df.destination_code=='ERC-OTHER')|(df.destination_code.isnull()), 'erc_role'] = np.nan
