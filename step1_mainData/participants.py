@@ -28,7 +28,7 @@ def part_role_type(df, projects):
     print(f"- size part after role: {len(df)}")
 
 
-    proj_erc = projects.loc[(projects.stage=='successful')&(projects.thema_code=='ERC'), ['stage', 'project_id', 'destination_code', 'action_code']]
+    proj_erc = projects.loc[(projects.stage=='successful')&(projects.thema_code=='ERC'), ['project_id', 'destination_code', 'action_code']]
     df = df.merge(proj_erc, how='left', on='project_id').drop_duplicates()
     df = df.assign(erc_role='other')
     df.loc[(df.destination_code=='SyG')&(df.partnerType=='beneficiary')&(pd.to_numeric(df.orderNumber, errors='coerce')<5.), 'erc_role'] = 'PI'
@@ -37,7 +37,7 @@ def part_role_type(df, projects):
     df.loc[(df.destination_code=='SyG')&(df.role=='coordinator'), 'role'] = 'CO-PI'
     df.loc[(df.erc_role=='PI')&(df.role!='CO-PI'), 'role'] = 'PI'
 
-    return df.drop(columns=['stage', 'destination_code', 'action_code'])
+    return df.drop(columns=['destination_code', 'action_code'])
 
 def check_multiP_by_proj(df):
     print("\n### check unicité des participants/projets")
