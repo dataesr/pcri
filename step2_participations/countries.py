@@ -40,7 +40,6 @@ def country_load(framework, liste_country):
                                     'countryGroupAssociation':'country_association_name'}), 
             how='outer', on='isoCountryCode'))
 
-    # for i in ['country_association_code', 'country_association_code_2020']:
     gr.loc[gr.country_association_code.str.startswith('THIRD'), 'country_group_association_code'] = "THIRD"
     gr.loc[gr.country_association_code_2020.str.startswith('THIRD'), 'country_group_association_code_2020'] = "THIRD"
     gr.loc[gr.country_association_code.isin(['ASSOCIATED', 'MEMBER-STATE']), 'country_group_association_code'] = "MEMBER-ASSOCIATED"
@@ -55,14 +54,14 @@ def country_load(framework, liste_country):
     gr['country_group_association_name_2020_fr'] = np.where(gr.country_group_association_name_2020_en=="Member States or associated", 'Pays membres ou associés', 'Pays tiers')
 
     statut_len = 5
-    if len(df['country_association_code'].drop_duplicates()) != statut_len:
-        diff = len(df['country_association_code'].unique())-statut_len
+    if len(gr['country_association_code'].drop_duplicates()) != statut_len:
+        diff = len(gr['country_association_code'].unique())-statut_len
         if diff>0:
-            print(f"1- check status countries ->\n{len(df['country_association_code'].unique())-statut_len} new status")
+            print(f"1- check status countries ->\n{len(gr['country_association_code'].unique())-statut_len} new status")
         else:
-            print(f"2 - info status countries ->\n{df['country_association_code'].nunique()-statut_len} status in data {df['country_association_code'].unique()}")
+            print(f"2 - info status countries ->\n{gr['country_association_code'].nunique()-statut_len} status in data {gr['country_association_code'].unique()}")
 
-    countries = df.merge(gr, how='left', left_on='country_code', right_on='isoCountryCode')  
+    countries = df.merge(gr, how='left', left_on='country_code', right_on='isoCountryCode').drop(columns='isoCountryCode')
 
     with open('data_files/countries_fr.json', 'r+', encoding='UTF-8') as fp:
                 countries_fr = json.load(fp)
