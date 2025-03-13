@@ -1,6 +1,6 @@
 import numpy as np
 
-def participants_calcul(part_step, part):
+def participants_calcul(part_step, part, proj):
 
     print("\n### CALCULS participants")
 
@@ -37,6 +37,10 @@ def participants_calcul(part_step, part):
                 # .rename(columns={'participant_pic':'pic'})
                 .assign(stage='successful'))    
 
+    #calcul budget ERC
+    part_proj = part_proj.assign(fund_ent_erc=np.where(part_proj.project_id.isin(proj), part_proj.calculated_fund, np.nan))
+    part_proj.loc[part_proj.project_id.isin(proj), 'calculated_fund'] = part_proj.loc[part_proj.project_id.isin(proj)].beneficiary_subv
+
     if part_step_first_len != len(part_step):
         print(f"2- ATTENTION ! pas le même nbre de lignes-> part_step: {len(part_step)}, first_part_step: {part_step_first_len}")    
 
@@ -49,6 +53,6 @@ def participants_calcul(part_step, part):
         print("5- Etape part_step/part1 -> calculated_fund OK")
     else:
         print(f"-- ATTENTION ! Revoir le calcul de calculated_other_subv:{'{:,.1f}'.format(part_proj['calculated_fund'].sum())}, netEuContribution:{'{:,.1f}'.format(part['netEuContribution'].sum())}")
-        
+
     print(f"- size part_prop: {len(part_proj)}")
     return part_proj
