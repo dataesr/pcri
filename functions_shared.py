@@ -230,6 +230,9 @@ def my_country_code():
     pycountry.countries.add_entry(alpha_2="EL", alpha_3="GRC", name="Greece")
     pycountry.countries.add_entry(alpha_2="AN", alpha_3="ANT", name="Netherlands Antilles (former 2011)")
     pycountry.countries.add_entry(alpha_2="CP", alpha_3="CPT", name="Clipperton Island")
+    pycountry.countries.add_entry(alpha_2="AX", alpha_3="ALA", name="Åland Islands")
+    pycountry.countries.add_entry(alpha_2="MF", alpha_3="MAF", name="Saint Martin (French part)")
+    pycountry.countries.add_entry(alpha_2="ZZ", alpha_3="ZZZ", name="Not available")
     dict1 = [c.__dict__['_fields'] for c in list(pycountry.countries)]
     df = (pd.DataFrame(dict1)[['alpha_2', 'alpha_3', 'name']]
                 .rename(columns={'alpha_2':'iso2', 'alpha_3':'iso3', 'name':'country_name_en'})
