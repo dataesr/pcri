@@ -1,5 +1,6 @@
 import requests, time, pandas as pd, copy
-from config_path import PATH_SOURCE, PATH_WORK
+from config_path import PATH_SOURCE, PATH
+from functions_shared import unzip_zip
 from dotenv import load_dotenv
 load_dotenv()
 requests.packages.urllib3.disable_warnings(requests.packages.urllib3.exceptions.InsecureRequestWarning) 
@@ -259,91 +260,55 @@ def ror_cleaning(r):
 ########################################
 
 def get_ror(lid_source, ror_old=None):
-
+    DUMP_PATH=f'{PATH}referentiel/'
     ####################
-    def ror_query(id):
+    def ror_import(path):
+        site = requests.get('https://zenodo.org/api/records/8436953/files')
+        r = site.json()
+        ROR_ZIP = r['entries'][0]['key']
 
-        time.sleep(0.3)
-        try:
-            url = 'https://api.ror.org/organizations?query=' + id
-            rinit = requests.get(url, verify=False)
-
-            if rinit.status_code == 200:
-                r = rinit.json()
-                nb = r.get('number_of_results')
-                if nb != 0:
-                    for i in range(nb):
-                        return r.get('items')[i]
-                    
-        except requests.exceptions.HTTPError as http_err:
-            print(f"\n{i} -> HTTP error occurred: {http_err}")
-            ror_list.append(str(i))
-        except requests.exceptions.RequestException as err:
-            print(f"\n{i} -> Error occurred: {err}")                    
-            ror_list.append(str(i))
-        except Exception as e:
-            print(f"\n{i} -> An unexpected error occurred: {e}")
+        response = requests.get(r['entries'][0]['links']['content'])
+        with open(f"{path}{ROR_ZIP}", 'wb') as f:
+            f.write(response.content)
+        return ROR_ZIP        
     #######################
-
-    def ror_relation(result):
-        
-        def relation_list(result):
-            print(f"1 - size ror: {len(result)}")
-            id_relat=[]
-            for i in [i for i in result if i is not None]:
-                if i.get('relationships', []):
-                    for elem in i['relationships']:
-                        if elem['type'] in ['Parent', 'Successor']:
-                            id_relat.append(elem['id'].split('/')[-1])
-            return id_relat        
-                        
-        id_relat=relation_list(result)               
-
+    def relation_list(result):
+        print(f"1 - size ror: {len(result)}")
+        id_relat=[]
+        for i in [i for i in result if i is not None]:
+            if i.get('relationships', []):
+                for elem in i['relationships']:
+                    if elem['type'] in ['Parent', 'Successor']:
+                        id_relat.append(elem['id'].split('/')[-1])
         id_result = []
         for elem in result:
             if elem['id']:
                 id_result.append(elem['id'].split('/')[-1])
         id_relat = list(set(id_relat).difference(set(id_result)))
-        
         print(f'2 - traitement relations id_relat={len(id_relat)}')
-        
-        n=0
-        while len(id_relat)>0:
-            for id in id_relat:
-                n=n+1
-                if n % 100 == 0: 
-                    print(f"{n}", end=',')
-
-                result.append(ror_query(id))
-            id_relat = relation_list(result)
-            id_result=[elem['id'].split('/')[-1] for elem in result if elem['id'] is not None]
-            id_relat = list(set(id_relat).difference(set(id_result)))                    
-        print(f"3- size new ror:{len(result)}")
-        return result
+        return id_relat
     ###################
 
 
     ror_list = [e['api_id'][1:] for e in lid_source if e['source_id']=='ror']
     print(f"nombre d'identifiants ror à extraire: {len(ror_list)}")
 
+    ROR_ZIPNAME = ror_import(DUMP_PATH)
+    res=unzip_zip(ROR_ZIPNAME, DUMP_PATH, f"{ROR_ZIPNAME.rsplit('.', 1)[0]}.json", 'utf-8')
+
     ror_result=[]
-    n=0
+    for i in res:
+        if i.get('id').split('/')[-1] in ror_list:
+            ror_result.append(i)
+    print(len(ror_result))
 
-    for id in ror_list:
-        n=n+1
-        if n % 100 == 0: 
-            print(f"{n}", end=',')
-        ror_result.append(ror_query(id))
-
-    while None in ror_result:
-        ror_result.remove(None)   
-        
-    if ror_result:    
-        file_name = f"{PATH_WORK}ror_current.pkl"
-        with open(file_name, 'wb') as file:
-            pd.to_pickle(ror_result, file)
-            
-    ror_result=ror_relation(ror_result)
+    relat_list=relation_list(ror_result)
+    while len(relat_list)>0:
+        for i in res:
+            if i.get('id').split('/')[-1] in relat_list:
+                ror_result.append(i)
+        print(len(ror_result))
+        relat_list=relation_list(ror_result)
 
     ror_df=ror_info(ror_result)
     ror_df=pd.json_normalize(ror_df)
@@ -360,4 +325,108 @@ def get_ror(lid_source, ror_old=None):
         with open(file_name, 'wb') as file:
             pd.to_pickle(r, file)
     return r
+
+
+# def get_ror(lid_source, ror_old=None):
+
+#     ####################
+#     def ror_query(id):
+
+#         time.sleep(0.3)
+#         try:
+#             url = 'https://api.ror.org/organizations?query=' + id
+#             rinit = requests.get(url, verify=False)
+
+#             if rinit.status_code == 200:
+#                 r = rinit.json()
+#                 nb = r.get('number_of_results')
+#                 if nb != 0:
+#                     for i in range(nb):
+#                         return r.get('items')[i]
+                    
+#         except requests.exceptions.HTTPError as http_err:
+#             print(f"\n{i} -> HTTP error occurred: {http_err}")
+#             ror_list.append(str(i))
+#         except requests.exceptions.RequestException as err:
+#             print(f"\n{i} -> Error occurred: {err}")                    
+#             ror_list.append(str(i))
+#         except Exception as e:
+#             print(f"\n{i} -> An unexpected error occurred: {e}")
+#     #######################
+
+#     def ror_relation(result):
+        
+#         def relation_list(result):
+#             print(f"1 - size ror: {len(result)}")
+#             id_relat=[]
+#             for i in [i for i in result if i is not None]:
+#                 if i.get('relationships', []):
+#                     for elem in i['relationships']:
+#                         if elem['type'] in ['Parent', 'Successor']:
+#                             id_relat.append(elem['id'].split('/')[-1])
+#             return id_relat        
+                        
+#         id_relat=relation_list(result)               
+
+#         id_result = []
+#         for elem in result:
+#             if elem['id']:
+#                 id_result.append(elem['id'].split('/')[-1])
+#         id_relat = list(set(id_relat).difference(set(id_result)))
+        
+#         print(f'2 - traitement relations id_relat={len(id_relat)}')
+        
+#         n=0
+#         while len(id_relat)>0:
+#             for id in id_relat:
+#                 n=n+1
+#                 if n % 100 == 0: 
+#                     print(f"{n}", end=',')
+
+#                 result.append(ror_query(id))
+#             id_relat = relation_list(result)
+#             id_result=[elem['id'].split('/')[-1] for elem in result if elem['id'] is not None]
+#             id_relat = list(set(id_relat).difference(set(id_result)))                    
+#         print(f"3- size new ror:{len(result)}")
+#         return result
+#     ###################
+
+
+#     ror_list = [e['api_id'][1:] for e in lid_source if e['source_id']=='ror']
+#     print(f"nombre d'identifiants ror à extraire: {len(ror_list)}")
+
+#     ror_result=[]
+#     n=0
+
+#     for id in ror_list:
+#         n=n+1
+#         if n % 100 == 0: 
+#             print(f"{n}", end=',')
+#         ror_result.append(ror_query(id))
+
+#     while None in ror_result:
+#         ror_result.remove(None)   
+        
+#     if ror_result:    
+#         file_name = f"{PATH_WORK}ror_current.pkl"
+#         with open(file_name, 'wb') as file:
+#             pd.to_pickle(ror_result, file)
+            
+#     ror_result=ror_relation(ror_result)
+
+#     ror_df=ror_info(ror_result)
+#     ror_df=pd.json_normalize(ror_df)
+
+#     if ror_df.empty:
+#         print("ror_df est vide")
+#     else:
+#         if 'ror_old' in globals() or 'ror_old' in locals():
+#             r = pd.concat([ror_old, ror_df], ignore_index=True)
+#         else:
+#             r = copy.deepcopy(ror_df)
+            
+#         file_name = f"{PATH_SOURCE}ror_df.pkl"
+#         with open(file_name, 'wb') as file:
+#             pd.to_pickle(r, file)
+#     return r
 
