@@ -17,7 +17,8 @@ def H2020_process():
         act = pd.read_json(open("data_files/actions_name.json", 'r', encoding='utf-8'))
         topics = unzip_zip('H2020_2022-12-05.json.zip', f"{PATH_SOURCE}H2020/", 'topics.json', encode='utf-8')
         pilier_fr = pd.read_json(open("data_files/H20_pilier.json", 'r', encoding='utf-8'))
-        countries = pd.read_csv(f"{PATH_SOURCE}H2020/country_current.csv", sep=';')
+        # countries = pd.read_csv(f"{PATH_SOURCE}H2020/country_current.csv", sep=';')
+        countries = pd.read_pickle(f"{PATH_CLEAN}country_current.pkl")
         actions = pd.read_table(f"{PATH_CLEAN}actions_current.csv", sep=";")
         nuts = pd.read_pickle(f'{PATH_REF}nuts_complet.pkl')
         return destination, thema, act, topics, pilier_fr, countries, actions, nuts
@@ -254,16 +255,16 @@ def H2020_process():
     def ref_select(FP):
         ref_source = ref_source_load('ref')
         # traitement ref select le FP, id non null ou/et ZONAGE non null
-        ref = ref_source_2d_select(ref_source, FP)
+        ref, genPic_to_new = ref_source_2d_select(ref_source, FP)
         ror = pd.read_pickle(f"{PATH_REF}ror_df.pkl")
         paysage = pd.read_pickle(f"{PATH_REF}paysage_df.pkl")
         sirene = pd.read_pickle(f"{PATH_REF}sirene_df.pkl")
         ### si besoin de charger groupe
         groupe = pd.read_pickle(f"{PATH_REF}H20_groupe.pkl")
-        return ref, ror, paysage, sirene, groupe
+        return ref, genPic_to_new, ror, paysage, sirene, groupe
 
     # traitement ref select le FP, id non null ou/et ZONAGE non null
-    ref, ror, paysage, sirene, groupe = ref_select('H20')
+    ref, genPic_to_new, ror, paysage, sirene, groupe = ref_select('H20')
 
     print(f"- si ++id pour un generalPic: {ref[ref.id.str.contains(';', na=False)]}")
     ##########################################################################
@@ -409,6 +410,12 @@ def H2020_process():
     entities_tmp = category_woven(entities_tmp, sirene)
     entities_tmp = category_agreg(entities_tmp)
 
+
+
+    # lien part + entities
+
+    part_tmp
+
     print(f"size part avant: {len(part)}")
     part_tmp = part1.merge(entities_tmp, how='left', on=['generalPic', 'country_code_mapping', 'id'])
     print(f"size part avant: {len(part_tmp)}")
@@ -496,7 +503,7 @@ def H2020_process():
                 .assign(calculated_fund=np.where(part_tmp.stage=='successful', part_tmp['subv_net'], part_tmp['requestedGrant']), 
                         coordination_number=np.where(part_tmp.role=='coordinator', 1, 0)))
 
-    proj_no_coord = proj[(proj.thema_code.isin(['ACCELERATOR','COST']))|(proj.destination_code.isin(['SNLS','PF']))|(proj.action_code3.str.contains('SNLS', na=False))|((proj.thema_code=='ERC')&(proj.destination_code!='SyG'))].project_id.to_list()
+    proj_no_coord = proj[(proj.thema_code.isin(['ACCELERATOR','COST']))|(proj.destination_code.isin(['SNLS','PF']))|(proj.action_code3.str.contains('SNLS', na=False))|(proj.thema_code=='ERC')].project_id.to_list()
 
     part_tmp.loc[part_tmp.project_id.isin(proj_no_coord), 'coordination_number'] = 0
     part_tmp = part_tmp.assign(with_coord=True)
