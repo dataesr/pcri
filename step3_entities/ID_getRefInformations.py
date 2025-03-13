@@ -20,10 +20,14 @@ def ID_getRefInfo(lid_source):
 
     return ror, paysage, paysage_category, paysage_mires, sirene
 
-def ror_getRefInfo(lid_source):
+def ror_getRefInfo(lid_source, countries):
     print("### ROR data")
     r=get_ror(lid_source, ror_old=None)
     ror=ror_cleaning(r)
+    ror = (ror
+        .merge(countries[['countryCode', 'country_code_mapping']], 
+                how='left', left_on='iso2', right_on='countryCode')
+        .drop(columns=['countryCode', 'iso2']))
     file_name = f"{PATH_REF}ror_df.pkl"
     with open(file_name, 'wb') as file:
         pd.to_pickle(ror, file)
