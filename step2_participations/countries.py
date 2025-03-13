@@ -32,12 +32,12 @@ def country_load(framework, liste_country):
                 ['isoCountryCode', 'countryGroupAssociationCode', 'countryGroupAssociation']]
                 .drop_duplicates()
                 .rename(columns={'countryGroupAssociationCode':'country_association_code_2020',
-                                'countryGroupAssociation':'country_association_name_2020'})
+                                'countryGroupAssociation':'country_association_name_2020_en'})
             .merge(data.loc[(data.framework=='HORIZON')&(data.isoCountryCode.isin(df.country_code.unique())), 
                     ['isoCountryCode', 'countryGroupAssociationCode', 'countryGroupAssociation']]
                     .drop_duplicates()
                     .rename(columns={'countryGroupAssociationCode':'country_association_code',
-                                    'countryGroupAssociation':'country_association_name'}), 
+                                    'countryGroupAssociation':'country_association_name_en'}), 
             how='outer', on='isoCountryCode'))
 
     gr.loc[gr.country_association_code.str.startswith('THIRD'), 'country_group_association_code'] = "THIRD"
