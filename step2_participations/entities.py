@@ -16,8 +16,7 @@ def entities_missing_country(df):
         print(f'4 - RESOLU -> sans country\n- size entities with cc: {len(df)}')
     return df
 
-def entities_load(app1,part):
-
+def entities_load():
     df = unzip_zip(ZIPNAME, f"{PATH_SOURCE}{FRAMEWORK}/", "legalEntities.json", 'utf8')
     df = pd.DataFrame(df)
     print(f"- first size entities: {len(df)}")
@@ -33,7 +32,9 @@ def entities_load(app1,part):
         print("- entities source generalState -> new state (processing into entities_single)")
     else:
         print("- ok entities source generalState not null")
+    return df
 
+def entities_merge_partApp(df, app1, part):
     # app1/part + lien pour ajout cc et selection des generalPic+pic de entities
     ap=(app1[['generalPic', 'participant_pic', 'countryCode']]
         .drop_duplicates()
@@ -44,8 +45,8 @@ def entities_load(app1,part):
     tmp=pd.concat([ap, pp], ignore_index=True).drop_duplicates()
     print(f"- size lien ap+pp+cc (tmp): {len(tmp)}")
 
-    entities = (tmp.merge(df, how='left', on=['generalPic', 'pic'])
-              .rename(columns={'countryCode_x': 'countryCode'})
+    entities = (tmp.merge(df, how='left', on=['generalPic', 'pic'], suffixes=('','_y'))
+              .drop(columns='countryCode_y')
               )
     print(f"- size tmp+entities: {len(entities)}")
 
