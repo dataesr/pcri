@@ -17,31 +17,31 @@ def country_load(framework, liste_country):
 
     df.rename(columns={'iso2':'countryCode',
                         'iso3':'country_code_mapping',
-                        'country_name_en':'country_name_mapping',
+                        'country_name_en':'country_name_en',
                         'parent_iso2':'countryCode_parent',
                         'parent_iso3':'country_code'},inplace=True)
 
-    df=(df.merge(my_country[['iso3', 'country_name_en']].drop_duplicates(), how='left', left_on='country_code', right_on='iso3')
-          .drop(columns='iso3'))
+    # df=(df.merge(my_country[['iso3']].drop_duplicates(), how='left', left_on='country_code', right_on='iso3')
+    #       .drop(columns='iso3'))
 
     if any(df.country_name_en.isnull()):
-        print(f'Attention ! country_name_en for country_code not exist {df[df.country_name_en.isnull()].country_code.unique()}')
+        print(f'Attention ! country_name_en for countryCode not exist {df[df.country_name_en.isnull()].countryCode.unique()}')
 
 
-    gr=(data.loc[(data.framework=='H2020')&(data.isoCountryCode.isin(df.country_code.unique())), 
+    gr=(data.loc[(data.framework=='H2020')&(data.isoCountryCode.isin(df.country_code_mapping.unique())), 
                 ['isoCountryCode', 'countryGroupAssociationCode', 'countryGroupAssociation']]
                 .drop_duplicates()
                 .rename(columns={'countryGroupAssociationCode':'country_association_code_2020',
                                 'countryGroupAssociation':'country_association_name_2020_en'})
-            .merge(data.loc[(data.framework=='HORIZON')&(data.isoCountryCode.isin(df.country_code.unique())), 
+            .merge(data.loc[(data.framework=='HORIZON')&(data.isoCountryCode.isin(df.country_code_mapping.unique())), 
                     ['isoCountryCode', 'countryGroupAssociationCode', 'countryGroupAssociation']]
                     .drop_duplicates()
                     .rename(columns={'countryGroupAssociationCode':'country_association_code',
                                     'countryGroupAssociation':'country_association_name_en'}), 
             how='outer', on='isoCountryCode'))
 
-    gr.loc[gr.country_association_code.str.startswith('THIRD'), 'country_group_association_code'] = "THIRD"
-    gr.loc[gr.country_association_code_2020.str.startswith('THIRD'), 'country_group_association_code_2020'] = "THIRD"
+    gr.loc[gr.country_association_code.str.startswith('THIRD', na=False), 'country_group_association_code'] = "THIRD"
+    gr.loc[gr.country_association_code_2020.str.startswith('THIRD', na=False), 'country_group_association_code_2020'] = "THIRD"
     gr.loc[gr.country_association_code.isin(['ASSOCIATED', 'MEMBER-STATE']), 'country_group_association_code'] = "MEMBER-ASSOCIATED"
     gr.loc[gr.country_association_code_2020.isin(['ASSOCIATED', 'MEMBER-STATE']), 'country_group_association_code_2020'] = "MEMBER-ASSOCIATED"
 
@@ -61,18 +61,18 @@ def country_load(framework, liste_country):
         else:
             print(f"2 - info status countries ->\n{gr['country_association_code'].nunique()-statut_len} status in data {gr['country_association_code'].unique()}")
 
-    countries = df.merge(gr, how='left', left_on='country_code', right_on='isoCountryCode').drop(columns='isoCountryCode')
+    countries = df.merge(gr, how='left', left_on='country_code_mapping', right_on='isoCountryCode').drop(columns='isoCountryCode')
 
     with open('data_files/countries_fr.json', 'r+', encoding='UTF-8') as fp:
                 countries_fr = json.load(fp)
-    countries_fr = pd.DataFrame(countries_fr).rename(columns={'country_name':'country_name_fr', 'country_code':'countryCode_parent'})
-    countries = countries.merge(countries_fr, how='left', on='countryCode_parent')
+    countries_fr = pd.DataFrame(countries_fr).rename(columns={'country_name':'country_name_fr', 'country_code':'countryCode'})
+    countries = countries.merge(countries_fr, how='left', on='countryCode')
     if any(countries.country_name_fr.isnull()):
         print(f"country_name FR missing: {countries[countries.country_name_fr.isnull()].country_name_en.unique()}")
 
-    cc=['countryCode', 'countryCode_parent', 'country_code', 'country_association_code','country_group_association_code']
-    cn_fr=['country_name_fr','country_group_association_name_fr']
-    cn_en=['country_name_en', 'country_association_name_en','country_group_association_name_en']
+    cc=countries.columns[countries.columns.str.contains('code', case=False)]
+    cn_fr=countries.columns[countries.columns.str.contains('_fr', case=False)]
+    cn_en=countries.columns[countries.columns.str.contains('_en', case=False)]
     row=countries.shape[0]
     for code in ['ZOE','ZOI']:
         for i in cc:
@@ -106,12 +106,9 @@ def country_load(framework, liste_country):
             
     return countries, countryCode_error
 
-def country_old(df):
-    import json
-    ccode=json.load(open("data_files/countryCode_match.json"))
-    for k,v in ccode.items():
-        df.loc[df.countryCode==k, 'countryCode'] = v
-    return df
-
-# def country_iso3(df, cc_code):
-#     return df.merge(cc_code, how='left', left_on='countryCode', right_on='iso2').drop(columns='iso2').rename(columns={'iso3':'country_code_mapping'})
+# def country_old(df):
+#     import json
+#     ccode=json.load(open("data_files/countryCode_match.json"))
+#     for k,v in ccode.items():
+#         df.loc[df.countryCode==k, 'countryCode'] = v
+#     return df
