@@ -375,7 +375,6 @@ def H2020_process():
     ### si besoin de charger paysage pickle
     cat_filter = category_paysage(paysage)
     entities_tmp = merge_paysage(entities_tmp, paysage, cat_filter)
-    entities_tmp = mires(entities_tmp)
 
     # SIRENE
     ### si besoin de charger paysage pickle
@@ -409,15 +408,13 @@ def H2020_process():
     # traitement catégorie
     entities_tmp = category_woven(entities_tmp, sirene)
     entities_tmp = category_agreg(entities_tmp)
+    entities_tmp = mires(entities_tmp)
 
-
-
-    # lien part + entities
-
-    part_tmp
-
-    print(f"size part avant: {len(part)}")
-    part_tmp = part1.merge(entities_tmp, how='left', on=['generalPic', 'country_code_mapping', 'id'])
+    print(f"size part avant: {len(part1)}")
+    part_tmp = part1.merge(genPic_to_new, how='left', on=['generalPic', 'country_code_mapping'])
+    part_tmp = part_tmp.rename(columns={'generalPic':'pic_old', 'pic_new':'generalPic'})
+    part_tmp.loc[part_tmp.generalPic.isnull(), 'generalPic'] = part_tmp.loc[part_tmp.generalPic.isnull(), 'pic_old']
+    part_tmp = part_tmp.merge(entities_tmp, how='left', on=['generalPic', 'country_code_mapping', 'id'])
     print(f"size part avant: {len(part_tmp)}")
 
 
