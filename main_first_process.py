@@ -1,15 +1,18 @@
 from main_library import *
 pd.options.mode.copy_on_write = True
 
+
+NEW_UPDATE=False
+
 ################################
 ## data load / adjustements*
 extractDate = date_load()
 
-### pour l'instant ne fonctionne pas
-## demander à Eric de relancer la machine sur sandbox
-# get_call_info()
 
-# get_call_info_europa()
+## demander à Eric de relancer la machine sur sandbox
+if NEW_UPDATE==True:
+    # get_call_info()
+    get_call_info_europa()
 
 proj = projects_load()
 proj_id_signed = proj.project_id.unique()
@@ -76,8 +79,8 @@ else:
 calls = calls_to_check(calls, call_id)
 
 projects = projects_complete_cleaned(merged, extractDate)
-
-# projects = pd.read_pickle(f"{PATH_CLEAN}projects_current.pkl")
+# else:
+#     projects = pd.read_pickle(f"{PATH_CLEAN}projects_current.pkl")
 
 #############################################################
 ##### PARTICIPATIONS
@@ -120,49 +123,53 @@ app1 = check_multiA_by_proj(app1)
 ########################################
 ### STEP2
 # ENTITIES
-entities = entities_load(app1, part)
+entities = entities_load()
+entities = entities_merge_partApp(entities, app1, part)
 
 # countries
-
-### a revoir en utilisant la fonction shared my_country_code (pycountry)
-
 list_codeCountry = list(set(entities.countryCode.to_list()+app1.countryCode.to_list()+part.countryCode.to_list()))
 countries, countryCode_err = country_load(FRAMEWORK, list_codeCountry)
-# countries fix old code and add iso3
-for b in [app1, part, entities]:
-    b = country_old(b)
 
-cc_code = (countries[['countryCode', 'country_code_mapping']]
-        .rename(columns={'countryCode':'iso2', 'country_code_mapping':'iso3'})
-        .drop_duplicates())
-app1 = pd.merge(app1, cc_code, how='left', left_on='countryCode', right_on='iso2').drop(columns='iso2').rename(columns={'iso3':'country_code_mapping'})
-part = pd.merge(part, cc_code, how='left', left_on='countryCode', right_on='iso2').drop(columns='iso2').rename(columns={'iso3':'country_code_mapping'})
-entities = pd.merge(entities, cc_code, how='left', left_on='countryCode', right_on='iso2').drop(columns=['iso2','countryCode_y']).rename(columns={'iso3':'country_code_mapping'})
+if any(countryCode_err):
+    print(f"Attention fix country_code missing {countryCode_err}")
 
-# LIEN
+cc_code = countries[['countryCode', 'country_code_mapping']].drop_duplicates()
+app1 = app1.merge(cc_code, how='left', on='countryCode', indicator=True)
+part = part.merge(cc_code, how='left', on='countryCode', indicator=True)
+entities = entities.merge(cc_code, how='left', on='countryCode', indicator=True)
+
+for i in [app1, part, entities]:
+    if any(i['_merge']=='left_only'):
+        print(i.loc[i['_merge']=='left_only'].countryCode.unique())
+    i.drop(columns='_merge', inplace=True)
+
+# if NEW_UPDATE==True:
+    # LIEN
 lien = merged_partApp(app1, part)
 lien = nuts_lien(app1, part, lien)
 lien.to_pickle(f"{PATH_CLEAN}lien.pkl")
+entities_single = entities_single_create(entities, lien)
+# else:
+#     lien = pd.read_pickle(f"{PATH_CLEAN}lien.pkl")
+#     entities_single = pd.read_pickle(f"{PATH_SOURCE}entities_single.pkl")
+#     countries = pd.read_pickle(f"{PATH_CLEAN}country_current.pkl")
 
-#ENTITIES +LIEN -> attention si nouvelle actu relancer entities_single_create
-lien = pd.read_pickle(f"{PATH_CLEAN}lien.pkl")
-entities_single = pd.read_pickle(f"{PATH_SOURCE}entities_single.pkl")
 
-# entities_single = entities_single_create(entities, lien)
 entities_info = entities_info_create(entities_single, lien)
 
 ### step3
 
 # ##################################
-# # nouvelle actualisation ; à executer UNE FOIS
-# ref_source = ref_source_load('ref')
-# result, check_id_liste, identification = first_update(ref_source, entities_info, countries)
+if NEW_UPDATE==True:
+    # nouvelle actualisation ; à executer UNE FOIS
+    ref_source = ref_source_load('ref')
+    result, check_id_liste, identification = first_update(ref_source, entities_info, countries)
 
-# # vérifier dans excel les nouveaux ID PATH_WORK/_check_id_result.xlsx
-# IDchecking_results(result, check_id_liste, identification)
+    # vérifier dans excel les nouveaux ID PATH_WORK/_check_id_result.xlsx
+    IDchecking_results(result, check_id_liste, identification)
 
-# id_verified = ID_resultChecked()
-# new_ref_source(id_verified, ref_source, extractDate, part, app1, entities_single, countries)
+    id_verified = ID_resultChecked()
+    new_ref_source(id_verified, ref_source, extractDate, part, app1, entities_single, countries)
 
 # ########################################################################################################
 
@@ -175,7 +182,7 @@ entities_tmp = entities_for_merge(entities_tmp)
 
 ### Executer uniquement si besoin
 # lid_source, unknow_list = ID_entities_list(ref_source)
-# ror = ror_getRefInfo(lid_source)
+# ror_getRefInfo(lid_source, countries)
 # siren_siret = get_siret_siege(lid_source)
 # paysage_id = ID_to_IDpaysage(lid_source, siren_siret)
 # paysage, paysage_mires = paysage_getRefInfo(lid_source, siren_siret, paysage_old=None)
@@ -189,7 +196,7 @@ entities_tmp = entities_for_merge(entities_tmp)
 # ROR
 ### si besoin de charger ror pickle
 ror = pd.read_pickle(f"{PATH_REF}ror_df.pkl")
-entities_tmp = merge_ror(entities_tmp, ror, countries)
+entities_tmp = merge_ror(entities_tmp, ror)
 
 # PAYSAGE
 ### si besoin de charger paysage pickle
@@ -250,8 +257,9 @@ with open(file_name, 'wb') as file:
 
 part_step = entities_with_lien(entities_info, lien, genPic_to_new)
 proj_no_coord = proj_no_coord(projects)
+proj_erc = projects[projects.thema_code=='ERC'].project_id.to_list()
 part_prop = applicants_calcul(part_step, app1)
-part_proj = participants_calcul(part_step, part)
+part_proj = participants_calcul(part_step, part, proj_erc)
 participation = participations_complete(part_prop, part_proj, proj_no_coord)
 del part_proj, part_prop
 
