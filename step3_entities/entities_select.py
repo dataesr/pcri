@@ -5,7 +5,10 @@ from step3_entities.ID_getSourceRef import *
 
 def entities_tmp_create(entities_info, countries, ref):
     print("### create ENTITIES TMP pour ref")
-    tab = entities_info.merge(countries[['country_code_mapping', 'country_name_mapping', 'countryCode_parent']], how='left', on='country_code_mapping')
+    tab = (entities_info
+           .merge(countries[['country_code_mapping', 'country_name_en', 'countryCode_parent']], how='left', on='country_code_mapping')
+           .rename(columns={'country_name_en':'country_name_mapping'})
+    )
     tmp = tab.merge(ref, how='inner', on=['generalPic','country_code_mapping'])
     print(f"- size entities_info before:{len(entities_info)}, size entities_info+ref -> tmp:{len(tmp)}, Pic unique tmp:{len(tmp.generalPic.unique())}")
     # entities only into entities_info
@@ -40,7 +43,7 @@ def entities_for_merge(entities_tmp):
     return entities_tmp
 
 def ID_entities_list(ref_source):
-    ref = ref_source.loc[(ref_source.FP.str.contains('H20|HE|FP7'))&(~ref_source.id.isnull())].id.str.split(';').explode('id')
+    ref = ref_source.loc[(ref_source.FP.str.contains('H20|HE|FP7'))&((~ref_source.id.isnull())|(ref_source.id!='0'))].id.str.split(';').explode('id')
     lid=list(ref.drop_duplicates().sort_values())
     print(f"size lid:{len(lid)}")
     lid_source=sourcer_ID(lid)
