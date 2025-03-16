@@ -228,7 +228,7 @@ def my_country_code():
     pycountry.countries.add_entry(alpha_2="XK", alpha_3="XKX", name="Kosovo")
     pycountry.countries.add_entry(alpha_2="UK", alpha_3="GBR", name="United Kingdom")
     pycountry.countries.add_entry(alpha_2="EL", alpha_3="GRC", name="Greece")
-    pycountry.countries.add_entry(alpha_2="AN", alpha_3="ANT", name="Netherlands Antilles (former 2011)")
+    pycountry.countries.add_entry(alpha_2="AN", alpha_3="ANT", name="Netherlands Antilles (Disestablished 2011)")
     pycountry.countries.add_entry(alpha_2="CP", alpha_3="CPT", name="Clipperton Island")
     pycountry.countries.add_entry(alpha_2="AX", alpha_3="ALA", name="Åland Islands")
     pycountry.countries.add_entry(alpha_2="MF", alpha_3="MAF", name="Saint Martin (French part)")
