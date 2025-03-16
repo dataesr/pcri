@@ -65,7 +65,7 @@ def entities_with_lien(entities_info, lien, genPic_to_new):
     return part_step
 
 def proj_no_coord(projects):
-    return projects[(projects.thema_code.isin(['ACCELERATOR']))|(projects.destination_code.isin(['PF','COST']))|((projects.thema_code=='ERC')&(projects.destination_code!='SyG'))].project_id.to_list()
+    return projects[(projects.thema_code.isin(['ACCELERATOR']))|(projects.destination_code.isin(['PF','COST']))|((projects.thema_code=='ERC'))].project_id.to_list()
 
 def participations_complete(part_prop, part_proj, proj_no_coord):
     from config_path import PATH_CLEAN
@@ -100,7 +100,7 @@ def ent(participation, entities_info, projects):
         ['stage', 'project_id','generalPic', 'role', 'participates_as', 'erc_role', 
          'with_coord', 'is_ejo', 'country_code', 'participation_nuts', 'country_code_mapping',
          'region_1_name', 'region_2_name', 'regional_unit_name','participation_linked',
-        'coordination_number', 'calculated_fund', 'beneficiary_subv']].assign(number_involved=1)
+        'coordination_number', 'calculated_fund', 'beneficiary_subv', 'fund_ent_erc']].assign(number_involved=1)
 
     def ent_stage(df, stage_value:str):
         import numpy as np
@@ -111,7 +111,7 @@ def ent(participation, entities_info, projects):
         if any(df.id.str.contains(';', na=False)):
             print(f"- Attention multi id pour une participation, calculs sur les chiffres\n {df.loc[df.id.str.contains(';', na=False), 'id'].drop_duplicates()}")
             df['nb'] = df.id.str.split(';').str.len()
-            for i in ['coordination_number', 'calculated_fund', 'beneficiary_subv', 'number_involved']:
+            for i in ['coordination_number', 'calculated_fund', 'beneficiary_subv', 'fund_ent_erc', 'number_involved']:
                 df[i] = np.where(df['nb']>1, df[i]/df['nb'], df[i])
         return df
     
@@ -139,7 +139,7 @@ def ent(participation, entities_info, projects):
                 'naceCode', 'gps_loc', 'id', 'id_m', 'siret_closeDate','siren']))
 
     entities_part=(entities_part
-        .groupby(list(entities_part.columns.difference(['coordination_number', 'number_involved', 'calculated_fund', 'beneficiary_subv'])), dropna=False, as_index=False).sum()
+        .groupby(list(entities_part.columns.difference(['coordination_number', 'number_involved', 'calculated_fund', 'beneficiary_subv', 'fund_ent_erc'])), dropna=False, as_index=False).sum()
         .drop_duplicates()
         )
 
