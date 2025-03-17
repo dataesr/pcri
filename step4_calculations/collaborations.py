@@ -30,7 +30,7 @@ def collab_cross(i):
                 (i['participates_as']==i['participates_as_collab']))]
                 .groupby(['stage','project_id','country_code', 'participation_nuts','region_1_name', 'extra_joint_organization','country_code_collab',
                         'participation_nuts_collab', 'region_1_name_collab','country_code_mapping_collab', 'participates_as', 'participates_as_collab', 
-                        'extra_joint_organization_collab', 'is_ejo'], dropna=False)
+                        'extra_joint_organization_collab', 'is_ejo', 'with_coord'], dropna=False)
                 .agg({'part_num':'nunique', 'coord_num':'nunique', 'part_num_collab':'nunique', 'fund':'sum', 
                     'fund_collab':'sum'})
                 .reset_index())
@@ -41,7 +41,7 @@ def collab(participation, projects, countries):
     p=(participation
        .drop(columns=['cordis_type_entity_code', 'cordis_is_sme', 'flag_entreprise', 'erc_role',
        'cordis_type_entity_name_fr', 'cordis_type_entity_name_en', 'cordis_type_entity_acro', 
-       'coordination_number', 'beneficiary_subv', 'fund_ent_erc', 'with_coord']))
+       'coordination_number', 'beneficiary_subv', 'fund_ent_erc']))
 
     cc = (countries.drop(columns=['countryCode', 'country_code', 'countryCode_parent'])
           .drop_duplicates()
