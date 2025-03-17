@@ -12,16 +12,17 @@ def msca_erc_projects(FP6, FP7, h20, projects, part):
         'country_group_association_name_fr', 'country_name_en',  'free_keywords', 'abstract',
         'country_name_fr', 'destination_code', 'destination_detail_code', 
         'destination_detail_name_en', 'destination_name_en',  'number_involved',
-        'panel_code', 'panel_name', 'project_id', 'role', 'erc_role', 'flag_entreprise',
+        'panel_code', 'panel_name', 'panel_regroupement_code', 'panel_regroupement_name', 'project_id', 'role', 'erc_role', 'flag_entreprise',
         'stage', 'status_code', 'framework', 'thema_code', 'category_woven', 
         'groupe_id', 'groupe_name', 'participation_linked',
         'category_agregation', 'source_id','ecorda_date']
 
     me7= (FP7.loc[FP7.thema_code.isin(["ERC","MSCA"]), list(set(select_cols)
-            .difference(['participation_linked', 'fund_ent_erc']))])
+            .difference(['participation_linked', 'fund_ent_erc', 'panel_regroupement_code', 'panel_regroupement_name']))])
     me6= (FP6
             .loc[FP6.thema_code.isin(["ERC","MSCA"]), list(set(select_cols)
-            .difference(['panel_code', 'panel_name','erc_role', 'fund_ent_erc',
+            .difference(['panel_code', 'panel_name',  'panel_regroupement_code', 'panel_regroupement_name',
+                         'erc_role', 'fund_ent_erc',
                          'extra_joint_organization', 'free_keywords', 
                          'abstract','source_id', 'category_agregation', 
                          'category_woven', 'flag_entreprise',
