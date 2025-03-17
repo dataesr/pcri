@@ -2,11 +2,13 @@ import pandas as pd, numpy as np
 
 def entities_clean(entities_tmp):
     print("### ENTITIES TMP cleaning name")
-    x=entities_tmp.loc[entities_tmp.entities_name.isnull(), ['generalPic', 'legalName', 'businessName', 'entities_id', 'country_code_mapping']].drop_duplicates()
+    x=(entities_tmp.loc[entities_tmp.entities_name.isnull(), 
+                    ['generalPic', 'legalName', 'businessName', 'entities_id', 'country_code_mapping']]
+                    .drop_duplicates())
     print(f"- size entities_tmp without entities_name: {len(x)}")
     if not x.empty:
         if any(x.loc[(x.legalName.str.contains("\\00",  na=True))]):
-            print(x.loc[(x.legalName.str.contains("\\00",  na=True))].legalName)
+            print(f"legalName contains car spec: {x.loc[(x.legalName.str.contains("\\00",  na=True))].legalName}")
 
         y=x.loc[(x.businessName.str.contains("00",  na=True))]
         for i, row in y.iterrows():
@@ -62,7 +64,8 @@ def entities_info_add(entities_tmp, entities_info, countries):
         #ajout des infos country à participants_info
     entities_info = (entities_info
                     .merge(countries[['country_code_mapping', 'country_name_en', 'country_code']], how='left', on='country_code_mapping')
-                    .rename(columns={'country_name_en':'country_name_mapping'}))
+                    .rename(columns={'country_name_en':'country_name_mapping'})
+                    .drop_duplicates())
         
     entities_info = (entities_info
         .merge(entities_tmp[
@@ -74,6 +77,7 @@ def entities_info_add(entities_tmp, entities_info, countries):
             'siret_closeDate', 'cat_an',
             'groupe_name','groupe_acronym', 'groupe_id', 'groupe_sector']],
         how='left', on=['generalPic', 'country_code_mapping'])
+        .drop_duplicates()
         # .drop(columns=['legalName', 'businessName'])
         )
     print(f"- size entities_info + entities_tmp: {len(entities_info)}")
