@@ -63,8 +63,9 @@ def entities_info_add(entities_tmp, entities_info, countries):
     print("\n### entities_info + entities_tmp")
         #ajout des infos country à participants_info
     entities_info = (entities_info
-                    .merge(countries[['country_code_mapping', 'country_name_en', 'country_code']], how='left', on='country_code_mapping')
-                    .rename(columns={'country_name_en':'country_name_mapping'})
+                    .merge(countries[['countryCode_iso3', 'country_name_en', 'country_code']]
+                           .rename(columns={'country_name_en':'country_name_mapping', 'countryCode_iso3':'country_code_mapping'}), 
+                           how='left', on='country_code_mapping')
                     .drop_duplicates())
         
     entities_info = (entities_info
@@ -92,13 +93,15 @@ def add_countries_info(df, countries):
     l=['951736453','996825642','994591926','996825642','953002303', '998384626', '879924055']
     df.loc[df.generalPic.isin(l), 'country_code'] = 'FRA'
     cc = (countries.drop(columns=['countryCode', 'countryCode_parent', 'country_code'])
-          .rename(columns={'country_code_mapping':'country_code'})
+          .rename(columns={'countryCode_iso3':'country_code'})
           .drop_duplicates())
     df = (df
             .merge(cc, how='left', on='country_code')
             .rename(columns={'ZONAGE':'extra_joint_organization'})
+            .drop(columns=df.columns[df.columns.str.contains('2020')])
             .drop_duplicates())
 
-    df.drop(columns=df.columns[df.columns.str.contains('2020')], inplace=True)
+    # df.drop(columns=df.columns[df.columns.str.contains('2020')], inplace=True)
+
     print(f"- longueur entities_info après ajout calculated_country : {len(df)}\n{df.columns}\n- columns with Nan\n {df.columns[df.isnull().any()]}")
     return df

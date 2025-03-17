@@ -6,7 +6,8 @@ from step3_entities.ID_getSourceRef import *
 def entities_tmp_create(entities_info, countries, ref):
     print("### create ENTITIES TMP pour ref")
     tab = (entities_info
-           .merge(countries[['country_code_mapping', 'country_name_en', 'countryCode_parent']], how='left', on='country_code_mapping')
+           .merge(countries[['countryCode_iso3', 'country_name_en', 'countryCode_parent']].rename(columns={'countryCode_iso3':'country_code_mapping'}), 
+                  how='left', on='country_code_mapping')
            .rename(columns={'country_name_en':'country_name_mapping'})
     )
     tmp = tab.merge(ref, how='inner', on=['generalPic','country_code_mapping'])
