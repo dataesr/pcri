@@ -237,7 +237,7 @@ entities_tmp = category_agreg(entities_tmp)
 entities_info = entities_info_add(entities_tmp, entities_info, countries)
 entities_info = cordis_type(entities_info)
 
-entities_info = fix_countries(entities_info, countries)
+entities_info = add_countries_info(entities_info, countries)
 entities_info = mires(entities_info)
 
 del ref_source
@@ -265,7 +265,7 @@ del part_proj, part_prop
 
 gc.collect()
 #step5 - si nouvelle actualisation ou changement dans nomenclatures
-# H2020_process()
+H2020_process()
 FP7_process()
 # FP6_process()
 
