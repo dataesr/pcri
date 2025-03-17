@@ -136,7 +136,8 @@ def ent(participation, entities_info, projects):
                 'webPage','naceCode','gps_loc', 'city', 'countryCode','isNonProfit',  
                 'cat_an','isPublicBody', 'isInternationalOrganisation', 'isResearchOrganisation', 
                 'isHigherEducation','legalType', 'vat', 'legalRegNumber', 
-                'naceCode', 'gps_loc', 'id', 'id_m', 'siret_closeDate','siren']))
+                'naceCode', 'gps_loc', 'id', 'id_m', 'siret_closeDate','siren'])
+                )
 
     entities_part=(entities_part
         .groupby(list(entities_part.columns.difference(['coordination_number', 'number_involved', 'calculated_fund', 'beneficiary_subv', 'fund_ent_erc'])), dropna=False, as_index=False).sum()
