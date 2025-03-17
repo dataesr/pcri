@@ -4,13 +4,16 @@ from functions_shared import zipfile_ods, order_columns
 
 def projects_ods(projects, participation, calls, countries, h20_p, FP6_p, FP7_p):
     ###projects info for ODS
-    cc = countries.drop(columns=['countryCode', 'country_name_mapping','country_code_mapping']).drop_duplicates()
+    cc = countries.drop(columns=['countryCode_iso3', 'country_name_en', 'country_name_fr']).drop_duplicates()
     part= (participation.loc[participation.stage=='successful', 
                 ['project_id', 'country_code', 'country_code_mapping', 
                  'participation_nuts', 'region_1_name', 'region_2_name', 
                  'regional_unit_name']].drop_duplicates()
-    .merge(cc[['country_code','country_name_fr']], how='left', on='country_code')
-    .merge(countries[['country_code_mapping', 'country_name_mapping']], how='left', on='country_code_mapping')
+    .merge(cc[['countryCode_iso3','country_name_fr']]
+           .rename(colums={'countryCode_iso3':'country_code'}), how='left', on='country_code')
+    .merge(cc[['countryCode_iso3', 'country_name_en']]
+           .rename(colums={'countryCode_iso3':'country_code_mapping', 'country_name_en':'country_name_mapping'}), 
+           how='left', on='country_code_mapping')
     .groupby(['project_id'], as_index = False).agg(lambda x: ';'.join(map(str, filter(None, x)))))
 
     #recuperation des données proposals à afficher
