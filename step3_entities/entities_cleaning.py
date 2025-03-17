@@ -84,7 +84,7 @@ def entities_info_add(entities_tmp, entities_info, countries):
     return entities_info
 
 
-def fix_countries(df, countries):
+def add_countries_info(df, countries):
     print("\n### entities_info + countries")
     #ajout des infos country à participants_info
     
@@ -99,5 +99,6 @@ def fix_countries(df, countries):
             .rename(columns={'ZONAGE':'extra_joint_organization'})
             .drop_duplicates())
 
+    df.drop(columns=df.columns[df.columns.str.contains('2020')], inplace=True)
     print(f"- longueur entities_info après ajout calculated_country : {len(df)}\n{df.columns}\n- columns with Nan\n {df.columns[df.isnull().any()]}")
     return df
