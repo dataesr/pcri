@@ -4,7 +4,7 @@ from functions_shared import zipfile_ods, order_columns
 
 def projects_ods(projects, participation, calls, countries, h20_p, FP6_p, FP7_p):
     ###projects info for ODS
-    cc = countries.drop(columns=['countryCode_iso3', 'country_name_en', 'country_name_fr']).drop_duplicates()
+    cc = countries[['countryCode_iso3', 'country_name_en', 'country_name_fr']].drop_duplicates()
     part= (participation.loc[participation.stage=='successful', 
                 ['project_id', 'country_code', 'country_code_mapping', 
                  'participation_nuts', 'region_1_name', 'region_2_name', 
