@@ -16,24 +16,22 @@ def country_load(framework, liste_country):
     print(f"- ATTENTION countryCode missing in countryBase {countryCode_error}")
 
     df.rename(columns={'iso2':'countryCode',
-                        'iso3':'country_code_mapping',
-                        'country_name_en':'country_name_en',
-                        'parent_iso2':'countryCode_parent',
-                        'parent_iso3':'country_code'},inplace=True)
+                    'iso3':'countryCode_iso3',
+                    'country_name_en':'country_name_en',
+                    'parent_iso2':'countryCode_parent',
+                    'parent_iso3':'country_code'},inplace=True)
 
-    # df=(df.merge(my_country[['iso3']].drop_duplicates(), how='left', left_on='country_code', right_on='iso3')
-    #       .drop(columns='iso3'))
 
     if any(df.country_name_en.isnull()):
         print(f'Attention ! country_name_en for countryCode not exist {df[df.country_name_en.isnull()].countryCode.unique()}')
 
 
-    gr=(data.loc[(data.framework=='H2020')&(data.isoCountryCode.isin(df.country_code_mapping.unique())), 
+    gr=(data.loc[(data.framework=='H2020')&(data.isoCountryCode.isin(df.countryCode_iso3.unique())), 
                 ['isoCountryCode', 'countryGroupAssociationCode', 'countryGroupAssociation']]
                 .drop_duplicates()
                 .rename(columns={'countryGroupAssociationCode':'country_association_code_2020',
                                 'countryGroupAssociation':'country_association_name_2020_en'})
-            .merge(data.loc[(data.framework=='HORIZON')&(data.isoCountryCode.isin(df.country_code_mapping.unique())), 
+            .merge(data.loc[(data.framework=='HORIZON')&(data.isoCountryCode.isin(df.countryCode_iso3.unique())), 
                     ['isoCountryCode', 'countryGroupAssociationCode', 'countryGroupAssociation']]
                     .drop_duplicates()
                     .rename(columns={'countryGroupAssociationCode':'country_association_code',
@@ -61,7 +59,7 @@ def country_load(framework, liste_country):
         else:
             print(f"2 - info status countries ->\n{gr['country_association_code'].nunique()-statut_len} status in data {gr['country_association_code'].unique()}")
 
-    countries = df.merge(gr, how='left', left_on='country_code_mapping', right_on='isoCountryCode').drop(columns='isoCountryCode')
+    countries = df.merge(gr, how='left', left_on='countryCode_iso3', right_on='isoCountryCode').drop(columns='isoCountryCode')
 
     with open('data_files/countries_fr.json', 'r+', encoding='UTF-8') as fp:
                 countries_fr = json.load(fp)
