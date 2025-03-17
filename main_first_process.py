@@ -133,7 +133,7 @@ countries, countryCode_err = country_load(FRAMEWORK, list_codeCountry)
 if any(countryCode_err):
     print(f"Attention fix country_code missing {countryCode_err}")
 
-cc_code = countries[['countryCode', 'country_code_mapping']].drop_duplicates()
+cc_code = countries[['countryCode', 'countryCode_iso3']].drop_duplicates().rename(columns={'countryCode_iso3':'country_code_mapping'})
 app1 = app1.merge(cc_code, how='left', on='countryCode', indicator=True)
 part = part.merge(cc_code, how='left', on='countryCode', indicator=True)
 entities = entities.merge(cc_code, how='left', on='countryCode', indicator=True)
