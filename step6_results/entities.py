@@ -6,7 +6,7 @@ from config_path import PATH_CONNECT
 def entities_preparation(entities_part, h20):
     tmp= h20.rename(columns={ 'subv':'beneficiary_subv'})[
             ['action_code','action_name', 'action_code2', 'action_name2', 'article1', 'article2', 
-            'call_deadline','abstract', 'source_id', 'generalPic',
+            'call_deadline','abstract', 'source_id', 'generalPic', 'fund_ent_erc',
             'calculated_fund', 'call_id', 'call_year', 'category_woven',
             'coordination_number', 'cordis_is_sme', 'cordis_type_entity_acro', 
             'extra_joint_organization', 'with_coord', 'is_ejo', 'flag_entreprise',
@@ -29,7 +29,7 @@ def entities_preparation(entities_part, h20):
             'ecorda_date']]
 
     tmp = (tmp
-        .groupby(list(tmp.columns.difference(['coordination_number', 'number_involved', 'calculated_fund'])), dropna=False, as_index=False).sum()
+        .groupby(list(tmp.columns.difference(['coordination_number', 'number_involved', 'calculated_fund', 'fund_ent_erc'])), dropna=False, as_index=False).sum()
         .drop_duplicates()
         )
 
@@ -65,7 +65,7 @@ def entities_ods(entities_participation):
         'pilier_name_en', 'pilier_name_fr', 'programme_code', 'programme_name_en', 
         'programme_name_fr', 'thema_code', 'thema_name_fr', 'thema_name_en', 'destination_code',
         'destination_lib', 'destination_name_en','action_code2', 'action_name2', 'free_keywords', 
-        'operateur_num','operateur_lib', 'category_agregation', 'source_id']]
+        'operateur_num','operateur_lib', 'category_agregation', 'source_id', 'panel_regroupement_code', 'panel_code', 'erc_role']]
         .rename(columns={ 
             'source_id':'entities_id_source',
             'action_code':'action_id', 
@@ -93,7 +93,7 @@ def entities_ods(entities_participation):
     tmp.loc[~tmp.action_id.isin(act_liste), 'action_group_code'] = 'ACT-OTHER'
     tmp.loc[~tmp.action_id.isin(act_liste), 'action_group_name'] = 'Others actions'
 
-    tmp.loc[tmp.thema_code.isin(['ERC','MSCA']), ['destination_code', 'destination_name_en']] = np.nan
+    # tmp.loc[tmp.thema_code.isin(['ERC','MSCA']), ['destination_code', 'destination_name_en']] = np.nan
 
     for i in ['abstract', 'free_keywords']:
         tmp[i] = tmp[i].str.replace('\\n|\\t|\\r|\\s+|^\\"', ' ', regex=True).str.strip()
@@ -107,7 +107,8 @@ def entities_ods(entities_participation):
 
 
     for h in tmp.framework.unique():
-        x = tmp[(tmp.stage=='successful')&(tmp.framework==h)].drop(columns=['stage'])
+        x = tmp[(tmp.stage=='successful')&(tmp.framework==h)].drop(columns=['stage', 'panel_regroupement_code', 'panel_code', 'erc_role'])
+        x.loc[x.thema_code.isin(['ERC','MSCA']), ['destination_code', 'destination_name_en']] = np.nan
         x = entreprise_cat_cleaning(x)
         chunk_size = int(math.ceil((x.shape[0] / 2)))
         i=0
