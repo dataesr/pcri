@@ -22,7 +22,7 @@ def collab_signed_ods(collab):
             'proposal_budget', 'participation_nuts','region_1_name', 'participation_nuts_collab', 
             'region_1_name_collab', 'country_code', 'country_code_collab', 'country_code_mapping_collab', 
             'country_name_en', 'country_name_en_collab',  'pilier_name_en', 'programme_name_en', 
-            'thema_name_en', 'with_coord', 'ecorda_date']]
+            'thema_name_en', 'ecorda_date', 'with_coord']]
        .rename(columns={'with_coord':'flag_coordination'}) )    
 
     for i in ['abstract', 'free_keywords']:
