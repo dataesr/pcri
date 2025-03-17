@@ -8,20 +8,23 @@ def erc_ods(msca_erc):
     print("### ERC ods")
         
     e = (msca_erc.assign(stage_name=np.where(msca_erc.stage=='evaluated', 'projets évalués', 'projets lauréats'))
-        .loc[msca_erc.thema_code=='ERC',   
-        ['action_code', 'action_name','calculated_fund', 'call_year', 'extra_joint_organization', 'is_ejo',
+        .loc[(msca_erc.thema_code=='ERC')&(msca_erc.framework.isnin(['H2020', 'Horizon Europe'])),   
+        ['action_code', 'action_name','calculated_fund', 'fund_ent_erc', 'call_year', 'extra_joint_organization', 'is_ejo',
         'cordis_type_entity_acro', 'cordis_type_entity_code','cordis_type_entity_name_en', 'cordis_type_entity_name_fr',
         'country_group_association_code', 'country_group_association_name_en', 'with_coord',
         'country_group_association_name_fr', 'country_name_en', 'participation_linked',
         'country_name_fr', 'destination_code', 'destination_name_en', 'erc_role','framework', 'number_involved',
-        'panel_code', 'panel_name', 'participates_as', 'project_id', 'role', 'ecorda_date',
-        'stage', 'stage_name', 'country_code']]
+        'panel_regroupement_code', 'panel_regroupement_name','panel_code', 'panel_name', 
+        'participates_as', 'project_id', 'role', 'ecorda_date', 'stage', 'stage_name', 'country_code']]
         .rename(columns={
         'panel_code':'panel_id',
+        'panel_regroupement_code':'domaine_erc', 
+        'panel_regroupement_name':'domaine_name_erc', 
         'action_code':'action_id', 
-        'role':'role_institution', 
-        'erc_role':'role_chercheur',
-        'calculated_fund':'fund_€',
+        'role':'role_entite', 
+        'erc_role':'porteur_projet',
+        'calculated_fund':'fund_project_€',
+        'fund_ent_erc':'fund_entite_€',
         'country_group_association_code':'country_association_code',
         'country_group_association_name_en':'country_association_name_en',
         'country_group_association_name_fr':'country_association_name_fr',
@@ -41,20 +44,22 @@ def erc_evol_ods(msca_resume):
     tmp=(msca_resume
         .assign(status_name=np.where(msca_resume.stage=='evaluated', 'projets évalués', 'projets lauréats'),
                 coordination_number=np.where(msca_resume.erc_role=='PI', 1, 0))
-        .loc[msca_resume.thema_code=='ERC',
+        .loc[(msca_resume.thema_code=='ERC')&(msca_resume.framework.isnin(['H2020', 'Horizon Europe'])),
         ['framework', 'status_name','country_name_fr', 'call_year',  'action_code', 'action_name',
-        'destination_name_en', 'panel_name', 'erc_role', 'participates_as', 'role', 
-        'extra_joint_organization', 'is_ejo', 'with_coord',
+        'destination_name_en', 'panel_name', 'erc_role', 'participates_as', 'role', 'funding_entite',
+        'extra_joint_organization', 'is_ejo', 'with_coord', 'panel_regroupement_code', 'panel_regroupement_name',
         'funding_part', 'number_involved', 'coordination_number', 'project_id', 'country_code',
         'country_name_en', 'country_group_association_code','country_group_association_name_en',
         'country_group_association_name_fr', 'stage', 'panel_code', 'destination_code', 'ecorda_date']]
         
         .rename(columns={
             'panel_code':'panel_id',
+            'panel_regroupement_code':'domaine_erc', 
+            'panel_regroupement_name':'domaine_name_erc', 
             'action_code':'action_id', 
-            'funding_part':'fund_€',
-            'erc_role':'role_chercheur',
-            'role':'role_institution',
+            'funding_part':'funding_project',
+            'role':'role_entite', 
+            'erc_role':'porteur_projet',
             'country_group_association_code':'country_association_code',
             'country_group_association_name_en':'country_association_name_en',
             'country_group_association_name_fr':'country_association_name_fr',
@@ -66,7 +71,7 @@ def erc_evol_ods(msca_resume):
     tmp.loc[(tmp.country_code=='ALL'), 'country_name_fr'] = 'Tous pays'
 
 
-    for i in ['coordination_number', 'number_involved', 'fund_€']:
+    for i in ['coordination_number', 'number_involved', 'funding_project', 'funding_entite']:
         tmp.loc[(tmp.country_code=='ALL'), f'{i}_all'] = tmp[i]
         tmp.loc[(tmp.country_code=='ALL'), i] = np.nan
 
