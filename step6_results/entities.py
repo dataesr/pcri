@@ -102,11 +102,11 @@ def entities_ods(entities_participation):
 
     tmp.loc[(tmp.stage=='successful')&(tmp.status_code=='UNDER_PREPARATION'), 'abstract'] = np.nan
 
+    tmp = order_columns(tmp, 'proj_entities')
     # ATTENTION si changement de nom de vars -> la modifier aussi dans pcri_info_columns_order
     
     for h in tmp.framework.unique():
         x = tmp[(tmp.stage=='successful')&(tmp.framework==h)].drop(columns=['panel_regroupement_code', 'panel_code', 'erc_role'])
-        x = order_columns(x, 'proj_entities')
         x.loc[x.thema_code.isin(['ERC','MSCA']), ['destination_code', 'destination_name_en']] = np.nan
         x = entreprise_cat_cleaning(x)
         chunk_size = int(math.ceil((x.shape[0] / 2)))
@@ -129,8 +129,6 @@ def entities_ods(entities_participation):
             'country_association_name_fr', 'thema_name_fr', 'destination_lib',
             'programme_name_fr', 'action_group_code', 'action_group_name', 
             'cordis_type_entity_name_en', 'cordis_type_entity_acro','cordis_type_entity_name_fr']))
-    
-    tmp1 = order_columns(tmp1, 'proj_entities')
 
     for h in tmp1.framework.unique():
         if h=='Horizon Europe':
@@ -145,7 +143,6 @@ def entities_ods(entities_participation):
             df_subset = x.iloc[start:start+chunk_size]
             i=i+1
             zipfile_ods(df_subset, f"fr-esr-{he}-projects-entities-evaluated{i}")
-
 
 def entities_collab(entities_participation):
 # ## collab ENTITIES ##
