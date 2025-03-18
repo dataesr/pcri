@@ -7,7 +7,12 @@ def synthese_preparation(participation, countries):
     print("\n### SYNTHESE preparation")
     print("\n## regroupement des participations")
 
-    cc = countries.drop(columns=['countryCode', 'country_name_mapping','country_code_mapping']).drop_duplicates()
+    cc = (countries
+          .drop(columns=['countryCode', 'countryCode_parent','country_code'])
+          .drop(columns=countries.columns[countries.columns.str.contains('2020')])
+          .rename(columns={'countryCode_iso3':'country_code'})
+          .drop_duplicates()
+          )
 
     part=(participation
         .drop(columns=['orderNumber', 'generalPic', 'country_code_mapping'])
@@ -18,7 +23,7 @@ def synthese_preparation(participation, countries):
         .sum()
         .reset_index())
 
-    part = part.merge(cc, how='left', on='country_code').drop(columns='countryCode_parent')
+    part = part.merge(cc, how='left', on='country_code')
 
     print(f"nouvelle longueur pour les participations regroupées: {len(part)}")
 
