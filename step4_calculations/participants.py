@@ -1,7 +1,5 @@
-import numpy as np
-
 def participants_calcul(part_step, part, proj):
-
+    import numpy as np
     print("\n### CALCULS participants")
 
     '''SUBVENTIONS : mise à zéro les EUsubventions au niveau des non-beneficiaires'''
@@ -28,8 +26,7 @@ def participants_calcul(part_step, part, proj):
     part_step_first_len=len(part_step)
 
     part_proj = (part_step.merge(subv_pt, how='inner')[
-                ['project_id',  'generalPic', 'orderNumber', 'cordis_is_sme', 
-                'flag_entreprise', 
+                ['project_id',  'generalPic', 'orderNumber', 'cordis_is_sme', 'flag_entreprise', 
                 'cordis_type_entity_code', 'cordis_type_entity_name_fr', 'cordis_type_entity_name_en', 'cordis_type_entity_acro',
                 'participation_nuts', 'region_1_name', 'region_2_name', 'regional_unit_name', 
                 'country_code', 'country_code_mapping', 'extra_joint_organization', 'role', 'partnerType', 'erc_role', 
@@ -38,8 +35,8 @@ def participants_calcul(part_step, part, proj):
                 .assign(stage='successful'))    
 
     #calcul budget ERC
-    part_proj = part_proj.assign(fund_ent_erc=np.where(part_proj.project_id.isin(proj), part_proj.calculated_fund, np.nan))
-    part_proj.loc[part_proj.project_id.isin(proj), 'calculated_fund'] = part_proj.loc[part_proj.project_id.isin(proj)].beneficiary_subv
+    part_proj = part_proj.assign(fund_ent_erc=np.where(part_proj.project_id.isin(proj.project_id.unique()), part_proj.calculated_fund, np.nan))
+    part_proj.loc[part_proj.project_id.isin(proj.project_id.unique()), 'calculated_fund'] = part_proj.loc[part_proj.project_id.isin(proj.project_id.unique())].beneficiary_subv
 
     if part_step_first_len != len(part_step):
         print(f"2- ATTENTION ! pas le même nbre de lignes-> part_step: {len(part_step)}, first_part_step: {part_step_first_len}")    
