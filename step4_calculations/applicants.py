@@ -1,6 +1,6 @@
 
 
-def applicants_calcul(part_step, app1, proj_erc):
+def applicants_calcul(part_step, app1, proj):
     import numpy as np, pandas as pd
     '''Traitement des subventions proposals -> création calculated_proposal_subv'''
     print("\n### CALCULS applicants")
@@ -17,7 +17,7 @@ def applicants_calcul(part_step, app1, proj_erc):
 
     print(f"0 - {'{:,.1f}'.format(app1['requestedGrant'].sum())}, {'{:,.1f}'.format(subv_p['requestedGrant'].sum())}")
 
-    subv_p = subv_p.merge(proj_erc, how='left', on='project_id', indicator=True)
+    subv_p = subv_p.merge(proj, how='left', on='project_id', indicator=True)
     tmp = subv_p.loc[subv_p._merge=='both']
     tmp['fund_ent_erc'] = tmp.requestedGrant
     subv_tmp = tmp.loc[tmp.destination_code!='SyG', ['project_id', 'requestedGrant']].groupby(['project_id'])['requestedGrant'].sum().reset_index()
