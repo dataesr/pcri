@@ -18,21 +18,22 @@ def applicants_calcul(part_step, app1, proj):
     print(f"0 - {'{:,.1f}'.format(app1['requestedGrant'].sum())}, {'{:,.1f}'.format(subv_p['requestedGrant'].sum())}")
 
     subv_p = subv_p.merge(proj, how='left', on='project_id', indicator=True)
-    tmp = subv_p.loc[subv_p._merge=='both']
-    tmp['fund_ent_erc'] = tmp.requestedGrant
-    subv_tmp = tmp.loc[tmp.destination_code!='SyG', ['project_id', 'requestedGrant']].groupby(['project_id'])['requestedGrant'].sum().reset_index()
+    subv_p.loc[subv_p._merge=='both', 'fund_ent_erc'] = subv_p.loc[subv_p._merge=='both'].requestedGrant
 
-    tmp = tmp.merge(subv_tmp, how='left', on='project_id', suffixes=('', '_y'))
-    tmp.loc[(subv_p.destination_code!='SyG')&(subv_p.erc_role!='PI'), 'requestedGrant_y'] = 0
+    tmp = subv_p.loc[(subv_p._merge=='both')&(subv_p.destination_code!='SyG')]
+    subv_tmp = tmp[['project_id', 'requestedGrant']].groupby(['project_id'])['requestedGrant'].sum().reset_index()
 
-    subv_p=pd.concat([subv_p[subv_p._merge=='left_only'], tmp], ignore_index=True)
+    tmp = tmp.drop(columns='requestedGrant').merge(subv_tmp, how='left', on='project_id')
+    tmp.loc[tmp.erc_role!='PI', 'requestedGrant'] = 0
+
+    subv_p=pd.concat([subv_p[~subv_p.project_id.isin(tmp.project_id.unique())], tmp], ignore_index=True)
 
     subv_p['calculated_fund'] = (np.where((subv_p['projNlien']>1.)|(subv_p['n_pic_cc']>1.), 
                                 subv_p['requestedGrant']/subv_p['projNlien']/subv_p['n_pic_cc'], subv_p['requestedGrant']))
 
     subv_p['fund_ent_erc'] = (np.where((subv_p['projNlien']>1.)|(subv_p['n_pic_cc']>1.), 
                                 subv_p['fund_ent_erc']/subv_p['projNlien']/subv_p['n_pic_cc'], subv_p['fund_ent_erc']))
-    subv_p.drop(['projNlien','orderNumber','requestedGrant_y'], axis=1, inplace=True)
+    subv_p.drop(['projNlien','orderNumber', '_merge'], axis=1, inplace=True)
 
     if len(subv_p)!=len(app1):
         print(f"1- ATTENTION ! {len(subv_p)-len(app1)} participations perdues entre app1 et subv_p")
