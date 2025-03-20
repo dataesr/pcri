@@ -46,7 +46,7 @@ def evol_preparation(FP6, FP7, h20, projects_current):
 def evolution_FP(pc, countries):
     print("### evolution TAB")
 
-    cc=countries[['country_code', 'country_name_fr']].drop_duplicates()
+    cc=countries[['countryCode_iso3', 'country_name_fr']].rename(columns={'countryCode_iso3':'country_code'}).drop_duplicates()
     
     total=(pc
             .groupby(['framework', 'call_year', 'stage', 'with_coord'], dropna=False)
