@@ -83,13 +83,15 @@ def sirene_import(DUMP_PATH):
                     
         pd.json_normalize(result).to_pickle(f"{DUMP_PATH}sirene/sirene_{i}.pkl")
 
-def sirene_full(DUMP_PATH):
+def sirene_subset(DUMP_PATH):
     import os, pandas as pd
     p=f"{DUMP_PATH}sirene/"
     file_import=[]
     for i in os.listdir(p):
         if os.path.isfile(os.path.join(p,i)) and 'sirene_' in i:
-            delete=['47','55','56', '60', '68','77','78','79', '81','92','93','96', '97', '98']
+            delete=["02",	"06",	"07",	"08",	"09",	"11",	"14",	"15",	"18",	"19",	"31",	"36",	
+            "37",	"39",	"45", "47",	"50",	"51",	"53",	"55",	"56",	"60",	"65",	"75", "77",	"78",	
+            "79",	"80",	"81",	"87",	"92", "93",	"95",	"96",  "97",  "98",	"99"]
             if (i.split('_')[1][0:2] not in delete) & (i.split('_')[1][0:5] not in delete) :
                 print(i)
                 df2=pd.read_pickle(f"{p}{i}")
@@ -105,10 +107,8 @@ def sirene_prep(DUMP_PATH, sirene_id_list, countries):
 
     df = df.loc[df['statutDiffusionEtablissement']!='P']
 
-    delete=["02",	"06",	"07",	"08",	"09",	"11",	"14",	"15",	"18",	"19",	"31",	"36",	
-            "37",	"39",	"45",	"50",	"51",	"53",	"55",	"56",	"60",	"65",	"75",	"78",	
-            "79",	"80",	"81",	"87",	"92",	"95",	"96",	"99"]
-    sirene=df.loc[df.naf_et.str[0:2].isin(delete)]
+
+    # sirene=df.loc[df.naf_et.str[0:2].isin(delete)]
 
     for i in sirene_id_list:
         if any(sirene.siren==i) | any(sirene.siret==i) | any(sirene['uniteLegale.identifiantAssociationUniteLegale']==i):

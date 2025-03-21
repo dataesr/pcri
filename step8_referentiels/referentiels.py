@@ -1,4 +1,4 @@
-def referentiels_load(ror_load=False, rnsr_load=False, sirene_load=False):
+def referentiels_load(ror_load=False, rnsr_load=False, sirene_load=False, sirene_subset=False):
     from step8_referentiels.ror import ror_import
     from step8_referentiels.sirene import sirene_import, sirene_full
     from step8_referentiels.rnsr import rnsr_import
@@ -10,7 +10,9 @@ def referentiels_load(ror_load=False, rnsr_load=False, sirene_load=False):
 
     if sirene_load==True:
         sirene_import(f'{PATH}referentiel/') # -> sirene_ref_moulinette.pkl
-        sirene_full(DUMP_PATH)
+
+    if sirene_subset==True:
+        sirene_subset(DUMP_PATH)
 
     if rnsr_load==True:
         rnsr_import(DUMP_PATH)
