@@ -78,7 +78,7 @@ def erc_evol_ods(msca_resume):
     tmp = tmp.reindex(sorted(tmp.columns), axis=1)
     # attention si changement de nom de vars -> la modifier aussi dans pcri_info_columns_order
     tmp = order_columns(tmp, 'erc_evol')    
-    zipfile_ods(tmp.sort_values(['fund_€_all'], ascending=False), "fr-esr-erc-projects-synthese")
+    zipfile_ods(tmp.sort_values(['funding_project_all'], ascending=False), "fr-esr-erc-projects-synthese")
     # tmp.sort_values(['fund_€_all'], ascending=False).to_csv(f"{PATH_ODS}fr-esr-erc-evolution-pcri.csv", sep=';', encoding='UTF-8', index=False, na_rep='', decimal=".")
 
 def erc_entities(me_entities):
