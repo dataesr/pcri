@@ -1,4 +1,11 @@
 ######### IMPORT
+def ror_zipname():
+    import requests
+    site = requests.get('https://zenodo.org/api/records/8436953/files')
+    r = site.json()
+    return r['entries'][0]['key']
+     
+
 def ror_import(DUMP_PATH):
     
     from config_path import PATH
@@ -9,8 +16,8 @@ def ror_import(DUMP_PATH):
 
     response = requests.get(r['entries'][0]['links']['content'])
     with open(f"{DUMP_PATH}{ROR_ZIP}", 'wb') as f:
-        f.write(response.content)
-    return ROR_ZIP                
+        f.write(response.content) 
+    return ROR_ZIP            
 
 def ror_prep(DUMP_PATH, ROR_ZIP, countries):
     from functions_shared import unzip_zip, my_country_code
