@@ -18,13 +18,13 @@ def erc_ods(msca_erc):
         'participates_as', 'project_id', 'role', 'ecorda_date', 'stage', 'stage_name', 'country_code']]
         .rename(columns={
         'panel_code':'panel_id',
-        'panel_regroupement_code':'domaine_erc', 
-        'panel_regroupement_name':'domaine_name_erc', 
+        'panel_regroupement_code':'domaine_scientifique', 
+        'panel_regroupement_name':'domaine_name_scientifique', 
         'action_code':'action_id', 
-        'role':'role_entite', 
+        'role':'role_entity', 
         'erc_role':'porteur_projet',
-        'calculated_fund':'fund_project_€',
-        'fund_ent_erc':'fund_entite_€',
+        'calculated_fund':'funding_project',
+        'fund_ent_erc':'funding_entity',
         'country_group_association_code':'country_association_code',
         'country_group_association_name_en':'country_association_name_en',
         'country_group_association_name_fr':'country_association_name_fr',
@@ -46,7 +46,7 @@ def erc_evol_ods(msca_resume):
                 coordination_number=np.where(msca_resume.erc_role=='PI', 1, 0))
         .loc[(msca_resume.thema_code=='ERC')&(msca_resume.framework.isin(['H2020', 'Horizon Europe'])),
         ['framework', 'status_name','country_name_fr', 'call_year',  'action_code', 'action_name',
-        'destination_name_en', 'panel_name', 'erc_role', 'participates_as', 'role', 'funding_entite',
+        'destination_name_en', 'panel_name', 'erc_role', 'participates_as', 'role', 'funding_entity',
         'extra_joint_organization', 'is_ejo', 'with_coord', 'panel_regroupement_code', 'panel_regroupement_name',
         'funding_part', 'number_involved', 'coordination_number', 'project_id', 'country_code',
         'country_name_en', 'country_group_association_code','country_group_association_name_en',
@@ -54,11 +54,11 @@ def erc_evol_ods(msca_resume):
         
         .rename(columns={
             'panel_code':'panel_id',
-            'panel_regroupement_code':'domaine_erc', 
-            'panel_regroupement_name':'domaine_name_erc', 
+            'panel_regroupement_code':'domaine_scientifique', 
+            'panel_regroupement_name':'domaine_name_scientifique', 
             'action_code':'action_id', 
             'funding_part':'funding_project',
-            'role':'role_entite', 
+            'role':'role_entity', 
             'erc_role':'porteur_projet',
             'country_group_association_code':'country_association_code',
             'country_group_association_name_en':'country_association_name_en',
@@ -71,7 +71,7 @@ def erc_evol_ods(msca_resume):
     tmp.loc[(tmp.country_code=='ALL'), 'country_name_fr'] = 'Tous pays'
 
 
-    for i in ['coordination_number', 'number_involved', 'funding_project', 'funding_entite']:
+    for i in ['coordination_number', 'number_involved', 'funding_project', 'funding_entity']:
         tmp.loc[(tmp.country_code=='ALL'), f'{i}_all'] = tmp[i]
         tmp.loc[(tmp.country_code=='ALL'), i] = np.nan
 
@@ -91,20 +91,23 @@ def erc_entities(me_entities):
             'participates_as', 'erc_role', 'cordis_type_entity_acro', 'cordis_type_entity_code', 'action_code', 'action_name',
             'cordis_type_entity_name_en', 'cordis_type_entity_name_fr',  'role', 'extra_joint_organization', 'is_ejo',
             'operateur_name', 'paysage_category', 'category_woven', 'entreprise_type_code', 'entreprise_type_name',
-            'entities_name', 'entities_acronym', 'calculated_fund', 'coordination_number', 'number_involved', 'with_coord',
+            'entities_name', 'entities_acronym', 'calculated_fund', 'fund_ent_erc', 'coordination_number', 'number_involved', 'with_coord',
             'project_id', 'participation_nuts', 'region_1_name', 'region_2_name', 'regional_unit_name',
             'country_group_association_name_fr', 'country_name_mapping','country_name_en',
             'country_group_association_code', 'country_group_association_name_en', 'country_code_mapping', 'panel_code',
             'destination_code', 'entities_id', 'status_code', 'ecorda_date',  'free_keywords', 'abstract', 'acronym',
-            'category_agregation', 'flag_entreprise', 'source_id'
+            'category_agregation', 'flag_entreprise', 'source_id','panel_regroupement_code', 'panel_regroupement_name', 
             ]]
         .rename(columns={ 
             'source_id':'entities_id_source',
             'panel_code':'panel_id',
+            'panel_regroupement_code':'domaine_scientifique', 
+            'panel_regroupement_name':'domaine_name_scientifique', 
             'action_code':'action_id', 
-            'erc_role':'role_chercheur',
-            'role':'role_institution',
-            'calculated_fund':'fund_€', 
+            'erc_role':'porteur_projet',
+            'role':'role_entity',
+            'calculated_fund':'funding_project', 
+            'fund_ent_erc':'funding_entity',
             'country_group_association_code':'country_association_code',
             'country_group_association_name_en':'country_association_name_en',
             'country_group_association_name_fr':'country_association_name_fr',
