@@ -1,16 +1,16 @@
 import pandas as pd, numpy as np, json
 from config_path import PATH_WORK
 
-def merge_ror(entities_tmp, ror, countries):
+def merge_ror(entities_tmp, ror):
     print("### merge ROR")
-    ccode=json.load(open("data_files/countryCode_match.json"))
-    for k,v in ccode.items():
-        ror.loc[ror.country_code==k, 'country_code'] = v
-        ror.loc[ror.country_code==k, 'country_code'] = v
-    ror = (ror
-           .merge(countries[['countryCode', 'country_code_mapping']], 
-                  how='left', left_on='country_code', right_on='countryCode')
-            .drop(columns=['countryCode', 'country_code']))
+    # ccode=json.load(open("data_files/countryCode_match.json"))
+    # for k,v in ccode.items():
+    #     ror.loc[ror.country_code==k, 'country_code'] = v
+    #     ror.loc[ror.country_code==k, 'country_code'] = v
+    # ror = (ror
+    #        .merge(countries[['countryCode', 'country_code_mapping']], 
+    #               how='left', left_on='iso2', right_on='countryCode')
+    #         .drop(columns=['countryCode', 'iso2']))
 
     entities_tmp = (entities_tmp
                     .merge(ror.drop(columns='country_code_mapping'), 
