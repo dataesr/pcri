@@ -58,7 +58,7 @@ def entities_ods(entities_participation):
         'participation_nuts', 'region_1_name', 'region_2_name', 'regional_unit_name',
         'entities_acronym', 'entities_id', 'entities_name', 'operateur_name',
         'insee_cat_code', 'insee_cat_name', 'participates_as', 'project_id',
-        'role', 'ror_category', 'sector', 'paysage_category', 
+        'role', 'ror_category', 'sector', 'paysage_category', 'fund_ent_erc',
         'coordination_number', 'calculated_fund', 'with_coord','abstract', 
         'number_involved', 'action_code', 'action_name', 'call_id', 'topic_code',
         'status_code', 'framework', 'call_year', 'ecorda_date', 'flag_entreprise',
@@ -106,7 +106,8 @@ def entities_ods(entities_participation):
     # ATTENTION si changement de nom de vars -> la modifier aussi dans pcri_info_columns_order
     
     for h in tmp.framework.unique():
-        x = tmp[(tmp.stage=='successful')&(tmp.framework==h)].drop(columns=['panel_regroupement_code', 'panel_code', 'erc_role'])
+        x = (tmp[(tmp.stage=='successful')&(tmp.framework==h)]
+             .drop(columns=['panel_regroupement_code', 'panel_code', 'erc_role', 'fund_ent_erc']))
         x.loc[x.thema_code.isin(['ERC','MSCA']), ['destination_code', 'destination_name_en']] = np.nan
         x = entreprise_cat_cleaning(x)
         chunk_size = int(math.ceil((x.shape[0] / 2)))
