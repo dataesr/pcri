@@ -1,10 +1,10 @@
-import pandas as pd, pickle, numpy as np, datetime
+import pandas as pd, re, numpy as np, datetime
 pd.options.mode.copy_on_write = True
 from IPython.display import HTML
 
 # from api_requests.matcher import matcher
 from config_path import PATH
-from step8_referentiels.referentiels import ref_externe_preparation
+from step8_referentiels.referentiels import referentiels_load, ref_externe_preparation
 from step9_affiliations.prep_entities import entities_preparation
 from functions_shared import work_csv
 from step9_affiliations.organismes_cleaning import organismes_back
@@ -13,9 +13,7 @@ from step9_affiliations.dataset_describe import dataset_decribe
 ######### one time
 # organismes_back('2024')
 
-######### si actualisation -> rnsr_adr_corr = true pour nettoyer les adresses problématiques du rnsr
-####### sirene_load = true si besoin de charger les données du SI sirene
-ref_externe_preparation(rnsr_adr_corr=False, rnsr_load=True, sirene_load=False)
+
 
 # entities_preparation()
 ######## si reprise du code en cours chargement des pickles -> entities_all
@@ -25,15 +23,23 @@ ref_externe_preparation(rnsr_adr_corr=False, rnsr_load=True, sirene_load=False)
 def data_import():
     from config_path import PATH_MATCH,  PATH_CLEAN
     proj = pd.read_pickle(f"{PATH_CLEAN}projects_current.pkl")
-    ref_all = pd.read_pickle(f"{PATH_MATCH}ref_all.pkl")
-    print(f"size ref_all init: {len(ref_all)}")
+    # ref_all = pd.read_pickle(f"{PATH_MATCH}ref_all.pkl")
+    # print(f"size ref_all init: {len(ref_all)}")
     entities_all = pd.read_pickle(f'{PATH_MATCH}entities_all.pkl')
     print(f"size entities_all init: {len(entities_all)}")
     # pers = pd.read_pickle(f"{PATH_CLEAN}persons_current.pkl")
     # print(f"size persons: {len(pers)}")
-    return ref_all, entities_all, proj
-ref_all, entities_all, proj = data_import()
+    return entities_all, proj
+entities_all, proj = data_import()
 
+######### si actualisation -> rnsr_adr_corr = true pour nettoyer les adresses problématiques du rnsr
+####### sirene_load = true si besoin de charger les données du SI sirene
+
+referentiels_load(ror_load=False, rnsr_load=False, sirene_load=False)
+
+
+l=entities_all.loc[ entities_all.entities_id.str.match(r"^[0-9]{9}$|^[0-9]{14}$|^[W|w]([A-Z0-9]{8})[0-9]{1}$")].entities_id.unique()
+ref_externe_preparation(l, rnsr_adr_corr=False)
 
 #############################
 tmp=entities_all.copy()
