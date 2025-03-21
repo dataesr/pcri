@@ -83,7 +83,7 @@ def sirene_import(DUMP_PATH):
                     
         pd.json_normalize(result).to_pickle(f"{DUMP_PATH}sirene/sirene_{i}.pkl")
 
-def sirene_subset(DUMP_PATH):
+def sirene_concat(DUMP_PATH):
     import os, pandas as pd
     p=f"{DUMP_PATH}sirene/"
     file_import=[]
