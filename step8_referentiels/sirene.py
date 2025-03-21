@@ -85,7 +85,6 @@ def sirene_import(DUMP_PATH):
 
 def sirene_full(DUMP_PATH):
     import os, pandas as pd
-    naf = pd.read_excel(f"{DUMP_PATH}naf2008_5_niveaux.xls", sheet_name='naf2008_5_niveaux')
     p=f"{DUMP_PATH}sirene/"
     file_import=[]
     for i in os.listdir(p):
@@ -99,12 +98,24 @@ def sirene_full(DUMP_PATH):
     x.to_pickle(f"{DUMP_PATH}sirene_ref.pkl")
     return x
 
-def sirene_prep(DUMP_PATH, countries):
+def sirene_prep(DUMP_PATH, sirene_id_list, countries):
     import pandas as pd
     from functions_shared import com_iso3
     df = pd.read_pickle(f"{DUMP_PATH}sirene_ref.pkl")
 
-    sirene = df.loc[df['statutDiffusionEtablissement']!='P']
+    df = df.loc[df['statutDiffusionEtablissement']!='P']
+
+    delete=["02",	"06",	"07",	"08",	"09",	"11",	"14",	"15",	"18",	"19",	"31",	"36",	
+            "37",	"39",	"45",	"50",	"51",	"53",	"55",	"56",	"60",	"65",	"75",	"78",	
+            "79",	"80",	"81",	"87",	"92",	"95",	"96",	"99"]
+    sirene=df.loc[df.naf_et.str[0:2].isin(delete)]
+
+    for i in sirene_id_list:
+        if any(sirene.siren==i) | any(sirene.siret==i) | any(sirene['uniteLegale.identifiantAssociationUniteLegale']==i):
+            pass
+        else:
+            sirene=pd.concat([sirene, df[(df.siren==i)|(df.siret==i)|(df['uniteLegale.identifiantAssociationUniteLegale']==i)]], ignore_index=True)
+        
 
     sirene = (sirene.assign(ens=df[['enseigne1Etablissement', 'enseigne2Etablissement', 'enseigne3Etablissement']]
                         .fillna('')
