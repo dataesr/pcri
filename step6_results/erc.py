@@ -8,7 +8,7 @@ def erc_ods(msca_erc):
     print("### ERC ods")
         
     e = (msca_erc.assign(stage_name=np.where(msca_erc.stage=='evaluated', 'projets évalués', 'projets lauréats'))
-        .loc[(msca_erc.thema_code=='ERC')&(msca_erc.framework.isin(['H2020', 'Horizon Europe'])),   
+        .loc[(msca_erc.thema_code=='ERC')&(msca_erc.framework.isin(['Horizon 2020', 'Horizon Europe'])),   
         ['action_code', 'action_name','calculated_fund', 'fund_ent_erc', 'call_year', 'extra_joint_organization', 'is_ejo',
         'cordis_type_entity_acro', 'cordis_type_entity_code','cordis_type_entity_name_en', 'cordis_type_entity_name_fr',
         'country_group_association_code', 'country_group_association_name_en', 'with_coord',
@@ -44,7 +44,7 @@ def erc_evol_ods(msca_resume):
     tmp=(msca_resume
         .assign(status_name=np.where(msca_resume.stage=='evaluated', 'projets évalués', 'projets lauréats'),
                 coordination_number=np.where(msca_resume.erc_role=='PI', 1, 0))
-        .loc[(msca_resume.thema_code=='ERC')&(msca_resume.framework.isin(['H2020', 'Horizon Europe'])),
+        .loc[(msca_resume.thema_code=='ERC')&(msca_resume.framework.isin(['Horizon 2020', 'Horizon Europe'])),
         ['framework', 'status_name','country_name_fr', 'call_year',  'action_code', 'action_name',
         'destination_name_en', 'panel_name', 'erc_role', 'participates_as', 'role', 'funding_entity',
         'extra_joint_organization', 'is_ejo', 'with_coord', 'panel_regroupement_code', 'panel_regroupement_name',
