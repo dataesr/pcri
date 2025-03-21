@@ -80,7 +80,7 @@ calls = calls_to_check(calls, call_id)
 
 projects = projects_complete_cleaned(merged, extractDate)
 # else:
-#     projects = pd.read_pickle(f"{PATH_CLEAN}projects_current.pkl")
+projects = pd.read_pickle(f"{PATH_CLEAN}projects_current.pkl")
 
 #############################################################
 ##### PARTICIPATIONS
@@ -143,17 +143,18 @@ for i in [app1, part, entities]:
         print(i.loc[i['_merge']=='left_only'].countryCode.unique())
     i.drop(columns='_merge', inplace=True)
 
-# if NEW_UPDATE==True:
+
     # LIEN
 lien = merged_partApp(app1, part)
 lien = nuts_lien(app1, part, lien)
 lien.to_pickle(f"{PATH_CLEAN}lien.pkl")
-entities_single = entities_single_create(entities, lien)
-# else:
-#     lien = pd.read_pickle(f"{PATH_CLEAN}lien.pkl")
-#     entities_single = pd.read_pickle(f"{PATH_SOURCE}entities_single.pkl")
-#     countries = pd.read_pickle(f"{PATH_CLEAN}country_current.pkl")
 
+if NEW_UPDATE==True:
+    entities_single = entities_single_create(entities, lien)
+else:
+    entities_single = pd.read_pickle(f"{PATH_SOURCE}entities_single.pkl")
+#     countries = pd.read_pickle(f"{PATH_CLEAN}country_current.pkl")
+#     lien = pd.read_pickle(f"{PATH_CLEAN}lien.pkl")
 
 entities_info = entities_info_create(entities_single, lien)
 
@@ -257,8 +258,8 @@ with open(file_name, 'wb') as file:
 
 part_step = entities_with_lien(entities_info, lien, genPic_to_new)
 proj_no_coord = proj_no_coord(projects)
-proj_erc = projects[projects.thema_code=='ERC'].project_id.to_list()
-part_prop = applicants_calcul(part_step, app1)
+proj_erc = projects.loc[projects.action_code=='ERC', ['project_id', 'destination_code']].drop_duplicates()
+part_prop = applicants_calcul(part_step, app1, proj_erc)
 part_proj = participants_calcul(part_step, part, proj_erc)
 participation = participations_complete(part_prop, part_proj, proj_no_coord)
 del part_proj, part_prop
@@ -271,3 +272,6 @@ FP7_process()
 
 # project_list = list(set(h20_p.project_id))+list(set(FP7_p.project_id))+list(set(FP6_p.project_id))+list(set(projects.loc[projects.stage=='successful'].project_id))
 # check_proj_id(project_list)
+
+
+
