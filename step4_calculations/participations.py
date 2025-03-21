@@ -96,11 +96,12 @@ def participations_complete(part_prop, part_proj, proj_no_coord):
 def ent(participation, entities_info, projects):
     import  pandas as pd
     print("### ENTITIES preparation")
-    part=participation[
+    part=(participation[
         ['stage', 'project_id','generalPic', 'role', 'participates_as', 'erc_role', 
-         'with_coord', 'is_ejo', 'country_code', 'participation_nuts', 'country_code_mapping',
-         'region_1_name', 'region_2_name', 'regional_unit_name','participation_linked',
-        'coordination_number', 'calculated_fund', 'beneficiary_subv', 'fund_ent_erc']].assign(number_involved=1)
+        'with_coord', 'is_ejo', 'country_code', 'participation_nuts', 'country_code_mapping',
+        'region_1_name', 'region_2_name', 'regional_unit_name','participation_linked',
+        'coordination_number', 'calculated_fund', 'beneficiary_subv', 'fund_ent_erc']]
+        .assign(number_involved=1))
 
     def ent_stage(df, stage_value:str):
         import numpy as np
