@@ -70,15 +70,15 @@ def msca_erc_resume(msca_erc):
             .groupby(list(msca_erc.columns.difference(['coordination_number', 'number_involved', 'calculated_fund', 'beneficiary_subv', 'fund_ent_erc'])), dropna=False)
             .agg({'number_involved':'sum', 'calculated_fund':'sum', 'coordination_number':'sum','fund_ent_erc':'sum'})
             .reset_index()
-            .rename(columns={'calculated_fund':'funding_part', 'fund_ent_erc':'funding_entite'})
+            .rename(columns={'calculated_fund':'funding_part', 'fund_ent_erc':'funding_entity'})
                 )
 
     # msca_resume.columns
     tot = me_resume.loc[:,~me_resume.columns.str.contains('country|article', regex=True)] 
-    tot = (tot.groupby(list(tot.columns.difference(['coordination_number', 'number_involved', 'funding_part','funding_entite'])), dropna=False)
+    tot = (tot.groupby(list(tot.columns.difference(['coordination_number', 'number_involved', 'funding_part','funding_entity'])), dropna=False)
     #       .groupby(['framework', 'stage', 'call_year', 'project_id', 'role','participates_as', 'thema_code', 'action_code', 'action_name',
     #        'panel_code', 'panel_name', 'destination_code', 'destination_detail_code', 'destination_name_en', 'destination_detail_name_en'], dropna=False)
-        .agg({'funding_part':'sum', 'number_involved':'sum', 'coordination_number':'sum', 'funding_entite':'sum'})
+        .agg({'funding_part':'sum', 'number_involved':'sum', 'coordination_number':'sum', 'funding_entity':'sum'})
         .reset_index()
         .assign(country_code='ALL'))
 
