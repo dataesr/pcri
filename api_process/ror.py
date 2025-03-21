@@ -18,7 +18,7 @@ def ror_info(result: list):
             elem['link_ror'] = elem.get('id')
             elem['id'] = 'R' + elem.get('id').split('/')[-1]
 
-            elem['country_code'] = elem.get('country').get('country_code')
+            elem['iso2'] = elem.get('country').get('country_code')
             elem['date_start'] = str(elem.get('established'))
 
 
@@ -74,11 +74,11 @@ def ror_info(result: list):
 
 
 def ror_cleaning(r):
-    ror_source=(pd.DataFrame(r)[['id','name','acronyms','types','country_code']]
+    ror_source=(pd.DataFrame(r)[['id','name','acronyms','types','iso2']]
                 .rename(columns={'id':'id_clean','name':'name_clean','acronyms':'acronym_clean','types':'ror_category'})
                 .drop_duplicates())
     ror_tmp = pd.DataFrame(r)
-    ror_tmp = (ror_tmp[['id','name','types','country_code','relation_name','relation_id','relation_type']]
+    ror_tmp = (ror_tmp[['id','name','types','iso2','relation_name','relation_id','relation_type']]
             .rename(columns={'id':'id_source'}))
 
     def explode_ror(df):
@@ -90,7 +90,7 @@ def ror_cleaning(r):
     ror = (ror_tmp.loc[(~ror_tmp.relation_type.str.contains("Parent", na=False)) & (~ror_tmp.relation_type.str.contains("Successor", na=False))]
                 .filter(regex=r'^(?!relation_)', axis=1)
                 .drop_duplicates()
-                .assign(nb_parent=0))[['id_source', 'country_code', 'nb_parent']]
+                .assign(nb_parent=0))[['id_source', 'iso2', 'nb_parent']]
     print(f"1 - ror:{len(ror)}")
 
 
@@ -108,7 +108,7 @@ def ror_cleaning(r):
             ror_s = (ror_successor.loc[ror_successor.nb_succ>1]
                     .filter(regex=r'^(?!relation_)', axis=1)
                     .drop_duplicates()
-                    .assign(nb_parent=0))[['id_source', 'country_code', 'nb_parent']]
+                    .assign(nb_parent=0))[['id_source', 'iso2', 'nb_parent']]
             print(f"3 - ror_s:{len(ror_s)}")
         else:
             ror = pd.concat([ror, ror_s], ignore_index=True)
@@ -125,13 +125,13 @@ def ror_cleaning(r):
             ror = pd.concat([ror, (ror_s.loc[(~ror_s.relation_type.str.contains("Parent", na=False))]
                     .filter(regex=r'^(?!relation_)', axis=1)
                     .drop_duplicates()
-                    .assign(nb_parent=0)[['id_source', 'id_sec', 'country_code', 'nb_parent']])], ignore_index=True)
+                    .assign(nb_parent=0)[['id_source', 'id_sec', 'iso2', 'nb_parent']])], ignore_index=True)
             print(f"6 - ror:{len(ror)}")
 
             '''if successor has new parent'''
             ror_s = ror_s.loc[(ror_s.relation_type.str.contains("Parent", na=False))]
             ror_s = explode_ror(ror_s)
-            ror_s = ror_s.loc[ror_s.relation_type=='Parent'][['id_source', 'id_sec', 'country_code', 'relation_id']].rename(columns={'relation_id':'parent_id'})
+            ror_s = ror_s.loc[ror_s.relation_type=='Parent'][['id_source', 'id_sec', 'iso2', 'relation_id']].rename(columns={'relation_id':'parent_id'})
             ror_s['nb_parent'] = ror_s.groupby(['id_sec'], dropna=False)['parent_id'].transform('count')
             print(f"7 - ror_s with parent:{len(ror_s)}")
 
@@ -139,24 +139,24 @@ def ror_cleaning(r):
     '''ror with Parent no successor'''
     ror_child = ror_tmp.loc[(ror_tmp.relation_type.str.contains("Parent", na=False)) & (~ror_tmp.relation_type.str.contains("Successor", na=False))]
     ror_child = explode_ror(ror_child).rename(columns={'id':'id_source'})
-    ror_child = ror_child.loc[ror_child.relation_type=='Parent'][['id_source', 'country_code', 'relation_id']].rename(columns={'relation_id':'parent_id'})
+    ror_child = ror_child.loc[ror_child.relation_type=='Parent'][['id_source', 'iso2', 'relation_id']].rename(columns={'relation_id':'parent_id'})
     ror_child['nb_parent'] = ror_child.groupby(['id_source'], dropna=False)['parent_id'].transform('count')
 
     if 'ror_s' in globals() or 'ror_s' in locals():
-        ror_child = pd.concat([ror_child, ror_s], ignore_index=True)[['id_source', 'id_sec', 'country_code','nb_parent','parent_id']]
+        ror_child = pd.concat([ror_child, ror_s], ignore_index=True)[['id_source', 'id_sec', 'iso2','nb_parent','parent_id']]
         print(f"8 - ror_child:{len(ror_child)}")
 
-    ror_child = ror_child.merge(ror_tmp.rename(columns={'id_source':'parent_id','name':'parent_name', 'types':'parent_types', 'country_code':'parent_country_code'}), how='left', on='parent_id')
+    ror_child = ror_child.merge(ror_tmp.rename(columns={'id_source':'parent_id','name':'parent_name', 'types':'parent_types', 'iso2':'parent_country_code'}), how='left', on='parent_id')
 
-    '''if country_code!=parent_country_code'''
-    if len(ror_child['country_code']!=ror_child['parent_country_code'])>0:
+    '''if iso2!=parent_country_code'''
+    if len(ror_child['iso2']!=ror_child['parent_country_code'])>0:
         
         if 'id_sec' in ror_child.columns:
-            cols_select=['id_source', 'id_sec', 'country_code', 'nb_parent']
+            cols_select=['id_source', 'id_sec', 'iso2', 'nb_parent']
         else:
-            cols_select=['id_source', 'country_code', 'nb_parent']
+            cols_select=['id_source', 'iso2', 'nb_parent']
             
-        ror = pd.concat([ror, (ror_child.loc[ror_child['country_code']!=ror_child['parent_country_code']]
+        ror = pd.concat([ror, (ror_child.loc[ror_child['iso2']!=ror_child['parent_country_code']]
                 .drop_duplicates()
                 .assign(nb_parent=0)[cols_select])], ignore_index=True)
         print(f"9 - ror:{len(ror)}")
@@ -166,9 +166,9 @@ def ror_cleaning(r):
 
     '''if just one parent without other parent'''
     if 'id_sec' in ror_child.columns:
-        cols_select=['id_source', 'id_sec', 'country_code', 'parent_id', 'nb_parent']
+        cols_select=['id_source', 'id_sec', 'iso2', 'parent_id', 'nb_parent']
     else:
-        cols_select=['id_source', 'country_code', 'parent_id', 'nb_parent']
+        cols_select=['id_source', 'iso2', 'parent_id', 'nb_parent']
     ror = pd.concat([ror, 
                 (ror_child[(~ror_child.relation_type.str.contains('Parent', na=False)) & (ror_child.nb_parent==1)]
                 .filter(regex=r'^(?!relation_)', axis=1)
@@ -180,9 +180,9 @@ def ror_cleaning(r):
 
     '''if ++ parent keep id_source'''
     if 'id_sec' in ror_child.columns:
-        cols_select=['id_source', 'id_sec', 'country_code']
+        cols_select=['id_source', 'id_sec', 'iso2']
     else:
-        cols_select=['id_source', 'country_code']
+        cols_select=['id_source', 'iso2']
     ror = pd.concat([ror, 
                 (ror_child[ror_child.nb_parent>1]
                 .filter(regex=r'^(?!relation_)', axis=1)
@@ -200,7 +200,7 @@ def ror_cleaning(r):
 
     if len(ror_child['nb_parent2']>1)>0:
         ror = pd.concat([ror, 
-                        (ror_child[ror_child.nb_parent2>1][['id_source', 'id_sec', 'country_code', 'nb_parent', 'parent_id']]
+                        (ror_child[ror_child.nb_parent2>1][['id_source', 'id_sec', 'iso2', 'nb_parent', 'parent_id']]
                         .drop_duplicates())], ignore_index=True)
     print(f"14 - ror:{len(ror)}")
     ror_child = ror_child[~ror_child.id_source.isin(ror.id_source.unique())]
@@ -208,9 +208,9 @@ def ror_cleaning(r):
 
     print("16 - Attention ! il faut peut-être vérifier s'il y a des parents en sus à traiter cette fois-ci")
     if 'id_sec' in ror_child.columns:
-        cols_select=['id_source', 'id_sec', 'country_code', 'nb_parent', 'parent_id', 'parent_id2']
+        cols_select=['id_source', 'id_sec', 'iso2', 'nb_parent', 'parent_id', 'parent_id2']
     else:
-        cols_select=['id_source', 'country_code', 'nb_parent', 'parent_id', 'parent_id2']
+        cols_select=['id_source', 'iso2', 'nb_parent', 'parent_id', 'parent_id2']
     ror = pd.concat([ror, 
                     (ror_child[cols_select]
                     .drop_duplicates())], ignore_index=True).drop_duplicates()
