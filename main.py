@@ -26,6 +26,7 @@ h20 = h20.reindex(sorted(h20.columns), axis=1)
 
 # step6
 projects_all = projects_ods(projects, participation, calls, countries, h20_p, FP6_p, FP7_p)
+
 collab_signed_ods(collaboration)
 collaboration.drop(columns=['ecorda_date', 'abstract', 'free_keywords']).to_csv(PATH_CONNECT+"collaboration_current.csv", index=False, encoding="UTF-8", sep=";", na_rep='')
 msca_collab_ods(collaboration)
