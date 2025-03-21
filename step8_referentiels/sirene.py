@@ -1,5 +1,6 @@
 
 # traitement SIRENE
+
 from retry import retry
 @retry(delay=100, tries=3)
 def sirene_import(DUMP_PATH):
@@ -84,11 +85,12 @@ def sirene_import(DUMP_PATH):
 
 def sirene_full(DUMP_PATH):
     import os, pandas as pd
+    naf = pd.read_excel(f"{DUMP_PATH}naf2008_5_niveaux.xls", sheet_name='naf2008_5_niveaux')
     p=f"{DUMP_PATH}sirene/"
     file_import=[]
     for i in os.listdir(p):
         if os.path.isfile(os.path.join(p,i)) and 'sirene_' in i:
-            delete=['55','56','68','77','78','92','93','96','47.99']
+            delete=['47','55','56', '60', '68','77','78','79', '81','92','93','96', '97', '98']
             if (i.split('_')[1][0:2] not in delete) & (i.split('_')[1][0:5] not in delete) :
                 print(i)
                 df2=pd.read_pickle(f"{p}{i}")
