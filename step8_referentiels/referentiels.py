@@ -1,6 +1,23 @@
+def referentiels_load(ror_load=False, rnsr_load=False, sirene_load=False):
+    from step8_referentiels.ror import ror_import
+    from step8_referentiels.sirene import sirene_import, sirene_full
+    from step8_referentiels.rnsr import rnsr_import
+    from config_path import PATH, PATH_MATCH
+    DUMP_PATH=f'{PATH}referentiel/'
 
-def ref_externe_preparation(rnsr_adr_corr=False, rnsr_load=False, sirene_load=False):
-    import pandas as pd, pycountry, re, json, numpy as np
+    if ror_load==True:
+        ror_import(DUMP_PATH)
+
+    if sirene_load==True:
+        sirene_import(f'{PATH}referentiel/') # -> sirene_ref_moulinette.pkl
+        sirene_full(DUMP_PATH)
+
+    if rnsr_load==True:
+        rnsr_import(DUMP_PATH)
+
+
+def ref_externe_preparation(sirene_id_list, rnsr_adr_corr=False ):
+    import pandas as pd, re, json, numpy as np, os
     from text_to_num import alpha2digit
 
     # from IPython.display import HTML
@@ -9,27 +26,18 @@ def ref_externe_preparation(rnsr_adr_corr=False, rnsr_load=False, sirene_load=Fa
 
     # from step7_referentiels.countries import ref_countries
     from functions_shared import work_csv, prep_str_col, stop_word, my_country_code
-    from step8_referentiels.ror import ror_import, ror_prep
-    from step8_referentiels.sirene import sirene_prep, sirene_import, sirene_full
-    from step8_referentiels.rnsr import rnsr_import, rnsr_prep
+    from step8_referentiels.ror import ror_prep
+    from step8_referentiels.sirene import sirene_prep
+    from step8_referentiels.rnsr import rnsr_prep
     from step8_referentiels.paysage import paysage_prep
     DUMP_PATH=f'{PATH}referentiel/'
 
     my_countries=my_country_code()
     print(len(my_countries))
 
-    ROR_ZIPNAME = ror_import(DUMP_PATH)
-    ror = ror_prep(DUMP_PATH, ROR_ZIPNAME, my_countries)
-
-    ####
-    if sirene_load==True:
-        sirene_import(f'{PATH}referentiel/') # -> sirene_ref_moulinette.pkl
-        sirene_full(DUMP_PATH)
-    sirene = sirene_prep(DUMP_PATH, my_countries)
-
-    ### Extraction des données rnsr de dataESR
-    if rnsr_load==True:
-        rnsr_import(DUMP_PATH)
+    ror_zipname = ''.join([i for i in os.listdir(DUMP_PATH) if re.search('ror', i)]) 
+    ror = ror_prep(DUMP_PATH, ror_zipname, my_countries)
+    sirene = sirene_prep(DUMP_PATH, sirene_id_list, my_countries)
     rnsr = rnsr_prep(DUMP_PATH, my_countries, rnsr_adr_corr)
 
     ######
