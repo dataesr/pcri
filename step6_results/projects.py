@@ -10,9 +10,9 @@ def projects_ods(projects, participation, calls, countries, h20_p, FP6_p, FP7_p)
                  'participation_nuts', 'region_1_name', 'region_2_name', 
                  'regional_unit_name']].drop_duplicates()
     .merge(cc[['countryCode_iso3','country_name_fr']]
-           .rename(colums={'countryCode_iso3':'country_code'}), how='left', on='country_code')
+           .rename(columns={'countryCode_iso3':'country_code'}), how='left', on='country_code')
     .merge(cc[['countryCode_iso3', 'country_name_en']]
-           .rename(colums={'countryCode_iso3':'country_code_mapping', 'country_name_en':'country_name_mapping'}), 
+           .rename(columns={'countryCode_iso3':'country_code_mapping', 'country_name_en':'country_name_mapping'}), 
            how='left', on='country_code_mapping')
     .groupby(['project_id'], as_index = False).agg(lambda x: ';'.join(map(str, filter(None, x)))))
 
