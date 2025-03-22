@@ -142,6 +142,7 @@ def rnsr_import(DUMP_PATH):
 def rnsr_prep(DUMP_PATH, countries, corr=False):
     import pandas as pd, sys
     from functions_shared import com_iso3, work_csv
+    print("### RNRS preparation")
     rnsr = pd.read_pickle(f"{DUMP_PATH}rnsr_complet.pkl")
 
     rnsr.loc[~rnsr.date_end.isnull(), 'date_end'] = rnsr.loc[~rnsr.date_end.isnull()].date_end.astype(int)
@@ -187,6 +188,7 @@ def rnsr_prep(DUMP_PATH, countries, corr=False):
     rnsr = rnsr.merge(countries[['iso3', 'country_name_en']], how='left', left_on='country_code', right_on='iso3')
     
     rnsr.drop(columns=['cp_corr','city_corr','country_corr','iso_3', 'iso3'], inplace=True)
-
     rnsr.mask(rnsr=='', inplace=True)
+
+    print(f"rnsr end size: {len(rnsr)}")
     return rnsr
