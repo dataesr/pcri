@@ -22,9 +22,12 @@ def ror_import(DUMP_PATH):
 def ror_prep(DUMP_PATH, ROR_ZIP, countries):
     from functions_shared import unzip_zip, my_country_code
     import pandas as pd
+    print('### ROR preparation')
     df=unzip_zip(ROR_ZIP, DUMP_PATH, f"{ROR_ZIP.rsplit('.', 1)[0]}.json", 'utf-8')
 
     ror=pd.json_normalize(df)
+    print(f"size ror: {len(ror)}")
+
     ror['numero_ror'] = 'R'+ror.id.str.split('/').str[-1]
     ror = ror[['numero_ror', 'name', 'types', 'links', 'aliases', 'acronyms', 'status',
         'wikipedia_url', 'addresses', 'country.country_code',
@@ -60,5 +63,5 @@ def ror_prep(DUMP_PATH, ROR_ZIP, countries):
     ror.drop(columns=['aliases','country.country_name','iso3', 'iso2'], inplace=True)
 
     ror.mask(ror=='', inplace=True)
-    print(len(ror))
+    print(f"ror end size: {len(ror)}")
     return ror
