@@ -1,4 +1,4 @@
-def referentiels_load(ror_load=False, rnsr_load=False, sirene_load=False, sirene_subset=False):
+def referentiels_load(snaf, ror_load=False, rnsr_load=False, sirene_load=False, sirene_subset=False):
     from step8_referentiels.ror import ror_import
     from step8_referentiels.sirene import sirene_import, sirene_concat
     from step8_referentiels.rnsr import rnsr_import
@@ -9,7 +9,8 @@ def referentiels_load(ror_load=False, rnsr_load=False, sirene_load=False, sirene
         ror_import(DUMP_PATH)
 
     if sirene_load==True:
-        sirene_import(f'{PATH}referentiel/') # -> sirene_ref_moulinette.pkl
+        naf_list=snaf[~snaf.naf_et.isnull()].naf_et.unique()
+        sirene_import(f'{PATH}referentiel/', naf_list) # -> sirene_ref_moulinette.pkl
 
     if sirene_subset==True:
         sirene_concat(DUMP_PATH)
@@ -18,7 +19,7 @@ def referentiels_load(ror_load=False, rnsr_load=False, sirene_load=False, sirene
         rnsr_import(DUMP_PATH)
 
 
-def ref_externe_preparation(sirene_id_list, rnsr_adr_corr=False ):
+def ref_externe_preparation(snaf, rnsr_adr_corr=False ):
     import pandas as pd, re, json, numpy as np, os
     from text_to_num import alpha2digit
 
@@ -39,23 +40,26 @@ def ref_externe_preparation(sirene_id_list, rnsr_adr_corr=False ):
 
     ror_zipname = ''.join([i for i in os.listdir(DUMP_PATH) if re.search('ror', i)]) 
     ror = ror_prep(DUMP_PATH, ror_zipname, my_countries)
-    sirene = sirene_prep(DUMP_PATH, sirene_id_list, my_countries)
     rnsr = rnsr_prep(DUMP_PATH, my_countries, rnsr_adr_corr)
-
+    sirene = sirene_prep(DUMP_PATH, snaf, my_countries)
+    
     ######
     # paysage
     paysage = paysage_prep(DUMP_PATH, my_countries)
 
     ######
     # table all
+    print("## ref_all concat")
     ref_all = pd.concat([ror, rnsr, sirene, paysage], ignore_index=True)
     ref_all.mask(ref_all=='', inplace=True)
     ref_all = ref_all.sort_values(['ref', 'num_nat_struct', 'siren', 'numero_paysage', 'numero_ror'])
 
+    print("## string cleaning")
     #lowercase / exochar / unicode / punct
     ref_cols=['nom_long', 'sigle', 'ville', 'adresse', 'adresse_full']
     ref_all = prep_str_col(ref_all, ref_cols)
 
+    print("## tel cleaning")
     y = ref_all.loc[(~ref_all.tel.isnull())&(ref_all.country_code=='FRA'), ['tel']]
     y['tel_clean']=y.tel.apply(lambda x:[re.sub(r'[^0-9]+', '', i) for i in x])
     y['tel_clean']=y.tel_clean.apply(lambda x: [re.sub(r'^(33|033)', '', i).rjust(10, '0') for i in x])
@@ -65,16 +69,18 @@ def ref_externe_preparation(sirene_id_list, rnsr_adr_corr=False ):
 
     ref_all = pd.concat([ref_all, y[['tel_clean']]], axis=1)
 
+    print("## create nom_enier")
     tmp = ref_all.loc[(ref_all.nom_long!=ref_all.sigle)&(~ref_all.sigle.isnull()), ['nom_long',  'sigle']]
     tmp['nom_entier'] = [x1 if x2 in x1 else x1+' '+x2 for x1, x2 in zip(tmp['nom_long'], tmp['sigle'])]
     ref_all = pd.concat([ref_all, tmp[['nom_entier']]], axis=1)
-
+    
     ref_all.loc[ref_all.nom_entier.isnull(), 'nom_entier'] = ref_all.nom_long
 
+    print("## stopword")
     #suppression des mots vides comme le la les et... pour "toutes les langues"
     stop_word(ref_all, 'country_code_map', ['nom_long', 'nom_entier', 'adresse', 'adresse_full'])
 
-
+    print("## code postal into city")
     # extraction du code postal du champs ville 
     ref_all.loc[ref_all.code_postal.isnull(), 'code_postal'] = ref_all.ville.str.extract(r"(\d+)")
 
@@ -188,4 +194,5 @@ def ref_externe_preparation(sirene_id_list, rnsr_adr_corr=False ):
     ref_all['p_key'] = range(1, len(ref_all) + 1)
     ref_all.mask(ref_all=='', inplace=True)
 
+    ref_all.to_parquet(f"{PATH_MATCH}ref_all.parquet.gzip")
     ref_all.to_pickle(f"{PATH_MATCH}ref_all.pkl")
