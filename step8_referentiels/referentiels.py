@@ -78,7 +78,7 @@ def ref_externe_preparation(snaf, rnsr_adr_corr=False ):
 
     print("## stopword")
     #suppression des mots vides comme le la les et... pour "toutes les langues"
-    stop_word(ref_all, 'country_code_map', ['nom_long', 'nom_entier', 'adresse', 'adresse_full'])
+    ref_all = stop_word(ref_all, 'country_code_map', ['nom_long', 'nom_entier', 'adresse', 'adresse_full'])
 
     print("## code postal into city")
     # extraction du code postal du champs ville 
