@@ -147,6 +147,7 @@ def stop_word(df, cc_iso3 ,cols_list):
                 mask = df[cc_iso3]==row['iso3']
                 w = r"\b"+row['word'].strip()+r"\b"
                 df.loc[mask&(~df[f'{col_ref}_2'].isnull()), f'{col_ref}_2'] = df.loc[mask&(~df[f'{col_ref}_2'].isnull()), f'{col_ref}_2'].apply(lambda x: [re.sub(w, '',  s) for s in x]).apply(lambda x: list(filter(None, x)))
+    return df
 
 def adr_tag(df, cols_list):
     import json, re, pandas as pd
