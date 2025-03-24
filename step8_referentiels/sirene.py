@@ -3,7 +3,7 @@
 
 from retry import retry
 @retry(delay=100, tries=3)
-def sirene_import(DUMP_PATH):
+def sirene_import(DUMP_PATH, naf_list):
     import requests, pandas as pd
     requests.packages.urllib3.disable_warnings(requests.packages.urllib3.exceptions.InsecureRequestWarning)  
     from config_api import sirene_headers
@@ -35,9 +35,6 @@ def sirene_import(DUMP_PATH):
         r.update(response_siret)
         return r
 
-    S_PKL = pd.read_pickle(f'{PATH_REF}sirene_df.pkl').sort_values('naf_et')
-    S_PKL = S_PKL.loc[~S_PKL.naf_et.isnull()].naf_et.unique()
-
     CHAMPS="""siren, dateCreationUniteLegale, siret, dateCreationEtablissement, sigleUniteLegale, denominationUniteLegale, 
     nomUniteLegale,
     prenom1UniteLegale, categorieEntreprise,categorieJuridiqueUniteLegale,activitePrincipaleUniteLegale,
@@ -47,9 +44,11 @@ def sirene_import(DUMP_PATH):
     enseigne1Etablissement,enseigne2Etablissement,enseigne3Etablissement,denominationUsuelleEtablissement,activitePrincipaleEtablissement,
     dateDebut,nombrePeriodesEtablissement,statutDiffusionEtablissement""".replace('\n','')
 
-    for i in S_PKL:
-        q=f'periode(etatAdministratifEtablissement:A AND activitePrincipaleEtablissement:{i}) AND etablissementSiege:true'
-        url=f'https://api.insee.fr/entreprises/sirene/siret?q={q}&nombre=1000&champs={CHAMPS}&curseur=*' 
+
+    for i in naf_list:
+        q=f"periode(etatAdministratifEtablissement:A AND activitePrincipaleEtablissement:{i}) AND etablissementSiege:true"
+        # q=f"periode(etatAdministratifUniteLegale:A AND activitePrincipaleUniteLegale:{i})"
+        url=f"https://api.insee.fr/entreprises/sirene/siret?q={q}&nombre=1000&champs={CHAMPS}&curseur=*" 
         rinit = requests.get(url,  headers=sirene_headers, verify=False)
         max_rec = rinit.json().get("header").get("total")
         print(f"{rinit.json().get('header')}, {q}")
@@ -81,41 +80,52 @@ def sirene_import(DUMP_PATH):
             except Exception as e:
                 print(f"\n{i} -> An unexpected error occurred: {e}")
                     
-        pd.json_normalize(result).to_pickle(f"{DUMP_PATH}sirene/sirene_{i}.pkl")
+        # pd.json_normalize(result).to_pickle(f"{DUMP_PATH}sirene/sirene_{i}.pkl")
+        pd.json_normalize(result).to_parquet(f"{DUMP_PATH}sirene/sirene_{i}.parquet.gzip",
+              compression='gzip')  
+
 
 def sirene_concat(DUMP_PATH):
     import os, pandas as pd
     p=f"{DUMP_PATH}sirene/"
-    file_import=[]
+    file_import = pd.DataFrame()
     for i in os.listdir(p):
         if os.path.isfile(os.path.join(p,i)) and 'sirene_' in i:
-            delete=["02",	"06",	"07",	"08",	"09",	"11",	"14",	"15",	"18",	"19",	"31",	"36",	
-            "37",	"39",	"45", "47",	"50",	"51",	"53",	"55",	"56",	"60",	"65",	"75", "77",	"78",	
-            "79",	"80",	"81",	"87",	"92", "93",	"95",	"96",  "97",  "98",	"99"]
-            if (i.split('_')[1][0:2] not in delete) & (i.split('_')[1][0:5] not in delete) :
+            # if (i.split('_')[1][0:2] not in delete) & (i.split('_')[1][0:5] not in delete) :
                 print(i)
-                df2=pd.read_pickle(f"{p}{i}")
-                file_import.append(df2)
-    x=pd.concat(file_import, ignore_index=True)
-    x.to_pickle(f"{DUMP_PATH}sirene_ref.pkl")
-    return x
+                df2=pd.read_parquet(f"{p}{i}")
+                file_import=pd.concat([file_import, df2], ignore_index=True)
+    print(f"size sirene subset concat: {len(file_import)}")
+    file_import.to_parquet(f"{DUMP_PATH}sirene_ref.parquet.gzip")
 
-def sirene_prep(DUMP_PATH, sirene_id_list, countries):
+
+def sirene_prep(DUMP_PATH, snaf, countries):
     import pandas as pd
     from functions_shared import com_iso3
-    df = pd.read_pickle(f"{DUMP_PATH}sirene_ref.pkl")
-
-    df = df.loc[df['statutDiffusionEtablissement']!='P']
-
-
-    # sirene=df.loc[df.naf_et.str[0:2].isin(delete)]
-
-    for i in sirene_id_list:
-        if any(sirene.siren==i) | any(sirene.siret==i) | any(sirene['uniteLegale.identifiantAssociationUniteLegale']==i):
-            pass
-        else:
-            sirene=pd.concat([sirene, df[(df.siren==i)|(df.siret==i)|(df['uniteLegale.identifiantAssociationUniteLegale']==i)]], ignore_index=True)
+    print("### SIRENE preparation")
+    df = pd.read_parquet(f"{DUMP_PATH}sirene_ref.parquet.gzip")
+    
+    sirene = df.loc[(df.siren.isin(snaf.entities_id.unique()))|(df.siret.isin(snaf.entities_id.unique()))|(df['uniteLegale.identifiantAssociationUniteLegale'].isin(snaf.entities_id.unique()))]
+    
+    delete=["02",	"06",	"07",	"08",	"09",	"11",	"14",	"15",	"18",	"19",	"31",	"36",	
+            "37",	"39",	"45", "47",	"50",	"51",	"53",	"55",	"56",	"60",	"65",	"75", "77",	"78",	
+            "79",	"80",	"81",	"87",	"92", "93",	"94", "95",	"96",  "97",  "98",	"99"]
+    
+    df = df.loc[(df['statutDiffusionEtablissement']!='P')&(~df['uniteLegale.identifiantAssociationUniteLegale'].str[0:2].isin(delete))]
+ 
+    sirene = pd.concat([sirene,df], ignore_index=True).drop_duplicates()
+    sirene = sirene[sirene['statutDiffusionEtablissement']!='P']
+    
+    # for i in sirene_id_list:
+    #     if any(sirene.siren==i) | any(sirene.siret==i) | any(sirene['uniteLegale.identifiantAssociationUniteLegale']==i):
+    #         pass
+    #     else:
+    #         if any(df.siren==i) | any(df.siret==i) | any(df['uniteLegale.identifiantAssociationUniteLegale']==i):
+    #             sirene=pd.concat([sirene, df[(df.siren==i)|(df.siret==i)|(df['uniteLegale.identifiantAssociationUniteLegale']==i)]], ignore_index=True)
+    #         else:
+    #             print(f"Attention ! {i} missing structure id into sirene dataset for create sirene refext")
         
+    # print(f"size sirene ref after selection: {len(sirene)}")
 
     sirene = (sirene.assign(ens=df[['enseigne1Etablissement', 'enseigne2Etablissement', 'enseigne3Etablissement']]
                         .fillna('')
@@ -127,7 +137,7 @@ def sirene_prep(DUMP_PATH, sirene_id_list, countries):
                             .fillna('')
                             .agg(' '.join, axis=1)
                             .str.strip())
-                )
+            )
 
     for i in ['denominationUsuelleEtablissement', 'ens']:
         sirene.loc[sirene['uniteLegale.denominationUniteLegale'].isnull(), 'uniteLegale.denominationUniteLegale'] = sirene[i]
@@ -195,4 +205,6 @@ def sirene_prep(DUMP_PATH, sirene_id_list, countries):
     sirene.drop(columns=['iso_3', 'iso3', 'iso2','COG','Lieudit_BP'], inplace=True)
 
     sirene.mask(sirene=='', inplace=True)
+
+    print(f"sirene end size: {len(sirene)}")
     return sirene
