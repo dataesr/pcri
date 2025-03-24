@@ -137,16 +137,20 @@ def stop_word(df, cc_iso3 ,cols_list):
     stop_word=pd.read_json('data_files/stop_word.json')
 
     for col_ref in cols_list:
+        print(f"-col being cleanind: {col_ref}")
         df[f'{col_ref}_2'] = df[col_ref].apply(lambda x: tokenization(x))
+        print("- end tokenization")
 
         for i, row in stop_word.iterrows():
             if row['iso3']=='ALL':
                 w = r"\b"+row['word'].strip()+r"\b"
                 df.loc[~df[f'{col_ref}_2'].isnull(), f'{col_ref}_2'] = df.loc[~df[f'{col_ref}_2'].isnull(), f'{col_ref}_2'].apply(lambda x: [re.sub(w, '',  s) for s in x]).apply(lambda x: list(filter(None, x)))
+                print("- end all")
             else:
                 mask = df[cc_iso3]==row['iso3']
                 w = r"\b"+row['word'].strip()+r"\b"
                 df.loc[mask&(~df[f'{col_ref}_2'].isnull()), f'{col_ref}_2'] = df.loc[mask&(~df[f'{col_ref}_2'].isnull()), f'{col_ref}_2'].apply(lambda x: [re.sub(w, '',  s) for s in x]).apply(lambda x: list(filter(None, x)))
+                print("- end country_code")
     return df
 
 def adr_tag(df, cols_list):
