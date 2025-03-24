@@ -3,7 +3,7 @@ pd.options.mode.copy_on_write = True
 from IPython.display import HTML
 
 # from api_requests.matcher import matcher
-from config_path import PATH
+from config_path import PATH, PATH_REF, PATH_MATCH
 from step8_referentiels.referentiels import referentiels_load, ref_externe_preparation
 from step9_affiliations.prep_entities import entities_preparation
 from functions_shared import work_csv
@@ -14,6 +14,20 @@ from step9_affiliations.dataset_describe import dataset_decribe
 # organismes_back('2024')
 
 
+###################
+S_PKL = pd.read_pickle(f'{PATH_REF}sirene_df.pkl').fillna('').sort_values('naf_et')
+S_PKL = (pd.concat([S_PKL.mask(S_PKL=='')[['siren', 'naf_et']].rename(columns={'siren':'sid'}), 
+                    S_PKL.mask(S_PKL=='')[['siret', 'naf_et']].rename(columns={'siret':'sid'})], 
+                    ignore_index=True)
+                    .drop_duplicates()
+                    .sort_values(['naf_et', 'sid'], ignore_index=True)
+                    )
+
+#prov
+# i=S_PKL.naf_et.eq('47.21Z').idxmax()
+# S_PKL=S_PKL.iloc[i:]
+
+referentiels_load(S_PKL, ror_load=False, rnsr_load=False, sirene_load=False, sirene_subset=False)
 
 # entities_preparation()
 ######## si reprise du code en cours chargement des pickles -> entities_all
@@ -23,8 +37,6 @@ from step9_affiliations.dataset_describe import dataset_decribe
 def data_import():
     from config_path import PATH_MATCH,  PATH_CLEAN
     proj = pd.read_pickle(f"{PATH_CLEAN}projects_current.pkl")
-    # ref_all = pd.read_pickle(f"{PATH_MATCH}ref_all.pkl")
-    # print(f"size ref_all init: {len(ref_all)}")
     entities_all = pd.read_pickle(f'{PATH_MATCH}entities_all.pkl')
     print(f"size entities_all init: {len(entities_all)}")
     # pers = pd.read_pickle(f"{PATH_CLEAN}persons_current.pkl")
@@ -35,11 +47,14 @@ entities_all, proj = data_import()
 ######### si actualisation -> rnsr_adr_corr = true pour nettoyer les adresses problématiques du rnsr
 ####### sirene_load = true si besoin de charger les données du SI sirene
 
-referentiels_load(ror_load=False, rnsr_load=False, sirene_load=False)
 
-
-l=entities_all.loc[ entities_all.entities_id.str.match(r"^[0-9]{9}$|^[0-9]{14}$|^[W|w]([A-Z0-9]{8})[0-9]{1}$")].entities_id.unique()
+# l=list(set(entities_all.loc[entities_all.entities_id.str.match(r"^[0-9]{9}$|^[0-9]{14}$|^[W|w]([A-Z0-9]{8})[0-9]{1}$")].entities_id))
+l=(entities_all.loc[entities_all.entities_id.str.match(r"^[0-9]{9}$|^[0-9]{14}$|^[W|w]([A-Z0-9]{8})[0-9]{1}$"), ['entities_id']].drop_duplicates()
+ .merge(S_PKL, how='left', left_on='entities_id', right_on='sid', indicator=True))
 ref_externe_preparation(l, rnsr_adr_corr=False)
+
+ref_all = pd.read_pickle(f"{PATH_MATCH}ref_all.pkl")
+print(f"size ref_all init: {len(ref_all)}")
 
 #############################
 tmp=entities_all.copy()
