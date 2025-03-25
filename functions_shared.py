@@ -130,27 +130,52 @@ def prep_str_col(df, cols):
 
     return df
 
+# def stop_word(df, cc_iso3 ,cols_list):
+#     import re, pandas as pd
+#     from functions_shared import tokenization
+    
+#     stop_word=pd.read_json('data_files/stop_word.json')
+
+#     for col_ref in cols_list:
+#         print(f"-col being cleanind: {col_ref}")
+#         df[f'{col_ref}_2'] = df[col_ref].apply(lambda x: tokenization(x))
+#         print("- end tokenization")
+
+#         for i, row in stop_word.iterrows():
+#             if row['iso3']=='ALL':
+#                 w = r"\b"+row['word'].strip()+r"\b"
+#                 df.loc[~df[f'{col_ref}_2'].isnull(), f'{col_ref}_2'] = df.loc[~df[f'{col_ref}_2'].isnull(), f'{col_ref}_2'].apply(lambda x: [re.sub(w, '',  s) for s in x]).apply(lambda x: list(filter(None, x)))
+#                 print("- end all")
+#             else:
+#                 mask = df[cc_iso3]==row['iso3']
+#                 w = r"\b"+row['word'].strip()+r"\b"
+#                 df.loc[mask&(~df[f'{col_ref}_2'].isnull()), f'{col_ref}_2'] = df.loc[mask&(~df[f'{col_ref}_2'].isnull()), f'{col_ref}_2'].apply(lambda x: [re.sub(w, '',  s) for s in x]).apply(lambda x: list(filter(None, x)))
+#                 print("- end country_code")
+#     return df
+
 def stop_word(df, cc_iso3 ,cols_list):
-    import re, pandas as pd
+    import pandas as pd
     from functions_shared import tokenization
     
     stop_word=pd.read_json('data_files/stop_word.json')
 
     for col_ref in cols_list:
-        print(f"-col being cleanind: {col_ref}")
-        df[f'{col_ref}_2'] = df[col_ref].apply(lambda x: tokenization(x))
-        print("- end tokenization")
+        tmp=df[[cc_iso3,col_ref]]
+        tmp[col_ref] = tmp[col_ref].str.split()
+        tmp=tmp.explode(col_ref).reset_index()
+        tmp = tmp.mask(tmp=='')
 
-        for i, row in stop_word.iterrows():
-            if row['iso3']=='ALL':
-                w = r"\b"+row['word'].strip()+r"\b"
-                df.loc[~df[f'{col_ref}_2'].isnull(), f'{col_ref}_2'] = df.loc[~df[f'{col_ref}_2'].isnull(), f'{col_ref}_2'].apply(lambda x: [re.sub(w, '',  s) for s in x]).apply(lambda x: list(filter(None, x)))
-                print("- end all")
-            else:
-                mask = df[cc_iso3]==row['iso3']
-                w = r"\b"+row['word'].strip()+r"\b"
-                df.loc[mask&(~df[f'{col_ref}_2'].isnull()), f'{col_ref}_2'] = df.loc[mask&(~df[f'{col_ref}_2'].isnull()), f'{col_ref}_2'].apply(lambda x: [re.sub(w, '',  s) for s in x]).apply(lambda x: list(filter(None, x)))
-                print("- end country_code")
+        tmp = (tmp[~tmp[col_ref].isnull()]
+                .merge(stop_word.loc[stop_word.iso3=='ALL'], 
+                      how='left', left_on=col_ref, right_on='word', indicator=True)
+                .query('_merge=="left_only"')[['index', cc_iso3, col_ref]])
+        tmp = (tmp.merge(stop_word, 
+                         how='left', left_on=['country_code_mapping', 'entities_name'], right_on=['iso3', 'word'], 
+                         indicator=True).query('_merge=="left_only"')[['index', col_ref]])
+
+        tmp = tmp.groupby('index').agg(lambda x: ' '.join(x)).rename(columns={col_ref:f'{col_ref}_2'})
+
+        df= df.merge(tmp, how='left', left_index=True, right_index=True)
     return df
 
 def adr_tag(df, cols_list):
