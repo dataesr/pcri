@@ -160,6 +160,7 @@ def stop_word(df, cc_iso3 ,cols_list):
     stop_word=pd.read_json('data_files/stop_word.json')
 
     for col_ref in cols_list:
+        print(f"-{col_ref}")
         tmp=df[[cc_iso3,col_ref]]
         tmp[col_ref] = tmp[col_ref].str.split()
         tmp=tmp.explode(col_ref).reset_index()
@@ -170,7 +171,7 @@ def stop_word(df, cc_iso3 ,cols_list):
                       how='left', left_on=col_ref, right_on='word', indicator=True)
                 .query('_merge=="left_only"')[['index', cc_iso3, col_ref]])
         tmp = (tmp.merge(stop_word, 
-                         how='left', left_on=['country_code_mapping', 'entities_name'], right_on=['iso3', 'word'], 
+                         how='left', left_on=[cc_iso3, col_ref], right_on=['iso3', 'word'], 
                          indicator=True).query('_merge=="left_only"')[['index', col_ref]])
 
         tmp = tmp.groupby('index').agg(lambda x: ' '.join(x)).rename(columns={col_ref:f'{col_ref}_2'})
