@@ -149,10 +149,10 @@ def rnsr_import(DUMP_PATH):
             try:
                 if res.get('names')[0]['acronym_fr']:
                     tutelle.append({"tutelle_id":i,
-                                "acronym":res.get('names')[0]['acronym_fr']})
+                                "tutelle_acronym":res.get('names')[0]['acronym_fr']})
                 else:
                     tutelle.append({"tutelle_id":i,
-                            "acronym":res.get('names')[0]['acronym_en']})
+                                "tutelle_acronym":res.get('names')[0]['acronym_en']})
             except:
                 pass
 
