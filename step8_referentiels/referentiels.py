@@ -84,6 +84,7 @@ def ref_externe_preparation(snaf, rnsr_adr_corr=False ):
     # extraction du code postal du champs ville 
     ref_all.loc[ref_all.code_postal.isnull(), 'code_postal'] = ref_all.ville.str.extract(r"(\d+)")
 
+    print("## adresse")  
     #traitement spécifique adresse_full du rnsr
     tmp = ref_all[~ref_all['adresse_full_2'].isnull()][['adresse_full_2']]
     tmp.adresse_full_2 = tmp.adresse_full_2.apply(lambda x: list(filter(None, x))).apply(lambda x: ' '.join(x))
@@ -93,7 +94,7 @@ def ref_externe_preparation(snaf, rnsr_adr_corr=False ):
         x = re.search(r"(\b\d{1,4})\s([a-z]+\s?)+", adr)
         if x :
             return(x.group())
-        
+  
     tmp['adresse_temp'] = tmp['adresse_full_2'].apply(match)    
     # tmp[['test1', 'test2'] ]= tmp['adresse_full_2'].str.extract(r"(\b\d{1,4})\s([a-z]+\s?)+", expand=True)
     ref_all = pd.concat([ref_all, tmp.drop(columns='adresse_full_2')], axis=1)
@@ -104,6 +105,7 @@ def ref_externe_preparation(snaf, rnsr_adr_corr=False ):
     ref_all.loc[ref_all.adresse_2.isnull(), 'adresse_2'] = ref_all.adresse_temp
     ref_all.drop(columns=['cp_temp', 'ville_temp', 'adresse_temp'], inplace=True)
 
+    print("## city")  
     # nettoyage de ville
     cedex="cedax|cedrex|cdexe|cdex|credex|cedex|cedx|cede|ceddex|cdx|cex|cexex|edex"
     ref_all['ville'] = ref_all.ville.str.replace('\\d+', ' ', regex=True).str.strip()
@@ -113,6 +115,7 @@ def ref_externe_preparation(snaf, rnsr_adr_corr=False ):
     ref_all.loc[(ref_all.country_code=='FRA'), 'ville'] = ref_all.loc[ref_all.country_code=='FRA', 'ville'].str.replace(r"\bste\b", 'sainte', regex=True).str.strip()
     ref_all.loc[(ref_all.country_code=='FRA'), 'ville_tag'] = ref_all.loc[ref_all.country_code=='FRA', 'ville'].str.strip().str.replace(r'\s+', '-', regex=True)
 
+    print("## code postal to department")  
     # code postal - > département
     mask=(ref_all.country_code=='FRA')&(~ref_all.code_postal.isnull())&(ref_all.code_postal.str.len()!=5)
     if len(ref_all.loc[mask])>0:
@@ -126,7 +129,7 @@ def ref_externe_preparation(snaf, rnsr_adr_corr=False ):
 
     #########
     adr = json.load(open('data_files/ad.json'))
-
+    print("## adresse again")  
     for col_ref in ['adresse_2', 'adresse_full_2']:
         tmp = ref_all.loc[~ref_all[col_ref].isnull(), [col_ref]]
         for i in adr :
@@ -147,6 +150,7 @@ def ref_externe_preparation(snaf, rnsr_adr_corr=False ):
         ref_all = pd.concat([ref_all.drop(columns=col_ref), tmp], axis=1)
 
     ##################
+    print("## unlist columns values") 
     ref_all.rename(columns={'nom_long':'libelle1'}, inplace=True)
     ref_all['nom_entier_2'] = ref_all.nom_entier_2.apply(lambda x: ' '.join(x) if isinstance(x, list) else x)
     ref_all['etabs_rnsr'] = ref_all.etabs_rnsr.apply(lambda x: ';'.join(x) if isinstance(x, list) else np.nan)
@@ -157,7 +161,7 @@ def ref_externe_preparation(snaf, rnsr_adr_corr=False ):
 
     ############################
     # traitement pays
-
+    print("## country") 
     if len(ref_all.loc[ref_all.country_code_map.isnull(),['ref']].drop_duplicates())>0:
         print(ref_all.loc[ref_all.country_code_map.isnull(),['ref']].drop_duplicates().value_counts())
 
@@ -194,5 +198,6 @@ def ref_externe_preparation(snaf, rnsr_adr_corr=False ):
     ref_all['p_key'] = range(1, len(ref_all) + 1)
     ref_all.mask(ref_all=='', inplace=True)
 
+    print("## save final dataset") 
     ref_all.to_parquet(f"{PATH_MATCH}ref_all.parquet.gzip")
     ref_all.to_pickle(f"{PATH_MATCH}ref_all.pkl")
