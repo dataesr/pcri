@@ -1,9 +1,9 @@
 # traitement RNSR
 def rnsr_import(DUMP_PATH):
-    import pandas as pd, re
+    import pandas as pd, re, requests
     from config_api import scanr_headers
 
-    def rnsr_extract(max_results):
+    def get_rnsr(max_results):
         import math, requests
         url = 'http://185.161.45.213/organizations/organizations?where={"rnsr":{"$exists":true}}&'
         url_suffix = 'max_results={}&page={}'
@@ -24,7 +24,7 @@ def rnsr_import(DUMP_PATH):
 
     ### Extraction des données rnsr de dataESR
     max_results = 100
-    r = rnsr_extract(max_results)
+    r = get_rnsr(max_results)
 
     ### Prog extraction données rnsr par API selon le nb de pages ; RNSR COMPLET
 
@@ -41,11 +41,9 @@ def rnsr_import(DUMP_PATH):
     #         'acronym','libelle','nat','tel','email','ville','com_code','code_pays','cp','adresse','gps','sigles_rnsr','types']
     translation_str = str.maketrans(".'/-()_", '       ')
 
-
     rnsr = [] 
     for p in to_keep:
         elem = {k: v for k, v in p.items() if (v and v != "NaT")}
-
 
         elem["tutelle_name"] = []    
         elem["tutelle_end"] = []
@@ -61,7 +59,6 @@ def rnsr_import(DUMP_PATH):
                     elem["tutelle_nature"].append(supervisor.get("supervision_type", '#'))
                     elem["tutelle_start"].append(supervisor.get("start_date", '#')[0:4])
                     elem["tutelle_end"].append(supervisor.get("end_date", '#')[0:4])  
-
 
         if elem.get("dates"): 
             for date in elem["dates"]:
@@ -128,15 +125,46 @@ def rnsr_import(DUMP_PATH):
 #             if elem.get(e):
 #                 elem[e] = ';'.join([code for code in elem.get(e) if code is not None])
 
-
         for field in delete:
             if elem.get(field):
                 elem.pop(field)
 
-
         elem = {k: v for k, v in elem.items() if (v and v != "NaT")}
         rnsr.append(elem)
-    pd.json_normalize(rnsr).to_pickle(f"{DUMP_PATH}rnsr_complet.pkl")
+
+    tut=[]
+    for i in rnsr:
+        if i.get('tutelle_id'):
+            t=i.get('tutelle_id')
+            tut.extend(t)
+
+    tut=list(set(tut))
+    print(f"size liste de tutelle: {len(tut)}")
+    tutelle=[]
+    for i in tut:
+        url = f'http://185.161.45.213/organizations/organizations/{i}'
+        r = requests.get(url, headers=scanr_headers,  verify=False)
+        res = r.json()
+        if res.get('active')==True:
+            try:
+                if res.get('names')[0]['acronym_fr']:
+                    tutelle.append({"tutelle_id":i,
+                                "acronym":res.get('names')[0]['acronym_fr']})
+                else:
+                    tutelle.append({"tutelle_id":i,
+                            "acronym":res.get('names')[0]['acronym_en']})
+            except:
+                pass
+
+    tutelle = pd.json_normalize(tutelle)
+    rnsr = pd.json_normalize(rnsr)
+    rnsr = rnsr.explode('tutelle_id')
+    rnsr = rnsr.merge(tutelle, how='left', on='tutelle_id')
+    tmp = rnsr.loc[~rnsr.tutelle_acronym.isnull(), ['id', 'tutelle_acronym']]
+    tmp = tmp.groupby('id').agg({"tutelle_acronym": lambda x: list(set(x))}).reset_index()
+    rnsr = rnsr.drop(columns=['tutelle_acronym', 'tutelle_id'])
+    rnsr = rnsr[~rnsr.astype(str).duplicated()].merge(tmp, how='left', on='id')
+    rnsr.to_pickle(f"{DUMP_PATH}rnsr_complet.pkl")
 
 
 def rnsr_prep(DUMP_PATH, countries, corr=False):
@@ -148,16 +176,20 @@ def rnsr_prep(DUMP_PATH, countries, corr=False):
     rnsr.loc[~rnsr.date_end.isnull(), 'date_end'] = rnsr.loc[~rnsr.date_end.isnull()].date_end.astype(int)
     print(f"size rnsr: {len(rnsr)}")
     print(f"list of end date: {rnsr.date_end.unique()}")
-    rnsr = (rnsr.loc[(rnsr.date_end.isnull())|(rnsr.date_end>2019)]
+
+    rnsr.loc[rnsr.tutelle_acronym.isnull(), 'tutelle_acronym'] = rnsr.loc[rnsr.tutelle_acronym.isnull(), 'tutelle_name']
+    rnsr = (rnsr
+            .loc[(rnsr.date_end.isnull())|(rnsr.date_end>2019)]
             .assign(adresse=rnsr.street_num+' '+rnsr.street, ref='rnsr')
-        .rename(columns={'rnsr':'num_nat_struct',
-                        'name':'nom_long',
-                        'acronym':'sigle',
-                        'date_end':'an_fermeture',
-                        'sigles_rnsr':'label_num_ro_rnsr',
-                        'tutelle_name':'etabs_rnsr',
-                        'city':'ville',
-                        'cp' : 'code_postal'})
+            .rename(columns=
+                    {'rnsr':'num_nat_struct',
+                    'name':'nom_long',
+                    'acronym':'sigle',
+                    'date_end':'an_fermeture',
+                    'sigles_rnsr':'label_num_ro_rnsr',
+                    'tutelle_acronym':'etabs_rnsr',
+                    'city':'ville',
+                    'cp':'code_postal'})
                             
         )[['num_nat_struct', 'an_fermeture', 'nom_long', 'sigle', 'label_num_ro_rnsr', 
             'etabs_rnsr', 'ville', 'com_code', 'adresse', 'code_postal',
