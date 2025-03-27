@@ -3,7 +3,7 @@ pd.options.mode.copy_on_write = True
 from IPython.display import HTML
 
 # from api_requests.matcher import matcher
-from config_path import PATH, PATH_REF, PATH_MATCH
+from config_path import PATH, PATH_REF, PATH_MATCH, PATH_CLEAN
 from step8_referentiels.referentiels import referentiels_load, ref_externe_preparation
 from step9_affiliations.prep_entities import entities_preparation
 from functions_shared import work_csv
@@ -23,11 +23,12 @@ S_PKL = (pd.concat([S_PKL.mask(S_PKL=='')[['siren', 'naf_et']].rename(columns={'
                     .sort_values(['naf_et', 'sid'], ignore_index=True)
                     )
 
-#prov
-# i=S_PKL.naf_et.eq('47.21Z').idxmax()
-# S_PKL=S_PKL.iloc[i:]
+# #prov
+# # i=S_PKL.naf_et.eq('47.21Z').idxmax()
+# # S_PKL=S_PKL.iloc[i:]
 
-referentiels_load(S_PKL, ror_load=False, rnsr_load=False, sirene_load=False, sirene_subset=False)
+####### sirene_load = true si besoin de charger les données du SI sirene
+# referentiels_load(S_PKL, ror_load=False, rnsr_load=False, sirene_load=False, sirene_subset=False)
 
 # entities_preparation()
 ######## si reprise du code en cours chargement des pickles -> entities_all
@@ -44,17 +45,36 @@ def data_import():
     return entities_all, proj
 entities_all, proj = data_import()
 
+#provisoire
+countries = pd.read_pickle(f"{PATH_CLEAN}country_current.pkl")
+entities_all = (entities_all.merge(countries[[ 'countryCode_iso3', 'country_name_en']], 
+                                   how='left', left_on='country_code', right_on='countryCode_iso3')
+                                   .drop(columns=['countryCode_iso3', 'country_name_fr']))
+#####################################
+
+
 ######### si actualisation -> rnsr_adr_corr = true pour nettoyer les adresses problématiques du rnsr
-####### sirene_load = true si besoin de charger les données du SI sirene
-
-
-# l=list(set(entities_all.loc[entities_all.entities_id.str.match(r"^[0-9]{9}$|^[0-9]{14}$|^[W|w]([A-Z0-9]{8})[0-9]{1}$")].entities_id))
 l=(entities_all.loc[entities_all.entities_id.str.match(r"^[0-9]{9}$|^[0-9]{14}$|^[W|w]([A-Z0-9]{8})[0-9]{1}$"), ['entities_id']].drop_duplicates()
  .merge(S_PKL, how='left', left_on='entities_id', right_on='sid', indicator=True))
-ref_externe_preparation(l, rnsr_adr_corr=False)
+# ref_externe_preparation(l, rnsr_adr_corr=False)
 
+# ref_all = pd.read_parquet(f"{PATH_MATCH}ref_all.parquet.gzip")
 ref_all = pd.read_pickle(f"{PATH_MATCH}ref_all.pkl")
-print(f"size ref_all init: {len(ref_all)}")
+
+###################################################
+# columns rename
+def cols_select_and_rename(df, table_out):
+    from config_path import PATH_MATCH
+    xl_path = f"{PATH_MATCH}vars_rename.xlsx"
+    tt = pd.read_excel(xl_path, sheet_name=table_out)
+    d = dict(zip(tt['col_in'], tt['col_out']))
+    df = df[tt.col_in.tolist()]
+    df = df.rename(columns=d)
+    return df
+
+################################
+
+ref_all = cols_select_and_rename(ref_all, 'refext')
 
 #############################
 tmp=entities_all.copy()
@@ -161,7 +181,6 @@ tmp['keymaster'] = tmp.keymaster.str.replace(r"\s+", '', regex=True)
 tmp['grp'] = tmp.groupby('keymaster').ngroup()
 
 
-
 #########################################
 print("## add info project/date")
 tmp=tmp.merge(proj[['project_id', 'stage', 'acronym', 'thema_name_en']], how='left', on=['project_id', 'stage'])
@@ -175,16 +194,7 @@ print(f"size entities complete: {len(tmp)}")
 
 ############################################
 
-def cols_selet_and_rename(df, table_out):
-    from config_path import PATH_MATCH
-    xl_path = f"{PATH_MATCH}vars_rename.xlsx"
-    tt = pd.read_excel(xl_path, sheet_name=table_out)
-    d = dict(zip(tt['col_in'], tt['col_out']))
-    df = df[tt.col_in.tolist()]
-    df = df.rename(columns=d)
-    return df
-
-tmp=cols_selet_and_rename(tmp, 'participants')
+tmp=cols_select_and_rename(tmp, 'participants')
 
 ## prepare match with ref_all
 def data_id(df, key_unit, var_orig, vars_id):
@@ -204,7 +214,7 @@ tidr=data_id(ref_all, 'p_key', 'ref', vars_id)
 x=tid.merge(tidr.rename(columns={'p_key':'p_key_ref'}), how='left', on=['orig','id_merge'], indicator=True)
 
 if 'left_only' in x._merge.unique():
-    print(f"ids without ref in ref_all WHY ! {x[x._merge=='left_only'].id_merge.unique()}")
+    print(f"- ids without ref in ref_all WHY ! {x[x._merge=='left_only'].id_merge.unique()}\n- size list: {len(x[x._merge=='left_only'].id_merge.unique())}")
 
 x['last_freq']=x.groupby('p_key_ref')['p_key'].transform('count')
 # create rel_mesr
@@ -212,7 +222,7 @@ ref_mesr_pcrdt=(x.loc[x._merge=='both', ['p_key_ref', 'last_freq']].drop_duplica
                 .merge(ref_all, how='inner', left_on='p_key_ref', right_on='p_key')
                 .drop(columns='p_key_ref'))
 
-ref_mesr_pcrdt=cols_selet_and_rename(ref_mesr_pcrdt, 'ref_mesr_pcrdt')
+ref_mesr_pcrdt=cols_select_and_rename(ref_mesr_pcrdt, 'ref_mesr_pcrdt')
 
 ref_mesr_pcrdt=(ref_mesr_pcrdt
                 .assign(
@@ -227,9 +237,8 @@ y[['p_key_ref', 'id_ref']] = y[['p_key_ref', 'id_ref']] .astype('Int64')
 tmp=tmp.merge(y, how='left', on='p_key')
 
 
-
 def dataset_decribe(df,table_output):
-    import io, pandas as pd, numpy as np
+    import io, pandas as pd
     buffer = io.StringIO()
     df.info(buf=buffer)
     s = buffer.getvalue()
@@ -247,15 +256,20 @@ def dataset_decribe(df,table_output):
             column_info.append({'VARNUM':col_order,'code_champ_tech':col_name,'NOBS':col_nobs,'type':col_type})
     tmp=pd.DataFrame(column_info)
     tmp.loc[tmp.type=='object', 'type']='char'
-    tmp.loc[tmp.type.str.startswith('int'), 'type']='num'
-    return tmp
+    tmp.loc[tmp.type.str.lower().str.startswith('int'), 'type']='num'
+    return tmp.assign(table=table_output)
 
-from constant_vars import FRAMEWORK
-PATH_GILB="C:/Users/zfriant/Gilberinette/Echanges/{FRAMEWORK}/"
+###############
+PATH_GILB="C:/Users/zfriant/Gilberinette/Echanges/HORIZON/"
 
+
+# def export_data(etr=False):
+
+#     if etr==False:
+#         tmp=tmp.loc[tmp.pays=='France']
 p=dataset_decribe(tmp, 'participants')
-r=dataset_decribe(tmp, 'refext')
-rmp=dataset_decribe(tmp, 'ref_mesr_pcrdt')
+r=dataset_decribe(ref_all, 'refext')
+rmp=dataset_decribe(ref_mesr_pcrdt, 'ref_mesr_pcrdt')
 champs=pd.concat([p,r,rmp], ignore_index=True)
 
 
