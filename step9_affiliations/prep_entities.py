@@ -148,8 +148,8 @@ def entities_preparation():
     structure = (part5
                 .merge(entities_info[['generalPic', 'legalName', 'businessName',
                 'category_woven', 'city', 'country_code_mapping', 'country_code',  'country_name_fr', 
-                'id_secondaire', 'entities_id', 'entities_name',  'entities_acronym', 'operateur_num', 'postalCode', 
-                'street', 'webPage']], 
+                'id_secondaire', 'entities_id', 'entities_name',  'entities_acronym', 'operateur_num', 
+                'postalCode', 'street', 'webPage']], 
                 how='left', on=['generalPic', 'country_code_mapping', 'country_code'])
                 .merge(proj[['project_id', 'call_year']].drop_duplicates(), how='left', on=['project_id'])
                 .drop(columns=['nb_stage', 'nb', 'nb2'])
@@ -183,7 +183,6 @@ def entities_preparation():
     # creation entities_full = entities_name + entities_acronym et department_tag
     tmp = structure.loc[(structure.legalName_dup!=structure.businessName_dup)&(~structure.businessName_dup.isnull()), ['generalPic',  'country_code', 'legalName_dup', 'businessName_dup']]
     tmp['entities_full'] = [x1 if x2 in x1 else x1+' '+x2 for x1, x2 in zip(tmp['legalName_dup'], tmp['businessName_dup'])]
-
 
 
     if len(structure.drop_duplicates())!=len(structure.merge(tmp[['generalPic', 'country_code', 'legalName_dup', 'businessName_dup', 'entities_full']].drop_duplicates(), how='left', on=['generalPic','businessName_dup', 'legalName_dup','country_code']).drop_duplicates()):
