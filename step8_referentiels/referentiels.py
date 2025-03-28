@@ -60,6 +60,9 @@ def ref_externe_preparation(snaf, rnsr_adr_corr=False ):
     ref_cols=['nom_long', 'sigle', 'ville', 'adresse', 'adresse_full']
     ref_all = prep_str_col(ref_all, ref_cols)
 
+    print("## label_num_ro_rnsr cleaning")
+    ref_all.loc[~ref_all.label_num_ro_rnsr.isnull(), 'label_num_ro_rnsr'] = ref_all.loc[~ref_all.label_num_ro_rnsr.isnull()].label_num_ro_rnsr.str.lower().replace(';', ' ')
+
     print("## tel cleaning")
     y = ref_all.loc[(~ref_all.tel.isnull())&(ref_all.country_code=='FRA'), ['tel']]
     y['tel_clean']=y.tel.apply(lambda x:[re.sub(r'[^0-9]+', '', i) for i in x])
@@ -129,16 +132,37 @@ def ref_externe_preparation(snaf, rnsr_adr_corr=False ):
     ref_all.loc[ref_all.country_code=='FRA', 'dep_code'] =ref_all.loc[ref_all.country_code=='FRA'].code_postal.str[0:2] 
 
     #########
+    # adr = json.load(open('data_files/ad.json'))
+    # print("## adresse again")  
+    # for col_ref in ['adresse_2', 'adresse_full_2']:
+    #     tmp = ref_all.loc[~ref_all[col_ref].isnull(), [col_ref]]
+    #     for i in adr :
+    #         for (k,v) in i.items():
+    #             tmp[col_ref] = tmp[col_ref].apply(lambda x: [re.sub('^'+k+'$', v, s) for s in x])
+    #             tmp[col_ref] = tmp[col_ref].apply(lambda x: list(filter(None, x)))
+        
+    #     ref_all = pd.concat([ref_all.drop(columns=col_ref), tmp], axis=1) 
+        
+    #     tmp[f'{col_ref}_tag'] = ref_all.loc[~ref_all[col_ref].isnull()][col_ref].apply(lambda x: ' '.join(x))
+    #     with open("data_files/adresse_pattern.txt", "r") as pats:
+    #         for n, line in enumerate(pats, start=1):       
+    #             pat = line.rstrip('\n')
+    #             tmp[f'{col_ref}_tag'] = tmp[f'{col_ref}_tag'].str.replace(pat,'', regex=True)
+                
+    #     tmp[f'{col_ref}_tag'] = tmp[f'{col_ref}_tag'].apply(lambda x: alpha2digit(x, 'fr'))
+                
+    #     ref_all = pd.concat([ref_all.drop(columns=col_ref), tmp], axis=1)
+
     adr = json.load(open('data_files/ad.json'))
+    adr = pd.DataFrame(adr.items(), columns=['in', 'out'])
     print("## adresse again")  
     for col_ref in ['adresse_2', 'adresse_full_2']:
-        tmp = ref_all.loc[~ref_all[col_ref].isnull(), [col_ref]]
-        for i in adr :
-            for (k,v) in i.items():
-                tmp[col_ref] = tmp[col_ref].apply(lambda x: [re.sub('^'+k+'$', v, s) for s in x])
-                tmp[col_ref] = tmp[col_ref].apply(lambda x: list(filter(None, x)))
+        tmp = ref_all.loc[~ref_all[col_ref].isnull(), [col_ref]].explode(col_ref)
+        tmp = tmp.merge(adr, how='left', left_on=col_ref, right_on='in')
+        tmp.loc[~tmp.out.isnull(), col_ref] = tmp.loc[~tmp.out.isnull(), 'in']
+        tmp = tmp[[col_ref]].groupby(level=0).agg(lambda x: list(filter(None, x)))
         
-        ref_all = pd.concat([ref_all.drop(columns=col_ref), tmp], axis=1) 
+        ref_all = ref_all.drop(columns=col_ref).merge(tmp, how='left', left_index=True, right_index=True)
         
         tmp[f'{col_ref}_tag'] = ref_all.loc[~ref_all[col_ref].isnull()][col_ref].apply(lambda x: ' '.join(x))
         with open("data_files/adresse_pattern.txt", "r") as pats:
@@ -147,8 +171,7 @@ def ref_externe_preparation(snaf, rnsr_adr_corr=False ):
                 tmp[f'{col_ref}_tag'] = tmp[f'{col_ref}_tag'].str.replace(pat,'', regex=True)
                 
         tmp[f'{col_ref}_tag'] = tmp[f'{col_ref}_tag'].apply(lambda x: alpha2digit(x, 'fr'))
-                
-        ref_all = pd.concat([ref_all.drop(columns=col_ref), tmp], axis=1)
+        ref_all = ref_all.merge(tmp, how='left', left_index=True, right_index=True)
 
     ##################
     print("## unlist columns values") 
