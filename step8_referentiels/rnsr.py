@@ -117,7 +117,7 @@ def rnsr_import(DUMP_PATH):
 
 
         elem["sigles_rnsr"] = ';'.join([code.translate(translation_str).strip() for code in elem.get("code_numbers", [])])
-        elem["sigles_rnsr"] = re.sub('\s*', '', elem["sigles_rnsr"])
+        elem["sigles_rnsr"] = re.sub(r"\s+", '', elem["sigles_rnsr"])
 
 
 #         l = ['succession_type',"predecessor","tutelle_id","tutelle_name","tutelle_end","tutelle_start","tutelle_source","tutelle_nature",'tel','email', 'types']
@@ -169,7 +169,7 @@ def rnsr_import(DUMP_PATH):
 
 def rnsr_prep(DUMP_PATH, countries, com_iso, corr=False):
     import pandas as pd, sys, numpy as np
-    from functions_shared import work_csv
+    from functions_shared import work_csv, prep_str_col
     print("### RNRS preparation")
     rnsr = pd.read_pickle(f"{DUMP_PATH}rnsr_complet.pkl")
 
@@ -195,11 +195,9 @@ def rnsr_prep(DUMP_PATH, countries, com_iso, corr=False):
             'etabs_rnsr', 'ville', 'com_code', 'adresse', 'code_postal',
             'adresse_full', 'tel', 'email', 'ref']]
     
-    rnsr.loc[~rnsr.label_num_ro_rnsr.isnull(), 'label_num_ro_rnsr'] = rnsr.loc[~rnsr.label_num_ro_rnsr.isnull()].label_num_ro_rnsr.str.lower().replace(';', ' ')
-    
-
     tmp = rnsr[['etabs_rnsr']].explode('etabs_rnsr')
-    tmp['etabs_rnsr'] = tmp.etabs_rnsr.str.lower().replace('\s*', '-')
+    tmp = prep_str_col(tmp, ['etabs_rnsr'])
+    tmp['etabs_rnsr'] = tmp.etabs_rnsr.str.replace(r"\s+", '-')
     tmp = tmp.groupby(level=0).agg(lambda x: ' '.join(x.dropna()))
     rnsr = rnsr.drop(columns='etabs_rnsr').merge(tmp, how='left', left_index=True, right_index=True)
 
