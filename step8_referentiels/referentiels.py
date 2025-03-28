@@ -28,7 +28,7 @@ def ref_externe_preparation(snaf, rnsr_adr_corr=False ):
     from config_path import PATH, PATH_MATCH
 
     # from step7_referentiels.countries import ref_countries
-    from functions_shared import work_csv, prep_str_col, stop_word, my_country_code
+    from functions_shared import work_csv, prep_str_col, stop_word, my_country_code, com_iso3
     from step8_referentiels.ror import ror_prep
     from step8_referentiels.sirene import sirene_prep
     from step8_referentiels.rnsr import rnsr_prep
@@ -36,16 +36,17 @@ def ref_externe_preparation(snaf, rnsr_adr_corr=False ):
     DUMP_PATH=f'{PATH}referentiel/'
 
     my_countries=my_country_code()
+    com_iso=com_iso3()
     print(len(my_countries))
 
     ror_zipname = ''.join([i for i in os.listdir(DUMP_PATH) if re.search('ror', i)]) 
     ror = ror_prep(DUMP_PATH, ror_zipname, my_countries)
-    rnsr = rnsr_prep(DUMP_PATH, my_countries, rnsr_adr_corr)
-    sirene = sirene_prep(DUMP_PATH, snaf, my_countries)
+    rnsr = rnsr_prep(DUMP_PATH, my_countries, com_iso, rnsr_adr_corr)
+    sirene = sirene_prep(DUMP_PATH, snaf, my_countries, com_iso)
     
     ######
     # paysage
-    paysage = paysage_prep(DUMP_PATH, my_countries)
+    paysage = paysage_prep(DUMP_PATH, my_countries, com_iso)
 
     ######
     # table all
@@ -153,8 +154,7 @@ def ref_externe_preparation(snaf, rnsr_adr_corr=False ):
     print("## unlist columns values") 
     ref_all.rename(columns={'nom_long':'libelle1'}, inplace=True)
     ref_all['nom_entier_2'] = ref_all.nom_entier_2.apply(lambda x: ' '.join(x) if isinstance(x, list) else x)
-    ref_all['etabs_rnsr'] = ref_all.etabs_rnsr.apply(lambda x: ';'.join(x) if isinstance(x, list) else np.nan)
-    ref_all['email'] = ref_all.email.apply(lambda x: ';'.join(x) if isinstance(x, list) else np.nan)
+    ref_all['email'] = ref_all.email.apply(lambda x: ' '.join(x) if isinstance(x, list) else np.nan)
     ref_all.loc[ref_all.adresse.isnull(), 'adresse'] = ref_all.adresse_full
     ref_all.loc[ref_all.adresse_2_tag.isnull(), 'adresse'] = ref_all.adresse_full_2_tag
 
@@ -183,14 +183,16 @@ def ref_externe_preparation(snaf, rnsr_adr_corr=False ):
     #     print(f"var name:\n{champs.loc[champs.table==i, 'code_champ'].tolist()}\n")
     #     print(f"var numerique:\n{champs.loc[(champs.table==i) & (champs.type=='num'), 'code_champ'].tolist()}")
 
-    ref_all = ref_all[
+    ref_all = (ref_all[
         ['ref', 'num_nat_struct', 'numero_ror', 'siren', 'siret', 'numero_rna', 'numero_paysage',  
-        'sigle', 'nom_entier',  'libelle1', 'nom_entier_2', 'adresse_2_tag', 'ville_tag', 'etabs_rnsr', 'email','web', 'tel_clean',
+        'sigle', 'nom_entier',  'libelle1', 'nom_entier_2', 'adresse_2_tag', 'ville_tag', 
+        'etabs_rnsr', 'email','web', 'tel_clean',
         'code_postal',  'ville', 'adresse', 'label_num_ro_rnsr', 'an_fermeture', 'dep_code',
-        'country_code_map', 'country_code', 'country_name_en'
-        ]].drop_duplicates()
+        'country_code_map', 'country_code', 'country_name_en']
+        ]
+        .drop_duplicates())
 
-    ref_all['etabs_rnsr'] = np.nan
+    # ref_all['etabs_rnsr'] = np.nan
 
     print(f"{ref_all.info()}\nsize ref_all: {len(ref_all)}")
 
