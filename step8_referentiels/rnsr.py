@@ -117,7 +117,7 @@ def rnsr_import(DUMP_PATH):
 
 
         elem["sigles_rnsr"] = ';'.join([code.translate(translation_str).strip() for code in elem.get("code_numbers", [])])
-        elem["sigles_rnsr"] = re.sub(' +', '', elem["sigles_rnsr"])
+        elem["sigles_rnsr"] = re.sub('\s*', '', elem["sigles_rnsr"])
 
 
 #         l = ['succession_type',"predecessor","tutelle_id","tutelle_name","tutelle_end","tutelle_start","tutelle_source","tutelle_nature",'tel','email', 'types']
@@ -167,9 +167,9 @@ def rnsr_import(DUMP_PATH):
     rnsr.to_pickle(f"{DUMP_PATH}rnsr_complet.pkl")
 
 
-def rnsr_prep(DUMP_PATH, countries, corr=False):
-    import pandas as pd, sys
-    from functions_shared import com_iso3, work_csv
+def rnsr_prep(DUMP_PATH, countries, com_iso, corr=False):
+    import pandas as pd, sys, numpy as np
+    from functions_shared import work_csv
     print("### RNRS preparation")
     rnsr = pd.read_pickle(f"{DUMP_PATH}rnsr_complet.pkl")
 
@@ -195,6 +195,9 @@ def rnsr_prep(DUMP_PATH, countries, corr=False):
             'etabs_rnsr', 'ville', 'com_code', 'adresse', 'code_postal',
             'adresse_full', 'tel', 'email', 'ref']]
     
+    rnsr.loc[~rnsr.label_num_ro_rnsr.isnull(), 'label_num_ro_rnsr'] = rnsr.loc[~rnsr.label_num_ro_rnsr.isnull()].label_num_ro_rnsr.str.lower.replace(';', ' ')
+    rnsr['etabs_rnsr'] = rnsr.etabs_rnsr.apply(lambda x: ' '.join(x.lower().replace('\s*', '-')) if isinstance(x, list) else np.nan)
+
     if corr==True:
         if len(rnsr.loc[(rnsr.code_postal.isnull())|(rnsr.ville.isnull())])>0:
             work_csv(rnsr.loc[(rnsr.code_postal.isnull())|(rnsr.ville.isnull()), ['num_nat_struct', 'nom_long','adresse_full', 'code_postal', 'ville']].drop_duplicates(), 'rnsr_adresse_a_completer')
@@ -210,7 +213,8 @@ def rnsr_prep(DUMP_PATH, countries, corr=False):
     rnsr.loc[~rnsr.city_corr.isnull(), 'ville'] = rnsr.city_corr
     # rnsr.loc[~rnsr.country_corr.isnull(), 'iso3'] = rnsr.country_corr
 
-    com_iso=com_iso3()
+    print("- com_iso")
+    # com_iso=com_iso3()
     rnsr = rnsr.merge(com_iso, how='left', on='com_code')
     rnsr.loc[~rnsr.country_corr.isnull(), 'iso_3'] = rnsr.loc[~rnsr.country_corr.isnull(), 'country_corr']
 
