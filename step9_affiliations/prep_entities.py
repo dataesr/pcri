@@ -147,7 +147,7 @@ def entities_preparation():
     ("## merge participation+entities_info")
     structure = (part5
                 .merge(entities_info[['generalPic', 'legalName', 'businessName',
-                'category_woven', 'city', 'country_code_mapping', 'country_code',  'country_name_fr', 
+                'category_woven', 'city', 'country_code_mapping', 'country_code',  'country_name_en', 
                 'id_secondaire', 'entities_id', 'entities_name',  'entities_acronym', 'operateur_num', 
                 'postalCode', 'street', 'webPage']], 
                 how='left', on=['generalPic', 'country_code_mapping', 'country_code'])
@@ -626,6 +626,13 @@ def entities_preparation():
     tmp = adr_tag(tmp, ['street_2'])
     entities_all = pd.concat([entities_all.drop(columns='street_2'), tmp.drop(columns='country_code')], axis=1)
 
+
+    tmp=entities_all[['city_back']].explode('city_back')
+    tmp['city_back'] = tmp.city_back.str.replace(r"\bst\b", 'saint', regex=True).str.strip()
+    tmp['city_back'] = tmp.city_back.str.replace(r"\bste\b", 'sainte', regex=True).str.strip()
+    tmp['city_back'] = tmp.city_back.str.replace(r"\s+", '-', regex=True)
+    tmp=tmp.groupby(level=0).agg(lambda x: ' '.join(x.dropna()))
+    entities_all = entities_all.drop(columns='city_back').merge(tmp, how='left', left_index=True, right_index=True)
 
     entities_all.loc[entities_all.country_code.isin(['FRA','BEL','LUX']), 'city'] = entities_all.city.str.replace(r"\bst\b", 'saint', regex=True).str.strip()
     entities_all.loc[entities_all.country_code.isin(['FRA','BEL','LUX']), 'city'] = entities_all.city.str.replace(r"\bste\b", 'sainte', regex=True).str.strip()
