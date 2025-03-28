@@ -113,8 +113,8 @@ def prep_str_col(df, cols):
     
     ## caracteres speciaux
     for i in cols:
-        df.loc[~df[i].isnull(), i] = df[i].astype('str').apply(unidecode)
-        df.loc[~df[i].isnull(), i] = df[i].str.replace('&', 'and')
+        df.loc[~df[i].isnull(), i] = df.loc[~df[i].isnull(), i].astype('str').apply(unidecode)
+        df.loc[~df[i].isnull(), i] = df.loc[~df[i].isnull(), i].str.replace('&', 'and')
         df.loc[~df[i].isnull(), i] = df.loc[~df[i].isnull(), i].apply(lambda x: tokenization(x)).apply(lambda x: [s.replace('.','') for s in x]).apply(lambda x: ' '.join(x))
     
     punct="'|–|,|\\.|:|;|\\!|`|=|\\*|\\+|\\-|‑|\\^|_|~|\\[|\\]|\\{|\\}|\\(|\\)|<|>|@|#|\\$"
