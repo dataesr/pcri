@@ -99,9 +99,9 @@ def sirene_concat(DUMP_PATH):
     file_import.to_parquet(f"{DUMP_PATH}sirene_ref.parquet.gzip")
 
 
-def sirene_prep(DUMP_PATH, snaf, countries):
+def sirene_prep(DUMP_PATH, snaf, countries, com_iso):
     import pandas as pd
-    from functions_shared import com_iso3
+    # from functions_shared import com_iso3
     print("### SIRENE preparation")
     df = pd.read_parquet(f"{DUMP_PATH}sirene_ref.parquet.gzip")
     
@@ -189,7 +189,7 @@ def sirene_prep(DUMP_PATH, snaf, countries):
     sirene = sirene.merge(country_s, how='left', on='COG').rename(columns={'CODEISO2':'iso2'})
 
     sirene = sirene.merge(countries[['iso2', 'iso3']], how='left', on='iso2')
-    com_iso=com_iso3()
+    # com_iso=com_iso3()
     sirene = sirene.merge(com_iso, how='left', on='com_code')
     sirene.loc[~sirene.iso_3.isnull(), 'iso3'] = sirene.loc[~sirene.iso_3.isnull(), 'iso_3'] 
     sirene.loc[sirene.iso3.isnull(), 'iso3'] = 'FRA'
