@@ -1,6 +1,7 @@
 def organismes_back(year):
     import pandas as pd, numpy as np, requests
     from config_path import PATH_ORG
+    from functions_shared import prep_str_col
     requests.packages.urllib3.disable_warnings(requests.packages.urllib3.exceptions.InsecureRequestWarning)
 
     lo = ['CNRS', 'CEA', 'ONERA', 'INRAE', 'INRIA']
@@ -26,6 +27,8 @@ def organismes_back(year):
             globals()[f"{org}"]['city'] = globals()[f"{org}"].location.str.lower().str.extract(r"([^0-9/]+)")
         
         organisme_back = pd.concat([organisme_back, globals()[f"{org}"]], ignore_index=True)
+    
+    organisme_back = prep_str_col(organisme_back, ['city'])
         
     organisme_back = organisme_back[~organisme_back.numero_projet.isnull()]
 
