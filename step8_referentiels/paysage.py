@@ -7,9 +7,9 @@ def paysage_import(dataset):
     result=response.json()
     return pd.DataFrame(result)
 
-def paysage_prep(DUMP_PATH, countries):
+def paysage_prep(DUMP_PATH, countries, com_iso):
     import pandas as pd, numpy as np
-    from functions_shared import com_iso3
+    # from functions_shared import com_iso3
     from urllib.parse import urlparse
     # traitement PAYSAGE
 
@@ -37,7 +37,7 @@ def paysage_prep(DUMP_PATH, countries):
             )[['nom_long','numero_paysage','an_fermeture','sigle','adresse','code_postal','ville', 'iso3', 'com_code','ref']]
 
     print("## country cleaning")
-    com_iso=com_iso3()
+    # com_iso=com_iso3()
     paysage = paysage.merge(com_iso, how='left', on='com_code')
     paysage.loc[~paysage.iso_3.isnull(), 'iso3'] = paysage.loc[~paysage.iso_3.isnull(), 'iso_3']
 

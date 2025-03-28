@@ -195,8 +195,13 @@ def rnsr_prep(DUMP_PATH, countries, com_iso, corr=False):
             'etabs_rnsr', 'ville', 'com_code', 'adresse', 'code_postal',
             'adresse_full', 'tel', 'email', 'ref']]
     
-    rnsr.loc[~rnsr.label_num_ro_rnsr.isnull(), 'label_num_ro_rnsr'] = rnsr.loc[~rnsr.label_num_ro_rnsr.isnull()].label_num_ro_rnsr.str.lower.replace(';', ' ')
-    rnsr['etabs_rnsr'] = rnsr.etabs_rnsr.apply(lambda x: ' '.join(x.lower().replace('\s*', '-')) if isinstance(x, list) else np.nan)
+    rnsr.loc[~rnsr.label_num_ro_rnsr.isnull(), 'label_num_ro_rnsr'] = rnsr.loc[~rnsr.label_num_ro_rnsr.isnull()].label_num_ro_rnsr.str.lower().replace(';', ' ')
+    
+
+    tmp = rnsr[['etabs_rnsr']].explode('etabs_rnsr')
+    tmp['etabs_rnsr'] = tmp.etabs_rnsr.str.lower().replace('\s*', '-')
+    tmp = tmp.groupby(level=0).agg(lambda x: ' '.join(x.dropna()))
+    rnsr = rnsr.drop(columns='etabs_rnsr').merge(tmp, how='left', left_index=True, right_index=True)
 
     if corr==True:
         if len(rnsr.loc[(rnsr.code_postal.isnull())|(rnsr.ville.isnull())])>0:
