@@ -100,9 +100,11 @@ def sirene_concat(DUMP_PATH):
 
 
 def sirene_prep(DUMP_PATH, snaf, countries, com_iso):
-    import pandas as pd
-    # from functions_shared import com_iso3
+    import pandas as pd, time
+    from functions_shared import timing
     print("### SIRENE preparation")
+    start_time=time.time()
+    
     df = pd.read_parquet(f"{DUMP_PATH}sirene_ref.parquet.gzip")
     
     sirene = df.loc[(df.siren.isin(snaf.entities_id.unique()))|(df.siret.isin(snaf.entities_id.unique()))|(df['uniteLegale.identifiantAssociationUniteLegale'].isin(snaf.entities_id.unique()))]
@@ -115,17 +117,10 @@ def sirene_prep(DUMP_PATH, snaf, countries, com_iso):
  
     sirene = pd.concat([sirene,df], ignore_index=True).drop_duplicates()
     sirene = sirene[sirene['statutDiffusionEtablissement']!='P']
-    
-    # for i in sirene_id_list:
-    #     if any(sirene.siren==i) | any(sirene.siret==i) | any(sirene['uniteLegale.identifiantAssociationUniteLegale']==i):
-    #         pass
-    #     else:
-    #         if any(df.siren==i) | any(df.siret==i) | any(df['uniteLegale.identifiantAssociationUniteLegale']==i):
-    #             sirene=pd.concat([sirene, df[(df.siren==i)|(df.siret==i)|(df['uniteLegale.identifiantAssociationUniteLegale']==i)]], ignore_index=True)
-    #         else:
-    #             print(f"Attention ! {i} missing structure id into sirene dataset for create sirene refext")
-        
-    # print(f"size sirene ref after selection: {len(sirene)}")
+
+    check_time = timing(start_time)
+    print(f"load file and deleting script: {check_time}")
+    start_time=time.time()
 
     sirene = (sirene.assign(ens=df[['enseigne1Etablissement', 'enseigne2Etablissement', 'enseigne3Etablissement']]
                         .fillna('')
@@ -139,6 +134,10 @@ def sirene_prep(DUMP_PATH, snaf, countries, com_iso):
                             .str.strip())
             )
 
+    check_time = timing(start_time)
+    print(f"concat name string: {check_time}")
+    start_time=time.time()
+
     for i in ['denominationUsuelleEtablissement', 'ens']:
         sirene.loc[sirene['uniteLegale.denominationUniteLegale'].isnull(), 'uniteLegale.denominationUniteLegale'] = sirene[i]
 
@@ -148,6 +147,10 @@ def sirene_prep(DUMP_PATH, snaf, countries, com_iso):
         print(f"siren without denomination_UL: {sirene.loc[sirene['uniteLegale.denominationUniteLegale'].isnull()]}")
     # sirene['nom_long'] = [x1 if x2 in x1 else x1+' '+x2 for x1, x2 in zip(tmp['uniteLegale.denominationUniteLegale'], tmp['entities_acronym_source_dup'])]
 
+    check_time = timing(start_time)
+    print(f"end name cleaning add persons name: {check_time}")
+    start_time=time.time()
+
     sirene = sirene.assign(adresse=sirene[['adresseEtablissement.numeroVoieEtablissement', 
                                         'adresseEtablissement.typeVoieEtablissement',
                                         'adresseEtablissement.libelleVoieEtablissement']]
@@ -155,8 +158,11 @@ def sirene_prep(DUMP_PATH, snaf, countries, com_iso):
                             .agg(' '.join, axis=1)
                             .str.strip())
 
-
     sirene.loc[sirene['adresseEtablissement.libelleCommuneEtablissement'].isnull(), 'adresseEtablissement.libelleCommuneEtablissement'] = sirene['adresseEtablissement.libelleCommuneEtrangerEtablissement']
+
+    check_time = timing(start_time)
+    print(f"adresse cleaning: {check_time}")
+    start_time=time.time()
 
     sirene = (sirene[
         ['siren', 'siret', 'dateFin',
@@ -182,6 +188,10 @@ def sirene_prep(DUMP_PATH, snaf, countries, com_iso):
 
     sirene.mask(sirene=='', inplace=True)
 
+    check_time = timing(start_time)
+    print(f"keep columns: {check_time}")
+    start_time=time.time()
+
     country_s = pd.read_csv(f"{DUMP_PATH}v_pays_territoire_2024.csv", sep=',', dtype=str)[['COG', 'CRPAY','CODEISO2']]
     country_s=country_s.merge(country_s[['COG', 'CODEISO2']].drop_duplicates(), how='left', left_on='CRPAY', right_on='COG', suffixes=('','_'))
     country_s.loc[~country_s.CRPAY.isnull(), 'CODEISO2'] = country_s.CODEISO2_
@@ -201,7 +211,9 @@ def sirene_prep(DUMP_PATH, snaf, countries, com_iso):
     if len(sirene[(~sirene.COG.isnull())&((sirene.iso2.isnull())|(sirene.country_code_map.isnull()))])>0:
         print(f"siren without country_code_map: {sirene[(~sirene.COG.isnull())&((sirene.iso2.isnull())|(sirene.country_code_map.isnull()))].siren.unique()}")
 
-    
+    check_time = timing(start_time)
+    print(f"country cleaning: {check_time}")
+    start_time=time.time()
     sirene.drop(columns=['iso_3', 'iso3', 'iso2','COG','Lieudit_BP'], inplace=True)
 
     sirene.mask(sirene=='', inplace=True)
