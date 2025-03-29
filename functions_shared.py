@@ -114,24 +114,24 @@ def prep_str_col(df, cols):
     from unidecode import unidecode
     from functions_shared import tokenization
 
-    df[cols] = df[cols].apply(lambda x: x.str.lower())
+    punct="'|–|,|\\.|:|;|\\!|`|=|\\*|\\+|\\-|‑|\\^|_|~|\\[|\\]|\\{|\\}|\\(|\\)|<|>|@|#|\\$"
     
     ## caracteres speciaux
     for i in cols:
-        df.loc[~df[i].isnull(), i] = df.loc[~df[i].isnull(), i].astype('str').apply(unidecode)
-        df.loc[~df[i].isnull(), i] = df.loc[~df[i].isnull(), i].str.replace('&', 'and')
-        df.loc[~df[i].isnull(), i] = df.loc[~df[i].isnull(), i].apply(lambda x: tokenization(x)).apply(lambda x: [s.replace('.','') for s in x]).apply(lambda x: ' '.join(x))
-    
-    punct="'|–|,|\\.|:|;|\\!|`|=|\\*|\\+|\\-|‑|\\^|_|~|\\[|\\]|\\{|\\}|\\(|\\)|<|>|@|#|\\$"
-    
-    # # #
-    df[cols] = df[cols].apply(lambda x: x.str.replace(punct, ' ', regex=True))    
-    df[cols] = df[cols].apply(lambda x: x.str.replace(r"\n|\t|\r|\xc2|\xa9|\s+", ' ', regex=True).str.strip())
-    df[cols] = df[cols].apply(lambda x: x.str.lower().str.replace('n/a|ndeg', ' ', regex=True).str.strip())
-    df[cols] = df[cols].apply(lambda x: x.str.lower().str.replace('/', ' ').str.strip())
-    df[cols] = df[cols].apply(lambda x: x.str.lower().str.replace('\\', ' ').str.strip())
-    df[cols] = df[cols].apply(lambda x: x.str.lower().str.replace('"', ' ').str.strip())
-    df[cols] = df[cols].apply(lambda x: x.str.replace(r"\s+", ' ', regex=True).str.strip())
+        if i in df.columns:
+            df.loc[~df[i].isnull(), i] = df.loc[~df[i].isnull(), i].str.lower()
+            df.loc[~df[i].isnull(), i] = df.loc[~df[i].isnull(), i].astype('str').apply(unidecode)
+            df.loc[~df[i].isnull(), i] = df.loc[~df[i].isnull(), i].str.replace('&', 'and')
+            df.loc[~df[i].isnull(), i] = df.loc[~df[i].isnull(), i].apply(lambda x: tokenization(x)).apply(lambda x: [s.replace('.','') for s in x]).apply(lambda x: ' '.join(x))
+        
+
+            df[i] = df[i].str.replace(punct, ' ', regex=True)
+            df[i] = df[i].str.replace(r"\n|\t|\r|\xc2|\xa9|\s+", ' ', regex=True).strip()
+            df[i] = df[i].str.lower().replace('n/a|ndeg', ' ', regex=True).strip()
+            df[i] = df[i].str.replace('/', ' ').strip()
+            df[i] = df[i].str.replace('\\', ' ').strip()
+            df[i] = df[i].str.replace('"', ' ').strip()
+            df[i] = df[i].str.replace(r"\s+", ' ', regex=True).strip()
 
     return df
 
