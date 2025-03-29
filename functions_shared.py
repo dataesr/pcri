@@ -1,3 +1,8 @@
+def timing(st):
+    import time
+    return "[{:.2f}s]".format(time.time() - st)
+
+
 # load json file in a zipfile
 def unzip_zip(namezip, path, data, encode):
     import pandas as pd
