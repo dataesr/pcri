@@ -20,7 +20,7 @@ def referentiels_load(snaf, ror_load=False, rnsr_load=False, sirene_load=False, 
 
 
 def ref_externe_preparation(snaf, rnsr_adr_corr=False ):
-    import pandas as pd, re, json, numpy as np, os
+    import pandas as pd, re, json, numpy as np, os, time
     from text_to_num import alpha2digit
 
     # from IPython.display import HTML
@@ -28,12 +28,15 @@ def ref_externe_preparation(snaf, rnsr_adr_corr=False ):
     from config_path import PATH, PATH_MATCH
 
     # from step7_referentiels.countries import ref_countries
-    from functions_shared import work_csv, prep_str_col, stop_word, my_country_code, com_iso3
+    from functions_shared import work_csv, prep_str_col, stop_word, my_country_code, com_iso3, timing
     from step8_referentiels.ror import ror_prep
     from step8_referentiels.sirene import sirene_prep
     from step8_referentiels.rnsr import rnsr_prep
     from step8_referentiels.paysage import paysage_prep
     DUMP_PATH=f'{PATH}referentiel/'
+
+    print(time.strftime("%H:%M:%S"))
+    start_time=time.time()
 
     my_countries=my_country_code()
     com_iso=com_iso3()
@@ -42,11 +45,24 @@ def ref_externe_preparation(snaf, rnsr_adr_corr=False ):
     ror_zipname = ''.join([i for i in os.listdir(DUMP_PATH) if re.search('ror', i)]) 
     ror = ror_prep(DUMP_PATH, ror_zipname, my_countries)
     rnsr = rnsr_prep(DUMP_PATH, my_countries, com_iso, rnsr_adr_corr)
+
+    check_time = timing(start_time)
+    print(f"prep ror rnsr: {check_time}")
+    step_time=time.time()
+
+    ######
+    # sirene
     sirene = sirene_prep(DUMP_PATH, snaf, my_countries, com_iso)
+    check_time = timing(step_time)
+    print(f"prep sirene: {check_time}")
+    step_time=time.time()
     
     ######
     # paysage
     paysage = paysage_prep(DUMP_PATH, my_countries, com_iso)
+    check_time = timing(step_time)
+    print(f"prep paysage: {check_time}")
+    step_time=time.time()
 
     ######
     # table all
@@ -55,13 +71,25 @@ def ref_externe_preparation(snaf, rnsr_adr_corr=False ):
     ref_all.mask(ref_all=='', inplace=True)
     ref_all = ref_all.sort_values(['ref', 'num_nat_struct', 'siren', 'numero_paysage', 'numero_ror'])
 
+    check_time = timing(step_time)
+    print(f"ref_all concat, sort values: {check_time}")
+    step_time=time.time()
+
     print("## string cleaning")
     #lowercase / exochar / unicode / punct
     ref_cols=['nom_long', 'sigle', 'ville', 'adresse', 'adresse_full']
     ref_all = prep_str_col(ref_all, ref_cols)
 
+    check_time = timing(step_time)
+    print(f"prep str columns: {check_time}")
+    step_time=time.time()
+
     print("## label_num_ro_rnsr cleaning")
     ref_all.loc[~ref_all.label_num_ro_rnsr.isnull(), 'label_num_ro_rnsr'] = ref_all.loc[~ref_all.label_num_ro_rnsr.isnull()].label_num_ro_rnsr.str.lower().replace(';', ' ')
+
+    check_time = timing(step_time)
+    print(f"label_num_ro_rnsr: {check_time}")
+    step_time=time.time()
 
     print("## tel cleaning")
     y = ref_all.loc[(~ref_all.tel.isnull())&(ref_all.country_code=='FRA'), ['tel']]
@@ -73,6 +101,10 @@ def ref_externe_preparation(snaf, rnsr_adr_corr=False ):
 
     ref_all = pd.concat([ref_all, y[['tel_clean']]], axis=1)
 
+    check_time = timing(step_time)
+    print(f"tel clean: {check_time}")
+    step_time=time.time()
+
     print("## create nom_enier")
     tmp = ref_all.loc[(ref_all.nom_long!=ref_all.sigle)&(~ref_all.sigle.isnull()), ['nom_long',  'sigle']]
     tmp['nom_entier'] = [x1 if x2 in x1 else x1+' '+x2 for x1, x2 in zip(tmp['nom_long'], tmp['sigle'])]
@@ -80,15 +112,27 @@ def ref_externe_preparation(snaf, rnsr_adr_corr=False ):
     
     ref_all.loc[ref_all.nom_entier.isnull(), 'nom_entier'] = ref_all.nom_long
 
+    check_time = timing(step_time)
+    print(f"nom_entier: {check_time}")
+    step_time=time.time()
+
     print("## stopword")
     #suppression des mots vides comme le la les et... pour "toutes les langues"
     ref_all = stop_word(ref_all, 'country_code_map', ['nom_long', 'nom_entier', 'adresse', 'adresse_full'])
+
+    check_time = timing(step_time)
+    print(f"stop word: {check_time}")
+    step_time=time.time()
 
     print("## code postal into city")
     # extraction du code postal du champs ville 
     ref_all.loc[ref_all.code_postal.isnull(), 'code_postal'] = ref_all.ville.str.extract(r"(\d+)")
 
-    print("## adresse")  
+    check_time = timing(step_time)
+    print(f"cp: {check_time}")
+    step_time=time.time()
+
+    print("## adresse rnsr")  
     #traitement spécifique adresse_full du rnsr
     tmp = ref_all[~ref_all['adresse_full_2'].isnull()][['adresse_full_2']]
     tmp.adresse_full_2 = tmp.adresse_full_2.apply(lambda x: list(filter(None, x))).apply(lambda x: ' '.join(x))
@@ -102,6 +146,10 @@ def ref_externe_preparation(snaf, rnsr_adr_corr=False ):
     tmp['adresse_temp'] = tmp['adresse_full_2'].apply(match)    
     # tmp[['test1', 'test2'] ]= tmp['adresse_full_2'].str.extract(r"(\b\d{1,4})\s([a-z]+\s?)+", expand=True)
     ref_all = pd.concat([ref_all, tmp.drop(columns='adresse_full_2')], axis=1)
+
+    check_time = timing(step_time)
+    print(f"rnsr adr clean: {check_time}")
+    step_time=time.time()
 
     ref_all.loc[ref_all.code_postal.isnull(), 'code_postal'] = ref_all.cp_temp
     ref_all.loc[ref_all.ville.isnull(), 'ville'] = ref_all.ville_temp
@@ -130,6 +178,11 @@ def ref_externe_preparation(snaf, rnsr_adr_corr=False ):
     ref_all.loc[~ref_all.code_postal.isnull(), 'departement'] = ref_all.code_postal.str[0:2]
 
     ref_all.loc[ref_all.country_code=='FRA', 'dep_code'] =ref_all.loc[ref_all.country_code=='FRA'].code_postal.str[0:2] 
+
+    check_time = timing(step_time)
+    print(f"cp, city, dept: {check_time}")
+    step_time=time.time()
+
 
     #########
     # adr = json.load(open('data_files/ad.json'))
@@ -164,6 +217,10 @@ def ref_externe_preparation(snaf, rnsr_adr_corr=False ):
         
         ref_all = ref_all.drop(columns=col_ref).merge(tmp, how='left', left_index=True, right_index=True)
         
+        check_time = timing(step_time)
+        print(f"adresse clean with adr.json: {check_time}")
+        step_time=time.time()
+
         tmp[f'{col_ref}_tag'] = ref_all.loc[~ref_all[col_ref].isnull()][col_ref].apply(lambda x: ' '.join(x))
         with open("data_files/adresse_pattern.txt", "r") as pats:
             for n, line in enumerate(pats, start=1):       
@@ -173,6 +230,10 @@ def ref_externe_preparation(snaf, rnsr_adr_corr=False ):
         tmp[f'{col_ref}_tag'] = tmp[f'{col_ref}_tag'].apply(lambda x: alpha2digit(x, 'fr'))
         ref_all = ref_all.merge(tmp, how='left', left_index=True, right_index=True)
 
+        check_time = timing(step_time)
+        print(f"adresse clean with adresse_pattern: {check_time}")
+        step_time=time.time()
+
     ##################
     print("## unlist columns values") 
     ref_all.rename(columns={'nom_long':'libelle1'}, inplace=True)
@@ -181,6 +242,8 @@ def ref_externe_preparation(snaf, rnsr_adr_corr=False ):
     ref_all.loc[ref_all.adresse.isnull(), 'adresse'] = ref_all.adresse_full
     ref_all.loc[ref_all.adresse_2_tag.isnull(), 'adresse'] = ref_all.adresse_full_2_tag
 
+    check_time = timing(step_time)
+    print(f"last cleanig string columns: {check_time}")
 
     ############################
     # traitement pays
@@ -226,3 +289,6 @@ def ref_externe_preparation(snaf, rnsr_adr_corr=False ):
     print("## save final dataset") 
     ref_all.to_parquet(f"{PATH_MATCH}ref_all.parquet.gzip")
     ref_all.to_pickle(f"{PATH_MATCH}ref_all.pkl")
+
+    check_time = timing(start_time)
+    print(f"elapse all ref_all preparation: {check_time}")
