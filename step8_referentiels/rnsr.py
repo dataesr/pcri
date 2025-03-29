@@ -197,7 +197,7 @@ def rnsr_prep(DUMP_PATH, countries, com_iso, corr=False):
     
     tmp = rnsr[['etabs_rnsr']].explode('etabs_rnsr')
     tmp = prep_str_col(tmp, ['etabs_rnsr'])
-    tmp['etabs_rnsr'] = tmp.etabs_rnsr.str.replace(r"\s+", '-')
+    tmp['etabs_rnsr'] = tmp.etabs_rnsr.str.replace(r"\s+", '-', regex=True)
     tmp = tmp.groupby(level=0).agg(lambda x: ' '.join(x.dropna()))
     rnsr = rnsr.drop(columns='etabs_rnsr').merge(tmp, how='left', left_index=True, right_index=True)
 
