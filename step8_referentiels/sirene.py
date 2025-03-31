@@ -138,7 +138,7 @@ def sirene_prep(DUMP_PATH, snaf, countries, com_iso):
     print(f"concat name string: {check_time}")
     start_time=time.time()
 
-    for i in ['denominationUsuelleEtablissement', 'ens']:
+    for i in ['denominationUsuelleEtablissement', 'ens', 'nom_perso']:
         sirene.loc[sirene['uniteLegale.denominationUniteLegale'].isnull(), 'uniteLegale.denominationUniteLegale'] = sirene[i]
 
     sirene.loc[~sirene['nom_perso'].isnull(), 'uniteLegale.denominationUniteLegale'] = sirene['uniteLegale.denominationUniteLegale']+' '+sirene['nom_perso']
