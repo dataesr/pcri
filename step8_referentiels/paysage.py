@@ -69,7 +69,7 @@ def paysage_prep(DUMP_PATH, countries, com_iso):
                     .pivot_table(index='id_paysage',
                             columns='id_type',
                             values='id_value',
-                            aggfunc=lambda x: ';'.join(x),
+                            aggfunc=lambda x: ' '.join(x),
                             dropna=True)
             )
 
