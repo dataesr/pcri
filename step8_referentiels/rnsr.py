@@ -179,7 +179,7 @@ def rnsr_prep(DUMP_PATH, countries, com_iso, corr=False):
 
     rnsr.loc[rnsr.tutelle_acronym.isnull(), 'tutelle_acronym'] = rnsr.loc[rnsr.tutelle_acronym.isnull(), 'tutelle_name']
     rnsr = (rnsr
-            .loc[(rnsr.date_end.isnull())|(rnsr.date_end>2019)]
+            .loc[((rnsr.date_end.isnull())|(rnsr.date_end>2019))&(~rnsr.name.isnull())]
             .assign(adresse=rnsr.street_num+' '+rnsr.street, ref='rnsr')
             .rename(columns=
                     {'rnsr':'num_nat_struct',
@@ -206,10 +206,15 @@ def rnsr_prep(DUMP_PATH, countries, com_iso, corr=False):
             work_csv(rnsr.loc[(rnsr.code_postal.isnull())|(rnsr.ville.isnull()), ['num_nat_struct', 'nom_long','adresse_full', 'code_postal', 'ville']].drop_duplicates(), 'rnsr_adresse_a_completer')
             sys.exit("ATTENTION ! fix rnsr adresses into data_work -> rnsr_adresse_a_completer")
         else:
-            print("RNSR not fix address")
+            print("RNSR not need to fix address")
 
     add_ad = pd.read_csv(f"{DUMP_PATH}rnsr_adresse_manquante.csv",  sep=';', encoding='ANSI', dtype={'cp_corr':str})
     add_ad = add_ad[['num_nat_struct', 'cp_corr', 'city_corr', 'country_corr']].drop_duplicates()
+
+    if len(rnsr.loc[(rnsr.adresse.isnull())&(~rnsr.adresse_full.isnull())])>0:
+        print(rnsr.loc[(rnsr.ville.isnull())&(rnsr.adresse.isnull())&(~rnsr.adresse_full.isnull()), ['adresse_full', 'ville']])
+
+
 
     rnsr = rnsr.merge(add_ad, how='left', on='num_nat_struct')
     rnsr.loc[~rnsr.cp_corr.isnull(), 'code_postal'] = rnsr.cp_corr
