@@ -126,12 +126,12 @@ def prep_str_col(df, cols):
         
 
             df[i] = df[i].str.replace(punct, ' ', regex=True)
-            df[i] = df[i].str.replace(r"\n|\t|\r|\xc2|\xa9|\s+", ' ', regex=True).strip()
-            df[i] = df[i].str.lower().replace('n/a|ndeg', ' ', regex=True).strip()
-            df[i] = df[i].str.replace('/', ' ').strip()
-            df[i] = df[i].str.replace('\\', ' ').strip()
-            df[i] = df[i].str.replace('"', ' ').strip()
-            df[i] = df[i].str.replace(r"\s+", ' ', regex=True).strip()
+            df[i] = df[i].str.replace(r"\n|\t|\r|\xc2|\xa9|\s+", ' ', regex=True).str.strip()
+            df[i] = df[i].str.lower().replace('n/a|ndeg', ' ', regex=True).str.strip()
+            df[i] = df[i].str.replace('/', ' ').str.strip()
+            df[i] = df[i].str.replace('\\', ' ').str.strip()
+            df[i] = df[i].str.replace('"', ' ').str.strip()
+            df[i] = df[i].str.replace(r"\s+", ' ', regex=True).str.strip()
 
     return df
 
@@ -159,29 +159,28 @@ def prep_str_col(df, cols):
 #     return df
 
 def stop_word(df, cc_iso3 ,cols_list):
-    import pandas as pd
-    from functions_shared import tokenization
-    
+    import pandas as pd    
     stop_word=pd.read_json('data_files/stop_word.json')
 
     for col_ref in cols_list:
-        print(f"-{col_ref}")
-        tmp=df[[cc_iso3,col_ref]]
-        tmp[col_ref] = tmp[col_ref].str.split()
-        tmp=tmp.explode(col_ref).reset_index()
-        tmp = tmp.mask(tmp=='')
+        if col_ref in df.columns:
+            print(f"-{col_ref}")
+            tmp=df[[cc_iso3,col_ref]]
+            tmp[col_ref] = tmp[col_ref].str.split()
+            tmp=tmp.explode(col_ref).reset_index()
+            tmp = tmp.mask(tmp=='')
 
-        tmp = (tmp[~tmp[col_ref].isnull()]
-                .merge(stop_word.loc[stop_word.iso3=='ALL'], 
-                      how='left', left_on=col_ref, right_on='word', indicator=True)
-                .query('_merge=="left_only"')[['index', cc_iso3, col_ref]])
-        tmp = (tmp.merge(stop_word, 
-                         how='left', left_on=[cc_iso3, col_ref], right_on=['iso3', 'word'], 
-                         indicator=True).query('_merge=="left_only"')[['index', col_ref]])
+            tmp = (tmp[~tmp[col_ref].isnull()]
+                    .merge(stop_word.loc[stop_word.iso3=='ALL'], 
+                        how='left', left_on=col_ref, right_on='word', indicator=True)
+                    .query('_merge=="left_only"')[['index', cc_iso3, col_ref]])
+            tmp = (tmp.merge(stop_word, 
+                            how='left', left_on=[cc_iso3, col_ref], right_on=['iso3', 'word'], 
+                            indicator=True).query('_merge=="left_only"')[['index', col_ref]])
 
-        tmp = tmp.groupby('index').agg(lambda x: ' '.join(x)).rename(columns={col_ref:f'{col_ref}_2'})
+            tmp = tmp.groupby('index').agg(lambda x: ' '.join(x)).rename(columns={col_ref:f'{col_ref}_2'})
 
-        df= df.merge(tmp, how='left', left_index=True, right_index=True)
+            df= df.merge(tmp, how='left', left_index=True, right_index=True)
     return df
 
 def adr_tag(df, cols_list):
