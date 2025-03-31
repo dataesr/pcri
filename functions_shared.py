@@ -159,7 +159,7 @@ def prep_str_col(df, cols):
 #     return df
 
 def stop_word(df, cc_iso3 ,cols_list):
-    import pandas as pd    
+    import pandas as pd
     stop_word=pd.read_json('data_files/stop_word.json')
 
     for col_ref in cols_list:
