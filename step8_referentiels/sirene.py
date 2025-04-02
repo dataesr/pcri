@@ -109,8 +109,8 @@ def sirene_prep(DUMP_PATH, snaf, countries, com_iso):
     
     sirene = df.loc[(df.siren.isin(snaf.entities_id.unique()))|(df.siret.isin(snaf.entities_id.unique()))|(df['uniteLegale.identifiantAssociationUniteLegale'].isin(snaf.entities_id.unique()))]
     
-    delete=["02",	"06",	"07",	"08",	"09",	"11",	"14",	"15",	"18",	"19",	"31",	"36",	
-            "37",	"39",	"45", "47",	"50",	"51",	"53",	"55",	"56",	"60",	"65",	"75", "77",	"78",	
+    delete=["02",	"06",	"07",	"08",	"09", "10",	"11",	"14",	"15",	"18",	"19",	"31",	"36",	
+            "37",	"39",	"45", "47",	"50",	"51",	"53",	"55",	"56",	"60",	"65", "68",	"75", "77",	"78",	
             "79",	"80",	"81",	"87",	"92", "93",	"94", "95",	"96",  "97",  "98",	"99"]
     
     df = df.loc[(df['statutDiffusionEtablissement']!='P')&(~df['uniteLegale.identifiantAssociationUniteLegale'].str[0:2].isin(delete))]
