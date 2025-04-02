@@ -113,7 +113,8 @@ def sirene_prep(DUMP_PATH, snaf, countries, com_iso):
             "37",	"39",	"45", "47",	"50",	"51",	"53",	"55",	"56",	"60",	"65", "68",	"75", "77",	"78",	
             "79",	"80",	"81",	"87",	"92", "93",	"94", "95",	"96",  "97",  "98",	"99"]
     
-    df = df.loc[(df['statutDiffusionEtablissement']!='P')&(~df['uniteLegale.identifiantAssociationUniteLegale'].str[0:2].isin(delete))]
+    df = df[~df['uniteLegale.identifiantAssociationUniteLegale'].str[0:2].isin(delete)]
+    df = df[df['statutDiffusionEtablissement']!='P']
  
     sirene = pd.concat([sirene,df], ignore_index=True).drop_duplicates()
     sirene = sirene[sirene['statutDiffusionEtablissement']!='P']
