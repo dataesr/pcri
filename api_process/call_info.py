@@ -1,12 +1,14 @@
 
 from config_path import PATH_SOURCE
-import time, pandas as pd
+import time, pandas as pd, os
 from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.common.by import By
-from selenium.webdriver.edge.service import Service as EdgeService
-from webdriver_manager.microsoft import EdgeChromiumDriverManager
-
+from selenium.webdriver.firefox .service import Service as FirefoxService
+from webdriver_manager.firefox  import GeckoDriverManager
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.chrome.options import Options
 
 def get_data_from_html(soup):
     response=[]
@@ -27,7 +29,9 @@ def click_next(b):
 
 
 def get_call_info_europa():
-    driver = webdriver.Edge(service=EdgeService(EdgeChromiumDriverManager().install()))
+
+    driver = webdriver.Firefox(service=FirefoxService(GeckoDriverManager().install()))
+    driver.maximize_window()
     status='31094501,31094502,31094503'
     type_='1,8'
     # status='31094503'
@@ -36,6 +40,11 @@ def get_call_info_europa():
     url = f'https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/calls-for-proposals?order=DESC&pageNumber=50&pageSize=0&sortBy=startDate&isExactMatch=true&type={type_}&status={status}&frameworkProgramme=43108390'
     driver.get(url)
     time.sleep(5)  
+
+    wait = WebDriverWait(driver, 1)
+    wait.until(EC.presence_of_element_located((By.ID,'cookie-consent-banner')))
+    cookie = driver.find_element(By.CLASS_NAME, 'wt-ecl-button')
+    cookie.click()
 
     data = []
     # accepter les cookies à la main
