@@ -13,7 +13,7 @@ def ref_source_load(sheet_load: str):
 
 def ref_source_1ere_select(ref_source):
     print("### 1er - REF_SOURCE -> REF")
-    ref = ref_source.loc[(~ref_source.ZONAGE.isnull())|(~ref_source.id.isnull()),['generalPic', 'id', 'country_code_mapping', 'ZONAGE']].drop_duplicates()
+    ref = ref_source.loc[(~ref_source.ZONAGE.isnull())|(~ref_source.id.isnull()),['generalPic', 'id', 'id_secondaire', 'country_code_mapping', 'ZONAGE']].drop_duplicates()
     ref['id'] = ref['id'].astype(str)
     print(f"- longueur de ref:{len(ref)}")
 
