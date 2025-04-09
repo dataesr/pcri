@@ -79,7 +79,7 @@ def entities_single_create(df, lien):
         print(f"1 - ++state pour un pic/country; régler ci-dessous {len(n_state)}")
         gen_state=['VALIDATED', 'DECLARED', 'DEPRECATED', 'SLEEPING', 'SUSPENDED', 'BLOCKED']
 
-        if len(df.generalState.unique()) > len(gen_state):
+        if len(df.generalState.dropna().unique()) > len(gen_state):
             print(f"2 - Attention ! un generalState nouveau dans entities -> {set(df.generalState.unique())-set(gen_state)}")
         else:
             df=df.groupby(['generalPic', 'country_code_mapping']).apply(lambda x: x.sort_values('generalState', key=lambda col: pd.Categorical(col, categories=gen_state, ordered=True)), include_groups=True).reset_index(drop=True)
