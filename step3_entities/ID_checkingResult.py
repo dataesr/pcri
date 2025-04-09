@@ -33,7 +33,7 @@ def IDchecking_results(result, check_id_liste, identification):
     verif_id = (verif_id
                 .sort_values('generalPic')
                 .groupby(['generalPic','countryCode', 'countryCode_parent'])[['checked_id', 'stock_id','source','code','new_id']]
-                .agg(lambda col: ';'.join(col.astype(str).dropna().unique())).reset_index()
+                .agg(lambda col: ' '.join(col.astype(str).dropna().unique())).reset_index()
                 .merge(identification[['id_secondaire','ZONAGE', 'generalPic', 'legalName',  'webPage', 'city', 'country_name_mapping', 'countryCode', 'countryCode_parent', 'country_code_mapping', 'vat', 'legalRegNumber']],
                     how='right', on=['generalPic', 'countryCode', 'countryCode_parent']))
 
@@ -43,7 +43,7 @@ def IDchecking_results(result, check_id_liste, identification):
     verif_id.loc[(verif_id.code=='200')&(verif_id.checked_id==verif_id.new_id), 'indicator_control'] = 'ok'
     # verif_id.loc[(verif_id.indicator_control.isnull())&(verif_id.code=='200')&(verif_id.checked_id==verif_id.new_id), 'indicator_control'] = 'ok'
 
-    pd.DataFrame(verif_id).to_csv(f"{PATH_WORK}check_id_result.csv", sep=';', index=False, encoding='utf-8')
+    pd.DataFrame(verif_id).drop_duplicates().to_csv(f"{PATH_WORK}check_id_result.csv", sep=';', index=False, encoding='utf-8')
     print('- resultat à checker dans check_id_result.csv (path_work)\n- intégrer csv dans _check_id_result.xlsx\n- sauver le vieil onglet et coller dans new - attention à importer les id en STRING !')
 
 def ID_resultChecked():
@@ -112,11 +112,11 @@ def new_ref_source(id_verified,ref_source,extractDate,part,app1,entities_single,
     tmp['project'] = tmp.loc[:,['project_x','project_y']].sum(axis=1)
 
     tmp = (tmp
-        .merge(countries[['country_code_mapping', 'country_name_mapping', 'country_code']], 
-                    how='left', on='country_code_mapping')
-        .drop(columns=['proposal_x','project_x','proposal_y','project_y'])
-        .rename(columns={'country_code':'countryCode_parent'}))
-
+        .merge(countries[['countryCode_iso3', 'country_name_en', 'country_code']], 
+                    how='left', left_on='country_code_mapping', right_on='countryCode_iso3')
+        .drop(columns=['proposal_x','project_x','proposal_y','project_y','countryCode_iso3'])
+        .rename(columns={'country_code':'countryCode_parent', 'country_name_en':'country_name_mapping'}))
+    print(tmp.columns)
     ref_source = pd.concat([anti_join, tmp], ignore_index=True).drop_duplicates()
 
     liste=['legalName', 'city']
