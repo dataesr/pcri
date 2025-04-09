@@ -44,7 +44,7 @@ def IDchecking_results(result, check_id_liste, identification):
     # verif_id.loc[(verif_id.indicator_control.isnull())&(verif_id.code=='200')&(verif_id.checked_id==verif_id.new_id), 'indicator_control'] = 'ok'
 
     pd.DataFrame(verif_id).to_csv(f"{PATH_WORK}check_id_result.csv", sep=';', index=False, encoding='utf-8')
-    print('- resultat à checker dans check_id_result.csv (path_work)\n- intégrer csv dans _check_id_result.xlsx\n- sauver le vieil onglet et coller dans new')
+    print('- resultat à checker dans check_id_result.csv (path_work)\n- intégrer csv dans _check_id_result.xlsx\n- sauver le vieil onglet et coller dans new - attention à importer les id en STRING !')
 
 def ID_resultChecked():
     filename = '_check_id_result.xlsx'
