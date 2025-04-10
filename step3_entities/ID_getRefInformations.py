@@ -27,7 +27,8 @@ def ror_getRefInfo(lid_source, countries):
     ror = (ror
         .merge(countries[['countryCode', 'countryCode_iso3']], 
                 how='left', left_on='iso2', right_on='countryCode')
-        .drop(columns=['countryCode', 'iso2']))
+        .drop(columns=['countryCode', 'iso2'])
+        .rename(columns={'countryCode_iso3':'country_code_mapping'}))
     file_name = f"{PATH_REF}ror_df.pkl"
     with open(file_name, 'wb') as file:
         pd.to_pickle(ror, file)
