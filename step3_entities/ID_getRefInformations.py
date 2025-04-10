@@ -25,7 +25,7 @@ def ror_getRefInfo(lid_source, countries):
     r=get_ror(lid_source, ror_old=None)
     ror=ror_cleaning(r)
     ror = (ror
-        .merge(countries[['countryCode', 'country_code_mapping']], 
+        .merge(countries[['countryCode', 'countryCode_iso3']], 
                 how='left', left_on='iso2', right_on='countryCode')
         .drop(columns=['countryCode', 'iso2']))
     file_name = f"{PATH_REF}ror_df.pkl"
