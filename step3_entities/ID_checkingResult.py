@@ -51,7 +51,7 @@ def ID_resultChecked():
     id_verified = pd.read_excel(f"{PATH_WORK}{filename}", dtype=object, keep_default_na=False, sheet_name='new')
     print(len(id_verified))
     id_verified.mask(id_verified=='', inplace=True)
-    return id_verified
+    return id_verified.drop_duplicates()
 
 def new_ref_source(id_verified,ref_source,extractDate,part,app1,entities_single,countries):
     if 'id_secondaire' not in id_verified.columns :
@@ -60,7 +60,7 @@ def new_ref_source(id_verified,ref_source,extractDate,part,app1,entities_single,
         id_verified = id_verified.assign(ZONAGE=np.nan)
 
     tmp = (id_verified[['generalPic','country_code_mapping','countryCode','ZONAGE','id_secondaire',
-                        'new_id','source','code','legalName', 'webPage', 'city']]
+                        'new_id','source','code']].drop_duplicates()
     .rename(columns={'new_id':'id', 'webPage':'url', 'source':'source_id'})     
     .merge(ref_source[['generalPic', 'pic_new',  'country_code_mapping', 'FP', 'ZONAGE','id_secondaire']],
                     how='left', on=['generalPic','country_code_mapping'], suffixes=['','_y']))
@@ -94,7 +94,7 @@ def new_ref_source(id_verified,ref_source,extractDate,part,app1,entities_single,
     print(f"- size id_verif+ref_source + subv: {len(tmp)}")
 
     tmp = (tmp
-        .merge(entities_single[['generalPic', 'generalState', 'countryCode', 'isInternationalOrganisation']].drop_duplicates(), how='left')
+        .merge(entities_single[['generalPic', 'generalState', 'countryCode', 'legalName', 'webPage', 'city', 'isInternationalOrganisation']].drop_duplicates(), how='left')
         .drop(columns=['ZONAGE_y','id_secondaire_y','countryCode']))
         
     print(f"- size tmp complet:{len(tmp)}, size tmp only generalPic+cc {len(tmp[['generalPic', 'country_code_mapping']].drop_duplicates())}")
