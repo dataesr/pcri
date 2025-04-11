@@ -1,9 +1,10 @@
 import time, requests, pandas as pd, copy, numpy as np
 from config_api import paysage_headers
 from config_path import PATH_SOURCE, PATH_REF, PATH_WORK
+from retry import retry
 from dotenv import load_dotenv
 load_dotenv()
-
+@retry(delay=100, tries=3)
 
 def get_mires():
     import requests, pandas as pd
