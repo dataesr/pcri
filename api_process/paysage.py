@@ -1,6 +1,6 @@
 import time, requests, pandas as pd, copy, numpy as np
 from config_api import paysage_headers
-from config_path import PATH_SOURCE, PATH_REF, PATH_WORK
+from config_path import PATH_API, PATH_REF, PATH_WORK
 from retry import retry
 from dotenv import load_dotenv
 load_dotenv()
@@ -37,7 +37,7 @@ def get_mires():
                   ))      
     paysage_mires.operateur_lib = paysage_mires.operateur_lib+" ("+paysage_mires.operateur_num+")"
 
-    file_name = f"{PATH_REF}operateurs_mires.pkl"
+    file_name = f"{PATH_API}operateurs_mires.pkl"
     with open(file_name, 'wb') as file:
         pd.to_pickle(paysage_mires, file)
     return paysage_mires
@@ -98,7 +98,7 @@ def ID_to_IDpaysage(lid_source, siren_siret=[]):
 
     paysage_id = get_IDpaysage(paysage_liste)
     
-    file_name = f"{PATH_SOURCE}paysage_id.pkl"
+    file_name = f"{PATH_API}paysage_id.pkl"
     with open(file_name, 'wb') as file:
         pd.to_pickle(paysage_id, file)
 
@@ -269,7 +269,7 @@ def IDpaysage_parent(paysage):
             print(f"\n{i} -> An unexpected error occurred: {e}")
             paysage_relat.append(str(i))
 
-    file_name = f"{PATH_SOURCE}paysage_parent.pkl"
+    file_name = f"{PATH_API}paysage_parent.pkl"
     with open(file_name, 'wb') as file:
         pd.to_pickle(paysage_relation, file)
 
@@ -416,7 +416,7 @@ def IDpaysage_name(paysage):
     verif2 = [i.get('id_parent') for i in paysage_name if i.get('status')]
     print(f"\nErreurs lévées automatiquement, vérifier la liste\n{[i for i in paysage_name if i.get('id_parent') in verif2]}")
 
-    file_name = f"{PATH_SOURCE}paysage_name.pkl"
+    file_name = f"{PATH_API}paysage_name.pkl"
     with open(file_name, 'wb') as file:
         pd.to_pickle(paysage_name, file)
         
@@ -577,7 +577,7 @@ def IDpaysage_category(paysage):
                             .sort_values(['id_clean', 'category_priority', 'category_id'])
                             .drop_duplicates())
         
-        file_name = f"{PATH_SOURCE}paysage_category.pkl"
+        file_name = f"{PATH_API}paysage_category.pkl"
         with open(file_name, 'wb') as file:
             pd.to_pickle(paysage_category, file)
         return paysage_category
