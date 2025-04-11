@@ -1,6 +1,6 @@
 from config_api import sirene_headers
 from step3_entities.ID_getSourceRef import sourcer_ID
-from config_path import PATH_SOURCE, PATH_WORK, PATH_REF
+from config_path import PATH_SOURCE, PATH_API, PATH_REF
 import time, requests, pandas as pd
 from dotenv import load_dotenv
 load_dotenv()
@@ -33,7 +33,7 @@ def get_siret_siege(lid_source):
         if rinit_status == 200:
             siren_siret.append(rinit.json()['etablissements'][0].get('siret'))
     
-    file_name = f"{PATH_SOURCE}siren_siret.pkl"
+    file_name = f"{PATH_API}siren_siret.pkl"
     with open(file_name, 'wb') as file:
         pd.to_pickle(siren_siret, file)
     print(len(siren_siret))
