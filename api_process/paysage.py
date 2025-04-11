@@ -7,45 +7,45 @@ load_dotenv()
 @retry(delay=100, tries=3)
 
 
-def get_IDpaysage(paysage_liste):
-    import time, requests
-    from config_api import paysage_headers
-    from dotenv import load_dotenv
-    load_dotenv()
+# def get_IDpaysage(paysage_liste):
+#     import time, requests
+#     from config_api import paysage_headers
+#     from dotenv import load_dotenv
+#     load_dotenv()
 
-    print(time.strftime("%H:%M:%S"))
-    paysage_id = []
-    n=0
-    for i in paysage_liste:
-        n=n+1
-        if n % 100 == 0: 
-            print(f"{n}", end=',')
+#     print(time.strftime("%H:%M:%S"))
+#     paysage_id = []
+#     n=0
+#     for i in paysage_liste:
+#         n=n+1
+#         if n % 100 == 0: 
+#             print(f"{n}", end=',')
 
-        time.sleep(0.2)
-        try:
-            url1 = f'https://api.paysage.dataesr.ovh/identifiers?filters[value]={str(i)}'
-            rinit = requests.get(url1, headers=paysage_headers, verify=False)
-            r = rinit.json()['data']
-            if r:
-                for item in r:
-                    response={'id_source':i, 'id_paysage':item.get('resourceId'), 'status':item.get('active'), 'end':item.get('endDate')}
-                    paysage_id.append(response)
-            else:
-                response={'id_source':i, 'status':'non'}
-                paysage_id.append(response)
+#         time.sleep(0.2)
+#         try:
+#             url1 = f'https://api.paysage.dataesr.ovh/identifiers?filters[value]={str(i)}'
+#             rinit = requests.get(url1, headers=paysage_headers, verify=False)
+#             r = rinit.json()['data']
+#             if r:
+#                 for item in r:
+#                     response={'id_source':i, 'id_paysage':item.get('resourceId'), 'status':item.get('active'), 'end':item.get('endDate')}
+#                     paysage_id.append(response)
+#             else:
+#                 response={'id_source':i, 'status':'non'}
+#                 paysage_id.append(response)
 
-        except requests.exceptions.HTTPError as http_err:
-            print(f"\n{i} -> HTTP error occurred: {http_err}")
-            paysage_liste.append(str(i))
-        except requests.exceptions.RequestException as err:
-            print(f"\n{i} -> Error occurred: {err}")
-            paysage_liste.append(str(i))
-        except Exception as e:
-            print(f"\n{i} -> An unexpected error occurred: {e}")
+#         except requests.exceptions.HTTPError as http_err:
+#             print(f"\n{i} -> HTTP error occurred: {http_err}")
+#             paysage_liste.append(str(i))
+#         except requests.exceptions.RequestException as err:
+#             print(f"\n{i} -> Error occurred: {err}")
+#             paysage_liste.append(str(i))
+#         except Exception as e:
+#             print(f"\n{i} -> An unexpected error occurred: {e}")
                         
-    print(f"1 - resultat id entities paysagés {len(paysage_id)}")
-    print(time.strftime("%H:%M:%S"))
-    return paysage_id
+#     print(f"1 - resultat id entities paysagés {len(paysage_id)}")
+#     print(time.strftime("%H:%M:%S"))
+#     return paysage_id
 
 
 def get_paysageODS(dataset):
@@ -56,7 +56,7 @@ def get_paysageODS(dataset):
     result=response.json()
     return pd.DataFrame(result)
 
-
+#############################################################################################
 def ID_to_IDpaysage(lid_source, siren_siret=[]):
     import pandas as pd
     from config_path import PATH_SOURCE
@@ -68,15 +68,22 @@ def ID_to_IDpaysage(lid_source, siren_siret=[]):
     if 'siren_siret' in globals() or 'siren_siret' in locals():
         paysage_liste = list(set(paysage_liste+siren_siret))
     print(f"- new paysage liste with siren_siret: {len(paysage_liste)}")
+    x=pd.DataFrame([i['api_id'] for i in lid_source if i['source_id'] in ['paysage']], columns=["id_source"])
 
-    dataset="fr-esr-paysage_structures_identifiants"
-    paysage_id=get_paysageODS(dataset)
-    # paysage_id = get_IDpaysage(paysage_liste)
-    
-    paysage_id=(paysage_id
-                .loc[paysage_id.id_value.isin(paysage_liste), 
-                     ['id_value','id_paysage','active','id_enddate']]
-                .rename(columns={'id_value':'id_source', 'active':'status', 'id_enddate':'end'}))
+    if paysage_liste:
+        dataset="fr-esr-paysage_structures_identifiants"
+        paysage_id=get_paysageODS(dataset)
+        # paysage_id = get_IDpaysage(paysage_liste)
+        
+        paysage_id=(paysage_id
+                    .loc[paysage_id.id_value.isin(paysage_liste), 
+                        ['id_value','id_paysage','active','id_enddate']]
+                    .rename(columns={'id_value':'id_source', 'active':'status', 'id_enddate':'end'}))
+        paysage_id = pd.concat([paysage_id, x], ignore_index=True)
+
+    else:
+        paysage_id = x
+        paysage_id['id_paysage'] = paysage_id.id_source
 
     file_name = f"{PATH_API}paysage_id.pkl"
     with open(file_name, 'wb') as file:
@@ -89,7 +96,7 @@ def ID_to_IDpaysage(lid_source, siren_siret=[]):
 
     ###############################
 
-def IDpaysage_status(lid_source, paysage_id):
+def IDpaysage_status(paysage_id):
 
     import requests, pandas as pd
     from config_api import paysage_headers
@@ -98,32 +105,32 @@ def IDpaysage_status(lid_source, paysage_id):
 
 
     print("## control IDpaysage status")
-    paysage_id = pd.DataFrame(paysage_id)
-    paysage_id = paysage_id[~paysage_id.id_paysage.isnull()]
-    x=pd.DataFrame([i['api_id'] for i in lid_source if i['source_id'] in ['paysage']], columns=["id_source"])
+    # paysage_id = pd.DataFrame(paysage_id)
+    # paysage_id = paysage_id[~paysage_id.id_paysage.isnull()]
+    # x=pd.DataFrame([i['api_id'] for i in lid_source if i['source_id'] in ['paysage']], columns=["id_source"])
 
-    try:
-        paysage_id = pd.concat([paysage_id, x], ignore_index=True)
-        print(f"- {len(paysage_id)} entities paysage to check")
-        paysage_id.loc[paysage_id.id_paysage.isnull(), 'id_paysage'] = paysage_id.id_source
-        paysage_id['nb'] = paysage_id.groupby('id_source')['id_paysage'].transform('count')
-        paysage_id = (paysage_id.loc[~((paysage_id.nb>1)&(paysage_id.status==False))]
-                .drop(columns=['status', 'nb'])
-                .drop_duplicates())
-        doublon=list(paysage_id.loc[(paysage_id.groupby('id_source')['id_paysage'].transform('count')>1)].id_paysage)
-        if doublon:
-            for i in doublon:
-                url1=f'https://api.paysage.dataesr.ovh/structures/{str(i)}'
-                rinit = requests.get(url1, headers=paysage_headers, verify=False)
-                r = rinit.json()
-                print({i, r.get('structureStatus')})
-                if r.get('structureStatus')=='inactive':
-                    paysage_id=paysage_id[paysage_id.id_paysage!=i]
-                elif r.get('structureStatus') is None:
-                    print(f"1- vérifier et ajouter un statut dans paysage pour: {i}")
-    except:
-        paysage_id = x
-        paysage_id['id_paysage'] = paysage_id.id_source
+    # try:
+        # paysage_id = pd.concat([paysage_id, x], ignore_index=True)
+    print(f"- {len(paysage_id)} entities paysage to check")
+    paysage_id.loc[paysage_id.id_paysage.isnull(), 'id_paysage'] = paysage_id.id_source
+    paysage_id['nb'] = paysage_id.groupby('id_source')['id_paysage'].transform('count')
+    paysage_id = (paysage_id.loc[~((paysage_id.nb>1)&(paysage_id.status==False))]
+            .drop(columns=['status', 'nb'])
+            .drop_duplicates())
+    doublon=list(paysage_id.loc[(paysage_id.groupby('id_source')['id_paysage'].transform('count')>1)].id_paysage)
+    if doublon:
+        for i in doublon:
+            url1=f'https://api.paysage.dataesr.ovh/structures/{str(i)}'
+            rinit = requests.get(url1, headers=paysage_headers, verify=False)
+            r = rinit.json()
+            print({i, r.get('structureStatus')})
+            if r.get('structureStatus')=='inactive':
+                paysage_id=paysage_id[paysage_id.id_paysage!=i]
+            elif r.get('structureStatus') is None:
+                print(f"1- vérifier et ajouter un statut dans paysage pour: {i}")
+    # except:
+        # paysage_id = x
+        # paysage_id['id_paysage'] = paysage_id.id_source
 
     # #provisoire essayer de régler ce problème à la source
     paysage_id=paysage_id[paysage_id.id_paysage!='im9o8']
