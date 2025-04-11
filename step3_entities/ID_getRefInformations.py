@@ -6,19 +6,6 @@ from api_process.paysage import *
 from dotenv import load_dotenv
 load_dotenv()
 
-def ID_getRefInfo(lid_source):
-    print("### ROR data")
-    r=get_ror(lid_source, ror_old=None)
-    ror=ror_cleaning(r)
-    file_name = f"{PATH_REF}ror_df.pkl"
-    with open(file_name, 'wb') as file:
-        pd.to_pickle(ror, file)
-
-    siren_siret = get_siret_siege(lid_source)
-    paysage, paysage_category, paysage_mires = paysage_getRefInfo(lid_source, siren_siret, paysage_old=None)
-    sirene = get_sirene(lid_source, sirene_old=None)
-
-    return ror, paysage, paysage_category, paysage_mires, sirene
 
 def ror_getRefInfo(lid_source, countries):
     print("### ROR data")
@@ -63,3 +50,17 @@ def paysage_getRefInfo(lid_source, siren_siret, paysage_old=None):
             pd.to_pickle(paysage, file)
     
     return paysage, paysage_mires
+
+def ID_getRefInfo(lid_source):
+    print("### ROR data")
+    r=get_ror(lid_source, ror_old=None)
+    ror=ror_cleaning(r)
+    file_name = f"{PATH_REF}ror_df.pkl"
+    with open(file_name, 'wb') as file:
+        pd.to_pickle(ror, file)
+
+    siren_siret = get_siret_siege(lid_source)
+    paysage, paysage_category, paysage_mires = paysage_getRefInfo(lid_source, siren_siret, paysage_old=None)
+    sirene = get_sirene(lid_source, sirene_old=None)
+
+    return ror, paysage, paysage_category, paysage_mires, sirene
