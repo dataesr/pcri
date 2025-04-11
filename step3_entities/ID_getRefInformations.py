@@ -20,10 +20,10 @@ def ror_getRefInfo(lid_source, countries):
     with open(file_name, 'wb') as file:
         pd.to_pickle(ror, file)
 
-def paysage_getRefInfo(lid_source, siren_siret, paysage_old=None):
+def paysage_getRefInfo(paysage_id, paysage_old=None):
     print("### PAYSAGE HARVEST")
     
-    paysage_id, doublon=IDpaysage_status(lid_source, paysage_id)
+    paysage_id, doublon=IDpaysage_status(paysage_id)
     paysage=IDpaysage_successor(paysage_id)
     paysage=IDpaysage_parent(paysage)
     paysage=IDpaysage_cj(paysage)
