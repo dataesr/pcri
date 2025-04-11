@@ -38,7 +38,6 @@ def get_siret_siege(lid_source):
         pd.to_pickle(siren_siret, file)
     print(len(siren_siret))
     print(time.strftime("%H:%M:%S"))
-    return siren_siret
 ####################################
 
 def get_sirene(lid_source, sirene_old=None):
