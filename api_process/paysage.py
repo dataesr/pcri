@@ -59,8 +59,8 @@ def get_paysageODS(dataset):
 #############################################################################################
 def ID_to_IDpaysage(lid_source, siren_siret=[]):
     import pandas as pd
-    from config_path import PATH_SOURCE
-    from api_process.paysage import get_IDpaysage
+    from config_path import PATH_API
+    from api_process.paysage import get_paysageODS
 
     print("## harvest IDpaysage from ID")
     paysage_liste = list(set([i['api_id'] for i in lid_source if not i['source_id'] in ['ror', 'siren', 'paysage']]))
