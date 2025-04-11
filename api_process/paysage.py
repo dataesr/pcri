@@ -84,6 +84,7 @@ def ID_to_IDpaysage(lid_source, siren_siret=[]):
 
     paysage_id = pd.DataFrame(paysage_id)
     paysage_id = paysage_id[~paysage_id.id_paysage.isnull()]
+    print(f"- end size paysage id: {len(paysage_id)}")
     return paysage_id
 
     ###############################
