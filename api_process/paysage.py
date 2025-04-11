@@ -6,42 +6,6 @@ from dotenv import load_dotenv
 load_dotenv()
 @retry(delay=100, tries=3)
 
-def get_mires():
-    import requests, pandas as pd
-    from config_api import paysage_headers
-    from config_path import PATH_REF
-    from dotenv import load_dotenv
-    load_dotenv()
-
-    ## liste opérateurs de la MIRES
-    paysage_mires = pd.DataFrame()
-
-    rinit = requests.get('https://api.paysage.dataesr.ovh/relations?filters[relationTag]=categorie-parent&filters[relatedObjectId]=41ZMP&limit=2000&sort=resource.priority', headers=paysage_headers)
-    r = rinit.json()['data']
-
-    search_id=pd.json_normalize(r).resourceId.unique()
-
-    for i in search_id:   
-        url_struct=f"https://api.paysage.dataesr.ovh/relations?filters[relationTag]=structure-categorie&filters[relatedObjectId]={i}&limit=2000&sort=-startDate"
-        rinit2 = requests.get(url_struct, headers=paysage_headers)
-        r2 = rinit2.json()['data']    
-        if r2:
-            result=(pd.json_normalize(r2)[['relatedObjectId', 'relatedObject.displayName', 'resourceId', 'resource.displayName']]
-                .drop_duplicates()
-                .rename(columns={'relatedObjectId':'operateur_code', 'relatedObject.displayName':'operateur_name', 'resourceId':'entities_id', 'resource.displayName':'struct_name'}))
-            paysage_mires=pd.concat([paysage_mires, result], ignore_index=True)
-            
-    paysage_mires = (paysage_mires
-               .assign(operateur_num=paysage_mires.operateur_name.replace('([^0-9]*)','', regex=True),
-                       operateur_lib=paysage_mires.operateur_name.str.split('-').str[1].str.strip()
-                  ))      
-    paysage_mires.operateur_lib = paysage_mires.operateur_lib+" ("+paysage_mires.operateur_num+")"
-
-    file_name = f"{PATH_API}operateurs_mires.pkl"
-    with open(file_name, 'wb') as file:
-        pd.to_pickle(paysage_mires, file)
-    return paysage_mires
-
 
 def get_IDpaysage(paysage_liste):
     import time, requests
@@ -84,6 +48,15 @@ def get_IDpaysage(paysage_liste):
     return paysage_id
 
 
+def get_paysageODS(dataset):
+    from config_api import ods_headers
+    url=f"https://data.enseignementsup-recherche.gouv.fr/api/explore/v2.1/catalog/datasets/{dataset}/exports/json"
+
+    response = requests.get(url, headers=ods_headers)
+    result=response.json()
+    return pd.DataFrame(result)
+
+
 def ID_to_IDpaysage(lid_source, siren_siret=[]):
     import pandas as pd
     from config_path import PATH_SOURCE
@@ -96,8 +69,15 @@ def ID_to_IDpaysage(lid_source, siren_siret=[]):
         paysage_liste = list(set(paysage_liste+siren_siret))
     print(f"- new paysage liste with siren_siret: {len(paysage_liste)}")
 
-    paysage_id = get_IDpaysage(paysage_liste)
+    dataset="fr-esr-paysage_structures_identifiants"
+    paysage_id=get_paysageODS(dataset)
+    # paysage_id = get_IDpaysage(paysage_liste)
     
+    paysage_id=(paysage_id
+                .loc[paysage_id.id_value.isin(paysage_liste), 
+                     ['id_value','id_paysage','active','id_enddate']]
+                .rename(columns={'id_value':'id_source', 'active':'status', 'id_enddate':'end'}))
+
     file_name = f"{PATH_API}paysage_id.pkl"
     with open(file_name, 'wb') as file:
         pd.to_pickle(paysage_id, file)
@@ -584,4 +564,38 @@ def IDpaysage_category(paysage):
 
 ################################################
 
+def get_mires():
+    import requests, pandas as pd
+    from config_api import paysage_headers
+    from config_path import PATH_REF
+    from dotenv import load_dotenv
+    load_dotenv()
 
+    ## liste opérateurs de la MIRES
+    paysage_mires = pd.DataFrame()
+
+    rinit = requests.get('https://api.paysage.dataesr.ovh/relations?filters[relationTag]=categorie-parent&filters[relatedObjectId]=41ZMP&limit=2000&sort=resource.priority', headers=paysage_headers)
+    r = rinit.json()['data']
+
+    search_id=pd.json_normalize(r).resourceId.unique()
+
+    for i in search_id:   
+        url_struct=f"https://api.paysage.dataesr.ovh/relations?filters[relationTag]=structure-categorie&filters[relatedObjectId]={i}&limit=2000&sort=-startDate"
+        rinit2 = requests.get(url_struct, headers=paysage_headers)
+        r2 = rinit2.json()['data']    
+        if r2:
+            result=(pd.json_normalize(r2)[['relatedObjectId', 'relatedObject.displayName', 'resourceId', 'resource.displayName']]
+                .drop_duplicates()
+                .rename(columns={'relatedObjectId':'operateur_code', 'relatedObject.displayName':'operateur_name', 'resourceId':'entities_id', 'resource.displayName':'struct_name'}))
+            paysage_mires=pd.concat([paysage_mires, result], ignore_index=True)
+            
+    paysage_mires = (paysage_mires
+               .assign(operateur_num=paysage_mires.operateur_name.replace('([^0-9]*)','', regex=True),
+                       operateur_lib=paysage_mires.operateur_name.str.split('-').str[1].str.strip()
+                  ))      
+    paysage_mires.operateur_lib = paysage_mires.operateur_lib+" ("+paysage_mires.operateur_num+")"
+
+    file_name = f"{PATH_API}operateurs_mires.pkl"
+    with open(file_name, 'wb') as file:
+        pd.to_pickle(paysage_mires, file)
+    return paysage_mires
