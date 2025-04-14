@@ -1,10 +1,16 @@
-from config_path import PATH_CLEAN
+from config_path import PATH_CLEAN, PATH_SOURCE
 import pandas as pd, numpy as np
 
 def dates_year(df):
     print("\n### DATES and YEAR")
+
+    dt=pd.read_pickle(f"{PATH_SOURCE}call_info_harvest.pkl")
+    dt=pd.DataFrame(dt)
+    dt['call_year'] = dt.open_date.str.split().str[-1]
+
     # création var commune de statut/ call
-    df['call_year'] = df['callId'].str.extract('(\\d{4})')
+    # df['call_year'] = df['callId'].str.extract('(\\d{4})')
+    df = df.merge(dt[['topic_code', 'call_year']])
 
     # traitement YEAR
     if any(df['call_year'].isnull()):
