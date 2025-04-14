@@ -3,7 +3,7 @@
 from constant_vars import ZIPNAME, FRAMEWORK
 from config_path import PATH_SOURCE, PATH_CLEAN
 from functions_shared import unzip_zip
-import pandas as pd, numpy as np
+import pandas as pd, numpy as np, json
 
 def topics_divisions(chemin):
     print("### TOPICS")
@@ -301,6 +301,27 @@ def topics_divisions(chemin):
     tab = tab.merge(data[['pilier_code','pilier_name_fr']], how='left', on='pilier_code')
 
     tab.loc[(tab.thema_name_fr.isnull()), 'thema_name_fr'] = tab['programme_name_fr']
+
+    ################################
+    # topics coprogrammés
+    
+    with open("data_files/euro_ps.json", "r") as f:
+        eups=json.load(f)
+    eups=pd.json_normalize(eups,"info", ['euro_ps'])
+
+    for _, row in eups.iterrows():
+        pat=r"(?:\()("+row['pat']+r")"
+        tab.loc[tab.topic_name.str.contains(pat, case=True, regex=True), 'euro_ps_name']=row['name']
+        tab.loc[tab.topic_name.str.contains(pat, case=True, regex=True), 'euro_partnerships_type']=row['euro_ps']
+    
+    tab.loc[tab.destination_code=='INFRAEOSC', 'euro_ps_name']='EOSC'
+    tab.loc[tab.destination_code=='INFRAEOSC', 'euro_partnerships_type']='coprog'
+    tab.loc[tab.thema_code=='JU_JTI', 'euro_ps_name']=tab.loc[tab.thema_code=='JU_JTI'].destination_code
+    tab.loc[tab.thema_code=='JU_JTI', 'euro_partnerships_type']='JU_JTI'
+    tab.loc[tab.programme_code=='HORIZON.3.3', 'euro_ps_name']=tab.loc[tab.programme_code=='HORIZON.3.3'].thema_name_en
+    tab.loc[tab.programme_code=='HORIZON.3.3', 'euro_partnerships_type']='EIT KICs'
+
+
 
     if not tab.columns[tab.isnull().any()].empty:
         print(f"- attention des cellules sont vides dans tab: {tab.columns[tab.isnull().any()]}")
