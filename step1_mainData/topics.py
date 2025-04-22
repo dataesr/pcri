@@ -176,7 +176,7 @@ def topics_divisions(chemin):
         top.loc[mask, 'destination_code'] = i
 
     top.loc[top.destination_code=='KDT', 'destination_code'] = 'CHIPS'    
-
+    top.loc[top.destination_code=='ER', 'destination_code'] = 'EU-RAIL'  
     top.loc[top.thema_code=='EUSPA', 'destination_code'] = 'EUSPA'
 
 
@@ -328,8 +328,8 @@ def topics_divisions(chemin):
     tab.loc[tab.destination_code=='INFRAEOSC', 'euro_ps_name']='EOSC'
     tab.loc[~tab.euro_ps_name.isnull(), 'euro_partnerships_type']='co-programmed'
 
-    tab.loc[tab.thema_code=='JU_JTI', 'euro_ps_name']=tab.loc[tab.thema_code=='JU_JTI'].destination_code
-    tab.loc[tab.thema_code=='JU_JTI', 'euro_partnerships_type']='JU_JTI'
+    tab.loc[tab.thema_code=='JU-JTI', 'euro_ps_name']=tab.loc[tab.thema_code=='JU-JTI'].destination_code
+    tab.loc[tab.thema_code=='JU-JTI', 'euro_partnerships_type']='JU-JTI'
     tab.loc[tab.programme_code=='HORIZON.3.3', 'euro_ps_name']=tab.loc[tab.programme_code=='HORIZON.3.3'].thema_name_en
     tab.loc[tab.programme_code=='HORIZON.3.3', 'euro_partnerships_type']='EIT KICs'
 
