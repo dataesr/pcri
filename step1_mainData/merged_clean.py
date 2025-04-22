@@ -1,17 +1,42 @@
 from config_path import PATH_CLEAN, PATH_SOURCE
+from functions_shared import work_csv
 import pandas as pd, numpy as np
 
 def dates_year(df):
     print("\n### DATES and YEAR")
 
-    dt=pd.read_pickle(f"{PATH_SOURCE}call_info_harvest.pkl")
+    dt=pd.read_pickle(f"{PATH_SOURCE}topic_info_harvest.pkl")
     dt=pd.DataFrame(dt)
-    dt['call_year_new'] = dt.open_date.str.split().str[-1]
+    dt['call_year'] = dt.open_date.str.split().str[-1]
+
+    dt = (df[['callId','topicCode']].drop_duplicates()
+                  .merge(dt[['topic_code', 'call_year']].drop_duplicates(),
+                  how='left', left_on='topicCode', right_on='topic_code'))
+
+    y=(dt[['callId', 'call_year']].drop_duplicates()
+            .groupby('callId', dropna=False, as_index=False)
+            .agg(
+                nb_tot=('call_year','size'), 
+                nb_null=('call_year', lambda x: 1 if x.isnull().any() else 0)
+    ))
+
+    check_year=dt[['callId', 'call_year']].drop_duplicates()
+
+    if any(y.nb_tot>1):
+        print(f"1 - ++ YEARS for a same callId  because topic diff: {check_year[check_year.callId.isin(y[y.nb_tot>1].callId.unique())].callId.unique()}")
+        if any((y.nb_tot>1)&(y.nb_null>0)&(y.nb_tot!=y.nb_null)):
+            check_year=check_year.loc[~((check_year.callId.isin(y[(y.nb_tot>1)&(y.nb_null>0)&(y.nb_tot!=y.nb_null)].callId.unique()))&(check_year.call_year.isnull()))]
+        if any((y.nb_tot>1)&(y.nb_null==0)):
+            print(f"1b -Attention ! ++ years for a same call: {y[(y.nb_tot>1)&(y.nb_null==0)].callId.unique()}")
+    if any(y.nb_tot==y.nb_null):
+        print(f"2 - without YEAR for callID: {y[y.nb_tot==y.nb_null].callId.nunique()}")
+        work_csv(y[y.nb_tot==y.nb_null][['callId']].drop_duplicates(), 'callId_year_empty')
 
     # création var commune de statut/ call
-    df['call_year'] = df['callId'].str.extract('(\\d{4})')
-    df = df.merge(dt[['topic_code', 'call_year_new']], how='left', left_on='topicCode', right_on='topic_code')
-    df.loc[df.call_year>'2024', 'call_year'] = df.call_year_new
+    check_year['call_year_tmp'] = check_year['callId'].str.extract('(\\d{4})')
+    check_year.loc[(check_year.call_year_tmp<'2025')&(check_year.call_year.isnull()), 'call_year'] = check_year.loc[(check_year.call_year_tmp<'2025')&(check_year.call_year.isnull())].call_year_tmp
+    df = df.merge(check_year[['callId', 'call_year']], how='left', on='callId')
+    
 
     # traitement YEAR
     if any(df['call_year'].isnull()):
