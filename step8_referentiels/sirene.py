@@ -109,14 +109,16 @@ def sirene_prep(DUMP_PATH, snaf, countries, com_iso):
     
     sirene = df.loc[(df.siren.isin(snaf.entities_id.unique()))|(df.siret.isin(snaf.entities_id.unique()))|(df['uniteLegale.identifiantAssociationUniteLegale'].isin(snaf.entities_id.unique()))]
     
-    delete=["02",	"06",	"07",	"08",	"09", "10",	"11",	"14",	"15",	"18",	"19",	"31",	"36",	
-            "37",	"39",	"45", "47",	"50",	"51",	"53",	"55",	"56",	"60",	"65", "68",	"75", "77",	"78",	
-            "79",	"80",	"81",	"87",	"92", "93",	"94", "95",	"96",  "97",  "98",	"99"]
+    # delete=["01","02","03",	"05","06","07","08","09","10","11", "12", "13","14","15","16","17","18","19","20.4","25.7","27.5","28.2","31","32","33",	
+    #         "41.1","43.2", "43.32","43.34Z", "43.99","45","46", "47","49.3","49.4",	"50.1",	"50.3","51",	"53",	"55",	"56",	"60","64"	,"65", "66.22", "68","69","74.10Z","75", "77",	"78",	
+    #         "79",	"80",	"81", "84","85","86.2","86.9",	"87","88","90",	"92", "93", "94","95",	"96",  "97",  "98", "99"]
     
-    df = df[~df['activitePrincipaleEtablissement'].str[0:2].isin(delete)]
-    df = df[df['statutDiffusionEtablissement']!='P']
- 
-    sirene = pd.concat([sirene,df], ignore_index=True).drop_duplicates()
+    # df = df[df['uniteLegale.categorieJuridiqueUniteLegale']!='1000']
+    # df = df[(~df['activitePrincipaleEtablissement'].str.startswith(tuple(delete)))|(~df['uniteLegale.activitePrincipaleUniteLegale'].str.startswith(tuple(delete)))]
+    # df = df[df['statutDiffusionEtablissement']!='P']
+    # print(len(df))
+    
+    # sirene = pd.concat([sirene,df], ignore_index=True).drop_duplicates()
     sirene = sirene[sirene['statutDiffusionEtablissement']!='P']
 
     check_time = timing(start_time)

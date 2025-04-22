@@ -1,10 +1,11 @@
-from step3_entities.references import ref_source_1ere_select
-from step3_entities.entities_select import entities_tmp_create
-from step3_entities.IDlegal_cleaning import legal_id_clean, entities_link, list_to_check
-from step3_entities.ID_checkingRefExist import check_id
-import time
 
 def first_update(ref_source, entities_info, countries):
+    from step3_entities.references import ref_source_1ere_select
+    from step3_entities.entities_select import entities_tmp_create
+    from step3_entities.IDlegal_cleaning import legal_id_clean, entities_link, list_to_check
+    from step3_entities.ID_checkingRefExist import check_id
+    import time
+    
     print("### FIRST UPDATE entities and ref_source")
     ref = ref_source_1ere_select(ref_source)
     entities_tmp = entities_tmp_create(entities_info, countries, ref)

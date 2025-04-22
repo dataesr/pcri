@@ -53,12 +53,13 @@ entities_all = (entities_all
                     how='left', left_on='country_code', right_on='countryCode_iso3')
                 .drop(columns=['countryCode_iso3', 'country_name_fr']))
 
-tmp=entities_all[['city_back']].explode('city_back')
+tmp = entities_all[['city_back']].explode('city_back')
 tmp['city_back'] = tmp.city_back.str.replace(r"\bst\b", 'saint', regex=True).str.strip()
 tmp['city_back'] = tmp.city_back.str.replace(r"\bste\b", 'sainte', regex=True).str.strip()
 tmp['city_back'] = tmp.city_back.str.replace(r"\s+|'", '-', regex=True)
 tmp=tmp.groupby(level=0).agg(lambda x: ' '.join(x.dropna()))
 entities_all = entities_all.drop(columns='city_back').merge(tmp, how='left', left_index=True, right_index=True)
+entities_all.loc[~entities_all.street_2.isnull(),'street_2']=entities_all.loc[~entities_all.street_2.isnull(),'street_2'].map(lambda x: ' '.join(x))
 #####################################
 
 
@@ -68,7 +69,7 @@ l=(entities_all.loc[entities_all.entities_id.str.match(r"^[0-9]{9}$|^[0-9]{14}$|
 # ref_externe_preparation(l, rnsr_adr_corr=False)
 
 ref_all = pd.read_parquet(f"{PATH_MATCH}ref_all.parquet.gzip")
-# ref_all=ref_all.reset_index()
+# ref_all['p_key'] = ref_all['p_key'].astype('str')
 # ref_all = pd.read_pickle(f"{PATH_MATCH}ref_all.pkl")
 
 ###################################################
@@ -175,6 +176,7 @@ for i in ['entities_full', 'street_2_tag', 'city_tag']:
 tmp['keymaster'] = tmp.entities_full+tmp.street_2_tag+tmp.city_tag
 tmp['keymaster'] = tmp.keymaster.str.replace(r"\s+", '', regex=True)
 tmp['grp'] = tmp.groupby('keymaster').ngroup()
+tmp['matrice'] = 0
 
 
 #########################################
@@ -204,20 +206,21 @@ def cols_select_and_rename(df, table_out):
 tmp=cols_select_and_rename(tmp, 'participants')
 
 ## prepare match with ref_all
-def data_id(df, key_unit, var_orig, vars_id):
+def data_id(df, key_unit, vars_id):
+    df=df.mask(df=='')
     tmp_id=pd.DataFrame()
     for i in vars_id:
-        tmp_id=pd.concat([tmp_id, df.loc[~df[i].isnull(), [key_unit, var_orig, i]].rename(columns={i:'id_merge', var_orig:'orig'})])
+        tmp_id=pd.concat([tmp_id, df.loc[~df[i].isnull(), [key_unit,  i]].rename(columns={i:'id_merge'})])
     tmp_id=tmp_id.loc[~tmp_id.id_merge.str.startswith('pic', na=False)].drop_duplicates()
     return tmp_id
 
 vars_id=['ref_id', 'ror', 'rna', 'paysage', 'num_nat_struct', 'siret', 'siren']
-tid=data_id(tmp, 'p_key', 'orig_ref', vars_id)
+tid=data_id(tmp, 'p_key', vars_id)
 
 vars_id=['num_nat_struct', 'numero_ror', 'siren', 'siret', 'numero_rna','numero_paysage']
-tidr=data_id(ref_all, 'p_key', 'ref', vars_id)
+tidr=data_id(ref_all, 'p_key', vars_id)
 
-x=tid.merge(tidr.rename(columns={'p_key':'p_key_ref'}), how='left', on=['orig','id_merge'], indicator=True)
+x=tid.merge(tidr.rename(columns={'p_key':'p_key_ref'}), how='left', on=['id_merge'], indicator=True)
 
 if 'left_only' in x._merge.unique():
     print(f"- ids without ref in ref_all WHY ! {x[x._merge=='left_only'].id_merge.unique()}\n- size list: {len(x[x._merge=='left_only'].id_merge.unique())}")
@@ -239,17 +242,21 @@ ref_mesr_pcrdt = (ref_mesr_pcrdt
                 date_modif=datetime.datetime.today().strftime('%Y-%m-%d'),
                 fusionne=0, id_fusion=0, id_pere=0))
 
+# ref_mesr_pcrdt['id_ref'] = ref_mesr_pcrdt['id_ref'].astype('str')
 # ref_mesr_pcrdt = ref_mesr_pcrdt.fillna('')
 ref_mesr_pcrdt = ref_mesr_pcrdt.mask(ref_mesr_pcrdt=='')
 
 # add p_key_ref to tmp
-y=x[['p_key', 'p_key_ref']].merge(ref_mesr_pcrdt[['id_ref', 'p_key_ref']], how='inner', on='p_key_ref')
+y = x[['p_key', 'p_key_ref']].merge(ref_mesr_pcrdt[['id_ref', 'p_key_ref']], how='inner', on='p_key_ref')
+# y['id_ref'] = y['id_ref'].astype('str')
+# y = y.loc[~y.id_ref.isnull()].groupby('p_key', as_index=False).agg({'id_ref': lambda x: ' '.join(x)})
 
-tmp=tmp.merge(y, how='left', on='p_key')
+print(len(tmp))
+tmp = tmp.merge(y, how='left', on='p_key')
 # tmp[['p_key_ref', 'id_ref']] = tmp[['p_key_ref', 'id_ref']].astype('Int64')
-str_cols = tmp.columns[tmp.dtypes==object]
-ref_all = ref_all.mask(ref_all=='')
-
+# str_cols = tmp.columns[tmp.dtypes==object]
+tmp = tmp.mask(tmp=='')
+print(len(tmp))
 ###
 ref_all = cols_select_and_rename(ref_all, 'refext')
 ref_all = ref_all.mask(ref_all=='')
@@ -261,21 +268,28 @@ def fill_empty_cols(df):
     df[num_cols] = df[num_cols].fillna(0)
     df[num_cols] = df[num_cols].astype('int64')
 
-
-    str_cols=["pcrdt_pic" ,"paysage"  ,"num_nat_struct" ,"method" ,"siren"  ,"siret" ,"ror" ,"ref_id" ,"operateur"  ,"nom_entier" ,
-    "adresse_2_tag" ,"ville_tag" ,"pays"  ,"pays_dept" ,"domaine_email" ,"organisme","liste_sigles" ,"rep_org","rep_labo" ,"rep_ville", 
-    "statut" , "part_order" ,"programme" ,"contact", "label_num_ro_rnsr", "etabs_rnsr"] 
+    # columns filters
+    str_cols=["pcrdt_pic" ,"paysage"  ,"num_nat_struct" ,"method" ,"siren"  ,"siret" ,"ror" ,"rna","ref_id" ,"operateur" ,"nom_entier" ,
+    "adresse_2_tag" ,"ville_tag" ,"pays"  ,"pays_dept" ,"domaine_email" ,"organisme","liste_sigles" ,"rep_org","rep_labo", "rep_nns","rep_ville", 
+    "statut" , "part_order" ,"programme" ,"contact", "label_num_ro_rnsr", "etabs_rnsr","orig_ref"] 
     c=[col for col in df.columns if col in str_cols]
     df[c] = df[c].fillna('#')
+
+    df=df.fillna('')
     return df
 
 tmp = fill_empty_cols(tmp)
 ref_mesr_pcrdt = fill_empty_cols(ref_mesr_pcrdt)
 ref_all = fill_empty_cols(ref_all)
 
-ref_all1=ref_all[0:10].fillna('')
-tmp1=tmp[0:10].fillna('')
-ref_mesr_pcrdt1=ref_mesr_pcrdt[0:10].fillna('')
+
+# tmp['contact'] = tmp['contact'].str.replace('-', ' ')
+tmp.loc[tmp.contact.str.len()>500, 'contact'] = '#'
+
+tmp = tmp[tmp.dtypes.sort_values().index]
+
+# check column with nan_values 
+print(f"nan values columns: {tmp.columns[tmp.isnull().any()]}")
 ###################################################
 
 def dataset_decribe(df,table_output):
@@ -284,6 +298,7 @@ def dataset_decribe(df,table_output):
     df.info(buf=buffer)
     s = buffer.getvalue()
 
+    tmp=pd.DataFrame()
     lines = s.splitlines()
     column_info = []
     # Analyser chaque ligne pour extraire les informations nécessaires
@@ -316,21 +331,55 @@ def dataset_decribe(df,table_output):
     tmp.loc[tmp.type=='object', 'type']='char'
     tmp['LENGTH'] = tmp['LENGTH'].astype(int)
     tmp.loc[(tmp.type.str.lower().str.startswith('int'))|(tmp.type.str.lower().str.startswith('float')), 'type']='num'
-    return tmp.assign(table=table_output, label_champ=tmp.code_champ)[['table','code_champ','LENGTH','VARNUM','label_champ','NOBS','type']]
+    tmp.loc[tmp.code_champ=='method', 'LENGTH']=30
+    tmp.loc[tmp.code_champ.str.startswith('date'), 'type']='date'
+
+    tmp=tmp.assign(NPOS=tmp.LENGTH)
+    tmp.NPOS=tmp.NPOS.shift(1)
+    tmp.loc[tmp.VARNUM==1, 'NPOS']=0
+    tmp['NPOS']=tmp.NPOS.cumsum().astype('int64')
+    
+
+    return tmp.assign(table=table_output, label_champ=tmp.code_champ)[['table','code_champ','LENGTH','VARNUM','label_champ','NPOS','NOBS','type']]
 
 ###############
-p=dataset_decribe(tmp, 'participants')
-r=dataset_decribe(ref_all, 'refext')
-rmp=dataset_decribe(ref_mesr_pcrdt, 'ref_mesr_pcrdt')
-champs=pd.concat([p,r,rmp], ignore_index=True)
 
-p=dataset_decribe(tmp1, 'participants')
-r=dataset_decribe(ref_all1, 'refext')
-rmp=dataset_decribe(ref_mesr_pcrdt1, 'ref_mesr_pcrdt')
-champs=pd.concat([p,r,rmp], ignore_index=True)
+def export(ptmp, refmp, refext, export_dos):
+    p=dataset_decribe(ptmp, 'participants')
+    rmp=dataset_decribe(refmp, 'ref_mesr_pcrdt')
+    r=dataset_decribe(refext, 'refext')
+    champs=pd.concat([p,rmp,r], ignore_index=True)
 
-PATH_GILB="C:/Users/zfriant/Gilberinette/Echanges/HORIZON/"
-champs.to_csv(f'{PATH_GILB}ListeChamps.txt', sep='\t', index=False, na_rep='')
-tmp1.to_csv(f'{PATH_GILB}PARTICIPANTS.txt', sep='\t', index=False, na_rep='')
-ref_mesr_pcrdt1.to_csv(f'{PATH_GILB}REF_MESR_PCRDT.txt', sep='\t', index=False, na_rep='')
-ref_all1.to_csv(f'{PATH_GILB}REFEXT.txt', sep='\t', index=False, na_rep='')
+    PATH_GILB=f"C:/Users/zfriant/Gilberinette/Echanges/{export_dos}/"
+    champs.to_csv(f'{PATH_GILB}ListeChamps.txt', sep='\t', index=False, na_rep='')
+    ptmp.to_csv(f'{PATH_GILB}PARTICIPANTS.txt', sep='\t', index=False, na_rep='')
+    refmp.to_csv(f'{PATH_GILB}REF_MESR_PCRDT.txt', sep='\t', index=False, na_rep='')
+    refext.to_csv(f'{PATH_GILB}REFEXT.txt', sep='\t', index=False, na_rep='')
+
+# refext_fr=ref_all.loc[~((ref_all.ref.isin(['ror','sirene']))&(ref_all.pays!='France'))].fillna('')
+# refext_fr=refext_fr.loc[~((refext_fr.ref.isin(['paysage']))&(refext_fr.pays!='France')&(refext_fr.num_nat_struct=='#'))].fillna('')
+
+## test
+l=tmp.p_key.value_counts().reset_index()[0:100].p_key.unique()
+tmp_test=tmp.loc[tmp.p_key.isin(l)]
+export(tmp_test, ref_mesr_pcrdt, ref_all, 'HORIZON')
+
+
+## France
+tmp_fr=tmp.loc[tmp.pays=='France']
+# tmp_fr=tmp_fr[(tmp_fr.organisme!='#')&(tmp_fr.organisme.str.contains('societe|association'))]
+# tmp_fr=tmp_fr.loc[(tmp_fr.paysage!='#')|(tmp_fr.siren!='#')|(tmp_fr.liste_sigles!='#')|(tmp_fr.rep_org!='#')]
+export(tmp_fr, ref_mesr_pcrdt, ref_all, 'HEU_FR')
+
+
+### Etranger
+countries = pd.read_pickle(f"{PATH_CLEAN}country_current.pkl")
+cc=countries[countries.country_group_association_code=='MEMBER-ASSOCIATED'].country_name_fr.to_list()
+refext_et=ref_all.loc[(ref_all.pays!='France')]
+# refext_et=refext_et.loc[~((refext_fr.ref.isin(['paysage']))&(refext_fr.pays!='France')&(refext_fr.num_nat_struct=='#'))].fillna('')
+tmp_et=tmp.loc[(tmp.pays!='France')]
+tmp_member=tmp_et[tmp_et.pays.isin(cc)]
+export(tmp_member, ref_mesr_pcrdt, ref_all, 'HEU_MB')
+tmp_et=tmp_et[~tmp_et.pays.isin(cc)]
+export(tmp_et, ref_mesr_pcrdt, ref_all, 'HEU_ET')
+# 

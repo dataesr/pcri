@@ -1,13 +1,12 @@
-from config_api import sirene_headers, scanr_headers, paysage_headers
-from config_path import PATH_SOURCE, PATH_WORK, PATH_REF
-from api_process.ror import *
-from api_process.sirene import *
-from api_process.paysage import *
+import pandas as pd
+
 from dotenv import load_dotenv
 load_dotenv()
 
 
 def ror_getRefInfo(lid_source, countries):
+    from config_path import PATH_REF
+    from api_process.ror import get_ror, ror_cleaning
     print("### ROR data")
     r=get_ror(lid_source, ror_old=None)
     ror=ror_cleaning(r)
@@ -21,6 +20,8 @@ def ror_getRefInfo(lid_source, countries):
         pd.to_pickle(ror, file)
 
 def paysage_getRefInfo(paysage_id, paysage_old=None):
+    from config_path import PATH_REF
+    from api_process.paysage import IDpaysage_cj,IDpaysage_name,IDpaysage_parent,IDpaysage_siret,IDpaysage_status,IDpaysage_successor,check_var_null,get_mires
     print("### PAYSAGE HARVEST")
     
     paysage_id, doublon=IDpaysage_status(paysage_id)
@@ -52,6 +53,10 @@ def paysage_getRefInfo(paysage_id, paysage_old=None):
     return paysage, paysage_mires
 
 def ID_getRefInfo(lid_source):
+    from config_path import PATH_REF
+    from api_process.ror import get_ror, ror_cleaning
+    from api_process.sirene import get_sirene, get_siret_siege
+
     print("### ROR data")
     r=get_ror(lid_source, ror_old=None)
     ror=ror_cleaning(r)

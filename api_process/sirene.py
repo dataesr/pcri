@@ -1,6 +1,5 @@
-from config_api import sirene_headers
 from step3_entities.ID_getSourceRef import sourcer_ID
-from config_path import PATH_SOURCE, PATH_API, PATH_REF
+from config_path import PATH_API, PATH_REF
 import time, requests, pandas as pd
 from dotenv import load_dotenv
 load_dotenv()
@@ -13,7 +12,7 @@ def siren_liste(lid_source):
 ###############################
 
 def get_siret_siege(lid_source):
-    
+    from config_api import sirene_headers
     print("### harvest siret siege from siren")
     print(time.strftime("%H:%M:%S"))
     sl=siren_liste(lid_source)
@@ -41,6 +40,7 @@ def get_siret_siege(lid_source):
 ####################################
 
 def get_sirene(lid_source, sirene_old=None):
+    from config_api import sirene_headers
     print("### SIRENE")
     print(time.strftime("%H:%M:%S"))
     sirene_liste = [i['api_id'] for i in lid_source if i['source_id'] in ['siren', 'siret','identifiantAssociationUniteLegale']]
