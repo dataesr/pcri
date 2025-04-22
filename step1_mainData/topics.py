@@ -324,7 +324,8 @@ def topics_divisions(chemin):
     tp['euro_ps_name']=tp['topic_name'].apply(lambda x: match(eups, x) if isinstance(x, str) else np.nan)
     tp.loc[~tp.euro_ps_name.isnull(), 'euro_ps_name']=tp.loc[~tp.euro_ps_name.isnull()]['euro_ps_name'].apply(lambda x: ', '.join(sorted(set(x))))
     tab=tab.merge(tp.loc[~tp.euro_ps_name.isnull(), ['topicCode', 'euro_ps_name']], how='left', on='topicCode')
-
+    tab=tab.mask(tab=='')
+    
     tab.loc[tab.destination_code=='INFRAEOSC', 'euro_ps_name']='EOSC'
     tab.loc[~tab.euro_ps_name.isnull(), 'euro_partnerships_type']='co-programmed'
 
