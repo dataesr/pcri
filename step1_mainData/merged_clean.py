@@ -6,15 +6,16 @@ def dates_year(df):
 
     dt=pd.read_pickle(f"{PATH_SOURCE}call_info_harvest.pkl")
     dt=pd.DataFrame(dt)
-    dt['call_year'] = dt.open_date.str.split().str[-1]
+    dt['call_year_new'] = dt.open_date.str.split().str[-1]
 
     # création var commune de statut/ call
-    # df['call_year'] = df['callId'].str.extract('(\\d{4})')
-    df = df.merge(dt[['topic_code', 'call_year']])
+    df['call_year'] = df['callId'].str.extract('(\\d{4})')
+    df = df.merge(dt[['topic_code', 'call_year_new']], how='left', left_on='topicCode', right_on='topic_code')
+    df.loc[df.call_year>'2024', 'call_year'] = df.call_year_new
 
     # traitement YEAR
     if any(df['call_year'].isnull()):
-        print(f"1- si year none : \n{df['call_year'].value_counts(dropna=False)}")
+        print(f"1- year none for \n{df[df['call_year'].isnull()].callId.value_counts()}")
     else:
         print(f"2- calldeadline OK -> year:\n{df[['stage','call_year']].value_counts(dropna=False)}\n")
 

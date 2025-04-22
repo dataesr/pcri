@@ -42,11 +42,19 @@ def ref_externe_preparation(snaf, rnsr_adr_corr=False ):
     com_iso=com_iso3()
     print(len(my_countries))
 
+    ######
+    # paysage
+    paysage = paysage_prep(DUMP_PATH, my_countries, com_iso)
+    check_time = timing(start_time)
+    print(f"prep paysage: {check_time}")
+    step_time=time.time()
+
+
     ror_zipname = ''.join([i for i in os.listdir(DUMP_PATH) if re.search('ror', i)]) 
     ror = ror_prep(DUMP_PATH, ror_zipname, my_countries)
     rnsr = rnsr_prep(DUMP_PATH, my_countries, com_iso, rnsr_adr_corr)
 
-    check_time = timing(start_time)
+    check_time = timing(step_time)
     print(f"prep ror rnsr: {check_time}")
     step_time=time.time()
 
@@ -57,12 +65,6 @@ def ref_externe_preparation(snaf, rnsr_adr_corr=False ):
     print(f"prep sirene: {check_time}")
     step_time=time.time()
     
-    ######
-    # paysage
-    paysage = paysage_prep(DUMP_PATH, my_countries, com_iso)
-    check_time = timing(step_time)
-    print(f"prep paysage: {check_time}")
-    step_time=time.time()
 
     ######
     df_list = [rnsr, paysage, ror, sirene]
@@ -170,7 +172,7 @@ def ref_externe_preparation(snaf, rnsr_adr_corr=False ):
         tab.loc[(tab.country_code=='FRA'), 'ville'] = tab.loc[tab.country_code=='FRA', 'ville'].str.replace('^france$', '', regex=True).str.strip()
         tab.loc[(tab.country_code=='FRA'), 'ville'] = tab.loc[tab.country_code=='FRA', 'ville'].str.replace(r"\bst\b", 'saint', regex=True).str.strip()
         tab.loc[(tab.country_code=='FRA'), 'ville'] = tab.loc[tab.country_code=='FRA', 'ville'].str.replace(r"\bste\b", 'sainte', regex=True).str.strip()
-        tab.loc[(tab.country_code=='FRA'), 'ville_tag'] = tab.loc[tab.country_code=='FRA', 'ville'].str.strip().str.replace(r'\s+', '-', regex=True)
+        tab['ville_tag'] = tab['ville'].str.strip().str.replace(r'\s+', '-', regex=True)
 
         if 'code_postal' in tab.columns:
             print("## code postal to department")  
@@ -238,7 +240,7 @@ def ref_externe_preparation(snaf, rnsr_adr_corr=False ):
 
 
     ref_all['p_key'] = range(1, len(ref_all) + 1)
-    ref_all=ref_all.reset_index().mask(ref_all=='')
+    ref_all = ref_all.reset_index(drop=True)
 
     print("## save final dataset") 
     ref_all.to_parquet(f"{PATH_MATCH}ref_all.parquet.gzip")

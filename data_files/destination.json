@@ -260,7 +260,7 @@
 		"destination_name_en": "Key Digital Technologies"
 	},
 	{
-		"destination_code": "Chips",
+		"destination_code": "CHIPS",
 		"destination_name_fr": "Semi-conducteurs pour l'Europe",
 		"destination_name_en": "Chips for Europe Initiative"
 	},
@@ -285,9 +285,9 @@
 		"destination_name_en": "Smart Networks and Services"
 	},
 	{
-		"destination_code": "EU-Rail",
-		"destination_name_fr": "EU-Rail",
-		"destination_name_en": "EU-Rail"
+		"destination_code": "ER",
+		"destination_name_fr": "Europe's Rail",
+		"destination_name_en": "Europe's Rail"
 	},
 	{
 		"destination_code": "CLEANH2",

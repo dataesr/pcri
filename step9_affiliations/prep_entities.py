@@ -572,7 +572,7 @@ def entities_preparation():
     print(f"size perso for merging: {len(perso)}")
     var_perso=['tel_clean', 'domaine_email', 'contact', 'num_nat_struct', 'email']
     perso=(perso.groupby(['project_id', 'generalPic', 'stage'], as_index=False)[var_perso]
-        .agg(lambda x: ' '.join( x.dropna().unique()))
+        .agg(lambda x: ' '.join(x.dropna().unique()))
         .drop_duplicates())
 
     print(f"size entities_all before perso: {len(entities_all)}")

@@ -3,7 +3,7 @@
 from constant_vars import ZIPNAME, FRAMEWORK
 from config_path import PATH_SOURCE, PATH_CLEAN
 from functions_shared import unzip_zip
-import pandas as pd, numpy as np, json
+import pandas as pd, numpy as np, json, re
 
 def topics_divisions(chemin):
     print("### TOPICS")
@@ -165,9 +165,9 @@ def topics_divisions(chemin):
         print('top_hor2 : thema_code à null après traitement')
 
     top = top.assign(destination_code=np.nan)
-    for i in ['SESAR', 'CLEAN-AVIATION', 'IHI', 'KDT', 'CBE', 'EDCTP3', 'EUROHPC', 'SNS', 'ER', 'Chips']:  
-        pattern=str(i+"-")
-        mask = (top.thema_code=='JU-JTI')&(top.destination_code.isnull())&(top.topicCode.str.contains(pattern))
+    for i in ['SESAR', 'CLEAN-AVIATION', 'IHI', 'KDT', 'CBE', 'EDCTP3', 'EUROHPC', 'SNS', 'ER', 'CHIPS']:  
+        pattern=str(i.upper()+"-")
+        mask = (top.thema_code=='JU-JTI')&(top.destination_code.isnull())&(top.topicCode.str.upper().str.contains(pattern))
         top.loc[mask, 'destination_code'] = i
 
     for i in ['CLEANH2']:  
@@ -175,7 +175,7 @@ def topics_divisions(chemin):
         mask = (top.thema_code=='JU-JTI')&(top.destination_code.isnull())&(top.topicCode.str.contains(pattern))
         top.loc[mask, 'destination_code'] = i
 
-    top.loc[top.destination_code=='KDT', 'destination_code'] = 'Chips'    
+    top.loc[top.destination_code=='KDT', 'destination_code'] = 'CHIPS'    
 
     top.loc[top.thema_code=='EUSPA', 'destination_code'] = 'EUSPA'
 
@@ -216,7 +216,8 @@ def topics_divisions(chemin):
         HOR3.loc[(HOR3.lvl3Code=='HORIZON.3.3')&(HOR3.thema_code.isnull()), 'thema_code'] = 'EIT-OTHER'
         
 
-    spec={'CHALLENGE':'CHALLENGES',
+    spec={
+    'CHALLENGE':'CHALLENGES',
     'OPEN':'OPEN',
     'EITWOMENLEADERSHIP':'EPWI',
     'RISINGINNOVATOR':'EPWI',
@@ -309,18 +310,28 @@ def topics_divisions(chemin):
         eups=json.load(f)
     eups=pd.json_normalize(eups,"info", ['euro_ps'])
 
-    for _, row in eups.iterrows():
-        pat=r"(?:\()("+row['pat']+r")"
-        tab.loc[tab.topic_name.str.contains(pat, case=True, regex=True), 'euro_ps_name']=row['name']
-        tab.loc[tab.topic_name.str.contains(pat, case=True, regex=True), 'euro_partnerships_type']=row['euro_ps']
+    def match(eups, x):
+        cp = []
+        for _, row in eups.iterrows():
+            pat=r"(?:\(.*)("+row['pat']+r")"
+            y = re.search(pat.upper(), x.upper())
+            if y:
+                cp.append(row['name'])
+        return cp
+
+    tp=tab.loc[(tab.thema_code.str.startswith("CLUSTER 4"))|(tab.thema_code.str.startswith("CLUSTER 5")), ['topicCode', 'topic_name']]
     
+    tp['euro_ps_name']=tp['topic_name'].apply(lambda x: match(eups, x) if isinstance(x, str) else np.nan)
+    tp.loc[~tp.euro_ps_name.isnull(), 'euro_ps_name']=tp.loc[~tp.euro_ps_name.isnull()]['euro_ps_name'].apply(lambda x: ', '.join(sorted(set(x))))
+    tab=tab.merge(tp.loc[~tp.euro_ps_name.isnull(), ['topicCode', 'euro_ps_name']], how='left', on='topicCode')
+
     tab.loc[tab.destination_code=='INFRAEOSC', 'euro_ps_name']='EOSC'
-    tab.loc[tab.destination_code=='INFRAEOSC', 'euro_partnerships_type']='coprog'
+    tab.loc[~tab.euro_ps_name.isnull(), 'euro_partnerships_type']='co-programmed'
+
     tab.loc[tab.thema_code=='JU_JTI', 'euro_ps_name']=tab.loc[tab.thema_code=='JU_JTI'].destination_code
     tab.loc[tab.thema_code=='JU_JTI', 'euro_partnerships_type']='JU_JTI'
     tab.loc[tab.programme_code=='HORIZON.3.3', 'euro_ps_name']=tab.loc[tab.programme_code=='HORIZON.3.3'].thema_name_en
     tab.loc[tab.programme_code=='HORIZON.3.3', 'euro_partnerships_type']='EIT KICs'
-
 
 
     if not tab.columns[tab.isnull().any()].empty:
@@ -337,7 +348,7 @@ def topics_divisions(chemin):
 
 
 def merged_topics(df):
-    topics= topics_divisions(f"{PATH_SOURCE}{FRAMEWORK}/")
+    topics = topics_divisions(f"{PATH_SOURCE}{FRAMEWORK}/")
 
     top_code = list(set(df.topicCode))
     top_code = [item for item in top_code if not(pd.isnull(item)) == True]

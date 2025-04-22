@@ -1,6 +1,5 @@
 import time, requests, pandas as pd, copy, numpy as np
-from config_api import paysage_headers
-from config_path import PATH_API, PATH_REF, PATH_WORK
+from config_path import PATH_API
 from retry import retry
 from dotenv import load_dotenv
 load_dotenv()
@@ -224,6 +223,7 @@ def IDpaysage_successor(paysage_id):
 ###############################
 
 def IDpaysage_parent(paysage):
+    from config_api import paysage_headers
     print("## IDpaysage parent")
     paysage_relat=paysage['id_clean'].dropna().astype(str).unique().tolist()
     print(f"- size de paysage relat à vérifier {len(paysage_relat)}")
@@ -301,6 +301,7 @@ def IDpaysage_parent(paysage):
 ###############################################
 
 def IDpaysage_cj(paysage):
+    from config_api import paysage_headers
     print("## IDpaysage CJ")
     paysage_liste=paysage['id_clean'].dropna().astype(str).unique().tolist()
     paysage_cj=pd.DataFrame()
@@ -359,6 +360,7 @@ def IDpaysage_cj(paysage):
 ################################################
 
 def IDpaysage_name(paysage):
+    from config_api import paysage_headers
     print("## IDpaysage name")
     paysage_liste=paysage['id_clean'].dropna().astype(str).unique().tolist()
     print(f"- size paysage id à nommer:{len(paysage_liste)}")
@@ -436,6 +438,7 @@ def IDpaysage_name(paysage):
 ################################################
 
 def IDpaysage_siret(paysage):
+    from config_api import paysage_headers
     paysage_liste=list(filter(None, paysage['id_clean'].dropna().astype(str).unique().tolist()))
     print(f"- size paysage id à siretiser:{len(paysage_liste)}")
     siren_to_remove=["183830017"]
@@ -506,6 +509,7 @@ def check_var_null(paysage):
 ################################################
 
 def IDpaysage_category(paysage):
+    from config_api import paysage_headers
     print("## IDpaysage category")
     paysage_liste=paysage['id_clean'].dropna().astype(str).unique().tolist()
     paysage_category=pd.DataFrame()

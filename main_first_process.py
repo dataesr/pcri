@@ -1,5 +1,8 @@
 from main_library import *
+import copy
 pd.options.mode.copy_on_write = True
+
+# if new update change constant_vars.py
 
 
 NEW_UPDATE=False
@@ -9,10 +12,9 @@ NEW_UPDATE=False
 extractDate = date_load()
 
 
-## demander à Eric de relancer la machine sur sandbox
-if NEW_UPDATE==True:
-    # get_call_info()
-    get_call_info_europa()
+# if NEW_UPDATE==True:
+#     # get_call_info()
+#     get_call_info_europa()
 
 proj = projects_load()
 proj_id_signed = proj.project_id.unique()
@@ -20,7 +22,7 @@ proj_id_signed = proj.project_id.unique()
 prop = proposals_load()
 proj = proj_add_cols(prop, proj)
 
-stage_p =  ['REJECTED' ,'NO_MONEY' ,'MAIN', 'RESERVE', 'INELIGIBLE', 'WITHDRAWN', 'INADMISSIBLE', None]
+stage_p = ['REJECTED' ,'NO_MONEY' ,'MAIN', 'RESERVE', 'INELIGIBLE', 'WITHDRAWN', 'INADMISSIBLE', None]
 prop1 = proposals_status(prop, proj_id_signed, stage_p)  
 # np.save("data_files/applicants_columns.npy", prop_cols)
 
@@ -29,7 +31,7 @@ prop1 = proposals_status(prop, proj_id_signed, stage_p)
 # projects missing from proposals
 call_to_integrate, call_miss = proposals_id_missing(prop1, proj, extractDate)
 
-# project data missing in proposals if call already in proposals then add this
+# project data missing in proposals if call already in dproposals then add this
 proj1 = proj_id_miss_fixed(prop1, proj, call_to_integrate)
 call_miss = list(set(call_miss)-set(call_to_integrate))
 proj = proj.loc[~proj.callId.isin(call_miss)]
@@ -101,15 +103,16 @@ tmp = part[part.project_id.isin(app_missing_pid)]
 app1 = part_miss_app(tmp, app1)
 
 #redressement accelerator
-acc_folio = pd.read_csv(f"{PATH_SOURCE}{FRAMEWORK}/eic_fund_portfolio.csv", sep=';', dtype={'PROPOSAL_NBR':str})
+acc_folio = unzip_zip(ZIPNAME, f"{PATH_SOURCE}{FRAMEWORK}/", 'proposals_eicFundPortfolio.json', 'utf8')
+acc_folio = pd.DataFrame(acc_folio)
 print(f"size acc_folio: {len(acc_folio)}")
-acc = (app1.loc[(app1.project_id.isin(acc_folio.PROPOSAL_NBR.unique()))&(app1.role=='Coordinator'),['project_id', 'role']]
-       .merge(acc_folio[['PROPOSAL_NBR','GRANT_REQUESTED']], how='inner', left_on='project_id', right_on='PROPOSAL_NBR')
-       .drop(columns='PROPOSAL_NBR'))
+acc = (app1.loc[(app1.project_id.isin(acc_folio.proposalNbr.unique()))&(app1.role=='Coordinator'),['project_id', 'role']]
+       .merge(acc_folio[['proposalNbr','grantRequested']], how='inner', left_on='project_id', right_on='proposalNbr')
+       .drop(columns='proposalNbr'))
 print(f"size acc: {len(acc)}")
 app1 = app1.merge(acc, how='left', on=['project_id', 'role'])
-app1.loc[app1.requestedGrant.isnull(), 'requestedGrant'] = app1.GRANT_REQUESTED
-app1.drop(columns=['GRANT_REQUESTED'], inplace=True)
+app1.loc[app1.requestedGrant.isnull(), 'requestedGrant'] = app1.grantRequested
+app1.drop(columns=['grantRequested'], inplace=True)
 
 app1 = app_role_type(app1, projects)
 
@@ -153,8 +156,8 @@ if NEW_UPDATE==True:
     entities_single = entities_single_create(entities, lien)
 else:
     entities_single = pd.read_pickle(f"{PATH_SOURCE}entities_single.pkl")
-#     countries = pd.read_pickle(f"{PATH_CLEAN}country_current.pkl")
-#     lien = pd.read_pickle(f"{PATH_CLEAN}lien.pkl")
+    countries = pd.read_pickle(f"{PATH_CLEAN}country_current.pkl")
+    lien = pd.read_pickle(f"{PATH_CLEAN}lien.pkl")
 
 entities_info = entities_info_create(entities_single, lien)
 
@@ -166,9 +169,10 @@ if NEW_UPDATE==True:
     ref_source = ref_source_load('ref')
     result, check_id_liste, identification = first_update(ref_source, entities_info, countries)
 
-    # vérifier dans excel les nouveaux ID PATH_WORK/_check_id_result.xlsx
     IDchecking_results(result, check_id_liste, identification)
-
+    #################
+    # vérifier dans excel les nouveaux ID PATH_WORK/_check_id_result.xlsx
+    ##################################################################
     id_verified = ID_resultChecked()
     new_ref_source(id_verified, ref_source, extractDate, part, app1, entities_single, countries)
 
@@ -182,13 +186,15 @@ print(f"size entities_tmp: {len(entities_tmp)}")
 entities_tmp = entities_for_merge(entities_tmp)
 
 ### Executer uniquement si besoin
-# lid_source, unknow_list = ID_entities_list(ref_source)
-# ror_getRefInfo(lid_source, countries)
-# siren_siret = get_siret_siege(lid_source)
-# paysage_id = ID_to_IDpaysage(lid_source, siren_siret)
-# paysage, paysage_mires = paysage_getRefInfo(lid_source, siren_siret, paysage_old=None)
-# paysage_category = IDpaysage_category(paysage)
-# sirene = get_sirene(lid_source, sirene_old=None)
+if NEW_UPDATE==True:
+    lid_source, unknow_list = ID_entities_list(ref_source)
+    ror_getRefInfo(lid_source, countries)
+    get_siret_siege(lid_source)
+    siren_siret = pd.read_pickle(f"{PATH_API}siren_siret.pkl")
+    paysage_id = ID_to_IDpaysage(lid_source, siren_siret)
+    paysage, paysage_mires = paysage_getRefInfo(paysage_id, paysage_old=None)
+    paysage_category = IDpaysage_category(paysage)
+    sirene = get_sirene(lid_source, sirene_old=None)
 
 #############################################################################################################
 
@@ -264,7 +270,7 @@ part_proj = participants_calcul(part_step, part, proj_erc)
 participation = participations_complete(part_prop, part_proj, proj_no_coord)
 del part_proj, part_prop
 
-gc.collect()
+
 #step5 - si nouvelle actualisation ou changement dans nomenclatures
 H2020_process()
 FP7_process()
