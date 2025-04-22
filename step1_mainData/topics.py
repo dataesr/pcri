@@ -331,8 +331,8 @@ def topics_divisions(chemin):
 
     tab.loc[tab.thema_code=='JU-JTI', 'euro_ps_name']=tab.loc[tab.thema_code=='JU-JTI'].destination_code
     tab.loc[tab.thema_code=='JU-JTI', 'euro_partnerships_type']='JU-JTI'
-    tab.loc[tab.programme_code=='HORIZON.3.3', 'euro_ps_name']=tab.loc[tab.programme_code=='HORIZON.3.3'].thema_name_en
-    tab.loc[tab.programme_code=='HORIZON.3.3', 'euro_partnerships_type']='EIT KICs'
+    tab.loc[(tab.programme_code=='HORIZON.3.3')&(tab.thema_code.str.startswith('KIC')), 'euro_ps_name']=tab.loc[(tab.programme_code=='HORIZON.3.3')&(tab.thema_code.str.startswith('KIC'))].thema_name_en
+    tab.loc[(tab.programme_code=='HORIZON.3.3')&(tab.thema_code.str.startswith('KIC')), 'euro_partnerships_type']='EIT KICs'
 
 
     if not tab.columns[tab.isnull().any()].empty:
@@ -345,8 +345,6 @@ def topics_divisions(chemin):
         else:
             pass
     return tab
-
-
 
 def merged_topics(df):
     topics = topics_divisions(f"{PATH_SOURCE}{FRAMEWORK}/")
