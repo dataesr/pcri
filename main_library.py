@@ -11,6 +11,7 @@ from step1_mainData.panels import *
 from step1_mainData.topics import *
 from step1_mainData.actions import *
 from step1_mainData.calls import *
+from step1_mainData.euro_partnerships import *
 from step1_mainData.participants import *
 from step1_mainData.applicants import *
 from step2_participations.merged_app_part import *
