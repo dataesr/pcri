@@ -303,38 +303,6 @@ def topics_divisions(chemin):
 
     tab.loc[(tab.thema_name_fr.isnull()), 'thema_name_fr'] = tab['programme_name_fr']
 
-    ################################
-    # topics coprogrammés
-    
-    with open("data_files/euro_ps.json", "r") as f:
-        eups=json.load(f)
-    eups=pd.json_normalize(eups,"info", ['euro_ps'])
-
-    def match(eups, x):
-        cp = []
-        for _, row in eups.iterrows():
-            pat=r"(?:\(.*)("+row['pat']+r")"
-            y = re.search(pat.upper(), x.upper())
-            if y:
-                cp.append(row['name'])
-        return cp
-
-    tp=tab.loc[(tab.thema_code.str.startswith("CLUSTER 4"))|(tab.thema_code.str.startswith("CLUSTER 5")), ['topicCode', 'topic_name']]
-    
-    tp['euro_ps_name']=tp['topic_name'].apply(lambda x: match(eups, x) if isinstance(x, str) else np.nan)
-    tp.loc[~tp.euro_ps_name.isnull(), 'euro_ps_name']=tp.loc[~tp.euro_ps_name.isnull()]['euro_ps_name'].apply(lambda x: ', '.join(sorted(set(x))))
-    tab=tab.merge(tp.loc[~tp.euro_ps_name.isnull(), ['topicCode', 'euro_ps_name']], how='left', on='topicCode')
-    tab=tab.mask(tab=='')
-    
-    tab.loc[tab.destination_code=='INFRAEOSC', 'euro_ps_name']='EOSC'
-    tab.loc[~tab.euro_ps_name.isnull(), 'euro_partnerships_type']='co-programmed'
-
-    tab.loc[tab.thema_code=='JU-JTI', 'euro_ps_name']=tab.loc[tab.thema_code=='JU-JTI'].destination_code
-    tab.loc[tab.thema_code=='JU-JTI', 'euro_partnerships_type']='JU-JTI'
-    tab.loc[(tab.programme_code=='HORIZON.3.3')&(tab.thema_code.str.startswith('KIC')), 'euro_ps_name']=tab.loc[(tab.programme_code=='HORIZON.3.3')&(tab.thema_code.str.startswith('KIC'))].thema_name_en
-    tab.loc[(tab.programme_code=='HORIZON.3.3')&(tab.thema_code.str.startswith('KIC')), 'euro_partnerships_type']='EIT KICs'
-
-
     if not tab.columns[tab.isnull().any()].empty:
         print(f"- attention des cellules sont vides dans tab: {tab.columns[tab.isnull().any()]}")
 
@@ -380,4 +348,3 @@ def merged_topics(df):
     topics.to_csv(f"{PATH_CLEAN}topics_current.csv", index=False, encoding="UTF-8", sep=";", na_rep='')
 
     return df
-    
