@@ -77,12 +77,12 @@ def category_agreg(df):
 
     df.mask(df=='', inplace=True)
 
-    df.loc[(df.siren_cj.isin(['ENT', 'ENT_ETR']))|(df.ror_category=='Company'), 'flag_entreprise'] = True
-    df.loc[(df.category_agregation=='Entreprise'), 'flag_entreprise'] = True
-    df.loc[df.flag_entreprise.isnull(), 'flag_entreprise'] = False
+    df.loc[(df.siren_cj.isin(['ENT', 'ENT_ETR']))|(df.ror_category=='Company'), 'entreprise_flag'] = True
+    df.loc[(df.category_agregation=='Entreprise'), 'entreprise_flag'] = True
+    df.loc[df.entreprise_flag.isnull(), 'entreprise_flag'] = False
 
     l=['insee_cat_code', 'insee_cat_name']
-    df.loc[df.flag_entreprise==False, l] = np.nan
+    df.loc[df.entreprise_flag==False, l] = np.nan
     return df
 
 
