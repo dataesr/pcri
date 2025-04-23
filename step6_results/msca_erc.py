@@ -12,7 +12,7 @@ def msca_erc_projects(FP6, FP7, h20, projects, part):
         'country_group_association_name_fr', 'country_name_en',  'free_keywords', 'abstract',
         'country_name_fr', 'destination_code', 'destination_detail_code', 
         'destination_detail_name_en', 'destination_name_en',  'number_involved',
-        'panel_code', 'panel_name', 'panel_regroupement_code', 'panel_regroupement_name', 'project_id', 'role', 'erc_role', 'flag_entreprise',
+        'panel_code', 'panel_name', 'panel_regroupement_code', 'panel_regroupement_name', 'project_id', 'role', 'erc_role', 'entreprise_flag',
         'stage', 'status_code', 'framework', 'thema_code', 'category_woven', 
         'groupe_id', 'groupe_name', 'participation_linked',
         'category_agregation', 'source_id','ecorda_date']
@@ -25,7 +25,7 @@ def msca_erc_projects(FP6, FP7, h20, projects, part):
                          'erc_role', 'fund_ent_erc',
                          'extra_joint_organization', 'free_keywords', 
                          'abstract','source_id', 'category_agregation', 
-                         'category_woven', 'flag_entreprise',
+                         'category_woven', 'entreprise_flag',
                          'groupe_id', 'groupe_name', 'participation_linked']))])
     me20=(h20.loc[h20.programme_code.isin(['ERC', 'MSCA']), list(set(select_cols)
             .difference(['participation_linked']))])
