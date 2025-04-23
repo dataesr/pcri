@@ -73,7 +73,7 @@ def entities_info_add(entities_tmp, entities_info, countries):
             ['generalPic', 'id', 'ZONAGE', 'id_m', 'siren', 'country_code_mapping',
             'id_secondaire', 'entities_id',  'entities_name', 'entities_acronym', 
             'insee_cat_code', 'insee_cat_name',  'category_agregation',
-            'paysage_category', 'flag_entreprise', 
+            'paysage_category', 'entreprise_flag', 
             'ror_category', 'category_woven', 'source_id', 'sector',  
             'siret_closeDate', 'cat_an',
             'groupe_name','groupe_acronym', 'groupe_id', 'groupe_sector']],
