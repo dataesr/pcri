@@ -55,4 +55,4 @@ def euro_partnerships(df):
 
     df = df.assign(euro_partnerships_flag=np.where(df.euro_partnerships_type.isnull(), False, True)) 
     
-    return df
+    return df.drop(columns='euro_ps_name_y')
