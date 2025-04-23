@@ -9,12 +9,14 @@ def participations_nuts(df):
     # gestion code nuts
     nuts = pd.read_pickle(f'{PATH_REF}nuts_complet.pkl')
     temp=df[['participation_nuts', 'nutsCode']].drop_duplicates()
-
+#501171 507105
+    temp=temp.fillna('')
     temp = temp.assign(n1=temp.participation_nuts.str.split(';'), n2=temp.nutsCode.str.split(';'))
-    temp['n1'] = [ [] if (x is np.nan)|(x is None) else x for x in temp['n1'] ]
-    temp['n2'] = [ [] if (x is np.nan)|(x is None) else x for x in temp['n2'] ]
-    temp['n3'] = temp.apply(lambda x: list(set(x['n1'] + x['n2'])), axis=1)
-    temp = temp.explode('n3').drop(columns=['n1', 'n2']).drop_duplicates()
+    # temp['n1'] = [ [] if (x is np.nan)|(x is None) else x for x in temp['n1'] ]
+    # temp['n2'] = [ [] if (x is np.nan)|(x is None) else x for x in temp['n2'] ]
+    # temp['n3'] = temp.apply(lambda x: list(set(x['n1'] + x['n2'])), axis=1)
+    temp['n3'] = temp.apply(lambda x: x['n1']+x['n2'], axis=1)
+    temp = temp.explode('n3').drop(columns=['n1', 'n2']).drop_duplicates().loc[temp.n3!='']
  
     temp=temp.merge(nuts, how='left', left_on='n3', right_on='nuts_code').drop(columns=['nuts_code'])
  
