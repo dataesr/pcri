@@ -71,4 +71,4 @@ def get_topic_info_europa(FRAMEWORK):
     #         wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, "#cdk-overlay-0 button.btn"))).click()
     #         driver.execute_script("arguments[0].click()", driver.find_element_by_css_selector("#StudentSatisfactionPop button.btn"))
 
-    pd.to_pickle(data, open(f"{PATH_SOURCE}topic_info_harvest.pkl", 'wb'))
+    pd.to_pickle(data, open(f"{PATH_SOURCE}{FRAMEWORK}/topic_info_harvest.pkl", 'wb'))
