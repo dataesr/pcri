@@ -67,6 +67,7 @@ if any(merged.loc[merged.stage=='successful', 'project_id'].value_counts()[merge
 merged = merged_panels(merged)
 merged = merged_topics(merged)
 merged = merged_actions(merged)
+merged = euro_partnerships(merged)
 
 # calls list
 calls = call(PATH_SOURCE+FRAMEWORK+'/')
