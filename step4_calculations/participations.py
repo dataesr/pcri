@@ -41,7 +41,7 @@ def entities_with_lien(entities_info, lien, genPic_to_new):
     lien.loc[lien.generalPic.isnull(), 'generalPic'] = lien.loc[lien.generalPic.isnull(), 'pic_old']
 
     ent_tmp = (entities_info[
-            ['generalPic', 'flag_entreprise',
+            ['generalPic', 'entreprise_flag',
             'cordis_is_sme', 'cordis_type_entity_code', 'cordis_type_entity_name_fr', 
             'cordis_type_entity_name_en', 'cordis_type_entity_acro', 'nutsCode',
             'country_code', 'country_code_mapping', 'extra_joint_organization']]
