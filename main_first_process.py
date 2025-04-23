@@ -12,9 +12,9 @@ NEW_UPDATE=False
 extractDate = date_load()
 
 
-# if NEW_UPDATE==True:
-#     # get_call_info()
-#     get_call_info_europa()
+if NEW_UPDATE==True:
+    # get_call_info()
+    get_topic_info_europa()
 
 proj = projects_load()
 proj_id_signed = proj.project_id.unique()
