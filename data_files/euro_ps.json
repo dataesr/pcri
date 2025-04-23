@@ -16,5 +16,24 @@
         {"pat":"Textiles for the Future", "name":"Textiles"}, 
         {"pat":"Virtual Worlds", "name":"Virtual Worlds"}, 
         {"pat":"AI/Data/Robotics", "name":"AI-DATA-ROBOTICS"},
-        {"pat":"ZEWT", "name":"ZEWT"}]}
+        {"pat":"ZEWT", "name":"ZEWT"}]},
+{"euro_ps":"co-funded",
+"info":[{"pat":"risks from chemicals", "name":"Chemicals risk assessment"}, 
+        {"pat":"transforming health","name":"Transforming of health systems"}, 
+        {"pat":"european research area", "name":"ERA for Health"}, 
+        {"pat":"personalised medicine", "name":"Personalised Medicine"}, 
+        {"pat":"rare diseases", "name":"Rare Diseases"}, 
+        {"pat":"one health", "name":"One-Health Anti-Microbial Resistance"}, 
+        {"pat":"driving urban transitions", "name":"Driving Urban Transitions"},
+        {"pat":"clean energy transition", "name":"Clean Energy Transition"}, 
+        {"pat":"rescuing biodiversity", "name":"Biodiversa+"}, 
+        {"pat":"biodiversa+", "name":"Biodiversa+"}, 
+        {"pat":"water security", "name":"Water4All"}, 
+        {"pat":"blue economy", "name":"Climate neutral, sustainable and productive Blue Economy"}, 
+        {"pat":"accelerating farming", "name":"Accelerating Farming Systems Transitions"},
+        {"pat":"animal health", "name":"Animal Health and Welfare"}, 
+        {"pat":"sustainable food", "name":"Safe and Sustainable Food System"}, 
+        {"pat":"agriculture of data", "name":"Agriculture of Data"},
+        {"pat":"Innovative smes", "name":"Innovative SMEs"}]
+}
 ]
