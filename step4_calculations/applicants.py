@@ -47,7 +47,7 @@ def applicants_calcul(part_step, app1, proj):
         
     part_prop = (part_step.loc[part_step.inProposal==True].merge(subv_p, how='inner')[
                 ['project_id',  'generalPic', 'proposal_orderNumber', 
-                'erc_role', 'cordis_is_sme',  'flag_entreprise', 
+                'erc_role', 'cordis_is_sme',  'entreprise_flag', 
                 'cordis_type_entity_code', 'cordis_type_entity_name_fr', 'cordis_type_entity_name_en', 'cordis_type_entity_acro', 
                 'participation_nuts', 'region_1_name', 'region_2_name', 'regional_unit_name',
                 'country_code', 'proposal_country_code_mapping', 'extra_joint_organization', 'role', 'partnerType', 'calculated_fund', 'fund_ent_erc']]
