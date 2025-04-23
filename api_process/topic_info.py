@@ -28,16 +28,20 @@ def click_next(b):
     c.click()
 
 
-def get_topic_info_europa():
+def get_topic_info_europa(FRAMEWORK):
 
+    if FRAMEWORK=='H2020':
+        url = f'https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/calls-for-proposals?order=DESC&pageNumber=50&pageSize=0&sortBy=startDate&isExactMatch=true&status=31094503&frameworkProgramme=31045243'
+
+    if FRAMEWORK=='HORIZON':
+        status='31094501,31094502,31094503'
+        type_='1,8'
+        # status='31094503'
+        # type_='1'
+        url = f'https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/calls-for-proposals?order=DESC&pageNumber=50&pageSize=0&sortBy=startDate&isExactMatch=true&type={type_}&status={status}&frameworkProgramme=43108390'
+    
     driver = webdriver.Firefox(service=FirefoxService(GeckoDriverManager().install()))
     driver.maximize_window()
-    status='31094501,31094502,31094503'
-    type_='1,8'
-    # status='31094503'
-    # type_='1'
-
-    url = f'https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/calls-for-proposals?order=DESC&pageNumber=50&pageSize=0&sortBy=startDate&isExactMatch=true&type={type_}&status={status}&frameworkProgramme=43108390'
     driver.get(url)
     time.sleep(5)  
 
