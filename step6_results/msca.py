@@ -90,7 +90,7 @@ def msca_entities(me_entities):
             'cordis_type_entity_acro', 'cordis_type_entity_code', 'operateur_name',
             'cordis_type_entity_name_en', 'cordis_type_entity_name_fr', 'participation_linked',
             'paysage_category',  'category_woven', 'entreprise_type_code', 'entreprise_type_name',
-            'action_code', 'action_name', 'source_id', 'flag_entreprise',
+            'action_code', 'action_name', 'source_id', 'entreprise_flag',
             'entities_name', 'entities_acronym', 'calculated_fund', 'coordination_number', 'number_involved',
             'project_id', 'participation_nuts', 'region_1_name', 'region_2_name', 'regional_unit_name',
             'country_group_association_name_fr', 'country_name_mapping','country_name_en',
