@@ -131,11 +131,11 @@ def H2020_process():
         proj.loc[proj.call_id.str.contains('JTI',na=False)&(proj.action_code2.isnull()), 'destination_code'] = proj['call_id'].str.split('-').str[2]
         proj.loc[(proj.action_code2.str.contains('BBI', na=False)), 'destination_code'] = 'CBE'
         proj.loc[(proj.destination_code=='EuroHPC'), 'destination_code'] = 'EUROHPC'
-        proj.loc[(proj.thema_code=='ECSEL'), 'destination_code'] = 'Chips'
+        proj.loc[(proj.thema_code=='ECSEL'), 'destination_code'] = 'CHIPS'
         proj.loc[(proj.destination_code=='CS2'), 'destination_code'] = 'CLEAN-AVIATION'
         proj.loc[(proj.destination_code=='FCH2'), 'destination_code'] = 'CLEANH2'
         proj.loc[(proj.destination_code=='IMI2'), 'destination_code'] = 'IHI'
-        proj.loc[(proj.destination_code=='Shift2Rail'), 'destination_code'] = "EU-Rail"
+        proj.loc[(proj.destination_code=='Shift2Rail'), 'destination_code'] = "EU-RAIL"
         l=['KDT', 'CBE','EUROHPC', 'CLEAN-AVIATION', 'CLEANH2', 'IHI']
         proj.loc[(proj.call_id.str.contains('JTI',na=False))|(proj.destination_code.isin(l)), 'thema_code'] = 'JU-JTI'
 
@@ -363,13 +363,11 @@ def H2020_process():
     entities_tmp.loc[~entities_tmp.siren.isnull(), "siren"] = entities_tmp.loc[~entities_tmp.siren.isnull(), "siren"].str.split().apply(set).str.join(";")
 
     if any(entities_tmp.siren.str.contains(';', na=False)):
-        print("ATTENTION faire code pour traiter deux siren différents -> ce qui serait bizarre qu'il y ait 2 siren")
-    else:
-        print(f"taille de entities_tmp avant groupe:{len(entities_tmp)}")
-        entities_tmp=entities_tmp.merge(groupe, how='left', on='siren')
+        print(f"ATTENTION faire code pour traiter deux siren différents -> ce qui serait bizarre qu'il y ait 2 siren\n{entities_tmp[entities_tmp.siren.str.contains(';', na=False)]}")
+    # else:
+    print(f"taille de entities_tmp avant groupe:{len(entities_tmp)}")
+    entities_tmp=entities_tmp.merge(groupe, how='left', on='siren')
 
-        # entities_tmp.loc[~entities_tmp.groupe_id.isnull(), 'entities_name_source']= entities_tmp.entities_name
-        # entities_tmp.loc[~entities_tmp.groupe_id.isnull(), 'entities_acronym_source']= entities_tmp.entities_acronym
     print(f"taille de entities_tmp après groupe {len(entities_tmp)}")
     entities_tmp = entities_tmp.merge(get_source_ID(entities_tmp, 'entities_id'), how='left', on='entities_id')
 
@@ -383,7 +381,7 @@ def H2020_process():
     part_tmp = part_tmp.rename(columns={'generalPic':'pic_old', 'pic_new':'generalPic'})
     part_tmp.loc[part_tmp.generalPic.isnull(), 'generalPic'] = part_tmp.loc[part_tmp.generalPic.isnull(), 'pic_old']
     part_tmp = part_tmp.merge(entities_tmp.drop(columns='id'), how='left', on=['generalPic', 'country_code_mapping'])
-    print(f"size part1 -> part_tmp: {len(part_tmp)}")
+    print(f"size part1 -> part_tmp: {len(part_tmp)}\n{part_tmp.columns}")
 
     print(len(part_tmp[(part_tmp.entities_name.isnull())]))
     part2=part_tmp.loc[(part_tmp.entities_name.isnull()), ['generalPic','entities_id', 'country_code_mapping', 'source_id']]
@@ -548,7 +546,7 @@ def H2020_process():
         'article2', 'entities_name', 'entities_acronym', 'entities_id', 'generalPic',
         'entities_name_source', 'entities_acronym_source','paysage_category_priority',
         'ror_category', 'paysage_category', 'paysage_category_id', 'category_agregation',
-        'insee_cat_code', 'insee_cat_name', 'groupe_sector', 'source_id', 'flag_entreprise',
+        'insee_cat_code', 'insee_cat_name', 'groupe_sector', 'source_id', 'entreprise_flag',
         'category_woven', 'operateur_lib', 'operateur_name', 'operateur_num',
         'groupe_name','groupe_acronym', 'groupe_id']]
 
