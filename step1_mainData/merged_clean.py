@@ -6,7 +6,7 @@ import pandas as pd, numpy as np
 def dates_year(df):
     print("\n### DATES and YEAR")
 
-    dt=pd.read_pickle(f"{PATH_SOURCE}{FRAMEWORK}topic_info_harvest.pkl")
+    dt=pd.read_pickle(f"{PATH_SOURCE}{FRAMEWORK}/topic_info_harvest.pkl")
     dt=pd.DataFrame(dt)
     dt['call_year'] = dt.open_date.str.split().str[-1]
 
