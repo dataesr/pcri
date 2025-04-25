@@ -18,11 +18,13 @@
         {"pat":"AI/Data/Robotics", "name":"AI-DATA-ROBOTICS"},
         {"pat":"ZEWT", "name":"ZEWT"}]},
 {"euro_ps":"co-funded",
-"info":[{"pat":"risks from chemicals", "name":"Chemicals risk assessment"}, 
-        {"pat":"transforming health","name":"Transforming of health systems"}, 
+"info":[{"pat":"brain health", "name":"Brain Health"}, 
+        {"pat":"risks from chemicals", "name":"Chemicals Risk Assessment"}, 
+        {"pat":"transforming health","name":"Transforming of Health Systems"}, 
         {"pat":"european research area", "name":"ERA for Health"}, 
         {"pat":"personalised medicine", "name":"Personalised Medicine"}, 
         {"pat":"rare diseases", "name":"Rare Diseases"}, 
+        {"pat":"pandemic preparedness", "name":"Pandemic Preparedness"}, 
         {"pat":"one health", "name":"One-Health Anti-Microbial Resistance"}, 
         {"pat":"driving urban", "name":"Driving Urban Transitions"},
         {"pat":"clean energy transition", "name":"Clean Energy Transition"}, 
@@ -34,6 +36,7 @@
         {"pat":"animal health", "name":"Animal Health and Welfare"}, 
         {"pat":"sustainable food", "name":"Safe and Sustainable Food System"}, 
         {"pat":"agriculture of data", "name":"Agriculture of Data"},
-        {"pat":"Innovative smes", "name":"Innovative SMEs"}]
+        {"pat":"innovative smes", "name":"Innovative SMEs"},
+        {"pat":"resilient cultural heritage", "name":"Resilient Cultural Heritage"}]
 }
 ]
