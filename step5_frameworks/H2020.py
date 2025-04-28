@@ -70,6 +70,167 @@ def H2020_process():
     _proj = _proj.merge(tmp, how='left', on='action_2_id')
     _proj.loc[_proj.action_code.isnull(), 'action_code'] = _proj.action_id
 
+
+    def h20_topics(df, act, actions, destination, pilier_fr, thema):
+
+        proj = (_proj.rename(columns={'pilier':'pilier_name_en', 'topicCode':'topic_code','topicDescription':'topic_name',
+                                    'action_2_id':'action_code2', 'action_2_name':'action_name2', 
+                                    'action_3_id':'action_code3', 'action_3_name':'action_name3'})
+            .drop(columns=['action_name'])
+            .merge(pilier_fr, how='left', on='pilier_name_en')
+            .merge(act, how='left', on='action_code'))
+
+        #euratom
+        proj.loc[proj.pilier_name_fr=='Euratom', 'pilier_name_en'] = 'Euratom'
+        proj.loc[(proj.pilier_name_fr=='Euratom')&(proj.topic_code.str.contains('NFRP')), 'programme_code'] = 'NFRP'
+        proj.loc[(proj.pilier_name_fr=='Euratom')&(proj.programme_code=='NFRP'), 'programme_name_en'] = 'Nuclear fission and radiation protection'
+        proj.loc[proj.call_id=='EURATOM-Adhoc-2014-20', 'programme_code'] = 'Fusion'
+        proj.loc[proj.call_id=='EURATOM-Adhoc-2014-20', 'programme_name_en'] = 'Fusion Energy'
+        proj.loc[(proj.pilier_name_fr=='Euratom')&(proj.call_id!='EURATOM-Adhoc-2014-20')&(proj.programme_code!='NFRP'), 'programme_code'] = 'Euratom-other'
+        proj.loc[(proj.pilier_name_fr=='Euratom')&(proj.call_id!='EURATOM-Adhoc-2014-20')&(proj.programme_code!='NFRP'), 'programme_name_en'] = 'Euratom other actions'
+
+        euratom = pd.read_csv('data_files/euratom_thema_all_FP.csv', sep=';', na_values='')
+        proj = proj.merge(euratom[['topic_area', 'thema_code', 'thema_name_en']], how='left', left_on='topic_code', right_on='topic_area', suffixes=['', '_t'])
+        proj.loc[(~proj.thema_code_t.isnull()), 'thema_code'] = proj.loc[(~proj.thema_code_t.isnull()), 'thema_code_t']
+        proj.loc[(~proj.thema_name_en_t.isnull()), 'thema_name_en'] = proj.loc[(~proj.thema_name_en_t.isnull()), 'thema_name_en_t']
+        # proj = proj.filter(regex=r'.*(?<!_t)$').drop(columns='topic_area')
+
+        # JU-JTI
+        proj.loc[proj.action_code=='Art185', 'destination_code'] = proj.loc[proj.action_code=='Art185'].thema_code
+
+        proj.loc[proj.thema_code.str.contains('JU', na=False), 'destination_code'] = proj.thema_code.str.replace('JU','').str.strip()
+        proj.loc[(proj.destination_code=='Eurostars2'), 'destination_next_fp'] = "INNOVSMES"
+
+        proj.loc[(proj.call_id.str.contains('PPP',na=False))|(proj.call_id.str.contains('JTI',na=False))|(proj.topic_code.str.contains('JTI',na=False)), 'destination_code'] = proj['action_code2'].str.split('-').str[0]
+        proj.loc[proj.call_id.str.contains('JTI',na=False)&(proj.action_code2.isnull()), 'destination_code'] = proj['call_id'].str.split('-').str[2]
+        proj.loc[(proj.thema_code=='CS2'), 'destination_code'] = 'CS2'
+        proj.loc[(proj.destination_code.str.contains('BBI', na=False)), 'destination_next_fp'] = 'CBE'
+        proj.loc[(proj.thema_code=='BBI'), 'thema_code'] = np.nan
+        proj.loc[(proj.destination_code=='EuroHPC'), 'destination_next_fp'] = 'EUROHPC'
+        proj.loc[(proj.thema_code=='ECSEL'), 'destination_code'] = 'ECSEL'
+        proj.loc[(proj.destination_code=='ECSEL'), 'destination_next_fp'] = 'CHIPS'
+        proj.loc[(proj.destination_code=='CS2'), 'destination_next_fp'] = 'CLEAN-AVIATION'
+        proj.loc[(proj.destination_code=='FCH2'), 'destination_next_fp'] = 'CLEANH2'
+        proj.loc[(proj.destination_code=='IMI2'), 'destination_next_fp'] = 'IHI'
+        proj.loc[(proj.destination_code=='Shift2Rail'), 'destination_next_fp'] = "EU-RAIL"
+        proj.loc[(~proj.destination_code.isnull())&(proj.destination_next_fp.isnull()), 'destination_next_fp'] = proj.loc[(~proj.destination_code.isnull())&(proj.destination_next_fp.isnull())].destination_code
+        l=['KDT', 'CBE','EUROHPC', 'CLEAN-AVIATION', 'CLEANH2', 'IHI', 'CHIPS', "EU-RAIL"]
+        proj.loc[(~proj.destination_next_fp.isnull()), 'thema_code'] = 'JU-JTI'
+
+        # MSCA / ERC
+        proj.loc[proj.programme_code=='MSCA', 'thema_code'] = 'MSCA'
+        proj.loc[proj.programme_code=='ERC', 'thema_code'] = 'ERC'
+
+        # ### ajustement MSCA
+        msca_correspondence = pd.read_table('data_files/msca_correspondence.csv', sep=";")
+
+        msca_correspondence = msca_correspondence[msca_correspondence.framework=='H2020'].drop(columns='framework')
+        proj.loc[(proj.thema_code=='MSCA')&(proj.action_code3.isnull()), 'action_code3'] = proj.action_code2
+
+        proj.loc[(proj.thema_code=='MSCA'), 'destination_code'] = proj.loc[(proj.thema_code=='MSCA')].action_code3.str.replace('MSCA-', '').str.strip()
+        proj.loc[(proj.thema_code=='MSCA'), 'destination_name_en'] = proj.loc[(proj.thema_code=='MSCA')].action_name2.str.replace('Marie Skłodowska-Curie', '').str.strip() +'-'+ proj.loc[(proj.thema_code=='MSCA')].action_name3.dropna()
+
+        # m = proj.loc[(proj.action_code=='MSCA'), ['action_code3']].drop_duplicates()
+        proj = proj.merge(msca_correspondence, how='left', left_on='action_code3', right_on='old')
+        proj.loc[~proj.new.isnull(), 'destination_next_fp'] = proj.loc[~proj.new.isnull()].new
+        proj.loc[(proj.thema_code=='MSCA')&(proj.destination_next_fp.isnull()),'destination_next_fp'] = 'MSCA-OTHER'
+        # m = m.merge(actions[['destination_detail_code','destination_detail_name_en']].drop_duplicates(), how='left', on='destination_detail_code')
+        proj.loc[proj.destination_code=='NIGHT', 'destination_name_en'] = "European researchers' Night"
+        proj.loc[proj.destination_code=='RISE', 'destination_name_en'] = "Research and innovation staff exchange"
+
+        proj.loc[proj.programme_code=='MSCA', 'programme_name_en'] = 'Marie Skłodowska-Curie Actions (MSCA)'
+
+
+        ### ajustement ERC
+        proj.loc[proj.thema_code=='ERC', 'destination_code'] = proj.loc[proj.thema_code=='ERC'].action_code2.str.split('-').str[1]
+        proj.loc[proj.destination_code=='POC-LS', 'destination_code'] = "POC"
+        proj.loc[(proj.thema_code=='ERC')&(proj.destination_code.isnull()), 'destination_code'] = 'ERC-OTHER'
+        proj.loc[(proj.action_code=='ERC'), 'action_code2'] = np.nan
+        proj.loc[(proj.action_code=='ERC'), 'action_name2'] = np.nan
+
+        # FET
+        proj.loc[proj.programme_code=='FET', 'thema_code'] = 'PATHFINDER'
+        proj.loc[(proj.programme_code=='FET')&(proj.action_code=='SGA'), 'destination_code'] = proj.loc[(proj.programme_code=='FET')&(proj.action_code=='SGA')].topic_code.str.split('-').str[2].str.upper()
+        proj.loc[(proj.programme_code=='FET')&(proj.destination_code.isnull()), 'destination_code'] = proj.loc[(proj.programme_code=='FET')&(proj.destination_code.isnull())].topic_code.str.split('-').str[0].str.upper()
+        proj.loc[(proj.programme_code=='FET')&(proj.topic_code.str.contains('BAT-')), 'destination_code'] = 'BATTERY'
+
+        proj.loc[proj.programme_code=='FET', 'thema_name_en'] = np.nan
+        proj.loc[proj.programme_code=='FET', 'programme_next_fp'] = "EIC"
+
+        # programme SME
+        proj.loc[(proj.programme_code=='SME')&(proj.thema_code!='JU-JTI'), 'thema_code'] = 'ACCELERATOR'
+        proj.loc[(proj.programme_code=='SME')&(proj.thema_code!='JU-JTI'), 'thema_name_en'] = np.nan
+        proj.loc[proj.programme_code=='SME', 'programme_next_fp'] = 'EIE'
+
+        # INFRA
+        proj.loc[proj.programme_code=='INFRA', 'thema_code'] = proj.programme_code
+        proj.loc[proj.programme_code=='INFRA', 'destination_code'] = proj.loc[proj.programme_code=='INFRA'].topic_code.str.split('-').str[0]
+        proj.loc[(proj.programme_code=='INFRA')&(proj.destination_code=='LC'), 'destination_code'] = 'GREEN-DEAL'
+        proj.loc[proj.destination_code.isin(['LC','IBA','SGA']), 'destination_code'] = np.nan
+
+        # EIT
+        proj.loc[proj.action_code=='KICS', 'pilier_name_en'] = 'Innovative Europe'
+        proj.loc[proj.action_code=='KICS', 'programme_code'] = 'EIT'
+        proj.loc[proj.action_code=='KICS', 'programme_name_en'] = 'The European Institute of Innovation and Technology (EIT)'
+
+        # # WIDENING COST
+        proj.loc[proj.programme_code.str.contains('TWINING|WIDESPREAD|NCPNET', na=False), 'thema_code'] = 'ACCESS'
+        proj.loc[proj.programme_code.str.contains('ERA', na=False), 'thema_code'] = 'TALENTS'
+        proj.loc[proj.programme_code.str.contains('INTNET', na=False), 'thema_code'] = 'COST'
+        proj.loc[(proj.pilier_name_en=='Spreading excellence and widening participation')&(proj.programme_code!='ERA'), 'programme_code'] = 'Widening'
+        proj.loc[proj.programme_code=='Widening', 'programme_name_en'] = 'Widening participation and spreading excellence'
+
+        proj.loc[(proj.programme_code=='Widening')&(proj.thema_code.isnull()), 'thema_code'] = 'WIDENING-OTHER'
+
+        proj.loc[(proj.programme_code.isin(['BIOTECH','ADVMANU','ADVMAT', 'NMP']))&(proj.thema_code.isnull()), 'thema_code'] = proj.loc[(proj.programme_code.isin(['BIOTECH','ADVMANU','ADVMAT', 'NMP']))&(proj.thema_code.isnull())].programme_code
+        proj.loc[(proj.programme_code.isin(['BIOTECH','ADVMANU','ADVMAT', 'NMP']))&(proj.thema_name_en.isnull()), 'thema_name_en'] = proj.loc[(proj.programme_code.isin(['BIOTECH','ADVMANU','ADVMAT', 'NMP']))&(proj.thema_name_en.isnull())].programme_name_en
+        proj.loc[(proj.programme_code.isin(['BIOTECH','ADVMANU','ADVMAT', 'NMP'])), 'programme_code'] = 'NMBP'
+        proj.loc[proj.programme_code=='NMBP', 'programme_name_en'] = 'Nanotechnologies, Advanced Materials, Advanced Manufacturing and Processing, and Biotechnology'
+
+        dest = destination[['destination_code', 'destination_name_en']]
+        proj = proj.merge(dest, how='left', on='destination_code', suffixes=('', '_x'))
+        proj.loc[proj.destination_name_en.isnull(), 'destination_name_en'] = proj.loc[proj.destination_name_en.isnull()].destination_name_en_x
+
+        proj = proj.merge(thema.loc[~thema.dest_h20.isnull(), ['thema_code', 'dest_h20']], how='left', left_on='thema_code', right_on='dest_h20', suffixes=['','_x'])
+        proj.loc[~proj.thema_code_x.isnull(), 'thema_code'] = proj.thema_code_x
+        proj.drop(columns=['thema_code_x','dest_h20'], inplace=True)
+        proj = proj.merge(thema, how='left', on='thema_code', suffixes=['','_x'])
+        proj.loc[~proj.thema_name_en_x.isnull(), 'thema_name_en'] = proj.thema_name_en_x
+
+        proj.drop(columns=['thema_name_en_x','dest_h20', 'destination_name_en_x', 'thema_code_t', 'thema_name_en_t', 'new', 'old'], inplace=True)
+        return proj
+    
+    def euro_partnerships(proj):
+        proj.loc[proj.action_code=='Art185', 'euro_partnerships_type'] = 'Art-185'
+        proj.loc[(proj.thema_code=='JU-JTI')&(proj.euro_partnerships_type.isnull()), 'euro_partnerships_type'] = 'Art-187'
+        proj.loc[proj.thema_code=='JU-JTI', 'euro_partnerships_type_next_fp'] = 'JU-JTI'
+
+        proj.loc[proj.programme_code=='EIT', 'euro_partnerships_type'] = 'EIT KICs'
+        proj.loc[proj.programme_code=='EIT', 'euro_partnerships_type_next_fp'] = 'EIT KICs'
+
+        proj.loc[proj.action_code=='ERA-NET-Cofund', 'euro_partnerships_type'] = 'ERA-NET-COFUND'
+        proj.loc[proj.action_code=='ERA-NET-Cofund', 'euro_partnerships_type_next_fp'] = 'co-funded'
+
+        proj.loc[(proj.action_code=='COFUND')&(proj.acronym.str.contains('EJP')), 'euro_partnerships_type'] = 'EJP-COFUND'
+        proj.loc[(proj.action_code=='COFUND')&(proj.acronym.str.contains('EJP')), 'euro_partnerships_type_next_fp'] = 'co-funded'
+
+        proj.loc[proj.destination_code.str.contains('GRAPHENE|HBP', na=False, regex=True), 'euro_partnerships_type'] = 'FET-FLAGSHIPS'
+        proj.loc[proj.destination_code.str.contains('GRAPHENE|HBP', na=False, regex=True), 'euro_partnerships_type_next_fp'] = 'co-funded'
+
+        proj.loc[proj.topic_name.str.contains('PPP'), 'euro_partnerships_type'] = 'cPPP'
+        proj.loc[proj.topic_name.str.contains('PPP'), 'euro_partnerships_type_next_fp'] = 'co-programmed'
+
+        proj.loc[proj.euro_partnerships_type=='EIT KICs', 'euro_ps_name'] = proj.loc[proj.euro_partnerships_type=='EIT KICs'].thema_name_en
+        proj.loc[proj.euro_partnerships_type=='ERA-NET-COFUND', 'euro_ps_name'] = proj.loc[proj.euro_partnerships_type=='ERA-NET-COFUND'].acronym
+        proj.loc[proj.acronym=='ERA CoBioTech', 'euro_ps_name'] = 'CoBioTech'
+        proj.loc[proj.euro_partnerships_type_next_fp=='JU-JTI', 'euro_ps_name'] = proj.loc[proj.euro_partnerships_type_next_fp=='JU-JTI'].destination_code
+        proj.loc[(proj.euro_partnerships_type_next_fp=='co-funded')&(proj.euro_ps_name.isnull())&(proj.destination_code.isnull()), 'euro_ps_name'] = proj.loc[(proj.euro_partnerships_type_next_fp=='co-funded')&(proj.euro_ps_name.isnull())&(proj.destination_code.isnull())].acronym
+        proj.loc[(proj.euro_partnerships_type_next_fp=='co-funded')&(proj.euro_ps_name.isnull())&(~proj.destination_code.isnull()), 'euro_ps_name'] = proj.loc[(proj.euro_partnerships_type_next_fp=='co-funded')&(proj.euro_ps_name.isnull())&(~proj.destination_code.isnull())].destination_code
+        proj.loc[(proj.euro_partnerships_type=='cPPP')&(proj.call_id.str.contains('EEB|SPIRE|FOF|EE', regex=True, case=False)), 'euro_ps_name'] = proj.loc[(proj.euro_partnerships_type=='cPPP')&(proj.call_id.str.contains('EEB|SPIRE|FOF|EE', regex=True, case=False))].call_id.str.split('-').str[1]
+        proj.loc[(proj.euro_partnerships_type=='cPPP')&(proj.euro_ps_name.isnull()), 'euro_ps_name'] = proj.loc[(proj.euro_partnerships_type=='cPPP')&(proj.euro_ps_name.isnull())].topic_name.str.extract(r"^(.+ PPP)", expand=False)
+        
+        return proj.assign(euro_partnerships_flag=np.where(proj.euro_partnerships_type.isnull(), False, True)) 
+
     def proj_cleaning(proj):
         print("## PROJ cleaning")
         from functions_shared import website_to_clean
@@ -100,145 +261,6 @@ def H2020_process():
         proj['proposal_expected_number'] = proj['proposal_expected_number'].astype('float')
         return proj
 
-    def h20_topics(df, act, actions, destination, pilier_fr, thema):
-        proj = (df.assign(fp_specific_pilier=df.pilier, fp_specific_programme=df.programme_name_en, fp_specific_instrument=df.action_2_id)
-            .rename(columns={'pilier':'pilier_name_en', 'topicCode':'topic_code','topicDescription':'topic_name',
-                                    'action_2_id':'action_code2', 'action_2_name':'action_name2', 
-                                    'action_3_id':'action_code3', 'action_3_name':'action_name3'})
-            .drop(columns=['action_name'])
-            .merge(pilier_fr, how='left', on='pilier_name_en')
-            .merge(act, how='left', on='action_code'))
-
-        #euratom
-        proj.loc[proj.pilier_name_fr=='Euratom', 'pilier_name_en'] = 'Euratom'
-        proj.loc[(proj.pilier_name_fr=='Euratom')&(proj.topic_code.str.contains('NFRP')), 'programme_code'] = 'NFRP'
-        proj.loc[(proj.pilier_name_fr=='Euratom')&(proj.programme_code=='NFRP'), 'programme_name_en'] = 'Nuclear fission and radiation protection'
-        proj.loc[proj.call_id=='EURATOM-Adhoc-2014-20', 'programme_code'] = 'Fusion'
-        proj.loc[proj.call_id=='EURATOM-Adhoc-2014-20', 'programme_name_en'] = 'Fusion Energy'
-        proj.loc[(proj.pilier_name_fr=='Euratom')&(proj.call_id!='EURATOM-Adhoc-2014-20')&(proj.programme_code!='NFRP'), 'programme_code'] = 'Euratom-other'
-        proj.loc[(proj.pilier_name_fr=='Euratom')&(proj.call_id!='EURATOM-Adhoc-2014-20')&(proj.programme_code!='NFRP'), 'programme_name_en'] = 'Euratom other actions'
-
-        euratom = pd.read_csv('data_files/euratom_thema_all_FP.csv', sep=';', na_values='')
-        proj = proj.merge(euratom[['topic_area', 'thema_code', 'thema_name_en']], how='left', left_on='topic_code', right_on='topic_area', suffixes=['', '_t'])
-        proj.loc[(~proj.thema_code_t.isnull()), 'thema_code'] = proj.loc[(~proj.thema_code_t.isnull()), 'thema_code_t']
-        proj.loc[(~proj.thema_name_en_t.isnull()), 'thema_name_en'] = proj.loc[(~proj.thema_name_en_t.isnull()), 'thema_name_en_t']
-        proj = proj.filter(regex=r'.*(?<!_t)$').drop(columns='topic_area')
-
-        #piler JU-JTI
-        proj.loc[proj.thema_code.str.contains('JU', na=False), 'destination_code'] = proj.thema_code.str.replace('JU','').str.strip()
-        proj.loc[proj.thema_code.str.contains('JU', na=False), 'thema_code'] = 'JU-JTI'
-        proj.loc[proj.call_id.str.contains('JTI',na=False), 'destination_code'] = proj['action_code2'].str.split('-').str[0]
-        proj.loc[proj.call_id.str.contains('JTI',na=False)&(proj.action_code2.isnull()), 'destination_code'] = proj['call_id'].str.split('-').str[2]
-        proj.loc[(proj.action_code2.str.contains('BBI', na=False)), 'destination_code'] = 'CBE'
-        proj.loc[(proj.destination_code=='EuroHPC'), 'destination_code'] = 'EUROHPC'
-        proj.loc[(proj.thema_code=='ECSEL'), 'destination_code'] = 'CHIPS'
-        proj.loc[(proj.destination_code=='CS2'), 'destination_code'] = 'CLEAN-AVIATION'
-        proj.loc[(proj.destination_code=='FCH2'), 'destination_code'] = 'CLEANH2'
-        proj.loc[(proj.destination_code=='IMI2'), 'destination_code'] = 'IHI'
-        proj.loc[(proj.destination_code=='Shift2Rail'), 'destination_code'] = "EU-RAIL"
-        l=['KDT', 'CBE','EUROHPC', 'CLEAN-AVIATION', 'CLEANH2', 'IHI']
-        proj.loc[(proj.call_id.str.contains('JTI',na=False))|(proj.destination_code.isin(l)), 'thema_code'] = 'JU-JTI'
-
-        # MSCA / ERC
-        proj.loc[proj.programme_code=='MSCA', 'thema_code'] = 'MSCA'
-        proj.loc[proj.programme_code=='ERC', 'thema_code'] = 'ERC'
-
-        # ### ajustement MSCA
-        msca_correspondence = pd.read_table('data_files/msca_correspondence.csv', sep=";")
-
-        msca_correspondence = msca_correspondence[msca_correspondence.framework=='H2020'].rename(columns={'EsCodeL2':'destination_detail_code'}).drop(columns='framework')
-        proj.loc[(proj.thema_code=='MSCA')&(proj.action_code3.isnull()), 'action_code3'] = proj.action_code2
-
-
-        m = proj.loc[(proj.action_code=='MSCA'), ['action_code3']].drop_duplicates()
-        m = m.merge(msca_correspondence, how='left', left_on='action_code3', right_on='old')
-        m = m.merge(actions[['destination_detail_code','destination_detail_name_en']].drop_duplicates(), how='left', on='destination_detail_code')
-        m.loc[m.destination_detail_code=='CITIZENS', 'destination_detail_name_en'] = "European Researchers' Night"
-        m.loc[m.destination_detail_code=='COFUND', 'destination_detail_name_en'] = "Co-funding of regional, national and international programmes"
-        m.loc[m.destination_detail_code.str.contains('-', na=False) ,'destination_code'] = m.destination_detail_code.str.split('-').str[0]
-
-        m = m.merge(proj.drop(columns=['destination_code']), how='inner', on='action_code3')
-        proj = proj.loc[~proj.action_code3.isin(m.action_code3.unique())]
-
-        proj = pd.concat([proj, m], ignore_index=True)
-
-        proj.loc[(proj.thema_code=='MSCA')&(proj.destination_code.isnull()), 'destination_code'] = proj.destination_detail_code
-        proj.loc[(proj.thema_code=='MSCA')&(proj.destination_code.isnull()),'destination_code'] = 'MSCA-OTHER'
-        proj.loc[(proj.thema_code=='MSCA'), ['destination_code', 'action_code3','destination_detail_code']].drop_duplicates()
-        proj.loc[proj.programme_code=='MSCA', 'programme_name_en'] = 'Marie Skłodowska-Curie Actions (MSCA)'
-
-        proj.loc[(proj.action_code=='MSCA'), 'action_code2'] = np.nan
-        proj.loc[(proj.action_code=='MSCA'), 'action_name2'] = np.nan
-
-        proj.drop(columns='old', inplace=True)
-
-        ### ajustement ERC
-        proj.loc[proj.thema_code=='ERC', 'destination_code'] = proj.loc[proj.thema_code=='ERC'].action_code2.str.split('-').str[1]
-        proj.loc[proj.destination_code=='POC-LS', 'destination_code'] = "POC"
-        proj.loc[(proj.thema_code=='ERC')&(proj.destination_code.isnull()), 'destination_code'] = 'ERC-OTHER'
-        proj.loc[(proj.action_code=='ERC'), 'action_code2'] = np.nan
-        proj.loc[(proj.action_code=='ERC'), 'action_name2'] = np.nan
-
-        # FET
-        proj.loc[proj.programme_code=='FET', 'thema_code'] = 'PATHFINDER'
-        # proj.loc[proj.programme_code=='FET', 'thema_name_en'] = 'European Innovation Council'
-        proj.loc[proj.programme_code=='FET', 'destination_code'] = proj.thema_name_en.str.split().str[1].str.upper()
-        proj.loc[proj.programme_code=='FET', 'thema_name_en'] = np.nan
-        proj.loc[proj.programme_code=='FET', 'programme_name_en'] = "European Innovation Council"
-        proj.loc[proj.programme_code=='FET', 'programme_code'] = "EIC"
-        # proj.loc[proj.programme_code=='FET', 'destination_name_en'] = 'EIC Pathfinder'
-
-        # programme SME
-        proj.loc[proj.programme_code=='SME', 'thema_code'] = 'ACCELERATOR'
-        proj.loc[proj.programme_code=='FET', 'thema_name_en'] = np.nan
-        proj.loc[proj.programme_code=='SME', 'programme_name_en'] = 'European Innovation Council'
-        # proj.loc[proj.programme_code=='SME', 'destination_code'] = 'ACCELERATOR'
-        # proj.loc[proj.programme_code=='SME', 'destination_name_en'] = 'EIC Accelerator'
-        proj.loc[proj.topic_code=='H2020-Art185-Eurostars2', 'thema_code'] = 'INNOVSMES'
-        proj.loc[proj.thema_code=='INNOVSMES', 'programme_name_en'] = 'European Innovation Ecosystems'
-        proj.loc[proj.programme_name_en=='European Innovation Ecosystems', 'programme_code'] = 'EIE'
-
-        # INFRA
-        proj.loc[proj.programme_code=='INFRA', 'thema_code'] = proj.programme_code
-        proj.loc[proj.programme_code=='INFRA', 'destination_code'] = proj.loc[proj.programme_code=='INFRA'].call_id.str.split('-').str[1]
-        proj.loc[(proj.programme_code=='INFRA')&(~proj.destination_code.isin(destination.destination_code.unique())), 'destination_code'] = 'DESTINATION-OTHER'
-                
-        # EIT
-        proj.loc[proj.action_code=='KICS', 'pilier_name_en'] = 'Innovative Europe'
-        proj.loc[proj.action_code=='KICS', 'programme_code'] = 'EIT'
-        proj.loc[proj.action_code=='KICS', 'programme_name_en'] = 'The European Institute of Innovation and Technology (EIT)'
-
-        # t = thema.loc[~thema.dest_h20.isnull(), ['thema_code','dest_h20']]
-
-        # proj = proj.merge(t, how='left', left_on='thema_code', right_on='dest_h20', suffixes=['', '_x'])
-
-        # proj.loc[proj.action_code=='KICS', 'destination_code'] = proj.destination_code_x
-        # # proj.loc[proj.action_code=='KICS', 'destination_name_en'] = proj.destination_name_en_x
-        # proj.loc[(proj.action_code=='KICS'), 'thema_code'] = 'EIT'
-        # proj.loc[(proj.action_code=='KICS'), 'thema_name_en'] = 'European Institute of Innovation and Technology'
-        # proj.loc[(proj.action_code=='KICS'), 'action_code'] = 'KICS'
-        # proj.loc[(proj.action_code=='KICS'), 'action_name'] = 'Knowledge and Innovation Communities'
-        # proj.loc[(proj.programme_code=='EIT')&(proj.action_code.isnull()), 'action_code'] = 'EIT'
-        # proj.loc[(proj.programme_code=='EIT')&(proj.action_code.isnull()), 'action_name'] = 'EIT actions'
-
-        # proj.drop(columns=['destination_code_x', 'dest_h20'], inplace=True)
-
-        # # WIDENING COST
-        proj.loc[proj.programme_code.str.contains('TWINING|WIDESPREAD|NCPNET', na=False), 'thema_code'] = 'ACCESS'
-        proj.loc[proj.programme_code.str.contains('ERA', na=False), 'thema_code'] = 'TALENTS'
-        proj.loc[proj.programme_code.str.contains('INTNET', na=False), 'thema_code'] = 'COST'
-        proj.loc[(proj.pilier_name_en=='Spreading excellence and widening participation')&(proj.programme_code!='ERA'), 'programme_code'] = 'Widening'
-        proj.loc[proj.programme_code=='Widening', 'programme_name_en'] = 'Widening participation and spreading excellence'
-
-        proj.loc[(proj.programme_code=='Widening')&(proj.thema_code.isnull()), 'thema_code'] = 'WIDENING-OTHER'
-
-        dest = destination[['destination_code', 'destination_name_en']]
-        proj = proj.merge(dest, how='left', on='destination_code')
-
-        proj = proj.merge(thema, how='left', on='thema_code', suffixes=['','_x'])
-        proj.loc[~proj.thema_name_en_x.isnull(), 'thema_name_en'] = proj.thema_name_en_x
-        proj.drop(columns=['thema_name_en_x','dest_h20'], inplace=True)
-        return proj
 
     def entities_cleaning(df, country_h20, p):
         print("## ENTITIES cleaning")
@@ -268,6 +290,7 @@ def H2020_process():
         return df
 
     proj = h20_topics(_proj, act, actions, destination, pilier_fr, thema)
+    proj = euro_partnerships(proj)
     proj = proj_cleaning(proj)
     entities = entities_cleaning(entities, country_h20, part_init)
 
