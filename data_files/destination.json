@@ -240,6 +240,37 @@
 		"destination_name_en": "Clean Environment and zero pollution"
 	},
 	{
+		"destination_code": "PRIMA",
+		"destination_name_fr": "Recherche et innovation dans la région méditerranéenne",
+		"destination_name_en": "Research and innovation in the mediterranean area"
+	},
+	{
+		"destination_code": "Eurostars2",
+		"destination_name_fr": "Eurostars",
+		"destination_name_en": "Eurostars"
+	},
+	{
+		"destination_code": "INNOVSMES",
+		"destination_name_fr": "partenariat pour une PME innovante",
+		"destination_name_en": "European Partnership on Innovative SMEs"
+	},
+	{
+		"destination_code": "EDCTP2",
+		"destination_name_fr": "Partenariat des pays européens et en développement sur les essais cliniques",
+		"destination_name_en": "European and developing countries clinical trials partnership"
+	},
+	{
+		"destination_code": "EMPIR",
+		"destination_name_fr": "Programme européen de recherche en métrologie",
+		"destination_name_en": "European Metrology research programme"
+	},
+	{
+		"destination_code": "AAL2",
+		"destination_name_fr": "Assistance à la vie active",
+		"destination_name_en": "Active and Assisted Living"
+	},
+
+	{
 		"destination_code": "SESAR",
 		"destination_name_fr": "Recherche sur la gestion du trafic aérien dans le ciel unique européen",
 		"destination_name_en": "Single European Sky Air Traffic Management Research"
@@ -280,6 +311,11 @@
 		"destination_name_en": "European High Performance Computing"
 	},
 	{
+		"destination_code": "EuroHPC",
+		"destination_name_fr": "Calcul à haute performance européen",
+		"destination_name_en": "European High Performance Computing"
+	},
+	{
 		"destination_code": "SNS",
 		"destination_name_fr": "Réseaux et services intelligents",
 		"destination_name_en": "Smart Networks and Services"
@@ -290,9 +326,39 @@
 		"destination_name_en": "Europe's Rail"
 	},
 	{
+		"destination_code": "Shift2Rail",
+		"destination_name_fr": "Initiative européenne pour le rail",
+		"destination_name_en": "European rail initiative"
+	},
+	{
 		"destination_code": "CLEANH2",
 		"destination_name_fr": "Clean Hydrogen",
 		"destination_name_en": "Clean Hydrogen"
+	},
+	{
+		"destination_code": "FCH2",
+		"destination_name_fr": "Piles à combustible et hydrogène",
+		"destination_name_en": "Fuel Cells and Hydrogen"
+	},
+	{
+		"destination_code": "ECSEL",
+		"destination_name_fr": "Composants et systèmes électroniques",
+		"destination_name_en": "Electronic Components and Systems"
+	},
+	{
+		"destination_code": "BBI",
+		"destination_name_fr": "Industries biosourcées",
+		"destination_name_en": "Bio-based Industries"
+	},
+	{
+		"destination_code": "CS2",
+		"destination_name_fr": "Clean Sky 2",
+		"destination_name_en": "Clean Sky 2"
+	},
+	{
+		"destination_code": "IMI2",
+		"destination_name_fr": "Initiative en matière de médicaments innovants",
+		"destination_name_en": "Innovative Medicines Initiative 2"
 	},
 	{
 		"destination_code": "DESTINATION-OTHER",
@@ -350,6 +416,46 @@
 		"destination_name_en": "European Data Infrastructure"
 	},
 	{
+		"destination_code": "FETFLAG",
+		"destination_name_fr": "Relever les grands défis scientifiques et technologiques interdisciplinaires",
+		"destination_name_en": "Tackling grand interdisciplinary science and technology challenges"
+	},
+	{
+		"destination_code": "FETHPC",
+		"destination_name_fr": "Calcul à haute performance",
+		"destination_name_en": "High Performance Computing"
+	},
+	{
+		"destination_code": "FETOPEN",
+		"destination_name_fr": "Des idées novatrices pour des technologies radicalement nouvelles",
+		"destination_name_en": "Novel ideas for radically new technologies"
+	},
+	{
+		"destination_code": "FETPROACT",
+		"destination_name_fr": "Thèmes et communautés émergents",
+		"destination_name_en": "Emerging themes and communities"
+	},
+	{
+		"destination_code": "HBP",
+		"destination_name_fr": "Human Brain Project",
+		"destination_name_en": "Human Brain Project"
+	},
+	{
+		"destination_code": "GRAPHENE",
+		"destination_name_fr": "Graphene Flagship",
+		"destination_name_en": "Graphene Flagship"
+	},
+	{
+		"destination_code": "GEANT",
+		"destination_name_fr": "GÉANT Partnership",
+		"destination_name_en": "GÉANT Partnership"
+	},
+	{
+		"destination_code": "GREEN-DEAL",
+		"destination_name_fr": "Green Deal européen",
+		"destination_name_en": "European Green Deal challenges"
+	},
+	{
 		"destination_code": "EUSPA",
 		"destination_name_fr": "EU Espace",
 		"destination_name_en": "EU Space"
@@ -358,6 +464,11 @@
 		"destination_code": "CHALLENGES",
 		"destination_name_fr": "Les défis",
 		"destination_name_en": "Challenges"
+	},
+	{
+		"destination_code": "BATTERY",
+		"destination_name_fr": "Technologies des batteries du futur ",
+		"destination_name_en": "Future Battery Technologies"
 	},
 	{
 		"destination_code": "OPEN",
