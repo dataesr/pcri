@@ -155,12 +155,15 @@ def H2020_process():
         proj.loc[(proj.programme_code=='FET')&(proj.topic_code.str.contains('BAT-')), 'destination_code'] = 'BATTERY'
 
         proj.loc[proj.programme_code=='FET', 'thema_name_en'] = np.nan
-        proj.loc[proj.programme_code=='FET', 'programme_next_fp'] = "EIC"
 
-        # programme SME
-        proj.loc[(proj.programme_code=='SME')&(proj.thema_code!='JU-JTI'), 'thema_code'] = 'ACCELERATOR'
+        proj.loc[(proj.call_id.str.contains("FETOPEN-2018-2019-2020"))|(proj.topic_code.str.contains("FETPROACT-EIC")), 'destination_next_fp'] = 'ACCELERATOR'
+
+        # SMEInst
+        proj.loc[(proj.topic_code.str.contains('EIC-SMEInst')), 'destination_next_fp'] = 'ACCELERATOR'
+
+        proj.loc[proj.destination_next_fp=='ACCELERATOR', 'programme_next_fp'] = 'EIC'
+
         proj.loc[(proj.programme_code=='SME')&(proj.thema_code!='JU-JTI'), 'thema_name_en'] = np.nan
-        proj.loc[proj.programme_code=='SME', 'programme_next_fp'] = 'EIE'
 
         # INFRA
         proj.loc[proj.programme_code=='INFRA', 'thema_code'] = proj.programme_code
@@ -211,6 +214,7 @@ def H2020_process():
         proj.loc[proj.action_code=='ERA-NET-Cofund', 'euro_partnerships_type'] = 'ERA-NET-COFUND'
         proj.loc[proj.action_code=='ERA-NET-Cofund', 'euro_partnerships_type_next_fp'] = 'co-funded'
 
+        proj.loc[(proj.topic_code.isin(['NFRP-2018-6', 'SC1-PM-05-2016', 'EURATOM', 'NFRP-07-2015']))&(proj.action_code=='COFUND'), 'euro_partnerships_type'] = 'EJP-COFUND'
         proj.loc[(proj.action_code=='COFUND')&(proj.acronym.str.contains('EJP')), 'euro_partnerships_type'] = 'EJP-COFUND'
         proj.loc[(proj.action_code=='COFUND')&(proj.acronym.str.contains('EJP')), 'euro_partnerships_type_next_fp'] = 'co-funded'
 
@@ -228,7 +232,8 @@ def H2020_process():
         proj.loc[(proj.euro_partnerships_type_next_fp=='co-funded')&(proj.euro_ps_name.isnull())&(~proj.destination_code.isnull()), 'euro_ps_name'] = proj.loc[(proj.euro_partnerships_type_next_fp=='co-funded')&(proj.euro_ps_name.isnull())&(~proj.destination_code.isnull())].destination_code
         proj.loc[(proj.euro_partnerships_type=='cPPP')&(proj.call_id.str.contains('EEB|SPIRE|FOF|EE', regex=True, case=False)), 'euro_ps_name'] = proj.loc[(proj.euro_partnerships_type=='cPPP')&(proj.call_id.str.contains('EEB|SPIRE|FOF|EE', regex=True, case=False))].call_id.str.split('-').str[1]
         proj.loc[(proj.euro_partnerships_type=='cPPP')&(proj.euro_ps_name.isnull()), 'euro_ps_name'] = proj.loc[(proj.euro_partnerships_type=='cPPP')&(proj.euro_ps_name.isnull())].topic_name.str.extract(r"^(.+ PPP)", expand=False)
-        
+        proj.loc[(proj.euro_partnerships_type=='cPPP')&(proj.euro_ps_name=='EE'), 'euro_ps_name'] = proj.loc[(proj.euro_partnerships_type=='cPPP')&(proj.euro_ps_name=='EE')].topic_name.str.extract(r"^(?:\()(EeB|SPIRE|FoF)", expand=False)
+
         return proj.assign(euro_partnerships_flag=np.where(proj.euro_partnerships_type.isnull(), False, True)) 
 
     def proj_cleaning(proj):
@@ -580,10 +585,11 @@ def H2020_process():
     # proj pour synthese
     proj_s=proj.loc[~((proj.stage=='successful')&(proj.status_code=='REJECTED')),
         ['framework','project_id', 'call_id', 'panel_code', 'status_code', 'topic_code', 'stage', 'call_year', 'abstract',
-        'pilier_name_en', 'pilier_name_fr','programme_name_en', 'thema_name_en', 'thema_code', 'programme_code',
+        'pilier_name_en', 'pilier_name_fr','programme_name_en', 'thema_name_en', 'thema_code', 'programme_code', 'topic_name', 
         'panel_name', 'panel_regroupement_code', 'panel_regroupement_name', 'call_deadline', 'free_keywords',
-        'destination_code','destination_name_en','destination_detail_code','destination_detail_name_en',
-        'action_code', 'action_code2', 'action_code3', 'action_name', 'action_name2', 'action_name3', 'ecorda_date']]
+        'destination_code','destination_name_en','action_code', 'action_code2', 'action_code3', 'action_name', 'action_name2', 'action_name3', 
+        'euro_partnerships_type', 'euro_partnerships_type_next_fp', 'euro_ps_name', 'euro_partnerships_flag',
+        'destination_next_fp', 'programme_next_fp', 'ecorda_date']]
 
     temp = proj_s.merge(participation, how='inner', on=['project_id', 'stage'])
     temp = temp.reindex(sorted(temp.columns), axis=1)
@@ -628,10 +634,10 @@ def H2020_process():
             'call_deadline', 'action_code', 'panel_code', 'duration', 'submission_date', 'topic_code', 'topic_name', 'status_code',
             'free_keywords', 'eic_panels', 'call_year', 'pilier_name_en', 'programme_name_en', 'thema_name_en', 'programme_code',
             'thema_code', 'panel_name', 'panel_regroupement_code', 'panel_regroupement_name', 'panel_description', 
-            'destination_code','destination_name_en','destination_detail_code','destination_detail_name_en',
+            'destination_code','destination_name_en', 'euro_partnerships_type', 'euro_partnerships_type_next_fp', 'euro_ps_name', 'euro_partnerships_flag',
             'action_name', 'action_code2', 'action_name2', 'start_date','end_date', 'signature_date', 'project_webpage', 
             'number_involved','project_totalcost',  'proposal_expected_number', 'call_budget', 'framework', 'ecorda_date',
-            'fp_specific_pilier', 'fp_specific_programme', 'fp_specific_instrument']]
+            'destination_next_fp', 'programme_next_fp']]
             .rename(columns={
                             'number_involved':'project_numberofparticipants',
                             'action_code2':'action_detail_code',
