@@ -74,7 +74,7 @@ ref_all = pd.read_parquet(f"{PATH_MATCH}ref_all.parquet.gzip")
 
 ###################################################
 
-tmp=entities_all.copy()
+tmp=entities_all[~entities_all.astype(str).duplicated()].copy()
 print(f"size entities_all: {len(tmp)}")
 
 print("## create p_key/p_key_id")
@@ -170,6 +170,9 @@ y['entities_full'] = [x1 if x2 in x1 else x1+' '+x2 for x1, x2 in zip(y['entitie
 tmp=tmp.merge(y, how='left', on='p_key', suffixes=('', '_y'))
 tmp.loc[~tmp.entities_full_y.isnull(), 'entities_full'] = tmp.loc[~tmp.entities_full_y.isnull(), 'entities_full_y']
 
+tmp['entities_full'] = tmp['entities_full'].str.replace(r"[^ws]+", " ").str.strip().str.replace(r"\s{2,}", " ")
+
+
 print("## create keymaster (famille) and grp")
 for i in ['entities_full', 'street_2_tag', 'city_tag']:
     tmp[i]=tmp[i].fillna('')
@@ -256,6 +259,7 @@ tmp = tmp.merge(y, how='left', on='p_key')
 # tmp[['p_key_ref', 'id_ref']] = tmp[['p_key_ref', 'id_ref']].astype('Int64')
 # str_cols = tmp.columns[tmp.dtypes==object]
 tmp = tmp.mask(tmp=='')
+tmp=tmp.drop_duplicates()
 print(len(tmp))
 ###
 ref_all = cols_select_and_rename(ref_all, 'refext')
@@ -377,9 +381,8 @@ countries = pd.read_pickle(f"{PATH_CLEAN}country_current.pkl")
 cc=countries[countries.country_group_association_code=='MEMBER-ASSOCIATED'].country_name_fr.to_list()
 refext_et=ref_all.loc[(ref_all.pays!='France')]
 # refext_et=refext_et.loc[~((refext_fr.ref.isin(['paysage']))&(refext_fr.pays!='France')&(refext_fr.num_nat_struct=='#'))].fillna('')
-tmp_et=tmp.loc[(tmp.pays!='France')]
-tmp_member=tmp_et[tmp_et.pays.isin(cc)]
+tmp_member=tmp[(tmp.pays.isin(cc))&(tmp.pays!='France')]
 export(tmp_member, ref_mesr_pcrdt, ref_all, 'HEU_MB')
-tmp_et=tmp_et[~tmp_et.pays.isin(cc)]
+tmp_et=tmp[~tmp.pays.isin(cc)]
 export(tmp_et, ref_mesr_pcrdt, ref_all, 'HEU_ET')
 # 
