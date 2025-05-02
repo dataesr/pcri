@@ -1,6 +1,6 @@
 
-from config_path import PATH_SOURCE
-import time, pandas as pd, os
+from config_path import PATH_SOURCE, PATH_WP
+import time, pandas as pd, requests, fitz, re
 from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -10,12 +10,70 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.chrome.options import Options
 
+def wp_load(url, year, files_to_load):
+  
+    driver = webdriver.Firefox(service=FirefoxService(GeckoDriverManager().install()))
+    driver.maximize_window()
+    driver.get(url)
+    time.sleep(5)
+
+    wait = WebDriverWait(driver, 1)
+    wait.until(EC.presence_of_element_located((By.ID,'cookie-consent-banner')))
+    cookie = driver.find_element(By.CLASS_NAME, 'wt-ecl-button')
+    cookie.click()
+
+    links = driver.find_elements(By.XPATH, "//a[contains(@href, '.pdf')]")
+    for link in links:
+        for k,v in files_to_load.items():
+            if k in link.get_attribute("href"):
+                href = link.get_attribute("href")
+                r = requests.get(href, allow_redirects=True)
+                open(f"{PATH_WP}{year}/{v}.pdf", 'wb').write(r.content)
+
+
+def calls_by_wp(url, wp_year, load_wp=False):
+    from api_process import wp_load
+    from constant_vars import FRAMEWORK
+
+    files_to_load = {"infrastructures":"infra", 
+                    "cluster1":"health",
+                    "cluster2":"cluster2",
+                    "cluster3":"cluster3",
+                    "cluster4":"cluster4",
+                    "cluster5":"cluster5",
+                    "cluster6":"cluster6",
+                    "eie":"eie",
+                    "widera":"widera",
+                    "missions":"mission"
+                    }
+
+    if load_wp==True:
+        wp_load(url, wp_year, files_to_load)
+
+
+    calls_by_wp=[]
+    for k,v in files_to_load.items():
+        doc = fitz.open(f"{PATH_WP}{wp_year}/{v}.pdf")
+        all_text = chr(12).join([page.get_text() for page in doc])
+        all_text = all_text.replace('\n','')
+        all_text = all_text.strip()
+        # print(all_text)
+        match = re.search(r"table of contents(.*?)budget", all_text, re.DOTALL | re.IGNORECASE)
+        if match:
+            result = match.group(1).strip()
+            search_text = r'HORIZON-[^:\s\\\/\)]*'
+            l=re.findall(search_text, result)
+            l=list(set(l))
+            res={'year':wp_year,
+            'wp':v,
+            'calls':list(set(l))}
+            calls_by_wp.append(res)
+    pd.to_pickle(pd.DataFrame(calls_by_wp), open(f"{PATH_SOURCE}{FRAMEWORK}/topic_info_harvest.pkl", 'wb'))
+
+
 def get_data_from_html(soup):
     response=[]
     for res in soup.find_all('eui-card-header-subtitle'):
-#         print(res.find_all('span')[0].text)
-#         print(res.find_all('strong')[0].text)
-#         print(res.find_all('strong')[1].text)
         response.append({'topic_code':res.find_all('span')[0].text, 
                         'type':res.find_all('span')[2].text, 
                         'open_date':res.find_all('strong')[0].text, 
