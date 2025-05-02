@@ -118,7 +118,7 @@ def FP7_process():
             print(f"2 - size entities si multi id -> entities_size_to_keep = {entities_size_to_keep}")
 
         ror = pd.read_pickle(f"{PATH_REF}ror_df.pkl")
-        entities_tmp = merge_ror(entities, ror, country)
+        entities_tmp = merge_ror(entities, ror)
         print(f"size entities_tmp after add ror_info: {len(entities_tmp)}, entities_size_to_keep: {entities_size_to_keep}")
 
 
