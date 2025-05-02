@@ -32,7 +32,6 @@ def wp_load(url, year, files_to_load):
 
 
 def calls_by_wp(url, wp_year, load_wp=False):
-    from topic_info import wp_load
     from constant_vars import FRAMEWORK
 
     files_to_load = {"infrastructures":"infra", 
@@ -68,7 +67,7 @@ def calls_by_wp(url, wp_year, load_wp=False):
             'wp':v,
             'calls':list(set(l))}
             calls_by_wp.append(res)
-    pd.to_pickle(pd.DataFrame(calls_by_wp), open(f"{PATH_SOURCE}{FRAMEWORK}/topic_info_harvest.pkl", 'wb'))
+    pd.to_pickle(pd.DataFrame(calls_by_wp), open(f"{PATH_SOURCE}{FRAMEWORK}/calls_by_wp.pkl", 'wb'))
 
 
 def get_data_from_html(soup):
