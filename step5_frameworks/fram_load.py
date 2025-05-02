@@ -1,7 +1,6 @@
-from config_path import PATH_CLEAN
-import pandas as pd
-
 def framework_load():
+    from config_path import PATH_CLEAN
+    import pandas as pd
     h20 = pd.read_pickle(f"{PATH_CLEAN}H2020_data.pkl")
     h20 = h20.reindex(sorted(h20.columns), axis=1)
     FP7 = pd.read_pickle(f"{PATH_CLEAN}FP7_data.pkl") 
