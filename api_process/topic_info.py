@@ -32,7 +32,7 @@ def wp_load(url, year, files_to_load):
 
 
 def calls_by_wp(url, wp_year, load_wp=False):
-    from api_process import wp_load
+    from topic_info import wp_load
     from constant_vars import FRAMEWORK
 
     files_to_load = {"infrastructures":"infra", 
