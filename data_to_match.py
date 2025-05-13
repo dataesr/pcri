@@ -9,7 +9,7 @@ from step9_affiliations.prep_entities import entities_preparation
 from functions_shared import work_csv
 from step9_affiliations.organismes_cleaning import organismes_back
 from step9_affiliations.dataset_describe import dataset_decribe
-
+PATH_GILB=f"C:/Users/zfriant/Gilberinette/Echanges/"
 ######### one time
 # organismes_back('2024')
 
@@ -60,6 +60,9 @@ tmp['city_back'] = tmp.city_back.str.replace(r"\s+|'", '-', regex=True)
 tmp=tmp.groupby(level=0).agg(lambda x: ' '.join(x.dropna()))
 entities_all = entities_all.drop(columns='city_back').merge(tmp, how='left', left_index=True, right_index=True)
 entities_all.loc[~entities_all.street_2.isnull(),'street_2']=entities_all.loc[~entities_all.street_2.isnull(),'street_2'].map(lambda x: ' '.join(x))
+
+entities_all['department'] = entities_all.department.str.lower().replace(r"\b(name of the department|department name)\b|\t|-|/|,|\.", " ", regex=True)
+entities_all['department'] = entities_all.department.str.lower().replace(r"\s{2,}", " ", regex=True).str.strip()
 #####################################
 
 
@@ -254,6 +257,7 @@ y = x[['p_key', 'p_key_ref']].merge(ref_mesr_pcrdt[['id_ref', 'p_key_ref']], how
 # y['id_ref'] = y['id_ref'].astype('str')
 # y = y.loc[~y.id_ref.isnull()].groupby('p_key', as_index=False).agg({'id_ref': lambda x: ' '.join(x)})
 
+
 print(len(tmp))
 tmp = tmp.merge(y, how='left', on='p_key')
 # tmp[['p_key_ref', 'id_ref']] = tmp[['p_key_ref', 'id_ref']].astype('Int64')
@@ -265,6 +269,34 @@ print(len(tmp))
 ref_all = cols_select_and_rename(ref_all, 'refext')
 ref_all = ref_all.mask(ref_all=='')
 
+################################################################################
+# si problème avec gilberinette alors que le controle est déjà entamé
+
+def updtate_with_code_provisoire():
+    ref_new=pd.read_csv(f"{PATH_GILB}HEU_FRA/retour/referentiel.csv", sep=',')
+    x=pd.read_csv(f"{PATH_GILB}HEU_FRA/retour/pcrdt_mult.csv", sep=',', header=None, names=['p_key', 'id_ref'])
+    up=x.merge(ref_new, how='left', on='id_ref')[['p_key','id_ref','rna', 'paysage', 'siren', 'siret', 'num_nat_struct','ror']].sort_values('p_key')
+    pcrdt=pd.read_csv(f"{PATH_GILB}HEU_FRA/retour/pcrdt.csv", sep=',', low_memory=False)
+    tmp=pcrdt[['id_ref', 'rattachement', 'p_key', 'a_controler','num_nat_struct', 'method', 'siren','siret',  'paysage', 'ror', 'rna']]
+    met_up=tmp[['p_key', 'method']]
+    up=up.merge(met_up, how='left', on='p_key')
+    p=(up[up.method=='manuelle'].sort_values(['p_key', 'id_ref']).replace('#',np.nan).groupby('p_key', dropna=False).agg(lambda x: ','.join(map(str, filter(None, x.dropna().unique())))).reset_index())
+    # p['id_ref'] = p.id_ref.str.split(' ').str[0]
+    p=p.mask(p=='').fillna('#')
+    # check single id_ref one-one
+    pcrdt=pcrdt.merge(p, how='left', on='p_key', suffixes=('','_up'), indicator=True)
+    t=pcrdt.loc[pcrdt._merge=='both']
+    t[['id_ref','rna', 'paysage', 'siren', 'siret', 'num_nat_struct', 'ror', 'method']]=t[['id_ref_up','rna_up', 'paysage_up', 'siren_up', 'siret_up', 'num_nat_struct_up', 'ror_up', 'method_up']]
+    t.loc[t.method=='manuelle', 'method'] = 'treated'
+    pcrdt=pd.concat([pcrdt.loc[pcrdt._merge!='both'], t], ignore_index=True)
+    pcrdt=pcrdt.filter(regex=r'.*(?<!_up)$').drop(columns=['_merge', 'en_cours'])
+    return pcrdt
+tmp=updtate_with_code_provisoire()
+ref_all=pd.read_csv(f"{PATH_GILB}HEU_FRA/retour/REFEXT.txt", sep='\t', low_memory=False)
+ref_mesr_pcrdt=pd.read_csv(f"{PATH_GILB}HEU_FRA/retour/referentiel.csv", sep=',')
+ref_all['label_num_ro_rnsr']=ref_all['label_num_ro_rnsr'].str.replace(' ', '|', regex=False)
+ref_mesr_pcrdt['label_num_ro_rnsr']=ref_mesr_pcrdt['label_num_ro_rnsr'].str.replace(';', ' ', regex=False)
+##############################################################################################
 
 def fill_empty_cols(df):
 
@@ -288,7 +320,7 @@ ref_all = fill_empty_cols(ref_all)
 
 
 # tmp['contact'] = tmp['contact'].str.replace('-', ' ')
-tmp.loc[tmp.contact.str.len()>500, 'contact'] = '#'
+# tmp.loc[tmp.contact.str.len()>500, 'contact'] = '#'
 
 tmp = tmp[tmp.dtypes.sort_values().index]
 
@@ -348,41 +380,50 @@ def dataset_decribe(df,table_output):
 
 ###############
 
-def export(ptmp, refmp, refext, export_dos):
+def export(path, ptmp, refmp, refext, export_dos):
     p=dataset_decribe(ptmp, 'participants')
     rmp=dataset_decribe(refmp, 'ref_mesr_pcrdt')
     r=dataset_decribe(refext, 'refext')
     champs=pd.concat([p,rmp,r], ignore_index=True)
+    description = [
+    "modele=PCRDT_ALL\n"
+    "description=PCRDT ALL\n"
+    "id="+export_dos]
+    with open(f'{path}{export_dos}/Description.txt', 'w') as file:
+    # Write all lines at once
+        file.writelines(description)
 
-    PATH_GILB=f"C:/Users/zfriant/Gilberinette/Echanges/{export_dos}/"
-    champs.to_csv(f'{PATH_GILB}ListeChamps.txt', sep='\t', index=False, na_rep='')
-    ptmp.to_csv(f'{PATH_GILB}PARTICIPANTS.txt', sep='\t', index=False, na_rep='')
-    refmp.to_csv(f'{PATH_GILB}REF_MESR_PCRDT.txt', sep='\t', index=False, na_rep='')
-    refext.to_csv(f'{PATH_GILB}REFEXT.txt', sep='\t', index=False, na_rep='')
-
-# refext_fr=ref_all.loc[~((ref_all.ref.isin(['ror','sirene']))&(ref_all.pays!='France'))].fillna('')
-# refext_fr=refext_fr.loc[~((refext_fr.ref.isin(['paysage']))&(refext_fr.pays!='France')&(refext_fr.num_nat_struct=='#'))].fillna('')
+    champs.to_csv(f'{path}{export_dos}/ListeChamps.txt', sep='\t', index=False, na_rep='')
+    ptmp.to_csv(f'{path}{export_dos}/PARTICIPANTS.txt', sep='\t', index=False, na_rep='')
+    refmp.to_csv(f'{path}{export_dos}/REF_MESR_PCRDT.txt', sep='\t', index=False, na_rep='')
+    refext.to_csv(f'{path}{export_dos}/REFEXT.txt', sep='\t', index=False, na_rep='')
 
 ## test
-l=tmp.p_key.value_counts().reset_index()[0:100].p_key.unique()
-tmp_test=tmp.loc[tmp.p_key.isin(l)]
-export(tmp_test, ref_mesr_pcrdt, ref_all, 'HORIZON')
+# l=tmp.p_key.value_counts().reset_index()[0:100].p_key.unique()
+tmp_test=tmp.iloc[48919:48922]
+export(PATH_GILB, tmp_test, ref_mesr_pcrdt, ref_all, 'HORIZON')
+
+#UPDATE refext c SET c.label_num_ro_rnsr= REGEXP_REPLACE(c.label_num_ro_rnsr, ';', '\\s')
+
+#france
+export(PATH_GILB, tmp, ref_mesr_pcrdt, ref_all, "HEU_FRA")
 
 
-## France
-tmp_fr=tmp.loc[tmp.pays=='France']
-# tmp_fr=tmp_fr[(tmp_fr.organisme!='#')&(tmp_fr.organisme.str.contains('societe|association'))]
-# tmp_fr=tmp_fr.loc[(tmp_fr.paysage!='#')|(tmp_fr.siren!='#')|(tmp_fr.liste_sigles!='#')|(tmp_fr.rep_org!='#')]
-export(tmp_fr, ref_mesr_pcrdt, ref_all, 'HEU_FR')
+def export_cc_select(ptmp, refmp, refext, France=True):
+    import os
+    if France==True:
+        ptmp=ptmp.loc[ptmp.country_code=='FRA']
+    else:
+        ptmp=ptmp[(ptmp.country_code!='FRA')]
 
+    for i in ptmp.country_code.unique():
+        folder_path = f'{PATH_GILB}HEU_{i}'
+        # Create the folder if it doesn't exist
+        if not os.path.exists(folder_path):
+            os.makedirs(folder_path)
+            print(f'Folder "{folder_path}" created successfully.')
+        else:
+            print(f'Folder "{folder_path}" already exists.')
+        export(PATH_GILB, ptmp.drop(columns='country_code'), refmp, refext, f"HEU_{i}")
 
-### Etranger
-countries = pd.read_pickle(f"{PATH_CLEAN}country_current.pkl")
-cc=countries[countries.country_group_association_code=='MEMBER-ASSOCIATED'].country_name_fr.to_list()
-refext_et=ref_all.loc[(ref_all.pays!='France')]
-# refext_et=refext_et.loc[~((refext_fr.ref.isin(['paysage']))&(refext_fr.pays!='France')&(refext_fr.num_nat_struct=='#'))].fillna('')
-tmp_member=tmp[(tmp.pays.isin(cc))&(tmp.pays!='France')]
-export(tmp_member, ref_mesr_pcrdt, ref_all, 'HEU_MB')
-tmp_et=tmp[~tmp.pays.isin(cc)]
-export(tmp_et, ref_mesr_pcrdt, ref_all, 'HEU_ET')
-# 
+export_cc_select(tmp, ref_mesr_pcrdt, ref_all, France=True)
