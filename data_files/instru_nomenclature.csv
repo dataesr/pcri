@@ -1,89 +1,89 @@
-instrument;action_code;name
-169;169;Article 169 of the Treaty
-BSG-CSO;BSG;Research for the benefit of specific groups
-BSG-SME;BSG;Research for the benefit of specific groups
-BSG-SME-AG;BSG;Research for the benefit of specific groups
-CAREER;CAREER;Support for training and career development of researchers
-CP;CP;Collaborative project
-CP-CSA;CP-CSA;Combination of CP & CSA
-CP-CSA-INFRA;CP-CSA;Combination of CP & CSA
-CP-CSA-INFRA-IP;CP-CSA;Combination of CP & CSA
-CP-CSA-INFRA-PP;CP-CSA;Combination of CP & CSA
-CP-CSA-PCP;CP-CSA;Combination of CP & CSA
-CP-FP;CP;Collaborative project
-CP-FP-INFSO;CP;Collaborative project
-CP-FP-INFSO-FET;CP;Collaborative project
-CP-FP-SICA;CP;Collaborative project
-CP-GSA-TEC;CP;Collaborative project
-CP-IP;CP;Collaborative project
-CP-IP-INFSO-FET;CP;Collaborative project
-CP-IP-SICA;CP;Collaborative project
-CP-SICA;CP;Collaborative project
-CP-SICA-INFSO;CP;Collaborative project
-CP-SOU;CP;Collaborative project
-CP-TP;CP;Collaborative project
-CSA;CSA;Coordination and support actions
-CSA-CA;CSA;Coordination and support actions
-CSA-CA-INFSO-FET;CSA;Coordination and support actions
-CSA-ERANET;CSA;Coordination and support actions
-CSA-ERA-PLUS;CSA;Coordination and support actions
-CSA-SA;CSA;Coordination and support actions
-CSA-SA(POC);CSA;Coordination and support actions
-CSA-SA-INFSO-FET;CSA;Coordination and support actions
-ERC-AG;ERC;Support for frontier research (ERC)
-ERC-CG;ERC;Support for frontier research (ERC)
-ERC-POC;ERC;Support for frontier research (ERC)
-ERC-SG;ERC;Support for frontier research (ERC)
-ERC-SYG;ERC;Support for frontier research (ERC)
-INFRASTR-171;171;Article 171 of the Treaty
-JTI-171;171;Article 171 of the Treaty
-JTI-CP-ARTEMIS;171;Article 171 of the Treaty
-JTI-CP-ENIAC;171;Article 171 of the Treaty
-JTI-CP-FCH;171;Article 171 of the Treaty
-JTI-CP-IMI;171;Article 171 of the Treaty
-JTI-CS;171;Article 171 of the Treaty
-JTI-CSA-FCH;171;Article 171 of the Treaty
-JTI-CS-GAM-DUMMY;171;Article 171 of the Treaty
-MC-AWARDS;MC;Support for training and career development of researchers (Marie Curie)
-MC-CIG;MC;Support for training and career development of researchers (Marie Curie)
-MC-COFUND;MC;Support for training and career development of researchers (Marie Curie)
-MC-ERG;MC;Support for training and career development of researchers (Marie Curie)
-MC-IAPP;MC;Support for training and career development of researchers (Marie Curie)
-MC-IEF;MC;Support for training and career development of researchers (Marie Curie)
-MC-IIF;MC;Support for training and career development of researchers (Marie Curie)
-MC-IIFR;MC;Support for training and career development of researchers (Marie Curie)
-MC-IOF;MC;Support for training and career development of researchers (Marie Curie)
-MC-IRG;MC;Support for training and career development of researchers (Marie Curie)
-MC-IRSES;MC;Support for training and career development of researchers (Marie Curie)
-MC-ITN;MC;Support for training and career development of researchers (Marie Curie)
-MC-IXF;MC;SUPPORT FOR TRAINING AND CAREER DEVELOPMENT OF RESEARCHERS (MARIE CURIE)
-NOE;NOE;Network of Excellence
-POC;POC;Proof of Concept
-PSP-PB;PSP-PB;PILOT TYPE B
-RFCS;RFCS;Research Fund for Coal and Steel
-RSSF;RSSF;Risk sharing finance facility
-SICA;SICA;INTERNATIONAL COOPERATION PARTNER COUNTRIES (SICA)
-ZZZ;ZZZ;MISSING
-CA;CSA;Coordination and support actions
-CLR;CLR;Collective Research Projects
-CRAFT;CRAFT;Co-operative Research Projects
-I3;CP-CSA;Combination of CP & CSA
-II;CP-CSA;Combination of CP & CSA
-IP;CP-IP;Integrated Projects
-IIF;MCA;Marie Curie Actions
-OIF;MCA;Marie Curie Actions
-EXT;MCA;Marie Curie Actions
-IIFR;MCA;Marie Curie Actions
-TOK;MCA;Marie Curie Actions
-EXC;MCA;Marie Curie Actions
-TOK-DEV;MCA;Marie Curie Actions
-IRG;MCA;Marie Curie Actions
-ERG;MCA;Marie Curie Actions
-RTN;MCA;Marie Curie Actions
-EIF;MCA;Marie Curie Actions
-EST;MCA;Marie Curie Actions
-LCF;MCA;Marie Curie Actions
-SCF;MCA;Marie Curie Actions
-TOK-IAP;MCA;Marie Curie Actions
-SSA;CSA;Coordination and support actions
-STREP;CP;Collaborative project
+instrument;action_code;name;instrument_name;action_next_fp
+169;169;Article 169 of the Treaty;
+BSG-CSO;BSG;Research for the benefit of specific groups;
+BSG-SME;BSG;Research for the benefit of specific groups;
+BSG-SME-AG;BSG;Research for the benefit of specific groups;
+CAREER;CAREER;Support for training and career development of researchers;
+CP;CP;Collaborative project;
+CP-CSA;CP-CSA;Combination of CP & CSA;
+CP-CSA-INFRA;CP-CSA;Combination of CP & CSA;
+CP-CSA-INFRA-IP;CP-CSA;Combination of CP & CSA;
+CP-CSA-INFRA-PP;CP-CSA;Combination of CP & CSA;
+CP-CSA-PCP;CP-CSA;Combination of CP & CSA;
+CP-FP;CP;Collaborative project;
+CP-FP-INFSO;CP;Collaborative project;
+CP-FP-INFSO-FET;CP;Collaborative project;
+CP-FP-SICA;CP;Collaborative project;
+CP-GSA-TEC;CP;Collaborative project;
+CP-IP;CP;Collaborative project;
+CP-IP-INFSO-FET;CP;Collaborative project;
+CP-IP-SICA;CP;Collaborative project;
+CP-SICA;CP;Collaborative project;
+CP-SICA-INFSO;CP;Collaborative project;
+CP-SOU;CP;Collaborative project;
+CP-TP;CP;Collaborative project;
+CSA;CSA;Coordination and support actions;
+CSA-CA;CSA;Coordination and support actions;
+CSA-CA-INFSO-FET;CSA;Coordination and support actions;
+CSA-ERANET;CSA;Coordination and support actions;
+CSA-ERA-PLUS;CSA;Coordination and support actions;
+CSA-SA;CSA;Coordination and support actions;
+CSA-SA(POC);CSA;Coordination and support actions;
+CSA-SA-INFSO-FET;CSA;Coordination and support actions;
+ERC-AG;ERC;Support for frontier research (ERC);
+ERC-CG;ERC;Support for frontier research (ERC);
+ERC-POC;ERC;Support for frontier research (ERC);
+ERC-SG;ERC;Support for frontier research (ERC);
+ERC-SYG;ERC;Support for frontier research (ERC);
+INFRASTR-171;171;Article 171 of the Treaty;
+JTI-171;171;Article 171 of the Treaty;
+JTI-CP-ARTEMIS;171;Article 171 of the Treaty;
+JTI-CP-ENIAC;171;Article 171 of the Treaty;
+JTI-CP-FCH;171;Article 171 of the Treaty;
+JTI-CP-IMI;171;Article 171 of the Treaty;
+JTI-CS;171;Article 171 of the Treaty;
+JTI-CSA-FCH;171;Article 171 of the Treaty;
+JTI-CS-GAM-DUMMY;171;Article 171 of the Treaty;
+MC-AWARDS;MC;Support for training and career development of researchers (Marie Curie);;MSCA
+MC-CIG;MC;Support for training and career development of researchers (Marie Curie);;MSCA
+MC-COFUND;MC;Support for training and career development of researchers (Marie Curie);;MSCA
+MC-ERG;MC;Support for training and career development of researchers (Marie Curie);;MSCA
+MC-IAPP;MC;Support for training and career development of researchers (Marie Curie);;MSCA
+MC-IEF;MC;Support for training and career development of researchers (Marie Curie);;MSCA
+MC-IIF;MC;Support for training and career development of researchers (Marie Curie);;MSCA
+MC-IIFR;MC;Support for training and career development of researchers (Marie Curie);;MSCA
+MC-IOF;MC;Support for training and career development of researchers (Marie Curie);;MSCA
+MC-IRG;MC;Support for training and career development of researchers (Marie Curie);;MSCA
+MC-IRSES;MC;Support for training and career development of researchers (Marie Curie);;MSCA
+MC-ITN;MC;Support for training and career development of researchers (Marie Curie);;MSCA
+MC-IXF;MC;SUPPORT FOR TRAINING AND CAREER DEVELOPMENT OF RESEARCHERS (MARIE CURIE);;MSCA
+NOE;NOE;Network of Excellence;
+POC;POC;Proof of Concept;
+PSP-PB;PSP-PB;PILOT TYPE B;
+RFCS;RFCS;Research Fund for Coal and Steel;
+RSSF;RSSF;Risk sharing finance facility;
+SICA;SICA;INTERNATIONAL COOPERATION PARTNER COUNTRIES (SICA);
+ZZZ;ZZZ;MISSING;
+CA;CA;Coordination and support actions;Coordination Actions;CSA
+CLR;CLR;Collective Research Projects;Collective Research Projects
+CRAFT;CRAFT;Co-operative Research Projects;Co-operative Research Projects
+I3;CP-CSA;Combination of CP & CSA;Specific Actions to Promote Research Infrastructures
+II;CP-CSA;Combination of CP & CSA;Specific Actions to Promote Research Infrastructures
+IP;CP-IP;Integrated Projects;Integrated Projects;MSCA
+IIF;MCA;Marie Curie Actions;Incoming International Fellowships;MSCA
+OIF;MCA;Marie Curie Actions;Outgoing International Fellowships;MSCA
+EXT;MCA;Marie Curie Actions;Marie Curie Grants for Excellent Teams;MSCA
+IIFR;MCA;Marie Curie Actions;Incoming International Fellowships (Return Phase);MSCA
+TOK;MCA;Marie Curie Actions;Transfer of Knowledge;MSCA
+EXC;MCA;Marie Curie Actions;Marie Curie Chairs;MSCA
+TOK-DEV;MCA;Marie Curie Actions;Transfer of Knowledge-Development;MSCA
+IRG;MCA;Marie Curie Actions;International reintegration grants;MSCA
+ERG;MCA;Marie Curie Actions;European reintegration grants;MSCA
+RTN;MCA;Marie Curie Actions;Research Training Networks;MSCA
+EIF;MCA;Marie Curie Actions;Intra-European Fellowships;MSCA
+EST;MCA;Marie Curie Actions;Early Stage Training;MSCA
+LCF;MCA;Marie Curie Actions;Large Conferences;MSCA
+SCF;MCA;Marie Curie Actions;Series of Events;MSCA
+TOK-IAP;MCA;Marie Curie Actions;Transfer of Knowledge-Industry;MSCA
+SSA;SSA;Coordination and support actions;Specific Support Actions;CSA
+STREP;CP;Collaborative project;Specific Targeted Research Projects
