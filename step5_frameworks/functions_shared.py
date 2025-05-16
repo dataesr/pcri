@@ -39,6 +39,11 @@ def country_cleaning(df, FP):
         .drop_duplicates()
         )
     
+    article_fr = json.load(open('data_files/countries_genres.json', 'r+', encoding='UTF-8'))
+    article_fr = pd.DataFrame.from_dict(article_fr, orient='index').reset_index().rename(columns={'index':'country_code'})
+    article_fr = article_fr.apply(lambda x: x.str.strip() if x.dtype.name == 'object' else x, axis=0)
+    x = x.merge(article_fr, how='left', on='country_code').drop(columns='label')
+
     x = (x.merge(old_country[['countryCode', 'STATUS']].drop_duplicates(), how='left', on='countryCode')
         .rename(columns={'STATUS':'fp_specific_country_status'}))
 
@@ -49,3 +54,33 @@ def country_cleaning(df, FP):
     print(f"size x {len(x)}")
 
     return x
+
+
+def thema_msca_cleaning(df, FP):
+    import pandas as pd
+    msca_correspondence = pd.read_table('data_files/msca_correspondence.csv', sep=";")
+    msca_correspondence = msca_correspondence.loc[msca_correspondence.framework==FP].drop(columns='framework')
+
+    df['thema_code'] = 'MSCA'
+    df.loc[(df.call_id.str.contains('NIGHT'))|(df.call_id=='FP6-2006-MOBILITY-13'), 'inst'] = 'NIGHT'
+    df = df.merge(msca_correspondence, how='left', left_on=['inst'], right_on=['old']).rename(columns={'old':'destination_code', 'new':'destination_next_fp'})
+    df.loc[df.destination_code.isnull(), 'destination_code'] = df.loc[df.destination_code.isnull()].inst 
+    for i in ['destination_code', 'destination_next_fp']:
+        df.loc[(df[i].isnull()), i] = 'MSCA-OTHER'
+        
+    return df.drop(columns='inst')
+
+def thema_euratom_cleaning(df, FP):
+    import pandas as pd
+    euratom = pd.read_csv('data_files/euratom_thema_all_FP.csv', sep=';', na_values='')
+    euratom = euratom.loc[euratom.framework==FP, ['topic_area', 'thema_code']]
+    df = df.merge(euratom, how='left', on='topic_area')
+
+    df['programme_name_en'] = 'Nuclear fission and radiation protection'
+    df['programme_code'] = 'NFRP'
+
+    if FP=='FP7':
+        df.loc[df.prog_abbr=='Fusion', 'programme_code'] = 'Fusion'
+        df.loc[df.prog_abbr=='Fusion', 'programme_name_en'] = 'Fusion Energy'
+        
+    return df.drop(columns='topic_area')
