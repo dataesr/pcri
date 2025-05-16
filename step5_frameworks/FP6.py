@@ -1,6 +1,8 @@
 import pandas as pd, numpy as np, json
 from config_path import PATH_CLEAN, PATH_SOURCE, PATH
-from step5_frameworks.country import country_cleaning
+from step5_frameworks.functions_shared import *
+
+
 def FP6_process():
     print("\n### FP6")
     def FP6_load():
@@ -71,70 +73,58 @@ def FP6_process():
     def themes_act(_FP6):
         instr = pd.read_csv('data_files/instru_nomenclature.csv', sep=';')
         destination = pd.read_json(open("data_files/destination.json", 'r', encoding='utf-8'))
-        msca_correspondence = pd.read_table('data_files/msca_correspondence.csv', sep=";").drop(columns='framework')
+        thema = pd.read_json(open("data_files/thema.json", 'r', encoding='utf-8'))
 
         # msca
-        _FP6.loc[_FP6.programme=='Human resources and mobility', 'thema_code'] = 'MSCA'
-        _FP6.loc[_FP6.programme=='Human resources and mobility', 'thema_name_en'] = 'Marie Skłodowska-Curie'
+        df = _FP6.loc[(_FP6.programme=='Human resources and mobility')|(_FP6.action=='MCA'), ['programme','call_id', 'action_code2']].drop_duplicates().assign(inst=_FP6.action_code2)
+        df=thema_msca_cleaning(df, 'FP6')
 
-        x = _FP6.loc[_FP6.thema_code=='MSCA', ['programme','call_id', 'action', 'action_code2']].drop_duplicates()
-        x = (x.merge(instr.drop_duplicates(), how='left', left_on='action_code2', right_on='instrument')
-        .rename(columns={'instrument':'destination_code', 'instrument_name':'destination_name_en'}) 
-        )
-        x = x.merge(msca_correspondence, how='left', left_on=['action_code2'], right_on=['old']).rename(columns={'new':'destination_next_fp'})
-        x.loc[x.call_id=='FP6-2006-MOBILITY-13', 'destination_code'] = 'NIGHT'
-        x.loc[x.call_id=='FP6-2006-MOBILITY-13', 'destination_next_fp'] = 'CITIZENS'
-        x.loc[(x.action=='MCA')&(x.destination_code.isnull()), 'destination_code'] = 'MSCA-OTHER'
-        x.loc[(x.action=='MCA')&(x.destination_next_fp.isnull()), 'destination_next_fp'] = 'MSCA-OTHER'
-        x.loc[x.action=='MCA', 'action_code'] = 'MSCA'
-        x.loc[x.action_code=='MSCA', 'action_name'] = 'Marie Skłodowska-Curie actions'
-        _FP6 = _FP6.merge(x[[ 'call_id', 'action_code2', 'destination_code', 'destination_name_en', 'destination_next_fp', 'action_code',
-        'action_name']], how='left', on=['call_id','action_code2'])
-
+        _FP6 = _FP6.merge(df, how='left', on=['programme','call_id','action_code2'])
 
         #euratom
-        euratom = pd.read_csv('data_files/euratom_thema_all_FP.csv', sep=';', na_values='')
-        _FP6 = _FP6.merge(euratom[['topic_area', 'thema_code', 'thema_name_en']], how='left', left_on='ActivityCode1', right_on='topic_area', suffixes=['', '_t'])
+        df = _FP6.loc[_FP6.pilier=='Euratom', ['ActivityCode1']].assign(topic_area=_FP6.ActivityCode1)
+        df = thema_euratom_cleaning(df, 'FP6')
+        _FP6 = _FP6.merge(df, how='left', on=['ActivityCode1'], suffixes=('', '_t'))
+        selected_columns = [col[:-2] for col in _FP6.columns if col.endswith('_t')]
 
-        #thema euratom devient destination dans FP6
-        _FP6.loc[(~_FP6.thema_code_t.isnull()), 'destination_code'] = _FP6.loc[(~_FP6.thema_code_t.isnull()), 'thema_code_t']
-        _FP6.loc[(~_FP6.thema_name_en_t.isnull()), 'destination_name_en'] = _FP6.loc[(~_FP6.thema_name_en_t.isnull()), 'thema_name_en_t']
+        for i in selected_columns:
+            _FP6.loc[~_FP6[f"{i}_t"].isnull(), i] = _FP6.loc[~_FP6[f"{i}_t"].isnull()][f"{i}_t"]
         _FP6 = _FP6.filter(regex=r'.*(?<!_t)$')
-        _FP6.loc[_FP6.pilier=='Euratom', 'thema_name_en'] = 'Nuclear fission and radiation protection'
-        _FP6.loc[_FP6.pilier=='Euratom', 'thema_code'] = 'NFRP'
 
-
-        # FP6.loc[FP6.pilier_name_en.isnull(), 'pilier_name_en'] = FP6.pilier
-        # FP6.loc[FP6.programme_name_en.isnull(), 'programme_name_en'] = FP6.programme
-
-        x = _FP6[['pilier','programme', 'ActivityCode1']].drop_duplicates()
+        # autres
+        x = _FP6.loc[_FP6.programme_code.isnull(), ['pilier','programme', 'ActivityCode1']].drop_duplicates()
         x['programme_code'] = x.ActivityCode1.str.split("\\.|-", regex=True, expand=True)[0]
         x = x.groupby(['pilier','programme','programme_code'], dropna=False).agg({'ActivityCode1':'count'}).reset_index()
         x = (x.sort_values(['pilier','programme','ActivityCode1'], ascending=False)
                 .drop_duplicates(subset=['programme'], keep="first")
                 .drop(columns='ActivityCode1'))
-        x.loc[x.programme=='Euratom', 'programme_code'] = 'EURATOM'
+        
+        
         x.loc[x.programme=='Research infrastructures', 'programme_code'] = 'INFRA'
-        _FP6 = _FP6.merge(x[['programme', 'programme_code']], how='left', on='programme')
+        _FP6 = _FP6.merge(x[['programme', 'programme_code']], how='left', on='programme', suffixes=('', '_t'))
+        selected_columns = [col[:-2] for col in _FP6.columns if col.endswith('_t')]
+        for i in selected_columns:
+            _FP6.loc[~_FP6[f"{i}_t"].isnull(), i] = _FP6.loc[~_FP6[f"{i}_t"].isnull()][f"{i}_t"]
+        _FP6 = _FP6.filter(regex=r'.*(?<!_t)$')
+        _FP6.loc[_FP6.programme_name_en.isnull(), 'programme_name_en'] = _FP6.loc[_FP6.programme_name_en.isnull()].programme
 
         _FP6.loc[_FP6.programme.isin(['Research infrastructures','Human resources and mobility']), 'pilier_next_fp'] = 'Excellent Science'
         _FP6.loc[_FP6.programme=='Research infrastructures', 'programme_next_fp'] = 'INFRA'
         _FP6.loc[_FP6.programme=='Human resources and mobility', 'programme_next_fp'] = 'MSCA'
 
-        _FP6 = _FP6.merge(destination[['destination_code', 'destination_name_en']], how='left', on='destination_code', suffixes=('', '_t'))
-        _FP6.loc[(~_FP6.destination_name_en_t.isnull()), 'destination_name_en'] = _FP6.loc[(~_FP6.destination_name_en_t.isnull()), 'destination_name_en_t']
+        _FP6 = _FP6.merge(destination[['destination_code', 'destination_name_en']], how='left', on='destination_code')
+        _FP6 = _FP6.merge(thema[['thema_code', 'thema_name_en']], how='left', on='thema_code')
         
-        _FP6 = _FP6.rename(columns={'pilier':'pilier_name_en', 'programme':'programme_name_en'})
+        _FP6 = _FP6.rename(columns={'pilier':'pilier_name_en'})
 
-        # finalisation action variables
-        _FP6 = _FP6.merge(instr[['instrument', 'action_code', 'name']], how='left', left_on='action', right_on='instrument', suffixes=('', '_t'))
-
-        _FP6.loc[_FP6.action_code.isnull(), 'action_code'] = _FP6.loc[_FP6.action_code.isnull(), 'action_code_t']
-        _FP6.loc[_FP6.action_name.isnull(), 'action_name'] = _FP6.loc[_FP6.action_name.isnull(), 'name']
-
+        # # finalisation action variables
+        _FP6 = (_FP6.assign(action=np.where(_FP6.action=='MCA', _FP6.action_code2, _FP6.action))
+                .merge(instr[['instrument', 'action_code', 'name', 'action_next_fp']], how='left', left_on='action', right_on='instrument').rename(columns={'name':'action_name'}))
         print(f"- size FP6 after clean thema: {len(_FP6.loc[_FP6.stage=='successful'])}, fund: {'{:,.1f}'.format(_FP6.loc[_FP6.stage=='successful', 'subv_obt'].sum())}")
-        return _FP6.drop(columns=['topic_area', 'destination_name_en_t', 'action_code2', 'action', 'instrument', 'name', 'action_code_t'])
+        return _FP6.drop(columns=['action_code2', 'action']).drop_duplicates()
     FP6=themes_act(_FP6)
+
+    print(f"- size FP6 after clean thema: {len(FP6.loc[FP6.stage=='successful'])}, fund: {'{:,.1f}'.format(FP6.loc[FP6.stage=='successful', 'subv_obt'].sum())}")
 
     def participation(FP6):
         FP6['calculated_fund'] = np.where(FP6.stage=='successful', FP6.subv_obt, FP6.subv_dem)
@@ -159,10 +149,10 @@ def FP6_process():
 
         project = (FP6[['acronym', 'action_code', 'action_name', 'call_id', 'call_year', 'call_deadline', 
                         'destination_code', 'destination_name_en', 
-                    'duration', 'ecorda_date', 'end_date', 'framework', 'pilier_next_fp', 'programme_next_fp',
-                    'pilier_name_en', 'programme_name_en', 'project_cost', 'programme_code', 'destination_next_fp',
-                    'project_eucontribution', 'project_id', 'project_numberofparticipants', 'submission_date',
-                    'signature_date', 'stage', 'stage_name', 'start_date', 'status_code', 'thema_code', 'thema_name_en', 'title']]
+                        'duration', 'ecorda_date', 'end_date', 'framework', 'pilier_next_fp', 'programme_next_fp', 'action_next_fp',
+                        'pilier_name_en', 'programme_name_en', 'project_cost', 'programme_code', 'destination_next_fp',
+                        'project_eucontribution', 'project_id', 'project_numberofparticipants', 'submission_date',
+                        'signature_date', 'stage', 'stage_name', 'start_date', 'status_code', 'thema_code', 'thema_name_en', 'title']]
             .rename(columns={'project_cost':'project_totalcost'})   
             .drop_duplicates())
 
