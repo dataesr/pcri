@@ -66,8 +66,9 @@ def thema_msca_cleaning(df, FP):
     df = (df.merge(msca_correspondence, how='left', left_on=['inst'], right_on=['old'])
           .rename(columns={'old':'destination_code', 'new':'destination_next_fp'}))
     
-    if 'action' in df.columns:
-        df.loc[(df.destination_code.isnull())&(df.action=='MCA'), 'destination_code'] = df.loc[df.destination_code.isnull()].inst 
+    for i in ['action', 'instrument']:
+        if i in df.columns:
+            df.loc[(df.destination_code.isnull())&(df[i].str.startswith('MC')), 'destination_code'] = df.loc[(df.destination_code.isnull())&(df[i].str.startswith('MC'))].inst 
     for i in ['destination_code', 'destination_next_fp']:
         df.loc[(df[i].isnull()), i] = 'MSCA-OTHER'
         
