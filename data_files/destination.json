@@ -361,6 +361,31 @@
 		"destination_name_en": "Innovative Medicines Initiative 2"
 	},
 	{
+		"destination_code": "CS",
+		"destination_name_fr": "Clean Sky",
+		"destination_name_en": "Clean Sky"
+	},
+	{
+		"destination_code": "IMI",
+		"destination_name_fr": "Initiative en matière de médicaments innovants",
+		"destination_name_en": "Innovative Medicines Initiative"
+	},
+	{
+		"destination_code": "FCH",
+		"destination_name_fr": "Piles à combustible et hydrogène",
+		"destination_name_en": "Fuel Cells and Hydrogen"
+	},
+	{
+		"destination_code": "ENIAC",
+		"destination_name_fr": "Intégrateur numérique électronique et ordinateur",
+		"destination_name_en": "Electronic Numerical Integrator and Computer"
+	},
+	{
+		"destination_code": "ARTEMIS",
+		"destination_name_fr": "Systèmes informatiques embarqués",
+		"destination_name_en": "Embedded Computing Systems"
+	},
+	{
 		"destination_code": "DESTINATION-OTHER",
 		"destination_name_fr": "Autres destinations",
 		"destination_name_en": "Other destinations"
@@ -607,5 +632,93 @@
 		"destination_code": "IMPACT",
 		"destination_name_fr": "",
 		"destination_name_en": "Horizon impact award"
+	},
+
+	{
+		"destination_code": "ERG",
+		"destination_name_fr": "",
+		"destination_name_en": "European Re-integration Grants"
+	},
+	{
+		"destination_code": "IAPP",
+		"destination_name_fr": "",
+		"destination_name_en": "Industry-Academia Partnerships and Pathways"
+	},
+	{
+		"destination_code": "IEF",
+		"destination_name_fr": "",
+		"destination_name_en": "Intra-European Fellowships"
+	},
+	{
+		"destination_code": "IIF",
+		"destination_name_fr": "",
+		"destination_name_en": "International Incoming Fellowships"
+	},
+	{
+		"destination_code": "IIFR",
+		"destination_name_fr": "",
+		"destination_name_en": "International Incoming Fellowships (Return Phase)"
+	},
+	{
+		"destination_code": "IOF",
+		"destination_name_fr": "",
+		"destination_name_en": "International Outgoing Fellowships"
+	},
+	{
+		"destination_code": "IRG",
+		"destination_name_fr": "",
+		"destination_name_en": "International Re-integration Grants"
+	},
+	{
+		"destination_code": "IRSES",
+		"destination_name_fr": "",
+		"destination_name_en": "International Research Staff Exchange Scheme"
+	},
+	{
+		"destination_code": "ITN",
+		"destination_name_fr": "",
+		"destination_name_en": "Initial Training Networks"
+	},
+	{
+		"destination_code": "NIGHT",
+		"destination_name_fr": "",
+		"destination_name_en": "European Researchers' Night"
+	},
+	{
+		"destination_code": "EIF",
+		"destination_name_fr": "",
+		"destination_name_en": "Intra-European Fellowships"
+	},
+	{
+		"destination_code": "OIF",
+		"destination_name_fr": "",
+		"destination_name_en": "International Outgoing Fellowships"
+	},
+	{
+		"destination_code": "TOK",
+		"destination_name_fr": "",
+		"destination_name_en": "Host fellowships for the transfer of knowledge"
+	},
+	{
+		"destination_code": "RTN",
+		"destination_name_fr": "",
+		"destination_name_en": "Research Training Networks"
+	},
+	{
+		"destination_code": "EST",
+		"destination_name_fr": "",
+		"destination_name_en": "Host fellowships for early stage research training"
+	},
+	{
+		"destination_code": "TOK-DEV",
+		"destination_name_fr": "",
+		"destination_name_en": "Transfer of Knowledge-Development"
+	},
+	{
+		"destination_code": "TOK-IAP",
+		"destination_name_fr": "",
+		"destination_name_en": "Transfer of Knowledge-Industry"
 	}
+
 ]
+
