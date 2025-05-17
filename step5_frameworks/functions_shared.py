@@ -63,12 +63,19 @@ def thema_msca_cleaning(df, FP):
 
     df['thema_code'] = 'MSCA'
     df.loc[(df.call_id.str.contains('NIGHT'))|(df.call_id=='FP6-2006-MOBILITY-13'), 'inst'] = 'NIGHT'
-    df = df.merge(msca_correspondence, how='left', left_on=['inst'], right_on=['old']).rename(columns={'old':'destination_code', 'new':'destination_next_fp'})
-    df.loc[df.destination_code.isnull(), 'destination_code'] = df.loc[df.destination_code.isnull()].inst 
+    df = (df.merge(msca_correspondence, how='left', left_on=['inst'], right_on=['old'])
+          .rename(columns={'old':'destination_code', 'new':'destination_next_fp'}))
+    
+    if 'action' in df.columns:
+        df.loc[(df.destination_code.isnull())&(df.action=='MCA'), 'destination_code'] = df.loc[df.destination_code.isnull()].inst 
     for i in ['destination_code', 'destination_next_fp']:
         df.loc[(df[i].isnull()), i] = 'MSCA-OTHER'
         
-    return df.drop(columns='inst')
+    for i in ['inst', 'action']:
+        if i in df.columns:
+            df.drop(columns=i, inplace=True)
+
+    return df
 
 def thema_euratom_cleaning(df, FP):
     import pandas as pd
