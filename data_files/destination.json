@@ -718,6 +718,26 @@
 		"destination_code": "TOK-IAP",
 		"destination_name_fr": "",
 		"destination_name_en": "Transfer of Knowledge-Industry"
+	},
+	{
+		"destination_code": "EXC",
+		"destination_name_fr": "",
+		"destination_name_en": "Marie Curie Chairs"
+	},
+	{
+		"destination_code": "EXT",
+		"destination_name_fr": "",
+		"destination_name_en": "Marie Curie Grants for Excellent Teams"
+	},
+	{
+		"destination_code": "LCF",
+		"destination_name_fr": "",
+		"destination_name_en": "Large Conferences"
+	},
+	{
+		"destination_code": "SCF",
+		"destination_name_fr": "",
+		"destination_name_en": "Series of Events"
 	}
 
 ]
