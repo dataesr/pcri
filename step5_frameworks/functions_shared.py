@@ -92,3 +92,19 @@ def thema_euratom_cleaning(df, FP):
         df.loc[df.prog_abbr=='Fusion', 'programme_name_en'] = 'Fusion Energy'
         
     return df.drop(columns='topic_area')
+
+def eranet_partnerships(df, FP):
+    import numpy as np
+
+    if FP=='FP6':
+        col='call_id'
+    if FP=='H20':
+        col='action_code'
+
+    df.loc[df[col].str.contains('ERA-NET', na=False), 'euro_partnerships_type'] = 'ERA-NET'
+    df.loc[df.euro_partnerships_type=='ERA-NET', 'euro_ps_name'] = df.loc[df.euro_partnerships_type=='ERA-NET'].acronym
+
+
+    df.loc[df.euro_partnerships_type=='ERA-NET', 'euro_partnerships_type_next_fp'] = 'co-funded'
+
+    return df.assign(euro_partnerships_flag=np.where(df.euro_partnerships_type.isnull(), False, True)) 
