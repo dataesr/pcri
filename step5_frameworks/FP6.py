@@ -76,7 +76,9 @@ def FP6_process():
         thema = pd.read_json(open("data_files/thema.json", 'r', encoding='utf-8'))
 
         # msca
-        df = _FP6.loc[(_FP6.programme=='Human resources and mobility')|(_FP6.action=='MCA'), ['programme','call_id', 'action_code2']].drop_duplicates().assign(inst=_FP6.action_code2)
+        df = (_FP6.loc[(_FP6.programme=='Human resources and mobility')|(_FP6.action=='MCA'), ['programme', 'action', 'call_id', 'action_code2']]
+              .drop_duplicates()
+              .assign(inst=_FP6.action_code2))
         df=thema_msca_cleaning(df, 'FP6')
 
         _FP6 = _FP6.merge(df, how='left', on=['programme','call_id','action_code2'])
@@ -126,6 +128,9 @@ def FP6_process():
 
     print(f"- size FP6 after clean thema: {len(FP6.loc[FP6.stage=='successful'])}, fund: {'{:,.1f}'.format(FP6.loc[FP6.stage=='successful', 'subv_obt'].sum())}")
 
+    FP6=eranet_partnerships(FP6, 'FP6')
+
+
     def participation(FP6):
         FP6['calculated_fund'] = np.where(FP6.stage=='successful', FP6.subv_obt, FP6.subv_dem)
         FP6 = FP6.assign(number_involved=1, with_coord=np.where(FP6.destination_next_fp.str.contains('PF', na=False), False, True))
@@ -151,6 +156,7 @@ def FP6_process():
                         'destination_code', 'destination_name_en', 
                         'duration', 'ecorda_date', 'end_date', 'framework', 'pilier_next_fp', 'programme_next_fp', 'action_next_fp',
                         'pilier_name_en', 'programme_name_en', 'project_cost', 'programme_code', 'destination_next_fp',
+                        'euro_partnerships_flag', 'euro_partnerships_type', 'euro_ps_name',
                         'project_eucontribution', 'project_id', 'project_numberofparticipants', 'submission_date',
                         'signature_date', 'stage', 'stage_name', 'start_date', 'status_code', 'thema_code', 'thema_name_en', 'title']]
             .rename(columns={'project_cost':'project_totalcost'})   
