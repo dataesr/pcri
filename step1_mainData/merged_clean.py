@@ -35,10 +35,10 @@ def dates_year(df):
 
     # création var commune de statut/ call
     check_year['call_year_tmp'] = check_year['callId'].str.extract('(\\d{4})')
-    # check_year.loc[(check_year.call_year_tmp<'2025')&(check_year.call_year.isnull()), 'call_year'] = check_year.loc[(check_year.call_year_tmp<'2025')&(check_year.call_year.isnull())].call_year_tmp
+    check_year.loc[(check_year.call_year_tmp<'2025')|(check_year.call_year.isnull()), 'call_year'] = check_year.loc[(check_year.call_year_tmp<'2025')|(check_year.call_year.isnull())].call_year_tmp
     check_year.loc[(check_year.call_year.isnull()), 'call_year'] = check_year.loc[(check_year.call_year.isnull())].call_year_tmp
     df = df.merge(check_year[['callId', 'call_year']], how='left', on='callId')
-    print("######ATTENTION###### penser à aller chercher l'année dans les WP (à mettre en place)")
+    print(f"######ATTENTION###### {df[df.call_year.isnull()].callId.unique()} call without year -> penser à aller chercher l'année dans les WP (à mettre en place)")
 
     # traitement YEAR
     if any(df['call_year'].isnull()):

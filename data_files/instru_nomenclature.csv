@@ -22,7 +22,7 @@ CP-SICA;CP;Collaborative project;
 CP-SICA-INFSO;CP;Collaborative project;
 CP-SOU;CP;Collaborative project;
 CP-TP;CP;Collaborative project;
-CSA;CSA;Coordination and support actions;
+CSA;CSA;Coordination and support actions;;CSA
 CSA-CA;CSA;Coordination and support actions;
 CSA-CA-INFSO-FET;CSA;Coordination and support actions;
 CSA-ERANET;CSA;Coordination and support actions;
@@ -30,19 +30,19 @@ CSA-ERA-PLUS;CSA;Coordination and support actions;
 CSA-SA;CSA;Coordination and support actions;
 CSA-SA(POC);CSA;Coordination and support actions;
 CSA-SA-INFSO-FET;CSA;Coordination and support actions;
-ERC-AG;ERC;Support for frontier research (ERC);
-ERC-CG;ERC;Support for frontier research (ERC);
-ERC-POC;ERC;Support for frontier research (ERC);
-ERC-SG;ERC;Support for frontier research (ERC);
-ERC-SYG;ERC;Support for frontier research (ERC);
+ERC-AG;ERC;Support for frontier research (ERC);;ERC
+ERC-CG;ERC;Support for frontier research (ERC);;ERC
+ERC-POC;ERC;Support for frontier research (ERC);;ERC
+ERC-SG;ERC;Support for frontier research (ERC);;ERC
+ERC-SYG;ERC;Support for frontier research (ERC);;ERC
 INFRASTR-171;171;Article 171 of the Treaty;
 JTI-171;171;Article 171 of the Treaty;
-JTI-CP-ARTEMIS;171;Article 171 of the Treaty;
-JTI-CP-ENIAC;171;Article 171 of the Treaty;
-JTI-CP-FCH;171;Article 171 of the Treaty;
-JTI-CP-IMI;171;Article 171 of the Treaty;
+JTI-CP-ARTEMIS;CP;Collaborative project;
+JTI-CP-ENIAC;CP;Collaborative project;
+JTI-CP-FCH;CP;Collaborative project;
+JTI-CP-IMI;CP;Collaborative project;
 JTI-CS;171;Article 171 of the Treaty;
-JTI-CSA-FCH;171;Article 171 of the Treaty;
+JTI-CSA-FCH;CSA;Coordination and support actions;
 JTI-CS-GAM-DUMMY;171;Article 171 of the Treaty;
 MC-AWARDS;MC;Support for training and career development of researchers (Marie Curie);;MSCA
 MC-CIG;MC;Support for training and career development of researchers (Marie Curie);;MSCA
@@ -69,7 +69,7 @@ CLR;CLR;Collective Research Projects;Collective Research Projects
 CRAFT;CRAFT;Co-operative Research Projects;Co-operative Research Projects
 I3;CP-CSA;Combination of CP & CSA;Specific Actions to Promote Research Infrastructures
 II;CP-CSA;Combination of CP & CSA;Specific Actions to Promote Research Infrastructures
-IP;CP-IP;Integrated Projects;Integrated Projects;MSCA
+IP;CP-IP;Integrated Projects;Integrated Projects;
 IIF;MCA;Marie Curie Actions;Incoming International Fellowships;MSCA
 OIF;MCA;Marie Curie Actions;Outgoing International Fellowships;MSCA
 EXT;MCA;Marie Curie Actions;Marie Curie Grants for Excellent Teams;MSCA

@@ -32,8 +32,8 @@ def FP6_process():
         print(f"size _FP6 with code after cleanup nuts: {len(_FP6[~_FP6.nuts_code_tmp.isnull()])}")
 
         nuts = nuts.loc[(nuts.nuts_code_tmp.isin(_FP6.nuts_code_tmp.unique()))&(~nuts.nuts_code_tmp.isnull())]
-        _FP6 = _FP6.merge(nuts, how='left', on='nuts_code_tmp').drop_duplicates()
-        print(f"nuts code without name: {len(_FP6[(~_FP6.nuts_code.isnull())&(_FP6.region_1_name.isnull())])}")
+        _FP6 = _FP6.merge(nuts, how='left', on='nuts_code_tmp').drop_duplicates().rename(columns={'nuts_code':'participation_nuts'})
+        print(f"nuts code without name: {len(_FP6[(~_FP6.participation_nuts.isnull())&(_FP6.region_1_name.isnull())])}")
         return _FP6
     _FP6=nuts(_FP6)
 
@@ -122,7 +122,9 @@ def FP6_process():
         # # finalisation action variables
         _FP6 = (_FP6.assign(action=np.where(_FP6.action=='MCA', _FP6.action_code2, _FP6.action))
                 .merge(instr[['instrument', 'action_code', 'name', 'action_next_fp']], how='left', left_on='action', right_on='instrument').rename(columns={'name':'action_name'}))
+        _FP6.loc[(_FP6.thema_code=='MSCA')&(_FP6.destination_next_fp=='CITIZENS'), 'action_next_fp'] = 'MSCA'
         print(f"- size FP6 after clean thema: {len(_FP6.loc[_FP6.stage=='successful'])}, fund: {'{:,.1f}'.format(_FP6.loc[_FP6.stage=='successful', 'subv_obt'].sum())}")
+
         return _FP6.drop(columns=['action_code2', 'action']).drop_duplicates()
     FP6=themes_act(_FP6)
 
@@ -145,7 +147,8 @@ def FP6_process():
 
     def ods(FP6):
         print("### FP6 ods")
-        country=(FP6[['project_id','country_code','country_name_fr','country_code_mapping', 'country_name_mapping', 'nuts_code', 'region_1_name',
+        FP6[['participation_nuts', 'region_1_name', 'region_2_name', 'regional_unit_name']] = FP6[['participation_nuts', 'region_1_name', 'region_2_name', 'regional_unit_name']].fillna('')
+        country=(FP6[['project_id','country_code','country_name_fr','country_code_mapping', 'country_name_mapping', 'participation_nuts', 'region_1_name',
             'region_2_name', 'regional_unit_name']]
                 .drop_duplicates()
                 .groupby(['project_id'], as_index = False).agg(lambda x: ';'.join(map(str, filter(None, x))))
@@ -156,7 +159,7 @@ def FP6_process():
                         'destination_code', 'destination_name_en', 
                         'duration', 'ecorda_date', 'end_date', 'framework', 'pilier_next_fp', 'programme_next_fp', 'action_next_fp',
                         'pilier_name_en', 'programme_name_en', 'project_cost', 'programme_code', 'destination_next_fp',
-                        'euro_partnerships_flag', 'euro_partnerships_type', 'euro_ps_name',
+                        'euro_partnerships_flag', 'euro_partnerships_type', 'euro_ps_name','euro_partnerships_type_next_fp',
                         'project_eucontribution', 'project_id', 'project_numberofparticipants', 'submission_date',
                         'signature_date', 'stage', 'stage_name', 'start_date', 'status_code', 'thema_code', 'thema_name_en', 'title']]
             .rename(columns={'project_cost':'project_totalcost'})   

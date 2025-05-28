@@ -2,6 +2,9 @@
 config_path.py
 config_url.py
 test.py
+TEST2.py
+test3.py
+demandes.py
 tok/
 
 # Byte-compiled / optimized / DLL files

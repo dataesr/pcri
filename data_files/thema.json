@@ -291,5 +291,34 @@
 		"thema_code": "ERA",
 		"thema_name_fr": "Réformer et renforcer le système européen de la R&I",
 		"thema_name_en": "Reforming and enhancing the European R&I System"
-	}
+	},
+	{
+		"thema_code": "Euratom-A", 
+		"thema_name_en": "Nuclear safety"
+	},
+	{
+		"thema_code": "Euratom-B",
+		"thema_name_en": "Decommissioning and environmental remediation"
+	},
+	{
+		"thema_code": "Euratom-C", 
+		"thema_name_en": "Radioactive waste management"},
+	{
+		"thema_code": "Euratom-D",
+		"thema_name_en": "Support the development of nuclear competences at Union level and socio-economic aspects"},
+	{
+		"thema_code": "Euratom-E", 
+		"thema_name_en": "Radiation protection"},
+	{
+		"thema_code": "Euratom-F", 
+		"thema_name_en": "Research infrastructure"},
+	{
+		"thema_code": "Euratom-G", 
+		"thema_name_en": "Innovation in nuclear safety"},
+	{
+		"thema_code": "Euratom-H",
+		"thema_name_en": "Fission/fusion cross-cutting actions"},
+	{
+		"thema_code": "Euratom-I",
+		"thema_name_en": "Cooperation with Third Countries"}
 ]

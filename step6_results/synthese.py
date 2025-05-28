@@ -1,6 +1,6 @@
 import pandas as pd, numpy as np
 from config_path import PATH_CONNECT
-from functions_shared import order_columns, zipfile_ods
+from functions_shared import cols_order, zipfile_ods
 
 
 def synthese_preparation(participation, countries):
@@ -59,7 +59,7 @@ def projects_participations(projects, part):
                 'thema_code', 'thema_name_fr', 'thema_name_en', 
                 'destination_code', 'destination_name_en', 'destination_lib',
                 'destination_detail_code', 'destination_detail_name_en',
-                'action_code', 'action_name', 'action_code2', 'action_name2', 'ecorda_date']]
+                'action_code', 'action_name', 'action_code2', 'action_name2', 'ecorda_date']].drop_duplicates()
 
     act_liste = ['RIA', 'MSCA', 'IA', 'CSA', 'ERC', 'EIC']
     projects_current = projects_current.assign(action_group_code=projects_current.action_code, action_group_name=projects_current.action_name)
@@ -68,7 +68,7 @@ def projects_participations(projects, part):
 
     projects_current = projects_current.merge(part, how='inner', on=['project_id', 'stage'])
 
-    print(f"size: {len(projects_current)}, fund_signed: {'{:,.1f}'.format(projects_current.loc[projects_current.stage=='successful','calculated_fund'].sum())}, participant_signed: {'{:,.1f}'.format(projects_current.loc[projects_current.stage=='successful','number_involved'].sum())}")
+    print(f"size: {len(projects_current)}, fund_signed: {'{:,.1f}'.format(projects_current.loc[(projects_current.stage=='successful')&(projects_current.country_code=='FRA')].calculated_fund.sum())}, participant_signed: {'{:,.1f}'.format(projects_current.loc[(projects_current.stage=='successful')&(projects_current.country_code=='FRA'),'number_involved'].sum())}")
 
     (pd.DataFrame(projects_current)
     .drop(columns=['topic_name','ecorda_date'])
@@ -105,7 +105,7 @@ def synthese(projects_current):
     tmp.loc[tmp.thema_code.isin(['ERC','MSCA']), ['destination_code', 'destination_name_en']] = np.nan
 
     # attention si changement de nom de vars -> la modifier aussi dans pcri_info_columns_order
-    tmp = order_columns(tmp, 'proj_synthese')
+    tmp = cols_order(tmp, 'proj_synthese')
 
     print(f"{'{:,.1f}'.format(tmp.loc[tmp.stage=='successful','fund_€'].sum())}")
     zipfile_ods(tmp, 'fr-esr-all-projects-synthese')

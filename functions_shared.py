@@ -71,7 +71,15 @@ def bugs_excel(df, chemin, name_sheet):
         with pd.ExcelWriter(chemin, mode='a', if_sheet_exists='replace') as writer:
             df.to_excel(writer, sheet_name=name_sheet)
 
-def order_columns(df, xl_sheetname):
+
+def cols_select(FP, xl_sheetname):
+    import pandas as pd
+    from config_path import PATH_ODS
+    xl_path = f"{PATH_ODS}colonnes_ordres_par_jeux_ods.xlsx"
+    df = pd.read_excel(xl_path, sheet_name=xl_sheetname, dtype={'order':int})
+    return df[['vars', FP, 'order']]
+
+def cols_order(df, xl_sheetname):
     import pandas as pd
     from config_path import PATH_ODS
     xl_path = f"{PATH_ODS}colonnes_ordres_par_jeux_ods.xlsx"
@@ -80,6 +88,25 @@ def order_columns(df, xl_sheetname):
     colorder=colorder.vars.unique()
     return df.reindex(columns=colorder)
 
+def select_cols_FP(FP, file_ods):   
+    cols_h=cols_select(FP, file_ods)
+    select=cols_h.loc[cols_h[FP].notna(), FP].unique()
+    return select
+
+def rename_cols_FP(FP, file_ods):   
+    cols_h=cols_select(FP, file_ods)
+    rename_map=cols_h[cols_h[FP].notna()].set_index(FP)['vars'].to_dict()
+    return rename_map
+
+def df_order_cols_FP(FP, file_ods, df):   
+    cols_h=cols_select(FP, file_ods)
+    order_map=cols_h.sort_values('order').vars.unique()
+
+    l=[]
+    for i in order_map:
+        if i in df.columns:
+            l.append(i)
+    return df.reindex(columns=l)
 
 def zipfile_ods(df, file_export):
     import zipfile
@@ -268,6 +295,8 @@ def my_country_code():
     pycountry.countries.add_entry(alpha_2="AX", alpha_3="ALA", name="Åland Islands")
     pycountry.countries.add_entry(alpha_2="MF", alpha_3="MAF", name="Saint Martin (French part)")
     pycountry.countries.add_entry(alpha_2="ZZ", alpha_3="ZZZ", name="Not available")
+    pycountry.countries.add_entry(alpha_2="YU", alpha_3="YUG", name="Serbia and Montenegro")
+    pycountry.countries.add_entry(alpha_2="EU", alpha_3="ZOE", name="European organisations area")
     dict1 = [c.__dict__['_fields'] for c in list(pycountry.countries)]
     df = (pd.DataFrame(dict1)[['alpha_2', 'alpha_3', 'name']]
                 .rename(columns={'alpha_2':'iso2', 'alpha_3':'iso3', 'name':'country_name_en'})
@@ -304,3 +333,58 @@ def com_iso3():
     com_iso=com_iso[['COM_CODE', 'ISO_3']].drop_duplicates()
     com_iso.columns=com_iso.columns.str.lower()
     return com_iso
+
+def load_last_file_csv(path_folder, file_prefix, sep):
+    import os, pandas as pd
+
+    matching_files = []
+
+    for file_name in os.listdir(path_folder):
+        file_path = os.path.join(path_folder, file_name)
+        
+        # Check if it's a file, its name starts with the desired prefix, and it's a CSV file
+        if os.path.isfile(file_path) and file_name.startswith(file_prefix) and file_name.endswith('.csv'):
+            matching_files.append(file_path)
+
+    # If there are matching files, proceed to find the most recent one
+    if matching_files:
+        # Sort the files by their last modification time (most recent first)
+        most_recent_file = max(matching_files, key=os.path.getmtime)
+
+    return pd.read_csv(most_recent_file, sep=sep)
+
+def FP_suivi(df):
+    import pandas as pd, json, numpy as np
+
+    if 'action_next_fp' in df.columns:
+        df.loc[~df.action_next_fp.isnull(), 'action_code'] = df.loc[~df.action_next_fp.isnull()].action_next_fp 
+        df.drop(columns=['action_next_fp'], inplace=True)
+
+    destination = pd.DataFrame(json.load(open('data_files/destination.json', 'r+', encoding='utf-8'))).drop(columns=['destination_lib', 'destination_name_fr'])
+    
+    if 'destination_next_fp' in df.columns:
+        #msca
+        df.loc[df.action_code=='MSCA', 'destination_detail_code'] = df.loc[df.action_code=='MSCA', 'destination_next_fp']
+        df.loc[df.action_code=='MSCA', 'destination_code'] = df.loc[df.action_code=='MSCA', 'destination_detail_code']
+        df.loc[(df.action_code=='MSCA')&(df.destination_code!='MSCA-OTHER'), 'destination_code'] = df.loc[(df.action_code=='MSCA')&(df.destination_code!='MSCA-OTHER')].destination_detail_code.str.split('-').str[0]
+        df.loc[(df.thema_code=='MSCA')&(df.action_code!='MSCA'), 'destination_code'] = np.nan
+        
+        # ERC
+        df.loc[(df.thema_code=='ERC')&(df.action_code!='ERC'), 'destination_code'] = np.nan
+
+        df = (df.drop(columns='destination_name_en')
+                .merge(destination, how='left', on='destination_code')
+                .merge(destination
+                        .rename(columns={'destination_code':'destination_detail_code', 
+                                        'destination_name_en':'destination_detail_name_en'}),
+                    how='left', on='destination_detail_code')
+        )
+
+        df.drop(columns=['destination_next_fp'], inplace=True)
+
+    if 'euro_partnerships_type_next_fp' in df.columns:
+        df.loc[~df.euro_partnerships_type_next_fp.isnull(), 'euro_partnerships_type'] = df.loc[~df.euro_partnerships_type_next_fp.isnull(), 'euro_partnerships_type_next_fp']
+        df.drop(columns=['euro_partnerships_type_next_fp'], inplace=True)
+        
+    return df
+

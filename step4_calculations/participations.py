@@ -105,21 +105,28 @@ def ent(participation, entities_info, projects):
         'coordination_number', 'calculated_fund', 'beneficiary_subv', 'fund_ent_erc']]
         .assign(number_involved=1))
 
+    print(f"1 - subv={'{:,.1f}'.format(part.loc[(part.country_code=='FRA')&(part.stage=='successful'), 'calculated_fund'].sum())}")
+
     def ent_stage(df, stage_value:str):
         import numpy as np
         df=(df[df.stage==stage_value]
-            .merge(entities_info.drop(columns='country_code_mapping'), 
-                   how='left', on=['generalPic','country_code']))
+            .merge(entities_info.drop(columns='country_code'), 
+                   how='left', on=['generalPic','country_code_mapping']))
         
+        print(f"2 - subv {stage_value}={'{:,.1f}'.format(df.loc[(df.country_code=='FRA')&(df.stage==stage_value), 'calculated_fund'].sum())}")
+
         if any(df.id.str.contains(';', na=False)):
             print(f"- Attention multi id pour une participation, calculs sur les chiffres\n {df.loc[df.id.str.contains(';', na=False), 'id'].drop_duplicates()}")
-            df['nb'] = df.id.str.split(';').str.len()
+            df['nb'] = np.where(df.id.str.contains(';', na=False), df.id.str.split(';').str.len(), 1)
             for i in ['coordination_number', 'calculated_fund', 'beneficiary_subv', 'fund_ent_erc', 'number_involved']:
-                df[i] = np.where(df['nb']>1, df[i]/df['nb'], df[i])
+                # df[i] = np.where(df['nb']>1, df[i]/df['nb'], df[i])
+                df[i] = df[i]/df['nb']
         return df
     
     entities_eval = ent_stage(part, 'evaluated')
+    print(f"3 - subv={'{:,.1f}'.format(entities_eval.loc[(entities_eval.country_code=='FRA')&(entities_eval.stage=='evaluated'), 'calculated_fund'].sum())}")
     entities_signed = ent_stage(part, 'successful')
+    print(f"3 - subv={'{:,.1f}'.format(entities_signed.loc[(entities_signed.country_code=='FRA')&(entities_signed.stage=='successful'), 'calculated_fund'].sum())}")
     entities_part = pd.concat([entities_eval, entities_signed], ignore_index=True)
 
     # mask=(entities_part.entities_id.str.contains('^gent', na=False))&(~entities_part.entities_acronym_source.isnull())
@@ -141,11 +148,14 @@ def ent(participation, entities_info, projects):
                 'isHigherEducation','legalType', 'vat', 'legalRegNumber', 
                 'naceCode', 'gps_loc', 'id', 'id_m', 'siret_closeDate','siren'])
                 )
+    print(f"4 - entities_part subv drop columns={'{:,.1f}'.format(entities_part.loc[(entities_part.country_code=='FRA')&(entities_part.stage=='successful'), 'calculated_fund'].sum())}")
 
     entities_part=(entities_part
         .groupby(list(entities_part.columns.difference(['coordination_number', 'number_involved', 'calculated_fund', 'beneficiary_subv', 'fund_ent_erc'])), dropna=False, as_index=False).sum()
         .drop_duplicates()
         )
+
+    print(f"5 - entities_part subv groupby and sum={'{:,.1f}'.format(entities_part.loc[(entities_part.country_code=='FRA')&(entities_part.stage=='successful'), 'calculated_fund'].sum())}")
 
     entities_part = entities_part.map(lambda x: x.strip() if isinstance(x, str) else x)
 
@@ -153,21 +163,21 @@ def ent(participation, entities_info, projects):
     print(f"2 - part={'{:,.1f}'.format(part.loc[part.stage=='successful', 'calculated_fund'].sum())},participation={'{:,.1f}'.format(participation.loc[participation.stage=='successful', 'calculated_fund'].sum())}")
     print(f"3 - comparaison nb couple genpic + country (doit être égal) {len(part[['generalPic','country_code']].drop_duplicates())},{len(entities_info[['generalPic','country_code']].drop_duplicates())}")
 
-    proj=(projects[
-        ['project_id', 'call_id', 'stage', 'status_code', 'framework', 'ecorda_date',
-        'call_year','topic_code', 'topic_name', 'action_code', 'action_name', 'action_code2', 
-        'action_name2', 'panel_code', 'panel_name', 'panel_regroupement_code', 'panel_regroupement_name',
-        'pilier_code', 'pilier_name_en', 'pilier_name_fr', 'programme_code', 'programme_name_en',
-        'programme_name_fr', 'thema_code', 'thema_name_fr', 'thema_name_en', 'destination_code',
-        'destination_lib', 'destination_name_en', 'destination_detail_code', 
-        'destination_detail_name_en', 'free_keywords', 'abstract', 'acronym']]
+    proj=(projects
+        .drop(columns=['call_deadline', 'destination_name_fr', 'duration', 'eic_panels',
+                        'end_date', 'eu_reqrec_grant', 'isSeo', 'lastUpdateDate',
+                        'nationalContribution', 'number_involved', 'otherContribution',
+                        'panel_description', 'project_webpage', 'signature_date', 'start_date',
+                        'submission_date', 'title', 'totalGrant', 'total_cost',
+                        'typeOfActionCode', 'url'])
         .drop_duplicates()
         )
 
+    # merge inner ; ATTENTION perte de participations baisse des subv
     temp = (entities_part
             .merge(proj, how='inner', on=['project_id', 'stage'])
             .sort_values(['destination_name_en'], ascending=True))
         
     temp = temp.reindex(sorted(temp.columns), axis=1)
-    print(f"size de entities_participation : {len(temp)}")
+    print(f"-size de entities_participation : {len(temp)}\n- {temp[(temp.country_code=='FRA')&(temp.stage=='successful')].calculated_fund.sum()}")
     return temp

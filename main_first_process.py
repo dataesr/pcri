@@ -7,6 +7,16 @@ pd.options.mode.copy_on_write = True
 
 NEW_UPDATE=False
 
+#################################
+if NEW_UPDATE==True:
+    # If new year to load
+    wp_year='2025'
+    url=f'https://research-and-innovation.ec.europa.eu/funding/funding-opportunities/funding-programmes-and-open-calls/horizon-europe/horizon-europe-work-programmes_en#pre-publication-of-work-programme-{wp_year}'
+    # url='https://research-and-innovation.ec.europa.eu/funding/funding-opportunities/funding-programmes-and-open-calls/horizon-europe/horizon-europe-work-programmes_en#pre-publication-of-work-programme-2025'
+    calls_by_wp(url, wp_year, load_wp=False)
+
+
+
 ################################
 ## data load / adjustements*
 extractDate = date_load()
@@ -14,7 +24,7 @@ extractDate = date_load()
 
 if NEW_UPDATE==True:
     # get_call_info()
-    get_topic_info_europa()
+    get_topic_info_europa('HORIZON')
 
 proj = projects_load()
 proj_id_signed = proj.project_id.unique()
@@ -275,10 +285,4 @@ del part_proj, part_prop
 #step5 - si nouvelle actualisation ou changement dans nomenclatures
 H2020_process()
 FP7_process()
-# FP6_process()
-
-# project_list = list(set(h20_p.project_id))+list(set(FP7_p.project_id))+list(set(FP6_p.project_id))+list(set(projects.loc[projects.stage=='successful'].project_id))
-# check_proj_id(project_list)
-
-
-
+FP6_process()

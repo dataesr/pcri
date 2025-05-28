@@ -286,21 +286,29 @@ def persons_preparation(csv_date):
     perso_app = orcid_id_fill(perso_app)
     #################
 
-    # add orcid_id (perso_app) into perso_part
-    print(f"\n### INFO missing between datasets")
-    perso_part=perso_part.merge(perso_app[['project_id', 'contact', 'orcid_id']], how='left', on=['project_id', 'contact']) 
-    perso_app=perso_app.merge(perso_part[['project_id', 'contact', 'nationality_country_code']], how='left', on=['project_id', 'contact'])
+    def vars_missing(perso_part, perso_app):
+        # add orcid_id (perso_app) into perso_part
+        print(f"\n### INFO missing between datasets")
+        tmp=perso_app.loc[~perso_app.orcid_id.isnull(), ['project_id', 'contact', 'orcid_id']].drop_duplicates()
+        perso_part=perso_part.merge(tmp, how='left', on=['project_id', 'contact']) 
+
+        tmp=perso_part.loc[~perso_part.nationality_country_code.isnull(), ['project_id', 'contact', 'nationality_country_code']]
+        perso_app=perso_app.merge(tmp, how='left', on=['project_id', 'contact'])
+        return perso_part, perso_app
+    
+    perso_part, perso_app = vars_missing(perso_part, perso_app)
     ##################
     
     # fill missing value with other df part/app
     print(f"\n### GENDER/TITLE missing")
     def gender_title_missing(part, app):
-        tab=(part[['project_id', 'contact', 'gender','title_clean']]
-        .merge(app[['project_id', 'contact', 'gender', 'title_clean']], 
-                how='inner', on=['project_id', 'contact'], suffixes=('_x','_y'))
-                .drop_duplicates())
         cl=['gender', 'title_clean']
         for i in cl:
+            tab=(part.loc[~part[i].isnull(), ['project_id', 'contact', i]].drop_duplicates()
+            .merge(app.loc[~app[i].isnull(), ['project_id', 'contact', i]].drop_duplicates(),
+                    how='inner', on=['project_id', 'contact'], suffixes=('_x','_y'))
+                    .drop_duplicates())
+
             if any(tab.loc[(tab[f"{i}_x"].isnull())&(~tab[f"{i}_y"].isnull())]):
                 tab.loc[(tab[f"{i}_x"].isnull())&(~tab[f"{i}_y"].isnull()), f"{i}_x"] = tab[f"{i}_y"]
             if any(tab.loc[(~tab[f"{i}_x"].isnull())&(tab[f"{i}_y"].isnull())]):

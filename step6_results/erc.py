@@ -1,6 +1,6 @@
 import numpy as np, pandas as pd
 from config_path import PATH_ODS
-from functions_shared import order_columns, zipfile_ods
+from functions_shared import cols_order, zipfile_ods, select_cols_FP, rename_cols_FP, df_order_cols_FP
 from step3_entities.ID_getSourceRef import *
 
 def erc_ods(msca_erc):
@@ -8,8 +8,8 @@ def erc_ods(msca_erc):
     print("### ERC ods")
         
     e = (msca_erc.assign(stage_name=np.where(msca_erc.stage=='evaluated', 'projets évalués', 'projets lauréats'))
-        .loc[(msca_erc.thema_code=='ERC')&(msca_erc.framework.isin(['Horizon 2020', 'Horizon Europe'])),   
-        ['action_code', 'action_name','calculated_fund', 'fund_ent_erc', 'call_year', 'extra_joint_organization', 'is_ejo',
+        .loc[(msca_erc.action_code=='ERC')&(msca_erc.framework.isin(['Horizon 2020', 'Horizon Europe'])),   
+        ['calculated_fund', 'fund_ent_erc', 'call_year', 'extra_joint_organization', 'is_ejo',
         'cordis_type_entity_acro', 'cordis_type_entity_code','cordis_type_entity_name_en', 'cordis_type_entity_name_fr',
         'country_group_association_code', 'country_group_association_name_en', 'with_coord',
         'country_group_association_name_fr', 'country_name_en', 'participation_linked',
@@ -20,7 +20,6 @@ def erc_ods(msca_erc):
         'panel_code':'panel_id',
         'panel_regroupement_code':'domaine_scientifique', 
         'panel_regroupement_name':'domaine_name_scientifique', 
-        'action_code':'action_id', 
         'role':'role_entity', 
         'erc_role':'porteur_projet',
         'calculated_fund':'funding_project',
@@ -34,7 +33,7 @@ def erc_ods(msca_erc):
 
     e = e.reindex(sorted(e.columns), axis=1)
     # attention si changement de nom de vars -> la modifier aussi dans pcri_info_columns_order
-    e = order_columns(e, 'erc_synthese')
+    e = cols_order(e, 'erc_synthese')
     zipfile_ods(e, "fr-esr-erc-projects-synthese")
     # e.to_csv(f"{PATH_ODS}fr-esr-erc-projects-synthese.csv", sep=';', encoding='UTF-8', index=False, na_rep='', decimal=".")
 
@@ -44,8 +43,8 @@ def erc_evol_ods(msca_resume):
     tmp=(msca_resume
         .assign(status_name=np.where(msca_resume.stage=='evaluated', 'projets évalués', 'projets lauréats'),
                 coordination_number=np.where(msca_resume.erc_role=='PI', 1, 0))
-        .loc[(msca_resume.thema_code=='ERC')&(msca_resume.framework.isin(['Horizon 2020', 'Horizon Europe'])),
-        ['framework', 'status_name','country_name_fr', 'call_year',  'action_code', 'action_name',
+        .loc[(msca_resume.action_code=='ERC')&(msca_resume.framework.isin(['Horizon 2020', 'Horizon Europe'])),
+        ['framework', 'status_name','country_name_fr', 'call_year',
         'destination_name_en', 'panel_name', 'erc_role', 'participates_as', 'role', 'funding_entity',
         'extra_joint_organization', 'is_ejo', 'with_coord', 'panel_regroupement_code', 'panel_regroupement_name',
         'funding_part', 'number_involved', 'coordination_number', 'project_id', 'country_code',
@@ -56,7 +55,6 @@ def erc_evol_ods(msca_resume):
             'panel_code':'panel_id',
             'panel_regroupement_code':'domaine_scientifique', 
             'panel_regroupement_name':'domaine_name_scientifique', 
-            'action_code':'action_id', 
             'funding_part':'funding_project',
             'role':'role_entity', 
             'erc_role':'porteur_projet',
@@ -77,43 +75,52 @@ def erc_evol_ods(msca_resume):
 
     tmp = tmp.reindex(sorted(tmp.columns), axis=1)
     # attention si changement de nom de vars -> la modifier aussi dans pcri_info_columns_order
-    tmp = order_columns(tmp, 'erc_evol')    
+    tmp = cols_order(tmp, 'erc_evol')    
     zipfile_ods(tmp.sort_values(['funding_project_all'], ascending=False), "fr-esr-erc-evolution-pcri")
     # tmp.sort_values(['fund_€_all'], ascending=False).to_csv(f"{PATH_ODS}fr-esr-erc-evolution-pcri.csv", sep=';', encoding='UTF-8', index=False, na_rep='', decimal=".")
 
 def erc_entities(me_entities):
     print("\n### ERC entities")
     ## ERC entities for ODS
+    
+    FP='horizon'
+    tmp=(me_entities[select_cols_FP(FP, 'erc_entities')]
+         .loc[(me_entities.stage=='successful')&(me_entities.action_code=='ERC')])
+    tmp=tmp.rename(columns=rename_cols_FP(FP, 'erc_entities'))
 
-    tmp = (me_entities.loc[(me_entities.stage=='successful')&(me_entities.thema_code=='ERC'),
 
-            ['framework','country_name_fr', 'call_year','destination_name_en', 'panel_name', 
-            'participates_as', 'erc_role', 'cordis_type_entity_acro', 'cordis_type_entity_code', 'action_code', 'action_name',
-            'cordis_type_entity_name_en', 'cordis_type_entity_name_fr',  'role', 'extra_joint_organization', 'is_ejo',
-            'operateur_name', 'paysage_category', 'category_woven', 'entreprise_type_code', 'entreprise_type_name',
-            'entities_name', 'entities_acronym', 'calculated_fund', 'fund_ent_erc', 'coordination_number', 'number_involved', 'with_coord',
-            'project_id', 'participation_nuts', 'region_1_name', 'region_2_name', 'regional_unit_name',
-            'country_group_association_name_fr', 'country_name_mapping','country_name_en',
-            'country_group_association_code', 'country_group_association_name_en', 'country_code_mapping', 'panel_code',
-            'destination_code', 'entities_id', 'status_code', 'ecorda_date',  'free_keywords', 'abstract', 'acronym',
-            'category_agregation', 'entreprise_flag', 'source_id','panel_regroupement_code', 'panel_regroupement_name', 'participation_linked'
-            ]]
-        .rename(columns={ 
-            'source_id':'entities_id_source',
-            'panel_code':'panel_id',
-            'panel_regroupement_code':'domaine_scientifique', 
-            'panel_regroupement_name':'domaine_name_scientifique', 
-            'action_code':'action_id', 
-            'erc_role':'porteur_projet',
-            'role':'role_entity',
-            'calculated_fund':'funding_project', 
-            'fund_ent_erc':'funding_entity',
-            'country_group_association_code':'country_association_code',
-            'country_group_association_name_en':'country_association_name_en',
-            'country_group_association_name_fr':'country_association_name_fr',
-            'with_coord':'flag_coordination',
-            'is_ejo':'flag_organization'
-            }))
+    # cols_h=cols_select('horizon', 'erc_entities')
+    # select=cols_h[cols_h.horizon.notna()].horizon.unique()
+    # rename_map=cols_h[cols_h.horizon.notna()].set_index('horizon')['vars'].to_dict()
+    # tmp=me_entities.loc[(me_entities.stage=='successful')&(me_entities.action_code=='ERC'), select].rename(columns=rename_map)
+
+    # tmp = (me_entities.loc[(me_entities.stage=='successful')&(me_entities.action_code=='ERC'),
+    #         ['framework','country_name_fr', 'call_year','destination_name_en', 'panel_name', 
+    #         'participates_as', 'erc_role', 'cordis_type_entity_acro', 'cordis_type_entity_code', 
+    #         'cordis_type_entity_name_en', 'cordis_type_entity_name_fr',  'role', 'extra_joint_organization', 'is_ejo',
+    #         'operateur_name', 'paysage_category', 'category_woven', 'entreprise_type_code', 'entreprise_type_name',
+    #         'entities_name', 'entities_acronym', 'calculated_fund', 'fund_ent_erc', 'coordination_number', 'number_involved', 'with_coord',
+    #         'project_id', 'participation_nuts', 'region_1_name', 'region_2_name', 'regional_unit_name',
+    #         'country_group_association_name_fr', 'country_name_mapping','country_name_en',
+    #         'country_group_association_code', 'country_group_association_name_en', 'country_code_mapping', 'panel_code',
+    #         'destination_code', 'entities_id', 'status_code', 'ecorda_date',  'free_keywords', 'abstract', 'acronym',
+    #         'category_agregation', 'entreprise_flag', 'source_id','panel_regroupement_code', 'panel_regroupement_name', 'participation_linked'
+    #         ]]
+    #     .rename(columns={ 
+    #         'source_id':'entities_id_source',
+    #         'panel_code':'panel_id',
+    #         'panel_regroupement_code':'domaine_scientifique', 
+    #         'panel_regroupement_name':'domaine_name_scientifique', 
+    #         'erc_role':'porteur_projet',
+    #         'role':'role_entity',
+    #         'calculated_fund':'funding_project', 
+    #         'fund_ent_erc':'funding_entity',
+    #         'country_group_association_code':'country_association_code',
+    #         'country_group_association_name_en':'country_association_name_en',
+    #         'country_group_association_name_fr':'country_association_name_fr',
+    #         'with_coord':'flag_coordination',
+    #         'is_ejo':'flag_organization'
+    #         }))
 
     tmp = tmp.loc[tmp.status_code!='REJECTED']
     tmp.loc[tmp.status_code=='UNDER_PREPARATION', 'abstract'] = np.nan
@@ -123,6 +130,6 @@ def erc_entities(me_entities):
     tmp.loc[tmp.entities_id_source=='identifiantAssociationUniteLegale', 'entities_id_source'] = 'rna'
     tmp.loc[(tmp.entities_id_source.isnull())&(tmp.entities_id.str.contains('gent', na=False)), 'entities_id_source'] = 'paysage'
 
-    tmp = order_columns(tmp, 'erc_entities')  
+    tmp = df_order_cols_FP(FP, 'erc_entities', tmp)
     zipfile_ods(tmp, "fr-esr-erc-projects-entities")
     # tmp.to_csv(f"{PATH_ODS}fr-esr-erc-projects-entities.csv", sep=';', encoding='UTF-8', index=False, na_rep='', decimal=".")
