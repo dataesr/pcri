@@ -4,6 +4,7 @@ from step3_entities.references import *
 from step3_entities.merge_referentiels import *
 from step3_entities.categories import *
 from step3_entities.ID_getSourceRef import *
+from step5_frameworks.functions_shared import *
 
 def FP7_process():
     print("\n### FP7")
@@ -28,8 +29,8 @@ def FP7_process():
         return _FP7
     _FP7=FP7_load()
 
-    country = pd.read_csv(f"{PATH_SOURCE}H2020/country_current.csv", sep=';', encoding='utf-8')
-    def FP7_cleaning(_FP7, country):
+    # country = pd.read_csv(f"{PATH_SOURCE}H2020/country_current.csv", sep=';', encoding='utf-8')
+    def FP7_cleaning(_FP7):
         _FP7 = _FP7.loc[~_FP7.status_code.isin(['INELIGIBLE','WITHDRAWN'])]
         _FP7.loc[_FP7.status_code=='Project Closed', 'status_code'] = 'CLOSED'
         _FP7.loc[_FP7.status_code=='Project Terminated', 'status_code'] = 'TERMINATED'
@@ -81,31 +82,18 @@ def FP7_process():
         FP7 = (_FP7.drop(columns=['id', 'ZONAGE', 'country_code'])
                 .merge(p1[['generalPic', 'country_code_mapping', 'id', 'ZONAGE']], 
                     how='left', on=['generalPic', 'country_code_mapping']))
-        print(f"- size _FP7 with ref: {len(_FP7)}, size FP7: {len(FP7)},  size with id: {len(FP7.loc[~FP7.id.isnull()])}")
         
-        FP7 = FP7.merge(country[['country_code_mapping', 'country_name_mapping', 'country_code']].drop_duplicates(), how='left', on='country_code_mapping')
-        # FP7.loc[~FP7.ZONAGE.isnull(), 'country_code'] = FP7.ZONAGE
-        if any(FP7.country_code.isnull()):
-            print(f"country_code null {FP7.loc[FP7.country_code.isnull(), ['country_code_mapping', 'country_name_mapping']].drop_duplicates()}")
-            FP7.loc[FP7.country_code_mapping=='GUF', 'country_code'] = 'FRA'
-            FP7.loc[FP7.country_code_mapping=='GUF', 'country_name_mapping'] = 'French Guiana'
-            FP7.loc[FP7.country_code_mapping.isin(['SGS', 'IOT']), 'country_code'] = 'GBR'
-            FP7.loc[FP7.country_code_mapping=='IOT', 'country_name_mapping'] = 'British Indian Ocean Territory'
-            FP7.loc[FP7.country_code_mapping=='SGS', 'country_name_mapping'] = 'South Georgia and the South Sandwich Islands'
+        print(f"- size _FP7 with ref: {len(_FP7)}, size FP7: {len(FP7)},  size with id: {len(FP7.loc[~FP7.id.isnull()])}")
 
-        cc = country.drop(columns=['country_code_mapping', 'country_name_mapping', 'countryCode', 'countryCode_parent']).drop_duplicates()
-        FP7 = FP7.merge(cc, how='left', on='country_code')
-        FP7.loc[FP7.country_code_mapping=='ZOE', 'country_name_mapping'] = 'European organisations area'
-
-        FP7.loc[FP7.country_code_mapping=='ZOE', 'country_code'] = 'ZOE'
-        FP7.loc[FP7.country_code=='ZOE', 'country_name_fr'] = 'Union Européenne'
-        FP7.loc[FP7.country_code=='ZOE', 'country_name_en'] = 'European organisations area'
-
-        print(f"- size FP7 with country assoc: {len(FP7)},\ncols: {FP7.columns}")    
         return FP7
-    FP7=FP7_cleaning(_FP7, country)
+    FP7=FP7_cleaning(_FP7)
 
-    def FP7_entities(FP7, country):
+    cc=country_cleaning(FP7, 'FP7')
+    FP7=FP7.drop(columns=['countryCode_parent', 'country_code_mapping']).merge(cc, how='left', on='countryCode')
+    print(f"- size FP7 with country assoc: {len(FP7)},\ncols: {FP7.columns}")    
+
+
+    def FP7_entities(FP7):
         print("\n## FP7 entities")
         # part.country_code.unique()
         entities = FP7.loc[~FP7.id.isnull(), ['generalPic','id', 'country_code_mapping']].drop_duplicates()
@@ -172,7 +160,7 @@ def FP7_process():
         entities_tmp = category_woven(entities_tmp, sirene)
         entities_tmp = category_agreg(entities_tmp)
         return  entities_tmp
-    entities_tmp=FP7_entities(FP7, country)
+    entities_tmp=FP7_entities(FP7)
 
     # calculs
     def FP7_calcul(FP7, entities_tmp):
@@ -180,11 +168,11 @@ def FP7_process():
         print(f"- size part before: {len(FP7)}")
         part1 = (FP7[['project_id', 'participant_order', 'role', 'generalPic', 'global_costs',
             'participant_type_code', 'name_source', 'acronym_source', 'countryCode', 'nutsCode',
-            'funding', 'status.x', 'ADRESS', 'city', 'post_code', 'pme', 'stage', 'nom', 'countryCode_parent', 'vat_id',
+            'funding', 'status.x', 'ADRESS', 'city', 'post_code', 'pme', 'stage', 'nom',  'vat_id',
             'country_code_mapping', 'participant_id', 'number_involved', 'coordination_number', 'id', 'ZONAGE',
             'country_name_mapping', 'country_code', 'country_name_en','country_association_code', 'country_association_name_en',
             'country_group_association_code', 'country_group_association_name_en','country_group_association_name_fr', 
-            'country_name_fr', 'article1', 'article2']]
+            'country_name_fr', 'article1', 'article2', 'fp_specific_country_status']]
                 .merge(entities_tmp, how='left', on=['generalPic', 'country_code_mapping', 'id']))
 
         part2=(part1.loc[part1.entities_name.isnull()].drop_duplicates())
@@ -230,126 +218,110 @@ def FP7_process():
         print(f"- size part1 with code after cleanup nuts: {len(part1[~part1.nuts_code_tmp.isnull()])}")
 
         nuts = nuts.loc[(nuts.nuts_code_tmp.isin(part1.nuts_code_tmp.unique()))&(~nuts.nuts_code_tmp.isnull())]
-        part1 = part1.merge(nuts, how='left', on='nuts_code_tmp').drop_duplicates()
-        print(f"nuts code without name: {len(part1[(~part1.nuts_code.isnull())&(part1.region_1_name.isnull())])}")
+        part1 = part1.merge(nuts, how='left', on='nuts_code_tmp').drop_duplicates().rename(columns={'nuts_code':'participation_nuts'})
+        print(f"nuts code without name: {len(part1[(~part1.participation_nuts.isnull())&(part1.region_1_name.isnull())])}")
 
-        print(part1.groupby(['stage'], dropna=True )['nuts_code'].size())
+        print(part1.groupby(['stage'], dropna=True )['participation_nuts'].size())
         print(part1.loc[part1.stage=='successful', 'funding'].sum())
         return part1
     part1=FP7_calcul(FP7, entities_tmp)
 
 
-    instr = pd.read_csv('data_files/instru_nomenclature.csv', sep=';')
-    act=pd.read_json(open("data_files/actions_name.json", 'r', encoding='utf-8'))
-    msca_correspondence = pd.read_table('data_files/msca_correspondence.csv', sep=";").drop(columns='framework')
-    erc_correspondence = pd.read_json(open("data_files/ERC_correspondance.json", 'r', encoding='utf-8'))
-    thema = pd.read_json(open("data_files/thema.json", 'r', encoding='utf-8'))
-    destination = pd.read_json(open("data_files/destination.json", 'r', encoding='utf-8'))
-
-    def themes_cleaning(FP7):
-        print("## FP7 themes")
-        proj = (FP7.assign(stage_name=np.where(FP7.stage=='successful', 'projets lauréats', 'projets évalués'))
-                [['project_id', 'stage', 'acronym', 'abstract', 'title', 'call_id', 'stage_name',
+    def themes_cleaning(proj):
+        proj = (FP7[['project_id', 'stage', 'acronym', 'abstract', 'title', 'call_id', 
                 'call_deadline', 'instrument',  'panel_code', 'panel_name', 'call_year', 'duration', 'status_code', 
-            'cost_total', 'eu_reqrec_grant', 'free_keywords', 'number_involved', 'submission_date',
-            'start_date', 'signature_date', 'end_date',  'pilier', 'prog_abbr', 'prog_lib', 'area_abbr', 'area_lib']]
+                'cost_total', 'eu_reqrec_grant', 'free_keywords', 'number_involved', 'submission_date',
+                'start_date', 'signature_date', 'end_date',  'pilier', 'prog_abbr', 'prog_lib', 'area_abbr', 'area_lib']]
                 .drop_duplicates())
 
-        proj.loc[(proj.prog_abbr=='ERC')&(proj.instrument=='POC'), 'instrument'] = 'ERC-POC'
-        proj.loc[proj.prog_abbr=='PEOPLE', 'thema_code'] = 'MSCA'
+        # # ERC
+        erc_correspondence = pd.read_json(open("data_files/ERC_correspondance.json", 'r', encoding='utf-8'))
+
         proj.loc[proj.prog_abbr=='ERC', 'thema_code'] = 'ERC'
-
-        print(f"- size proj: {len(proj)}")
-
-        proj = proj.merge(instr, how='left', on='instrument').drop(columns=['name'])
-        proj.loc[proj.instrument.str.contains('MC-'), 'action_code'] = 'MSCA'        
-
-        if any(proj.action_code.isnull()):
-            print(proj[proj.action_code.isnull()].instrument.unique())   
-            
-        print(f"- size proj: {len(proj)}")
-
-        # ERC
-        proj = proj.merge(erc_correspondence, how='left', left_on=['instrument'], right_on=['old'])
-
+        proj.loc[(proj.prog_abbr=='ERC')&(proj.instrument.str.contains('POC', na=False)), 'instrument'] = 'ERC-POC'
+        proj = (proj.merge(erc_correspondence, how='left', left_on=['instrument'], right_on=['old'])
+                .rename(columns={'new':'destination_code'})
+                .drop(columns='old'))
         proj.loc[(proj.thema_code=='ERC')&(proj.destination_code.isnull()), 'destination_code'] = 'ERC-OTHER'
 
-        proj.loc[proj.thema_code=='ERC', 'programme_code'] = 'ERC'
-        proj.loc[proj.thema_code=='ERC', 'programme_name_en'] = 'European Research Council (ERC)'
+        proj.loc[proj.thema_code=='ERC', 'programme_next_fp'] = 'ERC'
 
-        # MSCA
-        proj = proj.merge(msca_correspondence, how='left', left_on=['instrument'], right_on=['old'])
-        proj.loc[proj.call_id.str.contains('NIGHT'), 'destination_detail_code'] = 'CITIZENS'
-        proj.loc[~proj.destination_detail_code.isnull(), 'destination_code'] = proj.destination_detail_code.str.split('-').str[0]
-        proj.loc[(proj.destination_code.isnull())&(proj.thema_code=='MSCA'), 'destination_code'] = 'MSCA-OTHER'
-        proj.loc[proj.thema_code=='MSCA', 'programme_code'] = 'MSCA'
-        proj.loc[proj.thema_code=='MSCA', 'programme_name_en'] = 'Marie Skłodowska-Curie Actions (MSCA)'
 
-        proj.rename(columns={'instrument':'fp_specific_instrument'}, inplace=True)
+        # # MSCA
+        df = proj.loc[(proj.prog_abbr=='PEOPLE')|(proj.instrument.str.startswith('MC-')), ['prog_abbr', 'call_id', 'instrument']].drop_duplicates()
+        df['inst'] = df['instrument'].str.replace('MC-', '')
 
+        df=thema_msca_cleaning(df, 'FP7')
+        proj = proj.merge(df, how='left', on=['prog_abbr', 'call_id', 'instrument'], suffixes=('', '_t'))
+
+        selected_columns = [col[:-2] for col in proj.columns if col.endswith('_t')]
+        for i in selected_columns:
+            proj.loc[~proj[f"{i}_t"].isnull(), i] = proj.loc[~proj[f"{i}_t"].isnull()][f"{i}_t"]
+        proj = proj.filter(regex=r'.*(?<!_t)$')
+        proj.loc[proj.thema_code=='MSCA', 'programme_next_fp'] = 'MSCA'
         print(f"- size proj after msca: {proj.loc[proj.stage=='successful'].project_id.nunique()}, nb project_id: {len(proj.loc[proj.stage=='successful'])}")
 
-        #euratom
-        proj.loc[(proj.pilier.isin(['EURATOM']))&(proj.prog_abbr=='Fission'), 'programme_code'] = 'NFRP'
-        proj.loc[(proj.pilier.isin(['EURATOM']))&(proj.programme_code=='NFRP'), 'programme_name_en'] = 'Nuclear fission and radiation protection'
-        proj.loc[proj.prog_abbr=='Fusion', 'programme_code'] = 'Fusion'
-        proj.loc[proj.prog_abbr=='Fusion', 'programme_name_en'] = 'Fusion Energy'
+        # #euratom
+        df = proj.loc[proj.pilier.isin(['EURATOM']), ['prog_abbr', 'area_abbr']].assign(topic_area=proj.area_abbr)
+        df = thema_euratom_cleaning(df, 'FP7')
+        proj = proj.merge(df, how='left', on=['prog_abbr', 'area_abbr'], suffixes=('', '_t'))
 
-        euratom = pd.read_csv('data_files/euratom_thema_all_FP.csv', sep=';', na_values='')
-        proj = proj.merge(euratom[['topic_area', 'thema_code', 'thema_name_en']], how='left', left_on='area_abbr', right_on='topic_area', suffixes=['', '_t'])
-        proj.loc[(~proj.thema_code_t.isnull()), 'thema_code'] = proj.loc[(~proj.thema_code_t.isnull()), 'thema_code_t']
+        selected_columns = [col[:-2] for col in proj.columns if col.endswith('_t')]
+        for i in selected_columns:
+            proj.loc[~proj[f"{i}_t"].isnull(), i] = proj.loc[~proj[f"{i}_t"].isnull()][f"{i}_t"]
         proj = proj.filter(regex=r'.*(?<!_t)$')
 
         #ju_jti
-        proj.loc[proj.prog_abbr=='SP1-JTI', 'thema_code'] = 'JU-JTI'
-        proj.loc[proj.prog_abbr=='SP1-JTI', 'destination_code'] = proj.area_abbr.str.split('-').str[-1]
-        proj.loc[proj.area_abbr=='JTI-CS', 'destination_code'] = 'CLEAN-AVIATION'
+        proj.loc[proj.prog_abbr.str.contains('JTI', na=False), 'thema_code'] = 'JU-JTI'
+        proj.loc[proj.prog_abbr.str.contains('JTI', na=False),  'destination_code'] = proj.loc[proj.prog_abbr.str.contains('JTI', na=False)].instrument.str.split('-').str[-1]
+        proj.loc[proj.area_abbr=='JTI-CS', 'destination_code'] = 'CLEAN-SKY'
 
-        proj.loc[(proj.destination_code=='CLEAN-SKY'), 'destination_code'] = 'CLEAN-AVIATION'
-        proj.loc[(proj.destination_code=='FCH'), 'destination_code'] = 'CLEANH2'
-        proj.loc[(proj.destination_code=='IMI'), 'destination_code'] = 'IHI'
-        proj.loc[(proj.destination_code.isin(['ENIAC','ARTEMIS'])), 'destination_code'] = 'Chips'
-        proj.loc[proj.thema_code=='JU-JTI', 'action_code'] = proj.fp_specific_instrument.str.split('-').str[1]
+        proj.loc[(proj.destination_code=='CLEAN-SKY'), 'destination_next_fp'] = 'CLEAN-AVIATION'
+        proj.loc[(proj.destination_code=='FCH'), 'destination_next_fp'] = 'CLEANH2'
+        proj.loc[(proj.destination_code=='IMI'), 'destination_next_fp'] = 'IHI'
+        proj.loc[(proj.destination_code.isin(['ENIAC','ARTEMIS'])), 'destination_next_fp'] = 'Chips'
+        # proj.loc[proj.thema_code=='JU-JTI', 'action_code'] = proj.fp_specific_instrument.str.split('-').str[1]
 
         # WIDENING COST
         proj.loc[proj.area_abbr.str.contains('COST', na=False), 'thema_code'] = 'COST'
-        proj.loc[proj.area_abbr.str.contains('COST', na=False), 'programme_code'] = 'Widening'
-        proj.loc[proj.area_abbr.str.contains('COST', na=False), 'programme_name_en'] = 'Widening participation and spreading excellence'
+        proj.loc[proj.area_abbr.str.contains('COST', na=False), 'programme_next_fp'] = 'Widening'
 
-        proj.loc[proj.pilier=='EURATOM', 'pilier_name_en'] = 'Euratom'
-        proj.loc[(proj.prog_abbr.isin(['PEOPLE','ERC']))|(proj.prog_abbr=='INFRA'), 'pilier_name_en'] = 'Excellent Science'
-        proj.loc[proj.pilier_name_en.isnull(), 'pilier_name_en'] = proj.pilier.str.capitalize()
+        destination = pd.read_json(open("data_files/destination.json", 'r', encoding='utf-8'))
+        proj.loc[(~proj.thema_code.isin(['MSCA','ERC']))&(proj.destination_code.isnull()), 'destination_code'] = proj.area_abbr
+        # proj.loc[proj.destination_code.isnull(), 'destination_code'] = proj.thema_code+'-OTHER'
+        proj = proj.merge(destination[['destination_code', 'destination_name_en']], how='left', on='destination_code')
+        proj.loc[(~proj.destination_code.isnull())&(proj.destination_name_en.isnull()), 'destination_name_en'] = proj.area_lib
+
+        thema = pd.read_json(open("data_files/thema.json", 'r', encoding='utf-8'))
+        proj = proj.merge(thema[['thema_code', 'thema_name_en']], how='left', on='thema_code')
+        proj.loc[(~proj.thema_code.isnull())&(proj.thema_name_en.isnull()), 'destination_name_en'] = proj.prog_lib
+
 
         proj.loc[proj.programme_code.isnull(), 'programme_code'] = proj.prog_abbr
         proj.loc[proj.programme_name_en.isnull(), 'programme_name_en'] = proj.prog_lib
 
+        proj['pilier_name_en'] = proj.pilier.str.capitalize()
+        proj.loc[proj.prog_abbr.isin(['PEOPLE','IDEAS', 'CAPACITIES']), 'pilier_next_fp'] = 'Excellent Science'
 
-        proj.loc[(~proj.thema_code.isin(['MSCA','ERC']))&(proj.destination_code.isnull()), 'destination_code'] = proj.area_abbr
-        proj.loc[proj.destination_code.isnull(), 'destination_code'] = proj.thema_code+'-OTHER'
-        proj = proj.merge(destination[['destination_code', 'destination_name_en']], how='left', on='destination_code')
-        proj = (proj
-                .merge(destination.rename(columns={'destination_code':'destination_detail_code', 'destination_name_en':'destination_detail_name_en'})
-                [['destination_detail_code', 'destination_detail_name_en']], how='left', on='destination_detail_code')
-                .drop_duplicates())
+        # action
+        instr = pd.read_csv('data_files/instru_nomenclature.csv', sep=';')
+        proj = proj.merge(instr, how='left', on='instrument').drop(columns=['instrument_name']).rename(columns={'name':'action_name'})
+        proj.loc[proj.destination_code=='NIGHT', 'action_next_fp'] = 'MSCA'   
 
-        proj.loc[(~proj.thema_code.isin(['MSCA','ERC']))&(proj.destination_name_en.isnull()), 'destination_name_en'] = proj.area_lib
-        proj.loc[proj.thema_code.isnull(), 'thema_code'] = proj.prog_abbr
-        proj = proj.merge(thema[['thema_code', 'thema_name_en']], how='left', on='thema_code', suffixes=['', '_t'])
-        proj.loc[proj.thema_name_en.isnull(), 'thema_name_en'] = proj.thema_name_en_t
-        proj.loc[proj.thema_name_en.isnull(),'thema_name_en'] = proj.prog_lib
-        proj = proj.filter(regex=r'.*(?<!_t)$')
 
-        proj = (proj.drop(columns=['area_abbr', 'area_lib'])
-                .rename(columns={'prog_lib':'fp_specific_programme', 'pilier':'fp_specific_pilier'}))
-        
-        print(proj[['programme_code',
-        'programme_name_en', 'thema_name_en', 'destination_code', 'destination_name_en',
-        'destination_detail_code','destination_detail_name_en']].drop_duplicates())
-        return proj
+        if any(proj.action_code.isnull()):
+            print(proj[proj.action_code.isnull()].instrument.unique())   
+            
+        print(f"- size proj: {len(proj.drop_duplicates())}")
+
+        return proj.drop_duplicates()
     proj=themes_cleaning(FP7)
 
+    proj=ju_jti_parterships(proj, 'FP7')
+    proj=eranet_partnerships(proj, 'FP7')
+
     def proj_cleaning(proj):
-        proj = proj.merge(act, how='left', on='action_code')
+        proj=proj.assign(stage_name=np.where(proj.stage=='successful', 'projets lauréats', 'projets évalués'))
         proj = proj.merge(call, how='left', on='call_id').assign(ecorda_date=pd.to_datetime('2021-04-30'), framework='FP7')
         proj = proj.assign(ecorda_date=pd.to_datetime('2021-04-30'), framework='FP7')
         for i in ['title', 'abstract', 'free_keywords']:
@@ -369,9 +341,11 @@ def FP7_process():
     proj=proj_cleaning(proj)
 
     def proj_ods(proj, part1):
+        
+        part1[['participation_nuts', 'region_1_name', 'region_2_name', 'regional_unit_name']] = part1[['participation_nuts', 'region_1_name', 'region_2_name', 'regional_unit_name']].fillna('')
         country=(part1.loc[part1.stage=='successful',
                     ['project_id','country_code','country_name_fr','country_code_mapping', 'ZONAGE',
-                        'country_name_mapping', 'nuts_code', 'region_1_name', 'region_2_name','regional_unit_name']]
+                        'country_name_mapping', 'participation_nuts', 'region_1_name', 'region_2_name','regional_unit_name']]
             .drop_duplicates()
             .groupby(['project_id'], as_index = False).agg(lambda x: ';'.join(map(str,filter(None, x))))
             .drop_duplicates())
@@ -389,11 +363,12 @@ def FP7_process():
 
         project = (proj.loc[proj.stage=='successful', 
                 ['abstract', 'acronym', 'action_code', 'action_name', 'call_budget','call_deadline', 'call_id', 'call_year',
-                'destination_code','destination_detail_code', 'destination_detail_name_en', 'destination_name_en', 
-                'duration', 'ecorda_date', 'end_date', 'fp_specific_instrument', 'framework', 'free_keywords', 
-                'panel_code', 'panel_name', 'fp_specific_programme', 'fp_specific_pilier',
-                'pilier_name_en', 'programme_code', 'programme_name_en', 'project_id', 'signature_date', 'stage', 'stage_name', 
-                'start_date', 'status_code', 'submission_date', 'thema_code', 'thema_name_en', 'title']]
+                'destination_code', 'destination_name_en', 'duration', 'ecorda_date', 'end_date', 'framework', 'free_keywords', 
+                'panel_code', 'panel_name', 'pilier_name_en', 'programme_code', 'programme_name_en', 'project_id', 'signature_date', 'stage', 'stage_name', 
+                'start_date', 'status_code', 'submission_date', 'thema_code', 'thema_name_en', 'title',
+                'destination_next_fp', 'programme_next_fp', 'action_next_fp', 'pilier_next_fp',
+                'euro_partnerships_type','euro_partnerships_type_next_fp',	'euro_ps_name',	'euro_partnerships_flag'
+                ]]
                 
             .drop_duplicates())
 
@@ -403,21 +378,23 @@ def FP7_process():
 
         with open(f"{PATH_CLEAN}FP7_successful_projects.pkl", 'wb') as file:
             pd.to_pickle(project, file)
-        return project
+        
     proj_ods(proj, part1)
 
     def FP7_all(proj, part1):
-        t = (proj.drop(columns=['cost_total', 'duration', 'end_date', 'eu_reqrec_grant', 'fp_specific_instrument', 
-                            'fp_specific_programme', 'fp_specific_pilier',
-                            'number_involved', 'signature_date', 'start_date', 'submission_date'])
-            .merge(part1, how='inner', on=['project_id', 'stage'])
-            .rename(columns={'funding':'calculated_fund', 'ZONAGE':'extra_joint_organization'}))
         
-        t = (t.assign(is_ejo=np.where(t.extra_joint_organization.isnull(), 'Sans', 'Avec')))
+        t = (proj.drop(columns=['cost_total', 'duration', 'end_date', 'eu_reqrec_grant',
+                            'number_involved', 'signature_date', 'start_date', 'submission_date'])
+            .merge(part1, how='inner', on=['project_id', 'stage']))
+        
+        t = (t.assign(is_ejo=np.where(t.ZONAGE.isnull(), 'Sans', 'Avec'))
+            .rename(columns={'funding':'calculated_fund', 'ZONAGE':'extra_joint_organization'})
+        )
 
-        t.loc[(t.destination_code.isin(['PF', 'ERARESORG', 'GA']))|((t.thema_code.isin(['ERC', 'COST']))&(t.destination_code!='SyG')), 'coordination_number'] = 0
+        mask=(t.destination_code.isin(['ERARESORG', 'GA']))|((t.destination_next_fp.str.startswith('PF')))|((t.thema_code.isin(['ERC', 'COST'])))
+        t.loc[mask, 'coordination_number'] = 0
         t=t.assign(with_coord=True)
-        t.loc[(t.destination_code.isin(['PF', 'ERARESORG', 'GA']))|((t.thema_code.isin(['ERC', 'COST']))&(t.destination_code!='SyG')), 'with_coord'] = False
+        t.loc[mask, 'with_coord'] = False
 
         t.loc[t.thema_code=='ERC', 'erc_role'] = 'partner'
 

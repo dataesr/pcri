@@ -1,6 +1,6 @@
-import pandas as pd
+import pandas as pd, os
 from config_path import PATH_SOURCE, PATH_WORK
-from functions_shared import zipfile_ods, order_columns
+from functions_shared import zipfile_ods, cols_order, load_last_file_csv, cols_select
 
 def projects_ods(projects, participation, calls, countries, h20_p, FP6_p, FP7_p):
     ###projects info for ODS
@@ -30,29 +30,9 @@ def projects_ods(projects, participation, calls, countries, h20_p, FP6_p, FP7_p)
                 how='left', on=['call_id', 'call_deadline'])
             .merge(part, how='inner', on='project_id'))
 
-
-    tmp=(tmp[['framework', 'thema_name_fr',  'destination_name_en', 'project_id', 'acronym','title', 'abstract', 
-            'total_cost', 'eu_reqrec_grant', 'number_involved', 'project_webpage', 
-            'call_year','call_deadline', 'call_id', 'topic_code', 'expectedNbrProposals', 'call_budget', 
-            'status_code', 'signature_date', 'start_date','end_date', 'duration', 
-            'pilier_name_en', 'pilier_name_fr', 'programme_name_en', 'programme_name_fr', 'thema_code', 
-            'thema_name_en', 'destination_code', 'destination_detail_code', 'destination_detail_name_en', 
-            'action_code', 'action_name', 'action_code2', 'action_name2', 'topic_name',
-            'panel_code', 'panel_name', 'panel_regroupement_code', 'panel_regroupement_name','panel_description',
-            'free_keywords', 'eic_panels', 'participation_nuts', 'region_1_name', 'region_2_name', 'regional_unit_name',
-            'country_code', 'country_name_fr', 'country_code_mapping', 'country_name_mapping', 
-            'ecorda_date']]
-        .rename(columns={
-        'eu_reqrec_grant':'project_eucontribution',
-        'total_cost':'project_totalcost',
-    #     'freekw': 'free_keywords',
-        'number_involved':'project_numberofparticipants',
-        'action_code2':'action_detail_code', 
-        'action_name2':'action_detail_name',
-        'expectedNbrProposals':'proposal_expected_number'})
-
-        )
-
+    cols_h=cols_select('horizon', 'proj_info')
+    rename_map=cols_h[cols_h.horizon.notna()].set_index('horizon')['vars'].to_dict()
+    tmp=tmp.rename(columns=rename_map)
     tmp=tmp.merge(tmpP, how='left', on='project_id')
     
     tmp.reset_index(drop=True, inplace=True)
@@ -73,21 +53,25 @@ def projects_ods(projects, participation, calls, countries, h20_p, FP6_p, FP7_p)
         
     tmp['call_budget'] = tmp.call_budget.astype('str').str.replace(r'\\.[0-9]*', '', regex=True).astype('float')
 
-    cordis = pd.read_csv(f"{PATH_SOURCE}cordis_status.csv", sep=',', dtype = {'project_id':'str'}).drop_duplicates()
-    tmp = tmp.merge(cordis[cordis.cordis_webPage_status==200], how='left', on='project_id')
+
+    file_prefix = 'data_cordis_check_cordis'
+    cordis = load_last_file_csv(PATH_SOURCE, file_prefix, sep=',')
+    cordis['project_id']=cordis['project_id'].astype('str')
+    tmp = tmp.merge(cordis[cordis.cordis_webPage_status==200].drop_duplicates(), how='left', on='project_id')
     tmp.loc[tmp.cordis_webPage_status==200, 'cordis_project_webpage'] = "https://cordis.europa.eu/project/id/"+tmp.project_id.astype('str').str.strip()
     
     tmp.mask(tmp=='', inplace=True)    
 
     pg = pd.read_table('data_files/pilier_global.txt', sep='\t')
-    tmp = tmp.merge(pg, how='left', on='pilier_name_en')
+    tmp = tmp.merge(pg, how='left', on='pilier_name_en').drop_duplicates()
 
     # attention si changement de nom de vars -> la modifier aussi dans pcri_info_columns_order
-    projects_all = order_columns(tmp, 'proj_info')
+    projects_all = cols_order(tmp, 'proj_info')
 
     if any(projects_all['project_id'].value_counts()[projects_all['project_id'].value_counts()> 1]):
-        print(projects_all['project_id'].value_counts()[projects_all['project_id'].value_counts()> 1])
+        print(f"- si ++ rows for a project_id, not normal: \n{projects_all['project_id'].value_counts()[projects_all['project_id'].value_counts()> 1]}")
 
+    print(projects_all.drop_duplicates().framework.value_counts(dropna=False))
     # projects_all.to_pickle(f"{PATH_WORK}projects_all_FW.pkl")
     # projects_all.to_csv(f"{PATH_ODS}fr-esr-all-projects-signed-informations.csv", sep=';', encoding='utf-8', index=False, na_rep='', decimal=",")
     zipfile_ods(projects_all, 'fr-esr-all-projects-signed-informations')

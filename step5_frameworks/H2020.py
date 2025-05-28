@@ -1,5 +1,5 @@
 def H2020_process():
-    import pandas as pd, numpy as np, gc
+    import pandas as pd, numpy as np, json
     from step3_entities.references import ref_source_load, ref_source_2d_select
     from step3_entities.merge_referentiels import merge_paysage, merge_ror, merge_sirene
     from step3_entities.categories import category_agreg, category_paysage,category_woven, cordis_type, mires
@@ -74,8 +74,8 @@ def H2020_process():
     def h20_topics(df, act, actions, destination, pilier_fr, thema):
 
         proj = (_proj.rename(columns={'pilier':'pilier_name_en', 'topicCode':'topic_code','topicDescription':'topic_name',
-                                    'action_2_id':'action_code2', 'action_2_name':'action_name2', 
-                                    'action_3_id':'action_code3', 'action_3_name':'action_name3'})
+                                        'action_2_id':'action_code2', 'action_2_name':'action_name2', 
+                                        'action_3_id':'action_code3', 'action_3_name':'action_name3'})
             .drop(columns=['action_name'])
             .merge(pilier_fr, how='left', on='pilier_name_en')
             .merge(act, how='left', on='action_code'))
@@ -118,8 +118,9 @@ def H2020_process():
         proj.loc[(~proj.destination_next_fp.isnull()), 'thema_code'] = 'JU-JTI'
 
         # MSCA / ERC
-        proj.loc[proj.programme_code=='MSCA', 'thema_code'] = 'MSCA'
-        proj.loc[proj.programme_code=='ERC', 'thema_code'] = 'ERC'
+        for col in ['thema_code','programme_next_fp']:
+            proj.loc[proj.programme_code=='MSCA', col] = 'MSCA'
+            proj.loc[proj.programme_code=='ERC', col] = 'ERC'
 
         # ### ajustement MSCA
         msca_correspondence = pd.read_table('data_files/msca_correspondence.csv', sep=";")
@@ -138,7 +139,7 @@ def H2020_process():
         proj.loc[proj.destination_code=='NIGHT', 'destination_name_en'] = "European researchers' Night"
         proj.loc[proj.destination_code=='RISE', 'destination_name_en'] = "Research and innovation staff exchange"
 
-        proj.loc[proj.programme_code=='MSCA', 'programme_name_en'] = 'Marie Skłodowska-Curie Actions (MSCA)'
+        # proj.loc[proj.programme_code=='MSCA', 'programme_name_en'] = 'Marie Skłodowska-Curie Actions (MSCA)'
 
 
         ### ajustement ERC
@@ -204,37 +205,60 @@ def H2020_process():
         return proj
     
     def euro_partnerships(proj):
-        proj.loc[proj.action_code=='Art185', 'euro_partnerships_type'] = 'Art-185'
-        proj.loc[(proj.thema_code=='JU-JTI')&(proj.euro_partnerships_type.isnull()), 'euro_partnerships_type'] = 'Art-187'
-        proj.loc[proj.thema_code=='JU-JTI', 'euro_partnerships_type_next_fp'] = 'JU-JTI'
-
+        from step5_frameworks.functions_shared import ju_jti_parterships, eranet_partnerships
+        # proj.loc[proj.action_code=='Art185', 'euro_partnerships_type'] = 'Art-185'
+        # proj.loc[(proj.thema_code=='JU-JTI')&(proj.euro_partnerships_type.isnull()), 'euro_partnerships_type'] = 'Art-187'
+        # proj.loc[proj.thema_code=='JU-JTI', 'euro_partnerships_type_next_fp'] = 'JU-JTI'
+        proj=ju_jti_parterships(proj, 'H20')
         proj.loc[proj.programme_code=='EIT', 'euro_partnerships_type'] = 'EIT KICs'
         proj.loc[proj.programme_code=='EIT', 'euro_partnerships_type_next_fp'] = 'EIT KICs'
 
-        proj.loc[proj.action_code=='ERA-NET-Cofund', 'euro_partnerships_type'] = 'ERA-NET-COFUND'
-        proj.loc[proj.action_code=='ERA-NET-Cofund', 'euro_partnerships_type_next_fp'] = 'co-funded'
-
+        # proj.loc[proj.action_code=='ERA-NET-Cofund', 'euro_partnerships_type'] = 'ERA-NET-COFUND'
+        # proj.loc[proj.action_code=='ERA-NET-Cofund', 'euro_partnerships_type_next_fp'] = 'co-funded'
+        proj=eranet_partnerships(proj, 'H20')
+        proj.loc[proj.acronym=='CoBioTech', 'euro_ps_name'] = 'ERA CoBioTech'
+        
         proj.loc[(proj.topic_code.isin(['NFRP-2018-6', 'SC1-PM-05-2016', 'EURATOM', 'NFRP-07-2015']))&(proj.action_code=='COFUND'), 'euro_partnerships_type'] = 'EJP-COFUND'
         proj.loc[(proj.action_code=='COFUND')&(proj.acronym.str.contains('EJP')), 'euro_partnerships_type'] = 'EJP-COFUND'
         proj.loc[(proj.action_code=='COFUND')&(proj.acronym.str.contains('EJP')), 'euro_partnerships_type_next_fp'] = 'co-funded'
 
-        proj.loc[proj.destination_code.str.contains('GRAPHENE|HBP', na=False, regex=True), 'euro_partnerships_type'] = 'FET-FLAGSHIPS'
-        proj.loc[proj.destination_code.str.contains('GRAPHENE|HBP', na=False, regex=True), 'euro_partnerships_type_next_fp'] = 'co-funded'
-
         proj.loc[proj.topic_name.str.contains('PPP'), 'euro_partnerships_type'] = 'cPPP'
-        proj.loc[proj.topic_name.str.contains('PPP'), 'euro_partnerships_type_next_fp'] = 'co-programmed'
+        proj.loc[(proj.topic_code.str.contains('GV-', regex=True, na=False))&(proj.programme_code=='TPT')&(proj.euro_partnerships_type.isnull()), 'euro_partnerships_type'] = 'cPPP'
+        proj.loc[(proj.topic_name.str.contains('photonics', case=False, na=False))&(proj.programme_code=='ICT')&(proj.euro_partnerships_type.isnull()), 'euro_partnerships_type'] = 'cPPP'
+        robotics=["ict-27-2017", "ict-28-2017", "ict-25-2016", "ict-26-2016", "ict-24-2015", "ict-23-2014"]
+        for i in robotics:        
+            proj.loc[(proj.programme_code=='ICT')&(proj.topic_code.str.contains(r"^"+i, case=False, regex=True)), 'euro_partnerships_type'] = 'cPPP'
+
+        proj.loc[proj.euro_partnerships_type.str.contains('cPPP', na=False), 'euro_partnerships_type_next_fp'] = 'co-programmed'
 
         proj.loc[proj.euro_partnerships_type=='EIT KICs', 'euro_ps_name'] = proj.loc[proj.euro_partnerships_type=='EIT KICs'].thema_name_en
-        proj.loc[proj.euro_partnerships_type=='ERA-NET-COFUND', 'euro_ps_name'] = proj.loc[proj.euro_partnerships_type=='ERA-NET-COFUND'].acronym
-        proj.loc[proj.acronym=='ERA CoBioTech', 'euro_ps_name'] = 'CoBioTech'
-        proj.loc[proj.euro_partnerships_type_next_fp=='JU-JTI', 'euro_ps_name'] = proj.loc[proj.euro_partnerships_type_next_fp=='JU-JTI'].destination_code
+        # proj.loc[proj.euro_partnerships_type=='ERA-NET-COFUND', 'euro_ps_name'] = proj.loc[proj.euro_partnerships_type=='ERA-NET-COFUND'].acronym
+        
+        # proj.loc[proj.euro_partnerships_type_next_fp=='JU-JTI', 'euro_ps_name'] = proj.loc[proj.euro_partnerships_type_next_fp=='JU-JTI'].destination_code
         proj.loc[(proj.euro_partnerships_type_next_fp=='co-funded')&(proj.euro_ps_name.isnull())&(proj.destination_code.isnull()), 'euro_ps_name'] = proj.loc[(proj.euro_partnerships_type_next_fp=='co-funded')&(proj.euro_ps_name.isnull())&(proj.destination_code.isnull())].acronym
         proj.loc[(proj.euro_partnerships_type_next_fp=='co-funded')&(proj.euro_ps_name.isnull())&(~proj.destination_code.isnull()), 'euro_ps_name'] = proj.loc[(proj.euro_partnerships_type_next_fp=='co-funded')&(proj.euro_ps_name.isnull())&(~proj.destination_code.isnull())].destination_code
-        proj.loc[(proj.euro_partnerships_type=='cPPP')&(proj.call_id.str.contains('EEB|SPIRE|FOF|EE', regex=True, case=False)), 'euro_ps_name'] = proj.loc[(proj.euro_partnerships_type=='cPPP')&(proj.call_id.str.contains('EEB|SPIRE|FOF|EE', regex=True, case=False))].call_id.str.split('-').str[1]
+        proj.loc[(proj.euro_partnerships_type=='cPPP')&(proj.call_id.str.contains('EEB|SPIRE|FOF|EE', regex=True, case=False, na=False)), 'euro_ps_name'] = proj.loc[(proj.euro_partnerships_type=='cPPP')&(proj.call_id.str.contains('EEB|SPIRE|FOF|EE', regex=True, case=False, na=False))].call_id.str.split('-').str[1]
         proj.loc[(proj.euro_partnerships_type=='cPPP')&(proj.euro_ps_name.isnull()), 'euro_ps_name'] = proj.loc[(proj.euro_partnerships_type=='cPPP')&(proj.euro_ps_name.isnull())].topic_name.str.extract(r"^(.+ PPP)", expand=False)
         proj.loc[(proj.euro_partnerships_type=='cPPP')&(proj.euro_ps_name=='EE'), 'euro_ps_name'] = proj.loc[(proj.euro_partnerships_type=='cPPP')&(proj.euro_ps_name=='EE')].topic_name.str.extract(r"^(?:\()(EeB|SPIRE|FoF)", expand=False)
-
+        proj.loc[(proj.euro_partnerships_type=='cPPP')&(proj.topic_code.str.contains('GV', na=False)), 'euro_ps_name'] = 'EGVI'
+        proj.loc[(proj.euro_partnerships_type=='cPPP')&(proj.euro_ps_name=='Big data PPP'), 'euro_ps_name'] = 'BDVA'
+        proj.loc[(proj.euro_partnerships_type=='cPPP')&(proj.topic_name.str.contains('photonics', case=False, na=False))&(proj.programme_code=='ICT'), 'euro_ps_name'] = 'Photonics'
+        proj.loc[(proj.euro_partnerships_type=='cPPP')&(proj.programme_code=='ICT')&(proj.euro_ps_name.isnull()), 'euro_ps_name'] = 'Robotics SPARC'
         return proj.assign(euro_partnerships_flag=np.where(proj.euro_partnerships_type.isnull(), False, True)) 
+
+
+    def cPPP_destination_name(proj):
+        mask=(proj.euro_partnerships_type=='cPPP')
+        proj.loc[mask&(proj.euro_ps_name=='EGVI'), 'destination_name'] = 'European Green Vehicles Initiative'
+        proj.loc[mask&(proj.euro_ps_name=='SPIRE'), 'destination_name'] = 'Sustainable Process Industry'
+        proj.loc[mask&(proj.euro_ps_name=='FoF'), 'destination_name'] = 'Factories of the future'
+        proj.loc[mask&(proj.euro_ps_name=='EeB'), 'destination_name'] = 'Energy-Efficient Buildings'
+        proj.loc[mask&(proj.euro_ps_name=='5G PPP'), 'destination_name'] = 'Advanced 5G Network for the future'
+        proj.loc[mask&(proj.euro_ps_name=='BDVA'), 'destination_name'] = 'Big Data Value Association '
+        proj.loc[mask&(proj.euro_ps_name=='Cybersecurity PPP'), 'destination_name'] = 'Connected digital single market'
+        proj.loc[mask&(proj.euro_ps_name=='Photonics'), 'destination_name'] = 'Photonics21 Association'
+        proj.loc[mask&(proj.euro_ps_name=='Robotics SPARC'), 'destination_name'] = 'Robotics SPARC'
+        return proj
 
     def proj_cleaning(proj):
         print("## PROJ cleaning")
@@ -296,6 +320,7 @@ def H2020_process():
 
     proj = h20_topics(_proj, act, actions, destination, pilier_fr, thema)
     proj = euro_partnerships(proj)
+    proj=cPPP_destination_name(proj)
     proj = proj_cleaning(proj)
     entities = entities_cleaning(entities, country_h20, part_init)
 
@@ -485,11 +510,12 @@ def H2020_process():
     
     # traitement erc ROLE
     part_tmp['erc_role'] = 'other'
-    part_tmp.loc[(part_tmp.stage=='evaluated')&(part_tmp.destination_code=='SyG')&((part_tmp.participates_as=='host')|(part_tmp.role=='coordinator')), 'erc_role'] = 'PI'
-    part_tmp.loc[(part_tmp.stage=='successful')&(part_tmp.destination_code=='SyG')&(part_tmp.participates_as=='beneficiary')&(pd.to_numeric(part_tmp.orderNumber, errors='coerce')<5.), 'erc_role'] = 'PI'
-    part_tmp.loc[(part_tmp.role=='coordinator')&(part_tmp.destination_code!='SyG'), 'erc_role'] = 'PI'
-    part_tmp.loc[(part_tmp.destination_code=='SyG')&(part_tmp.role=='coordinator'), 'role'] = 'CO-PI'
-    part_tmp.loc[(part_tmp.erc_role=='PI')&(part_tmp.role!='CO-PI'), 'role'] = 'PI'
+    mask=(~part_tmp.destination_code.isnull())
+    part_tmp.loc[mask&(part_tmp.stage=='evaluated')&(part_tmp.destination_code=='SyG')&((part_tmp.participates_as=='host')|(part_tmp.role=='coordinator')), 'erc_role'] = 'PI'
+    part_tmp.loc[mask&(part_tmp.stage=='successful')&(part_tmp.destination_code=='SyG')&(part_tmp.participates_as=='beneficiary')&(pd.to_numeric(part_tmp.orderNumber, errors='coerce')<5.), 'erc_role'] = 'PI'
+    part_tmp.loc[mask&(part_tmp.role=='coordinator')&(part_tmp.destination_code!='SyG'), 'erc_role'] = 'PI'
+    part_tmp.loc[mask&(part_tmp.destination_code=='SyG')&(part_tmp.role=='coordinator'), 'role'] = 'CO-PI'
+    part_tmp.loc[mask&(part_tmp.erc_role=='PI')&(part_tmp.role!='CO-PI'), 'role'] = 'PI'
     
     # traitement subv pour ERC
         #calcul budget ERC
@@ -525,8 +551,7 @@ def H2020_process():
     part_tmp.rename(columns={'ZONAGE':'extra_joint_organization'}, inplace=True)
     part_tmp = part_tmp.map(lambda x: x.strip() if isinstance(x, str) else x)
 
-    part_tmp = (part_tmp
-            .assign(is_ejo=np.where(part_tmp.extra_joint_organization.isnull(), 'Sans', 'Avec')))
+    part_tmp = part_tmp.assign(is_ejo=np.where(part_tmp.extra_joint_organization.isnull(), 'Sans', 'Avec'))
 
     # merge cordis type
     part_tmp.loc[part_tmp.legalEntityTypeCode.isnull(), 'legalEntityTypeCode'] = np.nan
@@ -558,20 +583,27 @@ def H2020_process():
                             'country_group_association_code_2020':'country_group_association_code',
                             'country_group_association_name_2020_en':'country_group_association_name_en',
                             'country_group_association_name_2020_fr':'country_group_association_name_fr'}))
+        
+        undef=pd.DataFrame(json.load(open('data_files/countries_undef.json', 'r+', encoding='UTF-8'))).drop(columns=['country_code_mapping', 'country_name_mapping'])
+        cc=pd.concat([cc, undef], ignore_index=True)
+
         part_tmp = part_tmp.merge(cc, how='left', on='country_code')
         
     print(f"size part_tmp after merge countries: {len(part_tmp)}")
 
     # agregation des participants
     participation=part_tmp[
-        ['project_id',  'stage', 'participates_as', 'role', 'erc_role', 'calculated_fund', 'fund_ent_erc', 'subv', 'subv_net', 'cordis_is_sme', 
+        ['project_id',  'stage', 'participates_as', 'role', 'erc_role', 'calculated_fund', 
+         'fund_ent_erc', 'subv', 'subv_net', 'cordis_is_sme', 
         'requestedGrant', 'number_involved', 'coordination_number', 'with_coord', 'is_ejo',
         'cordis_type_entity_code','cordis_type_entity_name_fr', 'cordis_type_entity_acro',
-        'cordis_type_entity_name_en', 'participation_nuts', 'region_1_name', 'region_2_name', 'regional_unit_name',
-        'country_code_mapping', 'country_name_mapping', 'country_code', 'country_name_en', 'extra_joint_organization',
+        'cordis_type_entity_name_en', 'participation_nuts', 'region_1_name', 'region_2_name', 
+        'regional_unit_name',
+        'country_code_mapping', 'country_name_mapping', 'country_code', 'country_name_en', 
+        'extra_joint_organization',
         'country_association_code','country_association_name_en', 'country_group_association_code',
-        'country_group_association_name_en', 'country_group_association_name_fr', 'country_name_fr', 'article1',
-        'article2', 'entities_name', 'entities_acronym', 'entities_id', 'generalPic',
+        'country_group_association_name_en', 'country_group_association_name_fr', 'country_name_fr', 
+        'article1','article2', 'entities_name', 'entities_acronym', 'entities_id', 'generalPic',
         'entities_name_source', 'entities_acronym_source','paysage_category_priority',
         'ror_category', 'paysage_category', 'paysage_category_id', 'category_agregation',
         'insee_cat_code', 'insee_cat_name', 'groupe_sector', 'source_id', 'entreprise_flag',
@@ -584,7 +616,7 @@ def H2020_process():
 
     # proj pour synthese
     proj_s=proj.loc[~((proj.stage=='successful')&(proj.status_code=='REJECTED')),
-        ['framework','project_id', 'call_id', 'panel_code', 'status_code', 'topic_code', 'stage', 'call_year', 'abstract',
+        ['framework','project_id', 'call_id', 'panel_code', 'status_code', 'topic_code', 'stage', 'call_year', 'abstract', 'acronym',
         'pilier_name_en', 'pilier_name_fr','programme_name_en', 'thema_name_en', 'thema_code', 'programme_code', 'topic_name', 
         'panel_name', 'panel_regroupement_code', 'panel_regroupement_name', 'call_deadline', 'free_keywords',
         'destination_code','destination_name_en','action_code', 'action_code2', 'action_code3', 'action_name', 'action_name2', 'action_name3', 
@@ -617,6 +649,10 @@ def H2020_process():
 
     def h20_proj_success(proj, participation):
         from config_path import PATH_CLEAN
+
+        
+        participation[['participation_nuts', 'region_1_name', 'region_2_name', 'regional_unit_name']] = participation[['participation_nuts', 'region_1_name', 'region_2_name', 'regional_unit_name']].fillna('')
+
         country=(participation
                 .loc[participation.stage=='successful',['project_id','country_code','country_name_fr','country_code_mapping','country_name_mapping', 'participation_nuts', 'region_1_name', 'region_2_name', 'regional_unit_name']]
                 .drop_duplicates()

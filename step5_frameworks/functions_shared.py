@@ -96,15 +96,27 @@ def thema_euratom_cleaning(df, FP):
 def eranet_partnerships(df, FP):
     import numpy as np
 
-    if FP=='FP6':
+    if (FP=='FP6' or FP=='FP7'):
         col='call_id'
     if FP=='H20':
         col='action_code'
 
-    df.loc[df[col].str.contains('ERA-NET', na=False), 'euro_partnerships_type'] = 'ERA-NET'
-    df.loc[df.euro_partnerships_type=='ERA-NET', 'euro_ps_name'] = df.loc[df.euro_partnerships_type=='ERA-NET'].acronym
+    df.loc[df[col].str.contains('ERA(-?)NET', na=False, regex=True), 'euro_partnerships_type'] = 'ERA-NET'
+    mask=df.euro_partnerships_type=='ERA-NET'
+    df.loc[mask, 'euro_ps_name'] = df.loc[mask].acronym
 
-
-    df.loc[df.euro_partnerships_type=='ERA-NET', 'euro_partnerships_type_next_fp'] = 'co-funded'
+    df.loc[mask, 'euro_partnerships_type_next_fp'] = 'co-funded'
 
     return df.assign(euro_partnerships_flag=np.where(df.euro_partnerships_type.isnull(), False, True)) 
+
+def ju_jti_parterships(df, FP):
+    import numpy as np
+    if FP=='H20':
+        df.loc[df.action_code=='Art185', 'euro_partnerships_type'] = 'Art-185'
+        df.loc[(df.thema_code=='JU-JTI')&(df.euro_partnerships_type.isnull()), 'euro_partnerships_type'] = 'Art-187'
+    else:
+        df.loc[df.thema_code=='JU-JTI', 'euro_partnerships_type'] = 'Art-185'
+
+    df.loc[df.thema_code=='JU-JTI', 'euro_partnerships_type_next_fp'] = 'JU-JTI'
+    df.loc[df.euro_partnerships_type_next_fp=='JU-JTI', 'euro_ps_name'] = df.loc[df.euro_partnerships_type_next_fp=='JU-JTI'].destination_code
+    return df.assign(euro_partnerships_flag=np.where(df.euro_partnerships_type.isnull(), False, True))

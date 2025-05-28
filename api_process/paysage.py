@@ -78,8 +78,9 @@ def ID_to_IDpaysage(lid_source, siren_siret=[]):
                     .loc[paysage_id.id_value.isin(paysage_liste), 
                         ['id_value','id_paysage','active','id_enddate']]
                     .rename(columns={'id_value':'id_source', 'active':'status', 'id_enddate':'end'}))
+        x['id_paysage'] = x.id_source
         paysage_id = pd.concat([paysage_id, x], ignore_index=True)
-
+        
     else:
         paysage_id = x
         paysage_id['id_paysage'] = paysage_id.id_source

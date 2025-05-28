@@ -78,6 +78,7 @@ def calls_all(projects):
         
     if not calls_all.loc[calls_all.call_year.isnull()].empty:
         print(f"- call year si encore des valeurs manquantes; extraire année de l'open date\n{calls_all.loc[calls_all.call_year.isnull()]}")
+        calls_all.loc[calls_all.call_year.isnull(), 'call_year'] = calls_all.loc[calls_all.call_year.isnull()].call_open_date.dt.strftime('%Y')
 
     calls_all['call_acro'] = calls_all.call_id.str.replace('^HORIZON-|^HOIRZON-', '', regex=True)
     calls_all['theme'] = calls_all.call_acro.str.split('-').str[0]
@@ -86,6 +87,14 @@ def calls_all(projects):
 
     calls_all.loc[calls_all.theme=='MISS', 'theme'] = 'Mission'
     calls_all['theme'] = calls_all.theme.str.replace('CL', 'Cluster')
+
+    for i in ['MSCA', 'ERC']:
+        if i=='MSCA':
+            pat=r"COFUND|DN|PF|SE|CITIZENS"
+        elif i=='ERC':
+            pat=r"ADG|STG|COG|POC|SyG"
+        calls_all.loc[(calls_all.theme==i)&(calls_all.topic_code.str.contains(pat, na=False, regex=True)), 'action_code'] = i
+    
     calls_all.drop(columns=['year'], inplace=True)
 
     calls_all['nb']=calls_all.groupby('call_id')['inBase'].transform('nunique')

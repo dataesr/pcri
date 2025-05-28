@@ -61,8 +61,7 @@ def country_load(framework, liste_country):
 
     countries = df.merge(gr, how='left', left_on='countryCode_iso3', right_on='isoCountryCode').drop(columns='isoCountryCode')
 
-    with open('data_files/countries_fr.json', 'r+', encoding='UTF-8') as fp:
-                countries_fr = json.load(fp)
+    countries_fr = json.load(open('data_files/countries_fr.json', 'r+', encoding='UTF-8') )
     countries_fr = pd.DataFrame(countries_fr).rename(columns={'country_name':'country_name_fr', 'country_code':'countryCode'})
     countries = countries.merge(countries_fr, how='left', on='countryCode')
     if any(countries.country_name_fr.isnull()):
