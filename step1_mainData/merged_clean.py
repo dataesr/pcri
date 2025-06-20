@@ -6,39 +6,44 @@ import pandas as pd, numpy as np
 def dates_year(df):
     print("\n### DATES and YEAR")
 
-    dt=pd.read_pickle(f"{PATH_SOURCE}{FRAMEWORK}/topic_info_harvest.pkl")
-    dt=pd.DataFrame(dt)
-    dt['call_year'] = dt.open_date.str.split().str[-1]
+    # year extract from call_id
+    temp = df[['callId','topicCode']].drop_duplicates()
+    temp['call_year'] = temp['callId'].str.extract('(\\d{4})') 
 
-    dt = (df[['callId','topicCode']].drop_duplicates()
-                  .merge(dt[['topic_code', 'call_year']].drop_duplicates(),
-                  how='left', left_on='topicCode', right_on='topic_code'))
+    # path since 2025
+    wp = pd.read_pickle(f"{PATH_SOURCE}{FRAMEWORK}/calls_by_wp.pkl").explode('calls')
+    temp = temp.merge(wp, how='left', left_on='topicCode', right_on='calls').drop_duplicates()
+    temp.loc[~temp.year.isnull(), 'call_year'] = temp.loc[~temp.year.isnull()].year
 
-    y=(dt[['callId', 'call_year']].drop_duplicates()
-            .groupby('callId', dropna=False, as_index=False)
-            .agg(
-                nb_tot=('call_year','size'), 
-                nb_null=('call_year', lambda x: 1 if x.isnull().any() else 0)
-    ))
 
-    check_year=dt[['callId', 'call_year']].drop_duplicates()
+    # calcul le nombre d'année unique par call et s'il en manque 
+    def year_calc(df):
+        y = (df[['callId', 'call_year']].drop_duplicates()
+                .groupby('callId', dropna=False, as_index=False)
+                .agg(
+                    nb_tot=('call_year','size'), 
+                    nb_null=('call_year', lambda x: 1 if x.isnull().any() else 0)
+        ))
+        return df[['callId', 'call_year']].drop_duplicates().sort_values('callId').merge(y, how='left', on='callId')
 
-    if any(y.nb_tot>1):
-        print(f"1 - ++ YEARS for a same callId  because topic diff: {check_year[check_year.callId.isin(y[y.nb_tot>1].callId.unique())].callId.unique()}")
-        if any((y.nb_tot>1)&(y.nb_null>0)&(y.nb_tot!=y.nb_null)):
-            check_year=check_year.loc[~((check_year.callId.isin(y[(y.nb_tot>1)&(y.nb_null>0)&(y.nb_tot!=y.nb_null)].callId.unique()))&(check_year.call_year.isnull()))]
-        if any((y.nb_tot>1)&(y.nb_null==0)):
-            print(f"1b -Attention ! ++ years for a same call: {y[(y.nb_tot>1)&(y.nb_null==0)].callId.unique()}")
-    if any(y.nb_tot==y.nb_null):
-        print(f"2 - without YEAR for callID: {y[y.nb_tot==y.nb_null].callId.nunique()}")
-        work_csv(y[y.nb_tot==y.nb_null][['callId']].drop_duplicates(), 'callId_year_empty')
 
-    # création var commune de statut/ call
-    check_year['call_year_tmp'] = check_year['callId'].str.extract('(\\d{4})')
-    check_year.loc[(check_year.call_year_tmp<'2025')|(check_year.call_year.isnull()), 'call_year'] = check_year.loc[(check_year.call_year_tmp<'2025')|(check_year.call_year.isnull())].call_year_tmp
-    check_year.loc[(check_year.call_year.isnull()), 'call_year'] = check_year.loc[(check_year.call_year.isnull())].call_year_tmp
-    df = df.merge(check_year[['callId', 'call_year']], how='left', on='callId')
-    print(f"######ATTENTION###### {df[df.call_year.isnull()].callId.unique()} call without year -> penser à aller chercher l'année dans les WP (à mettre en place)")
+    check_year = year_calc(temp)
+    check_year = check_year.loc[~((check_year.nb_tot>1)&(check_year.call_year.isnull()))]
+    check_year = year_calc(check_year)
+
+    if any(check_year.nb_tot>1):
+        return print(f"1 - ++ YEARS for a same callId  because topic diff: {check_year[check_year.nb_tot>1].callId.unique()}")
+     
+    df = df.merge(check_year[['callId', 'call_year']].drop_duplicates(), how='left', on='callId')
+
+    # call_year missed -> use topic haverst from portal 
+    if any(df.call_year.isnull()):
+        dt=pd.read_pickle(f"{PATH_SOURCE}{FRAMEWORK}/topic_info_harvest.pkl")
+        dt=pd.DataFrame(dt)
+        dt['year'] = dt.open_date.str.split().str[-1]
+        df = df.merge(dt[['topic_code', 'year']].drop_duplicates(), how='left', left_on='topicCode', right_on='topic_code')
+        df.loc[~df.year.isnull(), 'call_year'] = df.loc[~df.year.isnull()].year
+        df.drop(columns=['topic_code', 'year'])
 
     # traitement YEAR
     if any(df['call_year'].isnull()):
@@ -52,6 +57,8 @@ def dates_year(df):
 
     for d in ['callDeadlineDate',  'startDate', 'endDate', 'ecSignatureDate', 'submissionDate']:
         df[d] = df[d].astype('datetime64[ns]')
+    
+    print(f"- size after year cleaned: {len(df)}")
     return df    
 
 
