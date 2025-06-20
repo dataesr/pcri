@@ -22,16 +22,23 @@ def wp_load(url, year, files_to_load):
     cookie = driver.find_element(By.CLASS_NAME, 'wt-ecl-button')
     cookie.click()
 
-    links = driver.find_elements(By.XPATH, "//a[contains(@href, '.pdf')]")
-    for link in links:
-        for k,v in files_to_load.items():
-            if k in link.get_attribute("href"):
-                href = link.get_attribute("href")
+    elements = driver.find_elements(By.XPATH, '//a[@data-wt-preview="pdf" and @href and @data-untranslated-label]')
+
+    # Loop through elements and check data-untranslated-label content
+    for el in elements:
+
+        label = el.get_attribute("data-untranslated-label")
+        href = el.get_attribute("href")
+        print(f"{label} -> {href}")
+        for key, value in files_to_load.items():
+            if key in re.sub(r"\s+", "", label).lower():
                 r = requests.get(href, allow_redirects=True)
-                open(f"{PATH_WP}{year}/{v}.pdf", 'wb').write(r.content)
+                open(f"{PATH_WP}{year}/{value}.pdf", 'wb').write(r.content)
+                break  # Stop checking once matched
 
 
-def calls_by_wp(url, wp_year, load_wp=False):
+# def calls_by_wp(url, wp_year, load_wp=False):
+def calls_by_wp(url, wp_year):
     from constant_vars import FRAMEWORK
 
     files_to_load = {"infrastructures":"infra", 
@@ -46,8 +53,8 @@ def calls_by_wp(url, wp_year, load_wp=False):
                     "missions":"mission"
                     }
 
-    if load_wp==True:
-        wp_load(url, wp_year, files_to_load)
+    # if load_wp==True:
+    wp_load(url, wp_year, files_to_load)
 
 
     calls_by_wp=[]
@@ -65,7 +72,7 @@ def calls_by_wp(url, wp_year, load_wp=False):
             l=list(set(l))
             res={'year':wp_year,
             'wp':v,
-            'calls':list(set(l))}
+            'topics':list(set(l))}
             calls_by_wp.append(res)
     pd.to_pickle(pd.DataFrame(calls_by_wp), open(f"{PATH_SOURCE}{FRAMEWORK}/calls_by_wp.pkl", 'wb'))
 
