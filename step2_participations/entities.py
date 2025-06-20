@@ -20,6 +20,8 @@ def entities_load():
     df = unzip_zip(ZIPNAME, f"{PATH_SOURCE}{FRAMEWORK}/", "legalEntities.json", 'utf8')
     df = pd.DataFrame(df)
     print(f"- first size entities: {len(df)}")
+    rep=[{'stage_process':'_loading', 'entities_size':len(df)}]
+
     df = gps_col(df)
 
     df = df.loc[~df.generalPic.isnull()]
@@ -27,14 +29,16 @@ def entities_load():
     c = ['pic', 'generalPic']
     df[c] = df[c].map(num_to_string)
     print(f"- size entities {len(df)}")
+    rep.append({'stage_process':'process1', 'entities_size':len(df)})
         
     if len(df[df.generalState.isnull()])>0:
         print("- entities source generalState -> new state (processing into entities_single)")
     else:
         print("- ok entities source generalState not null")
-    return df
+    return df, rep
 
 def entities_merge_partApp(df, app1, part):
+    print("## Entities megre App+part")
     # app1/part + lien pour ajout cc et selection des generalPic+pic de entities
     ap=(app1[['generalPic', 'participant_pic', 'countryCode']]
         .drop_duplicates()
@@ -44,11 +48,13 @@ def entities_merge_partApp(df, app1, part):
         .rename(columns={'participant_pic':'pic'}))
     tmp=pd.concat([ap, pp], ignore_index=True).drop_duplicates()
     print(f"- size lien ap+pp+cc (tmp): {len(tmp)}")
+    rep=[{'stage_process':'process2_PicAppPart', 'entities_size':len(tmp)}]
 
     entities = (tmp.merge(df, how='left', on=['generalPic', 'pic'], suffixes=('','_y'))
               .drop(columns='countryCode_y')
               )
     print(f"- size tmp+entities: {len(entities)}")
+    rep.append({'stage_process':'process4_mergeEntities', 'entities_size':len(tmp)})
 
     if len(tmp[['generalPic', 'countryCode']].drop_duplicates())!=len(entities[['generalPic', 'countryCode']].drop_duplicates()):
         print(f"1 - ATTENTION missing generalPic into entities\ntmp={len(tmp[['generalPic', 'countryCode']].drop_duplicates())}, entities={len(entities[['generalPic', 'countryCode']].drop_duplicates())}")
@@ -56,6 +62,8 @@ def entities_merge_partApp(df, app1, part):
     #traietement des cc manquants dans entities à partir de cc ajouté
     entities = entities_missing_country(entities)
     print(f"- END size entities: {len(entities)}")  
+    rep.append({'stage_process':'process10_all', 'entities_size':len(tmp)})
+
 
     if len(entities[entities.generalState.isnull()])>0:
         print("- entities cleaned generalState -> new state (processing into entities_single)")
@@ -67,7 +75,7 @@ def entities_merge_partApp(df, app1, part):
         print(f"- pic lien not in entities: {len(pic_no_entities)}")
     else:
         print("- Tous les pics de lien sont dans entities")
-    return entities
+    return entities, rep
 
 def entities_single_create(df, lien):
     print("### ENTITIES SINGLE")
