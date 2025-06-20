@@ -5,8 +5,8 @@ import pandas as pd, numpy as np
 
 def part_role_type(df, projects):
     print("### Participants ROLE")
-    df.loc[:,'role'] = df.loc[:,'role'].str.lower()
-# traitement ROLE
+    # df.loc[:,'role'] = df.loc[:,'role'].str.lower()
+    # traitement ROLE
     if df['role'].nunique()==2:
         df['role'] = df['role'].str.lower()
         df['role'] = np.where(df['role']=='participant', 'partner', 'coordinator')
@@ -28,13 +28,18 @@ def part_role_type(df, projects):
     print(f"- size part after role: {len(df)}")
 
     proj_erc = projects.loc[(projects.stage=='successful')&(projects.thema_code=='ERC'), ['project_id', 'destination_code']]
-    df = df.merge(proj_erc, how='left', on='project_id').drop_duplicates()
-    df.loc[~df.destination_code.isnull(), 'erc_role'] = 'other'
-    df.loc[(df.destination_code=='SyG')&(df.partnerType=='beneficiary')&(pd.to_numeric(df.orderNumber, errors='coerce')<5.), 'erc_role'] = 'PI'
-    df.loc[(~df.destination_code.isnull())&(~df.destination_code.isin(['SyG', 'ERC-OTHER']))&(df.role=='coordinator'), 'erc_role'] = 'PI'
-    df.loc[(df.destination_code=='SyG')&(df.role=='coordinator'), 'role'] = 'CO-PI'
-    df.loc[(df.erc_role=='PI')&(df.role!='CO-PI'), 'role'] = 'PI'
-    df.loc[(df.destination_code=='ERC-OTHER')|(df.destination_code.isnull()), 'erc_role'] = np.nan
+    temp = df.merge(proj_erc, how='inner', on='project_id').drop_duplicates()
+    temp.loc[~temp.destination_code.isnull(), 'erc_role'] = 'other'
+    temp.loc[(temp.destination_code=='SyG')&(temp.partnerType=='beneficiary')&(pd.to_numeric(temp.orderNumber, errors='coerce')<5.), 'erc_role'] = 'pi'
+    temp.loc[(~temp.destination_code.isnull())&(~temp.destination_code.isin(['SyG', 'ERC-OTHER']))&(temp.role=='coordinator'), 'erc_role'] = 'pi'
+    temp.loc[(temp.destination_code=='SyG')&(temp.role=='coordinator'), 'role'] = 'co-pi'
+    temp.loc[(temp.erc_role=='pi')&(temp.role!='co-pi'), 'role'] = 'pi'
+    temp.loc[(temp.destination_code=='ERC-OTHER')|(temp.destination_code.isnull()), 'erc_role'] = np.nan
+
+    df = pd.concat([df.loc[~df.project_id.isin(temp.project_id.unique())], temp])
+
+    rep={'stage_process':'process3_keep_withProj', 'participant_size':len(df)}
+
     return df.drop(columns=['destination_code'])
 
 def check_multiP_by_proj(df):
