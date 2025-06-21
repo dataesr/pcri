@@ -12,18 +12,22 @@ def entities_tmp_create(entities_info, countries, ref):
                   how='left', on='country_code_mapping')
            .rename(columns={'country_name_en':'country_name_mapping'})
     )
-    tmp = tab.merge(ref, how='inner', on=['generalPic','country_code_mapping'])
+
+    # merge with ref country_code_mapping
+    tmp = (tab.merge(ref.drop(columns='country_code'), 
+                     how='inner', on=['generalPic','country_code_mapping']))
     print(f"- size entities_info before:{len(entities_info)}, size entities_info+ref -> tmp:{len(tmp)}, Pic unique tmp:{len(tmp.generalPic.unique())}")
     rep=[{'stage_process':'entities_merge_ref', 'entities_size':len(tmp)}]
  
-    # entities only into entities_info
+    # keep only entities not merged
     print("# missing entities into ref")
     tmp1 = tab.merge(tmp[['generalPic','country_code_mapping']], how='left', on=['generalPic','country_code_mapping'], indicator=True).query('_merge=="left_only"').drop(columns=['_merge'])
     print(f"- entities_info en + -> (tmp2): {len(tmp1)}")
     
     if not tmp1.empty:
-        # test lien avec ref voire si un identifiant seulement sur le generalPic + country_code
-        tmp2 = tmp1.merge(ref.drop_duplicates(), how='inner', on=['generalPic', 'country_code'])
+        # merge the rest with ref country_code
+        tmp2 = (tmp1.merge(ref.drop(columns='country_code_mapping').drop_duplicates(), 
+                           how='inner', on=['generalPic', 'country_code']))
         print(f"- size lien tmp2 with ref: {len(tmp2)}")
         ## add tmp2 to tmp
         tmp = pd.concat([tmp, tmp2], ignore_index=True)
@@ -58,7 +62,7 @@ def entities_tmp_create(entities_info, countries, ref):
     return tmp, rep
 
 def entities_for_merge(entities_tmp):
-    entities_tmp = entities_tmp[['generalPic','legalName', 'businessName', 'id', 'id_secondaire', 'ZONAGE', 'country_code_mapping', 'countryCode_parent']]
+    entities_tmp = entities_tmp[['generalPic','legalName', 'businessName', 'id', 'id_secondaire', 'ZONAGE', 'country_code_mapping', 'country']]
     entities_tmp = entities_tmp.mask(entities_tmp=='')
     print(f"1 - After add ref to entities: {len(entities_tmp)}\n\n{entities_tmp.columns}")
 
