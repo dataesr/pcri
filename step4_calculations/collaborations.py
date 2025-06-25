@@ -41,7 +41,7 @@ def collab(participation, projects, countries):
     p=(participation
        .drop(columns=['cordis_type_entity_code', 'cordis_is_sme', 'entreprise_flag', 'erc_role',
        'cordis_type_entity_name_fr', 'cordis_type_entity_name_en', 'cordis_type_entity_acro', 
-       'coordination_number', 'beneficiary_subv', 'fund_ent_erc']))
+       'coordination_number', 'beneficiary_fund', 'fund_ent_erc']))
 
     cc = (countries.drop(columns=['countryCode', 'country_code', 'countryCode_parent'])
           .drop_duplicates()

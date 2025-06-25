@@ -20,10 +20,10 @@ def euro_partnerships(df):
     tp=df.loc[(df.thema_code.str.startswith("CLUSTER 4"))|(df.thema_code.str.startswith("CLUSTER 5")), ['topic_code', 'topic_name']]
     
     tp['euro_ps_name']=tp['topic_name'].apply(lambda x: match(coprog, x) if isinstance(x, str) else np.nan)
-    tp.loc[~tp.euro_ps_name.isnull(), 'euro_ps_name']=tp.loc[~tp.euro_ps_name.isnull()]['euro_ps_name'].apply(lambda x: ', '.join(sorted(set(x))))
+    tp.loc[~tp.euro_ps_name.isnull(), 'euro_ps_name']=tp.loc[~tp.euro_ps_name.isnull()]['euro_ps_name'].apply(lambda x: ', '.join(set(x)))
     tp=tp.mask(tp=='')
     
-    df=df.merge(tp.loc[~tp.euro_ps_name.isnull(), ['topic_code', 'euro_ps_name']], how='left', on='topic_code')
+    df=df.merge(tp.loc[~tp.euro_ps_name.isnull(), ['topic_code', 'euro_ps_name']].drop_duplicates(), how='left', on='topic_code')
     df=df.mask(df=='')
     
     df.loc[df.destination_code=='INFRAEOSC', 'euro_ps_name']='EOSC'
@@ -51,7 +51,7 @@ def euro_partnerships(df):
     tp.loc[~tp.euro_ps_name.isnull(), 'euro_ps_name']=tp.loc[~tp.euro_ps_name.isnull()]['euro_ps_name'].apply(lambda x: ', '.join(sorted(set(x))))
     tp=tp.mask(tp=='')
 
-    df=df.merge(tp.loc[~tp.euro_ps_name.isnull(), ['topic_code', 'euro_ps_name']], how='left', on='topic_code', suffixes=('', '_y'))
+    df=df.merge(tp.loc[~tp.euro_ps_name.isnull(), ['topic_code', 'euro_ps_name']].drop_duplicates(), how='left', on='topic_code', suffixes=('', '_y'))
     df.loc[df.euro_ps_name.isnull(), 'euro_ps_name'] = df.loc[df.euro_ps_name.isnull()].euro_ps_name_y
     df.loc[~df.euro_ps_name_y.isnull(), 'euro_partnerships_type'] = 'co-funded'
     df=df.mask(df=='')

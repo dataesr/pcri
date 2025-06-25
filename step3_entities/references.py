@@ -34,11 +34,12 @@ def ref_source_2d_select(ref_source, FP_SELECT:str):
     print("### 2d - REF_SOURCE -> REF")
 
     #table correspondance old_pic to new
+    ref_source = ref_source.rename(columns={"countryCode_parent":'country_code'})
     ref_source.loc[(ref_source.id.str.contains('-'))&(ref_source.pic_new.isnull()), 'pic_new'] = ref_source[(ref_source.id.str.contains('-'))&(ref_source.pic_new.isnull())].id.str.split('-').str[0]
     genPic_to_new = ref_source.loc[~ref_source.pic_new.isnull(), ['generalPic', 'pic_new', 'country_code_mapping']]
     print(f"- size remplacement pic: {len(genPic_to_new)}")
 
-    ref = ref_source.loc[(ref_source.FP.str.contains(FP_SELECT)) & ((~ref_source.ZONAGE.isnull())|(~ref_source.id.isnull())|(~ref_source.id_secondaire.isnull())),['generalPic', 'id', 'id_secondaire', 'country_code_mapping', 'ZONAGE']].drop_duplicates()
+    ref = ref_source.loc[(ref_source.FP.str.contains(FP_SELECT)) & ((~ref_source.ZONAGE.isnull())|(~ref_source.id.isnull())|(~ref_source.id_secondaire.isnull())),['generalPic', 'id', 'id_secondaire', 'country_code_mapping', 'country_code', 'ZONAGE']].drop_duplicates()
     print(f"- longueur de ref:{len(ref)}")
 
     ref['nb'] = ref.groupby(['generalPic', 'country_code_mapping'], dropna=False)['id'].transform('nunique')

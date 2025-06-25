@@ -9,7 +9,10 @@ def IDpic(entities_tmp):
         .assign(pic_d = entities_tmp.entities_id.str.split('-').str[0]))
         print(f"- size entities pic_dash: {len(pic_dash)}")
         dash = (pic_dash.merge(entities_tmp, how='inner', left_on='pic_d', right_on='generalPic', suffixes=['_x',''])
-                .drop(columns=['entities_id_x', 'pic_d'])).drop_duplicates()
+                .drop(columns=['entities_id_x', 'pic_d'])
+                .drop_duplicates()
+                )
+        dash=dash.loc[~dash.entities_id.isnull()]
         
         entities_tmp = entities_tmp.loc[~entities_tmp.entities_id.isin(dash.entities_id.unique())]
         entities_tmp = pd.concat([entities_tmp, dash], ignore_index=True)

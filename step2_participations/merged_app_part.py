@@ -124,11 +124,11 @@ def merged_partApp(app1, part):
         if pd.api.types.infer_dtype(lien[x])=='string':
             lien.loc[:,x]=np.where(lien.loc[:,x].isnull(), None, lien.loc[:,x])
         
-    lien.columns = ['proposal_'+k[0:-2] if k[-2:] == '_p' else k for k in list(lien.columns)]
-    lien['calculated_pic'] = np.where(~lien['participant_pic'].isnull(), lien['participant_pic'], lien['proposal_participant_pic'])
+    lien.columns = ['applicant_'+k[0:-2] if k[-2:] == '_p' else k for k in list(lien.columns)]
+    lien['calculated_pic'] = np.where(~lien['participant_pic'].isnull(), lien['participant_pic'], lien['applicant_participant_pic'])
 
-    lien['projNlien'] = lien.groupby(['project_id', 'proposal_orderNumber', 'generalPic', 'calculated_pic'], dropna = False).pipe(lambda x: x.orderNumber.transform('nunique'))
-    lien['propNlien'] = lien.groupby(['project_id', 'orderNumber', 'generalPic', 'calculated_pic'], dropna = False).pipe(lambda x: x.proposal_orderNumber.transform('nunique'))
+    lien['projNlien'] = lien.groupby(['project_id', 'applicant_orderNumber', 'generalPic', 'calculated_pic'], dropna = False).pipe(lambda x: x.orderNumber.transform('nunique'))
+    lien['propNlien'] = lien.groupby(['project_id', 'orderNumber', 'generalPic', 'calculated_pic'], dropna = False).pipe(lambda x: x.applicant_orderNumber.transform('nunique'))
     lien.loc[lien['projNlien']==0, 'projNlien']=1
     lien.loc[lien['propNlien']==0, 'propNlien']=1
 
@@ -146,16 +146,53 @@ def merged_partApp(app1, part):
 
     lien = (lien
             .merge(app1[['project_id', 'orderNumber', 'generalPic', 'participant_pic', 'country_code_mapping']], 
-                   how='left', left_on=['project_id', 'proposal_orderNumber', 'generalPic', 'proposal_participant_pic'],
+                   how='left', left_on=['project_id', 'applicant_orderNumber', 'generalPic', 'applicant_participant_pic'],
                    right_on=['project_id', 'orderNumber', 'generalPic', 'participant_pic'],
                    suffixes=[ '','.y'])
             .drop(columns=[ 'participant_pic.y', 'orderNumber.y'])
-            .rename(columns={'country_code_mapping.y':'proposal_country_code_mapping'}))
+            .rename(columns={'country_code_mapping.y':'applicant_country_code_mapping'}))
 
-    lien.loc[lien.country_code_mapping.isnull(), 'country_code_mapping'] = lien.loc[lien.country_code_mapping.isnull(), 'proposal_country_code_mapping']
+    lien.loc[lien.country_code_mapping.isnull(), 'country_code_mapping'] = lien.loc[lien.country_code_mapping.isnull(), 'applicant_country_code_mapping']
 
     if any(lien.country_code_mapping.isnull()):
         print(f"- ATTENTION {lien[lien.country_code_mapping.isnull()].generalPic.nunique()} countryCode missing {lien[lien.country_code_mapping.isnull()].generalPic.unique()}")
+
+
+    #add contribution 
+    rename_dict = {col: 'applicant_' + col for col in ['orderNumber', 'participant_pic', 'country_code_mapping', 'role', 'partnerType', 'erc_role']}
+
+    lien=(lien
+            .merge(app1[['project_id', 'generalPic', 'requestedGrant', 'orderNumber', 'participant_pic', 'country_code_mapping', 'role', 'partnerType', 'erc_role']]
+                        .rename(columns=rename_dict),
+            how='left', 
+            on=['project_id', 'applicant_orderNumber', 'generalPic', 'applicant_participant_pic', 'applicant_country_code_mapping']))
+
+    lien['app_fund'] = (np.where((lien['projNlien']>1.), lien['requestedGrant']/lien['projNlien'], lien['requestedGrant']))
+   
+    if app1['requestedGrant'].sum()==lien['app_fund'].sum():
+        print("subventions app1/lien: ok")
+    else:
+        print(f"- check difference between requestGrant and app_fund: {'{:,.1f}'.format(app1['requestedGrant'].sum())}, {'{:,.1f}'.format(lien['app_fund'].sum())}")
+
+
+    lien=(lien.merge(part[['project_id', 'orderNumber', 'generalPic', 'participant_pic', 'country_code_mapping', 'role', 'partnerType', 'erc_role', 'euContribution', 'netEuContribution']],
+    how='left', 
+    on=['project_id', 'orderNumber', 'generalPic', 'participant_pic', 'country_code_mapping']))
+
+    lien['beneficiary_fund'] = (np.where((lien['propNlien']>1.), lien['euContribution']/lien['propNlien'], lien['euContribution']))
+    if part['euContribution'].sum()==lien['beneficiary_fund'].sum():
+        print("subventions benef/lien: ok")
+    else:
+        print(f"- check difference between euContribution and benef_fund: {'{:,.1f}'.format(part['euContribution'].sum())}, {'{:,.1f}'.format(lien['beneficiary_fund'].sum())}")
+    
+
+    lien['part_fund'] = (np.where((lien['propNlien']>1.), lien['netEuContribution']/lien['propNlien'], lien['netEuContribution']))
+    if part['netEuContribution'].sum()==lien['part_fund'].sum():
+        print("subventions part/lien: ok")
+    else:
+        print(f"- check difference between netEuContribution and part_fund: {'{:,.1f}'.format(part['netEuContribution'].sum())}, {'{:,.1f}'.format(lien['part_fund'].sum())}")
+
+
 
     # verif que chaque obs contient un calculated pic
     lien_no_pic=len(lien[lien['calculated_pic'].isnull()])

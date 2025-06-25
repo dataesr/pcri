@@ -320,7 +320,7 @@ def H2020_process():
 
     proj = h20_topics(_proj, act, actions, destination, pilier_fr, thema)
     proj = euro_partnerships(proj)
-    proj=cPPP_destination_name(proj)
+    proj = cPPP_destination_name(proj)
     proj = proj_cleaning(proj)
     entities = entities_cleaning(entities, country_h20, part_init)
 
@@ -542,7 +542,7 @@ def H2020_process():
     print(f"involved successful:{'{:,.1f}'.format(part_tmp.loc[(part_tmp.stage=='successful'), 'number_involved'].sum())}\nsubv_net_laureat:{'{:,.1f}'.format(part_tmp.loc[(part_tmp.stage=='successful'), 'subv_net'].sum())}\nsubv_laureat:{'{:,.1f}'.format(part_tmp.loc[(part_tmp.stage=='successful'), 'subv'].sum())}\nsubv_prop:{'{:,.1f}'.format(part_tmp.loc[(part_tmp.stage=='evaluated'), 'requestedGrant'].sum())}")
 
 
-    proj_no_coord = proj[(proj.thema_code.isin(['ACCELERATOR','COST']))|(proj.destination_code.isin(['SNLS','PF']))|(proj.action_code3.str.contains('SNLS', na=False))|(proj.thema_code=='ERC')].project_id.to_list()
+    proj_no_coord = proj[(proj.thema_code.isin(['ACCELERATOR','COST']))|(proj.destination_code.str.startswith('IF'))|(proj.action_code3.str.contains('SNLS', na=False))|(proj.thema_code=='ERC')].project_id.to_list()
 
     part_tmp.loc[part_tmp.project_id.isin(proj_no_coord), 'coordination_number'] = 0
     part_tmp = part_tmp.assign(with_coord=True)

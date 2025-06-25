@@ -62,7 +62,7 @@ def entities_tmp_create(entities_info, countries, ref):
     return tmp, rep
 
 def entities_for_merge(entities_tmp):
-    entities_tmp = entities_tmp[['generalPic','legalName', 'businessName', 'id', 'id_secondaire', 'ZONAGE', 'country_code_mapping', 'country']]
+    entities_tmp = entities_tmp[['generalPic','legalName', 'businessName', 'id', 'id_secondaire', 'ZONAGE', 'country_code_mapping', 'country_code']]
     entities_tmp = entities_tmp.mask(entities_tmp=='')
     print(f"1 - After add ref to entities: {len(entities_tmp)}\n\n{entities_tmp.columns}")
 

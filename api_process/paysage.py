@@ -114,9 +114,10 @@ def IDpaysage_status(paysage_id):
     print(f"- {len(paysage_id)} entities paysage to check")
     paysage_id.loc[paysage_id.id_paysage.isnull(), 'id_paysage'] = paysage_id.id_source
     paysage_id['nb'] = paysage_id.groupby('id_source')['id_paysage'].transform('count')
-    paysage_id = (paysage_id.loc[~((paysage_id.nb>1)&(paysage_id.status==False))]
-            .drop(columns=['status', 'nb'])
-            .drop_duplicates())
+    if 'nb' and 'status' in paysage_id.columns:
+        paysage_id = (paysage_id.loc[~((paysage_id.nb>1)&(paysage_id.status==False))]
+                .drop(columns=['status', 'nb'])
+                .drop_duplicates())
     doublon=list(paysage_id.loc[(paysage_id.groupby('id_source')['id_paysage'].transform('count')>1)].id_paysage)
     if doublon:
         for i in doublon:

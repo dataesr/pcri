@@ -7,11 +7,11 @@ from config_path import PATH_CONNECT
 def entities_preparation(entities_part, h20):
 
     h20 = FP_suivi(h20)
-    h20=(h20.rename(columns={ 'subv':'beneficiary_subv'})
+    h20=(h20.rename(columns={ 'subv':'beneficiary_fund'})
     .drop(columns=['action_code3', 'action_name3', 'paysage_category_priority', 'programme_next_fp']))
 
     h20 = (h20
-        .groupby(list(h20.columns.difference(['beneficiary_subv','coordination_number', 'number_involved', 'calculated_fund', 'fund_ent_erc'])), dropna=False, as_index=False).sum()
+        .groupby(list(h20.columns.difference(['beneficiary_fund','coordination_number', 'number_involved', 'calculated_fund', 'fund_ent_erc'])), dropna=False, as_index=False).sum()
         .drop_duplicates()
         )
     

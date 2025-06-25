@@ -62,7 +62,7 @@ def entities_merge_partApp(df, app1, part):
     #traietement des cc manquants dans entities à partir de cc ajouté
     entities = entities_missing_country(entities)
     print(f"- END size entities: {len(entities)}")  
-    rep.append({'stage_process':'process10_all', 'entities_size':len(tmp)})
+    rep.append({'stage_process':'process3_entitiesAll', 'entities_size':len(tmp)})
 
 
     if len(entities[entities.generalState.isnull()])>0:
