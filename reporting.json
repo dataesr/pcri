@@ -1,0 +1,66 @@
+[
+    {
+        "stage_process": "_loading",
+        "project_size": 21186
+    },
+    {
+        "stage_process": "process1",
+        "project_size": 21186
+    },
+    {
+        "stage_process": "_loading",
+        "proposal_size": 121375
+    },
+    {
+        "stage_process": "process1",
+        "proposal_size": 121375
+    },
+    {
+        "stage_process": "process2_status",
+        "proposal_size": 115146
+    },
+    {
+        "stage_process": "process3_add_miss_proj",
+        "proposal_size": 115839
+    },
+    {
+        "stage_process": "process2_status",
+        "project_size": 19480
+    },
+    {
+        "stage_process": "process4_merge",
+        "merded_size": 135319
+    },
+    {
+        "stage_process": "process5_date_clean",
+        "merged_size": 135319
+    },
+    {
+        "stage_process": "process6_panels",
+        "merged_size": 135319
+    },
+    {
+        "stage_process": "process7_topics",
+        "merged_size": 135319
+    },
+    {
+        "stage_process": "process8_actions",
+        "merged_size": 135319
+    },
+    {
+        "stage_process": "process9_europs",
+        "merged_size": 135319
+    },
+    {
+        "stage_process": "process10_projects_all",
+        "merged_size": 135319
+    },
+    {
+        "stage_process": "process10_projects_all",
+        "project_size": 19480
+    },
+    {
+        "stage_process": "process10_projects_all",
+        "proposal_size": 115839
+    }
+]

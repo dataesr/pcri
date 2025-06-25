@@ -10,7 +10,7 @@ def calls_current(projects_current, calls):
                 'destination_code','destination_name_en', 'call_deadline', 'is_ejo',
                 'call_id','call_year','role','action_code', 'extra_joint_organization',
                 'country_code','country_name_fr','stage', 'status_code'],  dropna = False)
-        .agg({'calculated_fund':'sum', 'beneficiary_subv':'sum', 'number_involved':'sum', 
+        .agg({'calculated_fund':'sum', 'beneficiary_fund':'sum', 'number_involved':'sum', 
               'project_id': 'nunique'})
         .reset_index()
         .merge(calls.drop(columns=['call_year','missionCancer', 'missionCities', 

@@ -18,7 +18,8 @@ def proposals_status(df, proj_id_signed, stage_p):
     df = df.assign(stage='evaluated').drop(columns='stageExitStatus')
 
     print(f"- after cleaning -> size prop1 without inadmissible/inegible/etc : {len(df)}")
-    return df
+    rep=[{'stage_process': 'process2_status', 'proposal_size': len(df)}]
+    return df, rep
 
 def proposals_id_missing(df, proj, extractDate):
     print('\n### MISSING PROPOSALS')

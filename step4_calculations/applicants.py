@@ -1,4 +1,4 @@
-
+    
 
 def applicants_calcul(part_step, app1, proj):
     import numpy as np, pandas as pd

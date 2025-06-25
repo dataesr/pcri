@@ -7,6 +7,7 @@ def participations_nuts(df):
     import pandas as pd, numpy as np
     from config_path import PATH_REF
     # gestion code nuts
+    print("## participations nuts")
     nuts = pd.read_pickle(f'{PATH_REF}nuts_complet.pkl')
     temp=df[['participation_nuts', 'nutsCode']].drop_duplicates()
 #501171 507105
@@ -29,18 +30,16 @@ def participations_nuts(df):
     df = (df.merge(temp, how='left', on=['participation_nuts', 'nutsCode'])
             .drop(columns=['participation_nuts', 'nutsCode'])
             .rename(columns={'n3':'participation_nuts'}))
-    print(f"size part_step after add nuts: {len(df)}, sans code_nuts: {len(df.loc[(~df.participation_nuts.isnull())&(df.region_1_name.isnull())])}")
+    
+    print(f"- size part_step after add nuts: {len(df)}, sans code_nuts: {len(df.loc[(~df.participation_nuts.isnull())&(df.region_1_name.isnull())])}")
     return df
 
 
-def entities_with_lien(entities_info, lien, genPic_to_new):
+def entities_with_lien(entities_info, df):
     from config_path import PATH_CLEAN
     print("### LIEN + entities_info -> pour calculations")
-    print(f"- ETAT avant lien ->\ngeneralPic de lien={lien.generalPic.nunique()},\ngeneralPic de entities_info={entities_info.generalPic.nunique()}")
+    print(f"- ETAT avant lien ->\ngeneralPic de lien={df.generalPic.nunique()},\ngeneralPic de entities_info={entities_info.generalPic.nunique()}")
 
-    lien = lien.merge(genPic_to_new, how='left', on=['generalPic', 'country_code_mapping'])
-    lien = lien.rename(columns={'generalPic':'pic_old', 'pic_new':'generalPic'})
-    lien.loc[lien.generalPic.isnull(), 'generalPic'] = lien.loc[lien.generalPic.isnull(), 'pic_old']
 
     ent_tmp = (entities_info[
             ['generalPic', 'entreprise_flag',
@@ -50,51 +49,126 @@ def entities_with_lien(entities_info, lien, genPic_to_new):
             .drop_duplicates())
     ent_tmp['n_pic_cc'] = ent_tmp.groupby(['generalPic', 'country_code_mapping'])['country_code'].transform('count')
 
-    part_step = (lien.merge(ent_tmp,
+    part_step = (df.merge(ent_tmp,
                 how='left', on=['generalPic', 'country_code_mapping'])
-                .drop(columns={'n_app', 'n_part', 'participant_pic',  'nuts_participant', 'nuts_applicants'})
-                # .rename(columns={ 'nutsCode':'entities_nuts', 'nuts_code':'participation_nuts'})
-                .drop_duplicates())
+                )
+
+    print(f"- size participations merge with entities: {len(part_step)}\n- columns: {part_step.columns}")
 
     part_step = participations_nuts(part_step)
 
-    if len(part_step)==len(lien):
+    print(f"- size participations merge with nuts: {len(part_step)}\n- columns: {part_step.columns}")
+
+    if len(part_step)==len(df):
         print(f'1- part_step ({len(part_step)}) = lien')
     else:
-        print(f"2- lien={len(lien)}, part_step={len(part_step)}")
-    
-    part_step.to_pickle(f"{PATH_CLEAN}participation_complete.pkl")
+        print(f"2- lien={len(df)}, part_step={len(part_step)}")
     return part_step
 
 def proj_no_coord(projects):
     return projects[(projects.thema_code.isin(['ACCELERATOR']))|(projects.destination_code.isin(['PF','COST']))|((projects.thema_code=='ERC'))].project_id.to_list()
 
-def participations_complete(part_prop, part_proj, proj_no_coord):
+
+def participations_calc(lien, genPic_to_new, proj, entities_info):
+    import numpy as np, pandas as pd
+    from step4_calculations.participations import entities_with_lien 
+    '''Traitement des subventions proposals -> création calculated_applicant_subv'''
+    print("\n### CALCULS participations")  
+
+    cols=['project_id', 'generalPic', 'applicant_orderNumber',
+       'applicant_participant_pic', 'inProposal', 'applicant_country_code_mapping', 'applicant_role',
+       'applicant_partnerType', 'applicant_erc_role', 'app_fund', 'participation_nuts']
+    app = lien.loc[lien.inProposal==True, cols].assign(stage='evaluated')
+    rename_cols = {col: col.removeprefix('applicant_') for col in app.columns}
+    app = app.merge(proj, how='left', on='project_id', indicator=True).rename(columns=rename_cols)
+
+    # ERC
+    app.loc[app._merge=='both', 'fund_ent_erc'] = app.loc[app._merge=='both'].app_fund
+    tmp = app.loc[(app._merge=='both')&(app.destination_code!='SyG')]
+    app_tmp = tmp[['project_id', 'app_fund']].groupby(['project_id'])['app_fund'].sum().reset_index()
+
+    tmp = tmp.drop(columns='app_fund').merge(app_tmp, how='left', on='project_id')
+    tmp.loc[tmp.erc_role!='pi', 'app_fund'] = 0
+
+    app=pd.concat([app[~app.project_id.isin(tmp.project_id.unique())], tmp], ignore_index=True)
+
+    print("PARTICIPANT CALC")
+    cols=['project_id', 'generalPic', 'orderNumber', 'participant_pic', 'inProject', 
+          'country_code_mapping', 'role', 'partnerType', 'erc_role', 'part_fund', 'beneficiary_fund',
+          'participation_nuts']
+    part=lien.loc[lien.inProject==True, cols].assign(stage='successful')
+    # ERC
+    part.loc[part.project_id.isin(proj.project_id.unique()), 'fund_ent_erc'] = part.loc[part.project_id.isin(proj.project_id.unique())].part_fund
+    part.loc[part.project_id.isin(proj.project_id.unique()), 'part_fund'] = part.loc[part.project_id.isin(proj.project_id.unique())].beneficiary_fund
+
+
+    merged=pd.concat([app, part], ignore_index=True).drop(columns=['_merge', 'inProposal', 'inProject', 'participant_pic', 'destination_code'])
+    merged = merged.merge(genPic_to_new, how='left', on=['generalPic', 'country_code_mapping'])
+    merged = merged.rename(columns={'generalPic':'pic_old', 'pic_new':'generalPic'})
+    merged.loc[merged.generalPic.isnull(), 'generalPic'] = merged.loc[merged.generalPic.isnull(), 'pic_old']
+
+    print("## entities_withh_lien")
+    part_step = entities_with_lien(entities_info, merged)
+
+
+    part_step['calculated_fund'] = (np.where(part_step.stage=='evaluated', 
+                                part_step['app_fund']/part_step['n_pic_cc'], part_step['part_fund']/part_step['n_pic_cc']))
+
+    part_step['fund_ent_erc'] = part_step['fund_ent_erc']/part_step['n_pic_cc']
+    
+    x=part_step[part_step.stage=='successful']
+    if len(part) != len(x):
+        print(f"2- ATTENTION ! pas le même nbre de lignes-> part_step: {len(x)}, first_part_step: {len(part)}")    
+
+    if '{:,.1f}'.format(x['beneficiary_fund'].sum())=='{:,.1f}'.format(part['beneficiary_fund'].sum()):
+        print("3- Etape part_step/part1 -> beneficiary_fund OK")
+    else:
+        print(f"4- ATTENTION ! Revoir le calcul de beneficiary_fund:{'{:,.1f}'.format(x['beneficiary_fund'].sum())}, euContribution:{'{:,.1f}'.format(part['beneficiary_fund'].sum())}")
+        
+    if '{:,.1f}'.format(x['calculated_fund'].sum())=='{:,.1f}'.format(part['part_fund'].sum()):
+        print("5- Etape part_step/part1 -> calculated_fund OK")
+    else:
+        print(f"-- ATTENTION ! Revoir le calcul de calculated_other_subv:{'{:,.1f}'.format(x['calculated_fund'].sum())}, netEuContribution:{'{:,.1f}'.format(part['part_fund'].sum())}")
+
+    x=part_step[part_step.stage=='evaluated']
+    if '{:,.1f}'.format(app['app_fund'].sum()) == '{:,.1f}'.format(x['calculated_fund'].sum()):
+        print("2- requests grants = subventions proposals OK")
+    else:
+        print(f"3- ATTENTION ! Ecart subventions proposals -> subv_orig:{'{:,.1f}'.format(app['app_fund'].sum())}, après fusion:{'{:,.1f}'.format(x['calculated_fund'].sum())}")
+
+    return part_step
+
+
+def participations_complete(part_step, proj_no_coord):
     from config_path import PATH_CLEAN
     import numpy as np, pandas as pd
     print("### PARTICIPATIONS final")
-    participation = pd.concat([part_prop, part_proj], ignore_index=True)
+    # participation = pd.concat([part_prop, part_proj], ignore_index=True)
 
-    print(f"- control role: {participation.role.unique()}")
-    participation['coordination_number']=np.where(participation['role']=='coordinator', 1, 0)
-    participation.loc[participation.project_id.isin(proj_no_coord), 'coordination_number'] = 0
-    participation = participation.assign(with_coord=True)
-    participation.loc[participation.project_id.isin(proj_no_coord), 'with_coord'] = False
+    print(f"- control role: {part_step.role.unique()}")
+    part_step['coordination_number']=np.where(part_step['role']=='coordinator', 1, 0)
+    part_step.loc[part_step.project_id.isin(proj_no_coord), 'coordination_number'] = 0
+    part_step = part_step.assign(with_coord=True)
+    part_step.loc[part_step.project_id.isin(proj_no_coord), 'with_coord'] = False
 
-    participation = (participation
-            .assign(is_ejo=np.where(participation.extra_joint_organization.isnull(), 'Sans', 'Avec')))
+    part_step.loc[part_step.role.isin(['co-pi', 'pi']), 'role'] = part_step.loc[part_step.role.isin(['co-pi', 'pi'])].role.str.upper()
+    part_step.loc[part_step.role.isin(['coordinator', 'partner']), 'role'] = part_step.loc[part_step.role.isin(['coordinator', 'partner'])].role.str.capitalize()
+    part_step.loc[part_step.erc_role.isin(['pi']), 'erc_role'] = part_step.loc[part_step.erc_role.isin(['pi'])].erc_role.str.upper()
+
+    part_step = (part_step
+            .assign(is_ejo=np.where(part_step.extra_joint_organization.isnull(), 'Sans', 'Avec')))
  
-    participation.rename(columns={'partnerType':'participates_as'}, inplace=True)
-    participation['participation_linked'] = participation['project_id']+"-"+participation['orderNumber']
+    part_step.rename(columns={'partnerType':'participates_as'}, inplace=True)
+    part_step['participation_linked'] = part_step['project_id']+"-"+part_step['orderNumber']
     
-
-    print(f"- size participation: {len(participation)}")
+    print(f"- size participation: {len(part_step)}")
 
     file_name = f"{PATH_CLEAN}participation_current.pkl"
     with open(file_name, 'wb') as file:
-        pd.to_pickle(participation, file)
-    return participation
+        pd.to_pickle(part_step, file)
+    return part_step
     
+
 def ent(participation, entities_info, projects):
     import  pandas as pd
     print("### ENTITIES preparation")
@@ -102,7 +176,7 @@ def ent(participation, entities_info, projects):
         ['stage', 'project_id','generalPic', 'role', 'participates_as', 'erc_role', 
         'with_coord', 'is_ejo', 'country_code', 'participation_nuts', 'country_code_mapping',
         'region_1_name', 'region_2_name', 'regional_unit_name','participation_linked',
-        'coordination_number', 'calculated_fund', 'beneficiary_subv', 'fund_ent_erc']]
+        'coordination_number', 'calculated_fund', 'beneficiary_fund', 'fund_ent_erc']]
         .assign(number_involved=1))
 
     print(f"1 - subv={'{:,.1f}'.format(part.loc[(part.country_code=='FRA')&(part.stage=='successful'), 'calculated_fund'].sum())}")
@@ -118,7 +192,7 @@ def ent(participation, entities_info, projects):
         if any(df.id.str.contains(';', na=False)):
             print(f"- Attention multi id pour une participation, calculs sur les chiffres\n {df.loc[df.id.str.contains(';', na=False), 'id'].drop_duplicates()}")
             df['nb'] = np.where(df.id.str.contains(';', na=False), df.id.str.split(';').str.len(), 1)
-            for i in ['coordination_number', 'calculated_fund', 'beneficiary_subv', 'fund_ent_erc', 'number_involved']:
+            for i in ['coordination_number', 'calculated_fund', 'beneficiary_fund', 'fund_ent_erc', 'number_involved']:
                 # df[i] = np.where(df['nb']>1, df[i]/df['nb'], df[i])
                 df[i] = df[i]/df['nb']
         return df
@@ -151,7 +225,7 @@ def ent(participation, entities_info, projects):
     print(f"4 - entities_part subv drop columns={'{:,.1f}'.format(entities_part.loc[(entities_part.country_code=='FRA')&(entities_part.stage=='successful'), 'calculated_fund'].sum())}")
 
     entities_part=(entities_part
-        .groupby(list(entities_part.columns.difference(['coordination_number', 'number_involved', 'calculated_fund', 'beneficiary_subv', 'fund_ent_erc'])), dropna=False, as_index=False).sum()
+        .groupby(list(entities_part.columns.difference(['coordination_number', 'number_involved', 'calculated_fund', 'beneficiary_fund', 'fund_ent_erc'])), dropna=False, as_index=False).sum()
         .drop_duplicates()
         )
 

@@ -1,0 +1,3271 @@
+[
+  {
+    "panel_regroupement_code":"CHE",
+    "panel_regroupement_name":"Chemistry",
+    "panel_code_1":"C1",
+    "panel_name_1":"Inorganic Chemistry",
+    "panel_keywords":"Catalysis"
+  },
+  {
+    "panel_regroupement_code":"CHE",
+    "panel_regroupement_name":"Chemistry",
+    "panel_code_1":"C1",
+    "panel_name_1":"Inorganic Chemistry",
+    "panel_keywords":"Coordination chemistry"
+  },
+  {
+    "panel_regroupement_code":"CHE",
+    "panel_regroupement_name":"Chemistry",
+    "panel_code_1":"C1",
+    "panel_name_1":"Inorganic Chemistry",
+    "panel_keywords":"Inorganic and nuclear chemistry"
+  },
+  {
+    "panel_regroupement_code":"CHE",
+    "panel_regroupement_name":"Chemistry",
+    "panel_code_1":"C1",
+    "panel_name_1":"Inorganic Chemistry",
+    "panel_keywords":"NMP Non-Metallic Materials & basic processes"
+  },
+  {
+    "panel_regroupement_code":"CHE",
+    "panel_regroupement_name":"Chemistry",
+    "panel_code_1":"C1",
+    "panel_name_1":"Inorganic Chemistry",
+    "panel_keywords":"Organometallic chemistry"
+  },
+  {
+    "panel_regroupement_code":"CHE",
+    "panel_regroupement_name":"Chemistry",
+    "panel_code_1":"C1",
+    "panel_name_1":"Inorganic Chemistry",
+    "panel_keywords":"Radiation and nuclear chemistry"
+  },
+  {
+    "panel_regroupement_code":"CHE",
+    "panel_regroupement_name":"Chemistry",
+    "panel_code_1":"C2",
+    "panel_name_1":"Organic, Polymer and Molecular Chemistry",
+    "panel_keywords":"Carbohydrates"
+  },
+  {
+    "panel_regroupement_code":"CHE",
+    "panel_regroupement_name":"Chemistry",
+    "panel_code_1":"C2",
+    "panel_name_1":"Organic, Polymer and Molecular Chemistry",
+    "panel_keywords":"Combinatorial chemistry"
+  },
+  {
+    "panel_regroupement_code":"CHE",
+    "panel_regroupement_name":"Chemistry",
+    "panel_code_1":"C2",
+    "panel_name_1":"Organic, Polymer and Molecular Chemistry",
+    "panel_keywords":"Heterocyclic chemistry"
+  },
+  {
+    "panel_regroupement_code":"CHE",
+    "panel_regroupement_name":"Chemistry",
+    "panel_code_1":"C2",
+    "panel_name_1":"Organic, Polymer and Molecular Chemistry",
+    "panel_keywords":"Macromolecular chemistry"
+  },
+  {
+    "panel_regroupement_code":"CHE",
+    "panel_regroupement_name":"Chemistry",
+    "panel_code_1":"C2",
+    "panel_name_1":"Organic, Polymer and Molecular Chemistry",
+    "panel_keywords":"Molecular architecture and structure"
+  },
+  {
+    "panel_regroupement_code":"CHE",
+    "panel_regroupement_name":"Chemistry",
+    "panel_code_1":"C2",
+    "panel_name_1":"Organic, Polymer and Molecular Chemistry",
+    "panel_keywords":"Molecular biology"
+  },
+  {
+    "panel_regroupement_code":"CHE",
+    "panel_regroupement_name":"Chemistry",
+    "panel_code_1":"C2",
+    "panel_name_1":"Organic, Polymer and Molecular Chemistry",
+    "panel_keywords":"Molecular chemistry"
+  },
+  {
+    "panel_regroupement_code":"CHE",
+    "panel_regroupement_name":"Chemistry",
+    "panel_code_1":"C2",
+    "panel_name_1":"Organic, Polymer and Molecular Chemistry",
+    "panel_keywords":"Natural product synthesis"
+  },
+  {
+    "panel_regroupement_code":"CHE",
+    "panel_regroupement_name":"Chemistry",
+    "panel_code_1":"C2",
+    "panel_name_1":"Organic, Polymer and Molecular Chemistry",
+    "panel_keywords":"Organic chemistry"
+  },
+  {
+    "panel_regroupement_code":"CHE",
+    "panel_regroupement_name":"Chemistry",
+    "panel_code_1":"C2",
+    "panel_name_1":"Organic, Polymer and Molecular Chemistry",
+    "panel_keywords":"Organic reaction mechanism"
+  },
+  {
+    "panel_regroupement_code":"CHE",
+    "panel_regroupement_name":"Chemistry",
+    "panel_code_1":"C2",
+    "panel_name_1":"Organic, Polymer and Molecular Chemistry",
+    "panel_keywords":"Peptide chemistry"
+  },
+  {
+    "panel_regroupement_code":"CHE",
+    "panel_regroupement_name":"Chemistry",
+    "panel_code_1":"C2",
+    "panel_name_1":"Organic, Polymer and Molecular Chemistry",
+    "panel_keywords":"Polymer chemistry"
+  },
+  {
+    "panel_regroupement_code":"CHE",
+    "panel_regroupement_name":"Chemistry",
+    "panel_code_1":"C2",
+    "panel_name_1":"Organic, Polymer and Molecular Chemistry",
+    "panel_keywords":"Stereochemistry"
+  },
+  {
+    "panel_regroupement_code":"CHE",
+    "panel_regroupement_name":"Chemistry",
+    "panel_code_1":"C2",
+    "panel_name_1":"Organic, Polymer and Molecular Chemistry",
+    "panel_keywords":"Supramolecular chemistry"
+  },
+  {
+    "panel_regroupement_code":"CHE",
+    "panel_regroupement_name":"Chemistry",
+    "panel_code_1":"C2",
+    "panel_name_1":"Organic, Polymer and Molecular Chemistry",
+    "panel_keywords":"Synthetic Organic chemistry"
+  },
+  {
+    "panel_regroupement_code":"CHE",
+    "panel_regroupement_name":"Chemistry",
+    "panel_code_1":"C3",
+    "panel_name_1":"Physical and Analytical Chemistry",
+    "panel_keywords":"Analytical chemistry"
+  },
+  {
+    "panel_regroupement_code":"CHE",
+    "panel_regroupement_name":"Chemistry",
+    "panel_code_1":"C3",
+    "panel_name_1":"Physical and Analytical Chemistry",
+    "panel_keywords":"Chemical instrumentation"
+  },
+  {
+    "panel_regroupement_code":"CHE",
+    "panel_regroupement_name":"Chemistry",
+    "panel_code_1":"C3",
+    "panel_name_1":"Physical and Analytical Chemistry",
+    "panel_keywords":"Chemical reactions: mechanisms, dynamics, kinetics and catalytic reactions"
+  },
+  {
+    "panel_regroupement_code":"CHE",
+    "panel_regroupement_name":"Chemistry",
+    "panel_code_1":"C3",
+    "panel_name_1":"Physical and Analytical Chemistry",
+    "panel_keywords":"Chemistry of condensed matter"
+  },
+  {
+    "panel_regroupement_code":"CHE",
+    "panel_regroupement_name":"Chemistry",
+    "panel_code_1":"C3",
+    "panel_name_1":"Physical and Analytical Chemistry",
+    "panel_keywords":"Chromatography"
+  },
+  {
+    "panel_regroupement_code":"CHE",
+    "panel_regroupement_name":"Chemistry",
+    "panel_code_1":"C3",
+    "panel_name_1":"Physical and Analytical Chemistry",
+    "panel_keywords":"Colloid chemistry"
+  },
+  {
+    "panel_regroupement_code":"CHE",
+    "panel_regroupement_name":"Chemistry",
+    "panel_code_1":"C3",
+    "panel_name_1":"Physical and Analytical Chemistry",
+    "panel_keywords":"Corrosion"
+  },
+  {
+    "panel_regroupement_code":"CHE",
+    "panel_regroupement_name":"Chemistry",
+    "panel_code_1":"C3",
+    "panel_name_1":"Physical and Analytical Chemistry",
+    "panel_keywords":"Crystallography and X-ray diffraction"
+  },
+  {
+    "panel_regroupement_code":"CHE",
+    "panel_regroupement_name":"Chemistry",
+    "panel_code_1":"C3",
+    "panel_name_1":"Physical and Analytical Chemistry",
+    "panel_keywords":"Electrochemistry, electrodialysis, microfluidics, sensors"
+  },
+  {
+    "panel_regroupement_code":"CHE",
+    "panel_regroupement_name":"Chemistry",
+    "panel_code_1":"C3",
+    "panel_name_1":"Physical and Analytical Chemistry",
+    "panel_keywords":"Forensic chemistry"
+  },
+  {
+    "panel_regroupement_code":"CHE",
+    "panel_regroupement_name":"Chemistry",
+    "panel_code_1":"C3",
+    "panel_name_1":"Physical and Analytical Chemistry",
+    "panel_keywords":"Heterogeneous catalysis"
+  },
+  {
+    "panel_regroupement_code":"CHE",
+    "panel_regroupement_name":"Chemistry",
+    "panel_code_1":"C3",
+    "panel_name_1":"Physical and Analytical Chemistry",
+    "panel_keywords":"Homogeneous catalysis"
+  },
+  {
+    "panel_regroupement_code":"CHE",
+    "panel_regroupement_name":"Chemistry",
+    "panel_code_1":"C3",
+    "panel_name_1":"Physical and Analytical Chemistry",
+    "panel_keywords":"Ionic liquids"
+  },
+  {
+    "panel_regroupement_code":"CHE",
+    "panel_regroupement_name":"Chemistry",
+    "panel_code_1":"C3",
+    "panel_name_1":"Physical and Analytical Chemistry",
+    "panel_keywords":"Mass Spectrometry"
+  },
+  {
+    "panel_regroupement_code":"CHE",
+    "panel_regroupement_name":"Chemistry",
+    "panel_code_1":"C3",
+    "panel_name_1":"Physical and Analytical Chemistry",
+    "panel_keywords":"Method development in chemistry"
+  },
+  {
+    "panel_regroupement_code":"CHE",
+    "panel_regroupement_name":"Chemistry",
+    "panel_code_1":"C3",
+    "panel_name_1":"Physical and Analytical Chemistry",
+    "panel_keywords":"Microscopy"
+  },
+  {
+    "panel_regroupement_code":"CHE",
+    "panel_regroupement_name":"Chemistry",
+    "panel_code_1":"C3",
+    "panel_name_1":"Physical and Analytical Chemistry",
+    "panel_keywords":"Molecular dynamics"
+  },
+  {
+    "panel_regroupement_code":"CHE",
+    "panel_regroupement_name":"Chemistry",
+    "panel_code_1":"C3",
+    "panel_name_1":"Physical and Analytical Chemistry",
+    "panel_keywords":"Molecular electronics"
+  },
+  {
+    "panel_regroupement_code":"CHE",
+    "panel_regroupement_name":"Chemistry",
+    "panel_code_1":"C3",
+    "panel_name_1":"Physical and Analytical Chemistry",
+    "panel_keywords":"Photocatalysis"
+  },
+  {
+    "panel_regroupement_code":"CHE",
+    "panel_regroupement_name":"Chemistry",
+    "panel_code_1":"C3",
+    "panel_name_1":"Physical and Analytical Chemistry",
+    "panel_keywords":"Photochemistry"
+  },
+  {
+    "panel_regroupement_code":"CHE",
+    "panel_regroupement_name":"Chemistry",
+    "panel_code_1":"C3",
+    "panel_name_1":"Physical and Analytical Chemistry",
+    "panel_keywords":"Physical chemistry"
+  },
+  {
+    "panel_regroupement_code":"CHE",
+    "panel_regroupement_name":"Chemistry",
+    "panel_code_1":"C3",
+    "panel_name_1":"Physical and Analytical Chemistry",
+    "panel_keywords":"Physical chemistry of biological systems"
+  },
+  {
+    "panel_regroupement_code":"CHE",
+    "panel_regroupement_name":"Chemistry",
+    "panel_code_1":"C3",
+    "panel_name_1":"Physical and Analytical Chemistry",
+    "panel_keywords":"Quantum Chemistry"
+  },
+  {
+    "panel_regroupement_code":"CHE",
+    "panel_regroupement_name":"Chemistry",
+    "panel_code_1":"C3",
+    "panel_name_1":"Physical and Analytical Chemistry",
+    "panel_keywords":"Spectroscopic and spectrometric techniques"
+  },
+  {
+    "panel_regroupement_code":"CHE",
+    "panel_regroupement_name":"Chemistry",
+    "panel_code_1":"C3",
+    "panel_name_1":"Physical and Analytical Chemistry",
+    "panel_keywords":"Structure and dynamics of disordered systems: soft matter (gels, colloids, liquid crystals, etc.), liquids, glasses, defects"
+  },
+  {
+    "panel_regroupement_code":"CHE",
+    "panel_regroupement_name":"Chemistry",
+    "panel_code_1":"C3",
+    "panel_name_1":"Physical and Analytical Chemistry",
+    "panel_keywords":"Surface chemistry"
+  },
+  {
+    "panel_regroupement_code":"CHE",
+    "panel_regroupement_name":"Chemistry",
+    "panel_code_1":"C3",
+    "panel_name_1":"Physical and Analytical Chemistry",
+    "panel_keywords":"Theoretical and computational chemistry"
+  },
+  {
+    "panel_regroupement_code":"CHE",
+    "panel_regroupement_name":"Chemistry",
+    "panel_code_1":"C3",
+    "panel_name_1":"Physical and Analytical Chemistry",
+    "panel_keywords":"Trace Analysis"
+  },
+  {
+    "panel_regroupement_code":"CHE",
+    "panel_regroupement_name":"Chemistry",
+    "panel_code_1":"C4",
+    "panel_name_1":"Applied and Industrial Chemistry",
+    "panel_keywords":"Biochemistry"
+  },
+  {
+    "panel_regroupement_code":"CHE",
+    "panel_regroupement_name":"Chemistry",
+    "panel_code_1":"C4",
+    "panel_name_1":"Applied and Industrial Chemistry",
+    "panel_keywords":"Biological chemistry"
+  },
+  {
+    "panel_regroupement_code":"CHE",
+    "panel_regroupement_name":"Chemistry",
+    "panel_code_1":"C4",
+    "panel_name_1":"Applied and Industrial Chemistry",
+    "panel_keywords":"Biomaterials, biomaterials synthesis"
+  },
+  {
+    "panel_regroupement_code":"CHE",
+    "panel_regroupement_name":"Chemistry",
+    "panel_code_1":"C4",
+    "panel_name_1":"Applied and Industrial Chemistry",
+    "panel_keywords":"Ceramics"
+  },
+  {
+    "panel_regroupement_code":"CHE",
+    "panel_regroupement_name":"Chemistry",
+    "panel_code_1":"C4",
+    "panel_name_1":"Applied and Industrial Chemistry",
+    "panel_keywords":"Coating and films"
+  },
+  {
+    "panel_regroupement_code":"CHE",
+    "panel_regroupement_name":"Chemistry",
+    "panel_code_1":"C4",
+    "panel_name_1":"Applied and Industrial Chemistry",
+    "panel_keywords":"Drinking water treatment"
+  },
+  {
+    "panel_regroupement_code":"CHE",
+    "panel_regroupement_name":"Chemistry",
+    "panel_code_1":"C4",
+    "panel_name_1":"Applied and Industrial Chemistry",
+    "panel_keywords":"Electrochemistry, batteries and fuel cells"
+  },
+  {
+    "panel_regroupement_code":"CHE",
+    "panel_regroupement_name":"Chemistry",
+    "panel_code_1":"C4",
+    "panel_name_1":"Applied and Industrial Chemistry",
+    "panel_keywords":"Environment chemistry"
+  },
+  {
+    "panel_regroupement_code":"CHE",
+    "panel_regroupement_name":"Chemistry",
+    "panel_code_1":"C4",
+    "panel_name_1":"Applied and Industrial Chemistry",
+    "panel_keywords":"Enzymology"
+  },
+  {
+    "panel_regroupement_code":"CHE",
+    "panel_regroupement_name":"Chemistry",
+    "panel_code_1":"C4",
+    "panel_name_1":"Applied and Industrial Chemistry",
+    "panel_keywords":"Food chemistry"
+  },
+  {
+    "panel_regroupement_code":"CHE",
+    "panel_regroupement_name":"Chemistry",
+    "panel_code_1":"C4",
+    "panel_name_1":"Applied and Industrial Chemistry",
+    "panel_keywords":"Fuel cell technology"
+  },
+  {
+    "panel_regroupement_code":"CHE",
+    "panel_regroupement_name":"Chemistry",
+    "panel_code_1":"C4",
+    "panel_name_1":"Applied and Industrial Chemistry",
+    "panel_keywords":"Graphene, 2D materials"
+  },
+  {
+    "panel_regroupement_code":"CHE",
+    "panel_regroupement_name":"Chemistry",
+    "panel_code_1":"C4",
+    "panel_name_1":"Applied and Industrial Chemistry",
+    "panel_keywords":"Hydrogen"
+  },
+  {
+    "panel_regroupement_code":"CHE",
+    "panel_regroupement_name":"Chemistry",
+    "panel_code_1":"C4",
+    "panel_name_1":"Applied and Industrial Chemistry",
+    "panel_keywords":"Intelligent materials, self-assembled materials"
+  },
+  {
+    "panel_regroupement_code":"CHE",
+    "panel_regroupement_name":"Chemistry",
+    "panel_code_1":"C4",
+    "panel_name_1":"Applied and Industrial Chemistry",
+    "panel_keywords":"Materials for sensors"
+  },
+  {
+    "panel_regroupement_code":"CHE",
+    "panel_regroupement_name":"Chemistry",
+    "panel_code_1":"C4",
+    "panel_name_1":"Applied and Industrial Chemistry",
+    "panel_keywords":"Medicinal chemistry"
+  },
+  {
+    "panel_regroupement_code":"CHE",
+    "panel_regroupement_name":"Chemistry",
+    "panel_code_1":"C4",
+    "panel_name_1":"Applied and Industrial Chemistry",
+    "panel_keywords":"Nanochemistry"
+  },
+  {
+    "panel_regroupement_code":"CHE",
+    "panel_regroupement_name":"Chemistry",
+    "panel_code_1":"C4",
+    "panel_name_1":"Applied and Industrial Chemistry",
+    "panel_keywords":"New materials: oxides, alloys, composite, organic-inorganic hybrid, nanoparticles"
+  },
+  {
+    "panel_regroupement_code":"CHE",
+    "panel_regroupement_name":"Chemistry",
+    "panel_code_1":"C4",
+    "panel_name_1":"Applied and Industrial Chemistry",
+    "panel_keywords":"Pharmaceutical chemistry"
+  },
+  {
+    "panel_regroupement_code":"CHE",
+    "panel_regroupement_name":"Chemistry",
+    "panel_code_1":"C4",
+    "panel_name_1":"Applied and Industrial Chemistry",
+    "panel_keywords":"Polymers and plastics"
+  },
+  {
+    "panel_regroupement_code":"CHE",
+    "panel_regroupement_name":"Chemistry",
+    "panel_code_1":"C4",
+    "panel_name_1":"Applied and Industrial Chemistry",
+    "panel_keywords":"Porous Materials"
+  },
+  {
+    "panel_regroupement_code":"CHE",
+    "panel_regroupement_name":"Chemistry",
+    "panel_code_1":"C4",
+    "panel_name_1":"Applied and Industrial Chemistry",
+    "panel_keywords":"Structural properties of materials"
+  },
+  {
+    "panel_regroupement_code":"CHE",
+    "panel_regroupement_name":"Chemistry",
+    "panel_code_1":"C4",
+    "panel_name_1":"Applied and Industrial Chemistry",
+    "panel_keywords":"Surface modification"
+  },
+  {
+    "panel_regroupement_code":"CHE",
+    "panel_regroupement_name":"Chemistry",
+    "panel_code_1":"C4",
+    "panel_name_1":"Applied and Industrial Chemistry",
+    "panel_keywords":"Thin films"
+  },
+  {
+    "panel_regroupement_code":"CHE",
+    "panel_regroupement_name":"Chemistry",
+    "panel_code_1":"C4",
+    "panel_name_1":"Applied and Industrial Chemistry",
+    "panel_keywords":"Toxicology"
+  },
+  {
+    "panel_regroupement_code":"ECO",
+    "panel_regroupement_name":"Economic Sciences",
+    "panel_code_1":"E1",
+    "panel_name_1":"Economics",
+    "panel_keywords":"Behavioural economics"
+  },
+  {
+    "panel_regroupement_code":"ECO",
+    "panel_regroupement_name":"Economic Sciences",
+    "panel_code_1":"E1",
+    "panel_name_1":"Economics",
+    "panel_keywords":"Big data"
+  },
+  {
+    "panel_regroupement_code":"ECO",
+    "panel_regroupement_name":"Economic Sciences",
+    "panel_code_1":"E1",
+    "panel_name_1":"Economics",
+    "panel_keywords":"Development, economic growth"
+  },
+  {
+    "panel_regroupement_code":"ECO",
+    "panel_regroupement_name":"Economic Sciences",
+    "panel_code_1":"E1",
+    "panel_name_1":"Economics",
+    "panel_keywords":"Econometrics, statistical methods"
+  },
+  {
+    "panel_regroupement_code":"ECO",
+    "panel_regroupement_name":"Economic Sciences",
+    "panel_code_1":"E1",
+    "panel_name_1":"Economics",
+    "panel_keywords":"Economic geography"
+  },
+  {
+    "panel_regroupement_code":"ECO",
+    "panel_regroupement_name":"Economic Sciences",
+    "panel_code_1":"E1",
+    "panel_name_1":"Economics",
+    "panel_keywords":"Economic history"
+  },
+  {
+    "panel_regroupement_code":"ECO",
+    "panel_regroupement_name":"Economic Sciences",
+    "panel_code_1":"E1",
+    "panel_name_1":"Economics",
+    "panel_keywords":"Industrial economics"
+  },
+  {
+    "panel_regroupement_code":"ECO",
+    "panel_regroupement_name":"Economic Sciences",
+    "panel_code_1":"E1",
+    "panel_name_1":"Economics",
+    "panel_keywords":"International trade"
+  },
+  {
+    "panel_regroupement_code":"ECO",
+    "panel_regroupement_name":"Economic Sciences",
+    "panel_code_1":"E1",
+    "panel_name_1":"Economics",
+    "panel_keywords":"Labour economics"
+  },
+  {
+    "panel_regroupement_code":"ECO",
+    "panel_regroupement_name":"Economic Sciences",
+    "panel_code_1":"E1",
+    "panel_name_1":"Economics",
+    "panel_keywords":"Macroeconomics"
+  },
+  {
+    "panel_regroupement_code":"ECO",
+    "panel_regroupement_name":"Economic Sciences",
+    "panel_code_1":"E1",
+    "panel_name_1":"Economics",
+    "panel_keywords":"Public economics"
+  },
+  {
+    "panel_regroupement_code":"ECO",
+    "panel_regroupement_name":"Economic Sciences",
+    "panel_code_1":"E1",
+    "panel_name_1":"Economics",
+    "panel_keywords":"Social economics"
+  },
+  {
+    "panel_regroupement_code":"ECO",
+    "panel_regroupement_name":"Economic Sciences",
+    "panel_code_1":"E1",
+    "panel_name_1":"Economics",
+    "panel_keywords":"Urban and regional economics"
+  },
+  {
+    "panel_regroupement_code":"ECO",
+    "panel_regroupement_name":"Economic Sciences",
+    "panel_code_1":"E2",
+    "panel_name_1":"Economic Development",
+    "panel_keywords":"Competitiveness, innovation, research and development"
+  },
+  {
+    "panel_regroupement_code":"ECO",
+    "panel_regroupement_name":"Economic Sciences",
+    "panel_code_1":"E2",
+    "panel_name_1":"Economic Development",
+    "panel_keywords":"Economics of innovation"
+  },
+  {
+    "panel_regroupement_code":"ECO",
+    "panel_regroupement_name":"Economic Sciences",
+    "panel_code_1":"E2",
+    "panel_name_1":"Economic Development",
+    "panel_keywords":"Industrial clusters"
+  },
+  {
+    "panel_regroupement_code":"ECO",
+    "panel_regroupement_name":"Economic Sciences",
+    "panel_code_1":"E2",
+    "panel_name_1":"Economic Development",
+    "panel_keywords":"Natural resources and environmental economics"
+  },
+  {
+    "panel_regroupement_code":"ECO",
+    "panel_regroupement_name":"Economic Sciences",
+    "panel_code_1":"E3",
+    "panel_name_1":"Management",
+    "panel_keywords":"Business governance"
+  },
+  {
+    "panel_regroupement_code":"ECO",
+    "panel_regroupement_name":"Economic Sciences",
+    "panel_code_1":"E3",
+    "panel_name_1":"Management",
+    "panel_keywords":"Entrepreneurship"
+  },
+  {
+    "panel_regroupement_code":"ECO",
+    "panel_regroupement_name":"Economic Sciences",
+    "panel_code_1":"E3",
+    "panel_name_1":"Management",
+    "panel_keywords":"Human resource management"
+  },
+  {
+    "panel_regroupement_code":"ECO",
+    "panel_regroupement_name":"Economic Sciences",
+    "panel_code_1":"E3",
+    "panel_name_1":"Management",
+    "panel_keywords":"Innovation management"
+  },
+  {
+    "panel_regroupement_code":"ECO",
+    "panel_regroupement_name":"Economic Sciences",
+    "panel_code_1":"E3",
+    "panel_name_1":"Management",
+    "panel_keywords":"Marketing strategy"
+  },
+  {
+    "panel_regroupement_code":"ECO",
+    "panel_regroupement_name":"Economic Sciences",
+    "panel_code_1":"E3",
+    "panel_name_1":"Management",
+    "panel_keywords":"New industrial value chains"
+  },
+  {
+    "panel_regroupement_code":"ECO",
+    "panel_regroupement_name":"Economic Sciences",
+    "panel_code_1":"E3",
+    "panel_name_1":"Management",
+    "panel_keywords":"Organization studies: theory & strategy, industrial organization"
+  },
+  {
+    "panel_regroupement_code":"ECO",
+    "panel_regroupement_name":"Economic Sciences",
+    "panel_code_1":"E3",
+    "panel_name_1":"Management",
+    "panel_keywords":"Startups"
+  },
+  {
+    "panel_regroupement_code":"ECO",
+    "panel_regroupement_name":"Economic Sciences",
+    "panel_code_1":"E4",
+    "panel_name_1":"Finance",
+    "panel_keywords":"Accounting"
+  },
+  {
+    "panel_regroupement_code":"ECO",
+    "panel_regroupement_name":"Economic Sciences",
+    "panel_code_1":"E4",
+    "panel_name_1":"Finance",
+    "panel_keywords":"Banking, corporate finance, accounting"
+  },
+  {
+    "panel_regroupement_code":"ECO",
+    "panel_regroupement_name":"Economic Sciences",
+    "panel_code_1":"E4",
+    "panel_name_1":"Finance",
+    "panel_keywords":"Finance, banking, insurance"
+  },
+  {
+    "panel_regroupement_code":"ECO",
+    "panel_regroupement_name":"Economic Sciences",
+    "panel_code_1":"E4",
+    "panel_name_1":"Finance",
+    "panel_keywords":"Financial & Investment management"
+  },
+  {
+    "panel_regroupement_code":"ECO",
+    "panel_regroupement_name":"Economic Sciences",
+    "panel_code_1":"E4",
+    "panel_name_1":"Finance",
+    "panel_keywords":"Financial markets, asset prices, international finance"
+  },
+  {
+    "panel_regroupement_code":"ECO",
+    "panel_regroupement_name":"Economic Sciences",
+    "panel_code_1":"E4",
+    "panel_name_1":"Finance",
+    "panel_keywords":"Venture capital"
+  },
+  {
+    "panel_regroupement_code":"ENG",
+    "panel_regroupement_name":"Information Science and Engineering",
+    "panel_code_1":"G1",
+    "panel_name_1":"Computer science and informatics",
+    "panel_keywords":"Algorithms, distributed, parallel and network algorithms, algorithmic game theory"
+  },
+  {
+    "panel_regroupement_code":"ENG",
+    "panel_regroupement_name":"Information Science and Engineering",
+    "panel_code_1":"G1",
+    "panel_name_1":"Computer science and informatics",
+    "panel_keywords":"Artificial intelligence, intelligent systems, multi agent systems"
+  },
+  {
+    "panel_regroupement_code":"ENG",
+    "panel_regroupement_name":"Information Science and Engineering",
+    "panel_code_1":"G1",
+    "panel_name_1":"Computer science and informatics",
+    "panel_keywords":"Augmented Reality"
+  },
+  {
+    "panel_regroupement_code":"ENG",
+    "panel_regroupement_name":"Information Science and Engineering",
+    "panel_code_1":"G1",
+    "panel_name_1":"Computer science and informatics",
+    "panel_keywords":"Bioinformatics, biocomputing, and DNA and molecular computation"
+  },
+  {
+    "panel_regroupement_code":"ENG",
+    "panel_regroupement_name":"Information Science and Engineering",
+    "panel_code_1":"G1",
+    "panel_name_1":"Computer science and informatics",
+    "panel_keywords":"Cloud computing"
+  },
+  {
+    "panel_regroupement_code":"ENG",
+    "panel_regroupement_name":"Information Science and Engineering",
+    "panel_code_1":"G1",
+    "panel_name_1":"Computer science and informatics",
+    "panel_keywords":"Cognitive science"
+  },
+  {
+    "panel_regroupement_code":"ENG",
+    "panel_regroupement_name":"Information Science and Engineering",
+    "panel_code_1":"G1",
+    "panel_name_1":"Computer science and informatics",
+    "panel_keywords":"Complexity and cryptography, electronic security, privacy, biometrics"
+  },
+  {
+    "panel_regroupement_code":"ENG",
+    "panel_regroupement_name":"Information Science and Engineering",
+    "panel_code_1":"G1",
+    "panel_name_1":"Computer science and informatics",
+    "panel_keywords":"Computer architecture, pervasive computing, ubiquitous computing"
+  },
+  {
+    "panel_regroupement_code":"ENG",
+    "panel_regroupement_name":"Information Science and Engineering",
+    "panel_code_1":"G1",
+    "panel_name_1":"Computer science and informatics",
+    "panel_keywords":"Computer games"
+  },
+  {
+    "panel_regroupement_code":"ENG",
+    "panel_regroupement_name":"Information Science and Engineering",
+    "panel_code_1":"G1",
+    "panel_name_1":"Computer science and informatics",
+    "panel_keywords":"Computer graphics, computer vision, multi media, computer games"
+  },
+  {
+    "panel_regroupement_code":"ENG",
+    "panel_regroupement_name":"Information Science and Engineering",
+    "panel_code_1":"G1",
+    "panel_name_1":"Computer science and informatics",
+    "panel_keywords":"Computer hardware and architecture"
+  },
+  {
+    "panel_regroupement_code":"ENG",
+    "panel_regroupement_name":"Information Science and Engineering",
+    "panel_code_1":"G1",
+    "panel_name_1":"Computer science and informatics",
+    "panel_keywords":"Data mining"
+  },
+  {
+    "panel_regroupement_code":"ENG",
+    "panel_regroupement_name":"Information Science and Engineering",
+    "panel_code_1":"G1",
+    "panel_name_1":"Computer science and informatics",
+    "panel_keywords":"E-Commerce"
+  },
+  {
+    "panel_regroupement_code":"ENG",
+    "panel_regroupement_name":"Information Science and Engineering",
+    "panel_code_1":"G1",
+    "panel_name_1":"Computer science and informatics",
+    "panel_keywords":"E-learning, user modelling, collaborative systems"
+  },
+  {
+    "panel_regroupement_code":"ENG",
+    "panel_regroupement_name":"Information Science and Engineering",
+    "panel_code_1":"G1",
+    "panel_name_1":"Computer science and informatics",
+    "panel_keywords":"Embedded systems"
+  },
+  {
+    "panel_regroupement_code":"ENG",
+    "panel_regroupement_name":"Information Science and Engineering",
+    "panel_code_1":"G1",
+    "panel_name_1":"Computer science and informatics",
+    "panel_keywords":"Human computer interaction and interface, visualization and natural language processing"
+  },
+  {
+    "panel_regroupement_code":"ENG",
+    "panel_regroupement_name":"Information Science and Engineering",
+    "panel_code_1":"G1",
+    "panel_name_1":"Computer science and informatics",
+    "panel_keywords":"Intelligent robotics, cybernetics"
+  },
+  {
+    "panel_regroupement_code":"ENG",
+    "panel_regroupement_name":"Information Science and Engineering",
+    "panel_code_1":"G1",
+    "panel_name_1":"Computer science and informatics",
+    "panel_keywords":"Internet and semantic web, database systems and libraries"
+  },
+  {
+    "panel_regroupement_code":"ENG",
+    "panel_regroupement_name":"Information Science and Engineering",
+    "panel_code_1":"G1",
+    "panel_name_1":"Computer science and informatics",
+    "panel_keywords":"Internet of Things"
+  },
+  {
+    "panel_regroupement_code":"ENG",
+    "panel_regroupement_name":"Information Science and Engineering",
+    "panel_code_1":"G1",
+    "panel_name_1":"Computer science and informatics",
+    "panel_keywords":"Machine learning, statistical data processing and applications using signal processing (e.g. speech, image, video)"
+  },
+  {
+    "panel_regroupement_code":"ENG",
+    "panel_regroupement_name":"Information Science and Engineering",
+    "panel_code_1":"G1",
+    "panel_name_1":"Computer science and informatics",
+    "panel_keywords":"Multimedia"
+  },
+  {
+    "panel_regroupement_code":"ENG",
+    "panel_regroupement_name":"Information Science and Engineering",
+    "panel_code_1":"G1",
+    "panel_name_1":"Computer science and informatics",
+    "panel_keywords":"Networks (communication networks, sensor networks, networks of robots, etc.)"
+  },
+  {
+    "panel_regroupement_code":"ENG",
+    "panel_regroupement_name":"Information Science and Engineering",
+    "panel_code_1":"G1",
+    "panel_name_1":"Computer science and informatics",
+    "panel_keywords":"Numerical analysis, simulation, optimisation, modelling tools"
+  },
+  {
+    "panel_regroupement_code":"ENG",
+    "panel_regroupement_name":"Information Science and Engineering",
+    "panel_code_1":"G1",
+    "panel_name_1":"Computer science and informatics",
+    "panel_keywords":"Ontologies, neural networks, genetic programming, fuzzy logic"
+  },
+  {
+    "panel_regroupement_code":"ENG",
+    "panel_regroupement_name":"Information Science and Engineering",
+    "panel_code_1":"G1",
+    "panel_name_1":"Computer science and informatics",
+    "panel_keywords":"Quantum Technologies (e.g. computing and communication)"
+  },
+  {
+    "panel_regroupement_code":"ENG",
+    "panel_regroupement_name":"Information Science and Engineering",
+    "panel_code_1":"G1",
+    "panel_name_1":"Computer science and informatics",
+    "panel_keywords":"Scientific computing and data processing"
+  },
+  {
+    "panel_regroupement_code":"ENG",
+    "panel_regroupement_name":"Information Science and Engineering",
+    "panel_code_1":"G1",
+    "panel_name_1":"Computer science and informatics",
+    "panel_keywords":"Software engineering, operating systems, computer languages"
+  },
+  {
+    "panel_regroupement_code":"ENG",
+    "panel_regroupement_name":"Information Science and Engineering",
+    "panel_code_1":"G1",
+    "panel_name_1":"Computer science and informatics",
+    "panel_keywords":"Theoretical computer science, formal methods"
+  },
+  {
+    "panel_regroupement_code":"ENG",
+    "panel_regroupement_name":"Information Science and Engineering",
+    "panel_code_1":"G1",
+    "panel_name_1":"Computer science and informatics",
+    "panel_keywords":"Virtual Reality"
+  },
+  {
+    "panel_regroupement_code":"ENG",
+    "panel_regroupement_name":"Information Science and Engineering",
+    "panel_code_1":"G2",
+    "panel_name_1":"Systems and Communication Engineering: Electrical, electronic, communication, optical and systems engineering",
+    "panel_keywords":"Control engineering"
+  },
+  {
+    "panel_regroupement_code":"ENG",
+    "panel_regroupement_name":"Information Science and Engineering",
+    "panel_code_1":"G2",
+    "panel_name_1":"Systems and Communication Engineering: Electrical, electronic, communication, optical and systems engineering",
+    "panel_keywords":"Diagnostic and implantable devices, environmental monitoring"
+  },
+  {
+    "panel_regroupement_code":"ENG",
+    "panel_regroupement_name":"Information Science and Engineering",
+    "panel_code_1":"G2",
+    "panel_name_1":"Systems and Communication Engineering: Electrical, electronic, communication, optical and systems engineering",
+    "panel_keywords":"Electrical and electronic engineering: semiconductors, components, systems"
+  },
+  {
+    "panel_regroupement_code":"ENG",
+    "panel_regroupement_name":"Information Science and Engineering",
+    "panel_code_1":"G2",
+    "panel_name_1":"Systems and Communication Engineering: Electrical, electronic, communication, optical and systems engineering",
+    "panel_keywords":"Electronics, photonics"
+  },
+  {
+    "panel_regroupement_code":"ENG",
+    "panel_regroupement_name":"Information Science and Engineering",
+    "panel_code_1":"G2",
+    "panel_name_1":"Systems and Communication Engineering: Electrical, electronic, communication, optical and systems engineering",
+    "panel_keywords":"Human computer interaction"
+  },
+  {
+    "panel_regroupement_code":"ENG",
+    "panel_regroupement_name":"Information Science and Engineering",
+    "panel_code_1":"G2",
+    "panel_name_1":"Systems and Communication Engineering: Electrical, electronic, communication, optical and systems engineering",
+    "panel_keywords":"Nanotechnology, nano-materials, nano engineering"
+  },
+  {
+    "panel_regroupement_code":"ENG",
+    "panel_regroupement_name":"Information Science and Engineering",
+    "panel_code_1":"G2",
+    "panel_name_1":"Systems and Communication Engineering: Electrical, electronic, communication, optical and systems engineering",
+    "panel_keywords":"Signal processing"
+  },
+  {
+    "panel_regroupement_code":"ENG",
+    "panel_regroupement_name":"Information Science and Engineering",
+    "panel_code_1":"G2",
+    "panel_name_1":"Systems and Communication Engineering: Electrical, electronic, communication, optical and systems engineering",
+    "panel_keywords":"Simulation engineering and modelling"
+  },
+  {
+    "panel_regroupement_code":"ENG",
+    "panel_regroupement_name":"Information Science and Engineering",
+    "panel_code_1":"G2",
+    "panel_name_1":"Systems and Communication Engineering: Electrical, electronic, communication, optical and systems engineering",
+    "panel_keywords":"Systems engineering, sensorics, actorics, automation"
+  },
+  {
+    "panel_regroupement_code":"ENG",
+    "panel_regroupement_name":"Information Science and Engineering",
+    "panel_code_1":"G2",
+    "panel_name_1":"Systems and Communication Engineering: Electrical, electronic, communication, optical and systems engineering",
+    "panel_keywords":"Wireless communications, communication, high frequency, mobile technology"
+  },
+  {
+    "panel_regroupement_code":"ENG",
+    "panel_regroupement_name":"Information Science and Engineering",
+    "panel_code_1":"G3",
+    "panel_name_1":"Products and Processes Engineering: Product design, process design and control, construction methods, civil engineering, energy processes, material engineering",
+    "panel_keywords":"Aerospace engineering"
+  },
+  {
+    "panel_regroupement_code":"ENG",
+    "panel_regroupement_name":"Information Science and Engineering",
+    "panel_code_1":"G3",
+    "panel_name_1":"Products and Processes Engineering: Product design, process design and control, construction methods, civil engineering, energy processes, material engineering",
+    "panel_keywords":"Architecture, smart buildings, smart cities, urban engineering"
+  },
+  {
+    "panel_regroupement_code":"ENG",
+    "panel_regroupement_name":"Information Science and Engineering",
+    "panel_code_1":"G3",
+    "panel_name_1":"Products and Processes Engineering: Product design, process design and control, construction methods, civil engineering, energy processes, material engineering",
+    "panel_keywords":"Chemical engineering, technical chemistry"
+  },
+  {
+    "panel_regroupement_code":"ENG",
+    "panel_regroupement_name":"Information Science and Engineering",
+    "panel_code_1":"G3",
+    "panel_name_1":"Products and Processes Engineering: Product design, process design and control, construction methods, civil engineering, energy processes, material engineering",
+    "panel_keywords":"Civil engineering"
+  },
+  {
+    "panel_regroupement_code":"ENG",
+    "panel_regroupement_name":"Information Science and Engineering",
+    "panel_code_1":"G3",
+    "panel_name_1":"Products and Processes Engineering: Product design, process design and control, construction methods, civil engineering, energy processes, material engineering",
+    "panel_keywords":"Civil engineering, maritime\/hydraulic engineering, geotechnics, waste treatment"
+  },
+  {
+    "panel_regroupement_code":"ENG",
+    "panel_regroupement_name":"Information Science and Engineering",
+    "panel_code_1":"G3",
+    "panel_name_1":"Products and Processes Engineering: Product design, process design and control, construction methods, civil engineering, energy processes, material engineering",
+    "panel_keywords":"Computational engineering and computer aided design"
+  },
+  {
+    "panel_regroupement_code":"ENG",
+    "panel_regroupement_name":"Information Science and Engineering",
+    "panel_code_1":"G3",
+    "panel_name_1":"Products and Processes Engineering: Product design, process design and control, construction methods, civil engineering, energy processes, material engineering",
+    "panel_keywords":"Energy collection, conversion and storage, renewable energy"
+  },
+  {
+    "panel_regroupement_code":"ENG",
+    "panel_regroupement_name":"Information Science and Engineering",
+    "panel_code_1":"G3",
+    "panel_name_1":"Products and Processes Engineering: Product design, process design and control, construction methods, civil engineering, energy processes, material engineering",
+    "panel_keywords":"Energy systems, smart energy, smart grids, wireless energy transfer"
+  },
+  {
+    "panel_regroupement_code":"ENG",
+    "panel_regroupement_name":"Information Science and Engineering",
+    "panel_code_1":"G3",
+    "panel_name_1":"Products and Processes Engineering: Product design, process design and control, construction methods, civil engineering, energy processes, material engineering",
+    "panel_keywords":"Environmental engineering and geotechnics"
+  },
+  {
+    "panel_regroupement_code":"ENG",
+    "panel_regroupement_name":"Information Science and Engineering",
+    "panel_code_1":"G3",
+    "panel_name_1":"Products and Processes Engineering: Product design, process design and control, construction methods, civil engineering, energy processes, material engineering",
+    "panel_keywords":"Fluid mechanics, hydraulic-, turbo-, and piston engines"
+  },
+  {
+    "panel_regroupement_code":"ENG",
+    "panel_regroupement_name":"Information Science and Engineering",
+    "panel_code_1":"G3",
+    "panel_name_1":"Products and Processes Engineering: Product design, process design and control, construction methods, civil engineering, energy processes, material engineering",
+    "panel_keywords":"Industrial bioengineering"
+  },
+  {
+    "panel_regroupement_code":"ENG",
+    "panel_regroupement_name":"Information Science and Engineering",
+    "panel_code_1":"G3",
+    "panel_name_1":"Products and Processes Engineering: Product design, process design and control, construction methods, civil engineering, energy processes, material engineering",
+    "panel_keywords":"Industrial design (product design, ergonomics, man-machine interfaces, etc.)"
+  },
+  {
+    "panel_regroupement_code":"ENG",
+    "panel_regroupement_name":"Information Science and Engineering",
+    "panel_code_1":"G3",
+    "panel_name_1":"Products and Processes Engineering: Product design, process design and control, construction methods, civil engineering, energy processes, material engineering",
+    "panel_keywords":"Lightweight construction, textile technology"
+  },
+  {
+    "panel_regroupement_code":"ENG",
+    "panel_regroupement_name":"Information Science and Engineering",
+    "panel_code_1":"G3",
+    "panel_name_1":"Products and Processes Engineering: Product design, process design and control, construction methods, civil engineering, energy processes, material engineering",
+    "panel_keywords":"Maritime Engineering"
+  },
+  {
+    "panel_regroupement_code":"ENG",
+    "panel_regroupement_name":"Information Science and Engineering",
+    "panel_code_1":"G3",
+    "panel_name_1":"Products and Processes Engineering: Product design, process design and control, construction methods, civil engineering, energy processes, material engineering",
+    "panel_keywords":"Materials engineering"
+  },
+  {
+    "panel_regroupement_code":"ENG",
+    "panel_regroupement_name":"Information Science and Engineering",
+    "panel_code_1":"G3",
+    "panel_name_1":"Products and Processes Engineering: Product design, process design and control, construction methods, civil engineering, energy processes, material engineering",
+    "panel_keywords":"Mechanical and manufacturing engineering (shaping, mounting, joining, separation)"
+  },
+  {
+    "panel_regroupement_code":"ENG",
+    "panel_regroupement_name":"Information Science and Engineering",
+    "panel_code_1":"G3",
+    "panel_name_1":"Products and Processes Engineering: Product design, process design and control, construction methods, civil engineering, energy processes, material engineering",
+    "panel_keywords":"Production technology, process engineering"
+  },
+  {
+    "panel_regroupement_code":"ENG",
+    "panel_regroupement_name":"Information Science and Engineering",
+    "panel_code_1":"G3",
+    "panel_name_1":"Products and Processes Engineering: Product design, process design and control, construction methods, civil engineering, energy processes, material engineering",
+    "panel_keywords":"Sustainable design (for recycling, for environment, eco-design)"
+  },
+  {
+    "panel_regroupement_code":"ENG",
+    "panel_regroupement_name":"Information Science and Engineering",
+    "panel_code_1":"G3",
+    "panel_name_1":"Products and Processes Engineering: Product design, process design and control, construction methods, civil engineering, energy processes, material engineering",
+    "panel_keywords":"Transport engineering, intelligent transport systems"
+  },
+  {
+    "panel_regroupement_code":"ENV",
+    "panel_regroupement_name":"Environmental and Geosciences",
+    "panel_code_1":"V1",
+    "panel_name_1":"Environment and society",
+    "panel_keywords":"Circular economy"
+  },
+  {
+    "panel_regroupement_code":"ENV",
+    "panel_regroupement_name":"Environmental and Geosciences",
+    "panel_code_1":"V1",
+    "panel_name_1":"Environment and society",
+    "panel_keywords":"Environmental health"
+  },
+  {
+    "panel_regroupement_code":"ENV",
+    "panel_regroupement_name":"Environmental and Geosciences",
+    "panel_code_1":"V1",
+    "panel_name_1":"Environment and society",
+    "panel_keywords":"Environmental regulations and climate negotiations"
+  },
+  {
+    "panel_regroupement_code":"ENV",
+    "panel_regroupement_name":"Environmental and Geosciences",
+    "panel_code_1":"V1",
+    "panel_name_1":"Environment and society",
+    "panel_keywords":"Environmental risk measurement"
+  },
+  {
+    "panel_regroupement_code":"ENV",
+    "panel_regroupement_name":"Environmental and Geosciences",
+    "panel_code_1":"V1",
+    "panel_name_1":"Environment and society",
+    "panel_keywords":"Mobility and transportation"
+  },
+  {
+    "panel_regroupement_code":"ENV",
+    "panel_regroupement_name":"Environmental and Geosciences",
+    "panel_code_1":"V1",
+    "panel_name_1":"Environment and society",
+    "panel_keywords":"Renewable energy sources"
+  },
+  {
+    "panel_regroupement_code":"ENV",
+    "panel_regroupement_name":"Environmental and Geosciences",
+    "panel_code_1":"V1",
+    "panel_name_1":"Environment and society",
+    "panel_keywords":"Spatial and regional planning"
+  },
+  {
+    "panel_regroupement_code":"ENV",
+    "panel_regroupement_name":"Environmental and Geosciences",
+    "panel_code_1":"V1",
+    "panel_name_1":"Environment and society",
+    "panel_keywords":"Sustainable development and nature protection"
+  },
+  {
+    "panel_regroupement_code":"ENV",
+    "panel_regroupement_name":"Environmental and Geosciences",
+    "panel_code_1":"V1",
+    "panel_name_1":"Environment and society",
+    "panel_keywords":"Urbanization and urban planning, cities"
+  },
+  {
+    "panel_regroupement_code":"ENV",
+    "panel_regroupement_name":"Environmental and Geosciences",
+    "panel_code_1":"V2",
+    "panel_name_1":"Earth system science",
+    "panel_keywords":"Air and water pollution control"
+  },
+  {
+    "panel_regroupement_code":"ENV",
+    "panel_regroupement_name":"Environmental and Geosciences",
+    "panel_code_1":"V2",
+    "panel_name_1":"Earth system science",
+    "panel_keywords":"Atmospheric chemistry, atmospheric composition, air pollution"
+  },
+  {
+    "panel_regroupement_code":"ENV",
+    "panel_regroupement_name":"Environmental and Geosciences",
+    "panel_code_1":"V2",
+    "panel_name_1":"Earth system science",
+    "panel_keywords":"Biogeochemistry, biogeochemical cycles, environmental chemistry"
+  },
+  {
+    "panel_regroupement_code":"ENV",
+    "panel_regroupement_name":"Environmental and Geosciences",
+    "panel_code_1":"V2",
+    "panel_name_1":"Earth system science",
+    "panel_keywords":"Climatology and climate change"
+  },
+  {
+    "panel_regroupement_code":"ENV",
+    "panel_regroupement_name":"Environmental and Geosciences",
+    "panel_code_1":"V2",
+    "panel_name_1":"Earth system science",
+    "panel_keywords":"Coastal Engineering"
+  },
+  {
+    "panel_regroupement_code":"ENV",
+    "panel_regroupement_name":"Environmental and Geosciences",
+    "panel_code_1":"V2",
+    "panel_name_1":"Earth system science",
+    "panel_keywords":"Cryosphere, dynamics of snow and ice cover, sea ice, permafrost and ice sheets"
+  },
+  {
+    "panel_regroupement_code":"ENV",
+    "panel_regroupement_name":"Environmental and Geosciences",
+    "panel_code_1":"V2",
+    "panel_name_1":"Earth system science",
+    "panel_keywords":"Earth observations from space\/remote sensing"
+  },
+  {
+    "panel_regroupement_code":"ENV",
+    "panel_regroupement_name":"Environmental and Geosciences",
+    "panel_code_1":"V2",
+    "panel_name_1":"Earth system science",
+    "panel_keywords":"ENV Environmental Hazard Analysis"
+  },
+  {
+    "panel_regroupement_code":"ENV",
+    "panel_regroupement_name":"Environmental and Geosciences",
+    "panel_code_1":"V2",
+    "panel_name_1":"Earth system science",
+    "panel_keywords":"Environment, Pollution & Climate"
+  },
+  {
+    "panel_regroupement_code":"ENV",
+    "panel_regroupement_name":"Environmental and Geosciences",
+    "panel_code_1":"V2",
+    "panel_name_1":"Earth system science",
+    "panel_keywords":"Environmental chemistry"
+  },
+  {
+    "panel_regroupement_code":"ENV",
+    "panel_regroupement_name":"Environmental and Geosciences",
+    "panel_code_1":"V2",
+    "panel_name_1":"Earth system science",
+    "panel_keywords":"Geochemistry and geophysics"
+  },
+  {
+    "panel_regroupement_code":"ENV",
+    "panel_regroupement_name":"Environmental and Geosciences",
+    "panel_code_1":"V2",
+    "panel_name_1":"Earth system science",
+    "panel_keywords":"Geology, tectonics, volcanology"
+  },
+  {
+    "panel_regroupement_code":"ENV",
+    "panel_regroupement_name":"Environmental and Geosciences",
+    "panel_code_1":"V2",
+    "panel_name_1":"Earth system science",
+    "panel_keywords":"Hydrology"
+  },
+  {
+    "panel_regroupement_code":"ENV",
+    "panel_regroupement_name":"Environmental and Geosciences",
+    "panel_code_1":"V2",
+    "panel_name_1":"Earth system science",
+    "panel_keywords":"Meteorology, atmospheric physics and dynamics"
+  },
+  {
+    "panel_regroupement_code":"ENV",
+    "panel_regroupement_name":"Environmental and Geosciences",
+    "panel_code_1":"V2",
+    "panel_name_1":"Earth system science",
+    "panel_keywords":"Mineralogy, petrology, igneous petrology, metamorphic petrology"
+  },
+  {
+    "panel_regroupement_code":"ENV",
+    "panel_regroupement_name":"Environmental and Geosciences",
+    "panel_code_1":"V2",
+    "panel_name_1":"Earth system science",
+    "panel_keywords":"Natural resources exploration and exploitation"
+  },
+  {
+    "panel_regroupement_code":"ENV",
+    "panel_regroupement_name":"Environmental and Geosciences",
+    "panel_code_1":"V2",
+    "panel_name_1":"Earth system science",
+    "panel_keywords":"Paleoclimatology, paleoecology"
+  },
+  {
+    "panel_regroupement_code":"ENV",
+    "panel_regroupement_name":"Environmental and Geosciences",
+    "panel_code_1":"V2",
+    "panel_name_1":"Earth system science",
+    "panel_keywords":"Physical geography"
+  },
+  {
+    "panel_regroupement_code":"ENV",
+    "panel_regroupement_name":"Environmental and Geosciences",
+    "panel_code_1":"V2",
+    "panel_name_1":"Earth system science",
+    "panel_keywords":"Sedimentology, soil science, palaeontology, earth evolution"
+  },
+  {
+    "panel_regroupement_code":"ENV",
+    "panel_regroupement_name":"Environmental and Geosciences",
+    "panel_code_1":"V2",
+    "panel_name_1":"Earth system science",
+    "panel_keywords":"Terrestrial ecology, land cover change"
+  },
+  {
+    "panel_regroupement_code":"ENV",
+    "panel_regroupement_name":"Environmental and Geosciences",
+    "panel_code_1":"V3",
+    "panel_name_1":"Evolutionary, population and environmental biology",
+    "panel_keywords":"Animal behaviour"
+  },
+  {
+    "panel_regroupement_code":"ENV",
+    "panel_regroupement_name":"Environmental and Geosciences",
+    "panel_code_1":"V3",
+    "panel_name_1":"Evolutionary, population and environmental biology",
+    "panel_keywords":"Biodiversity, comparative biology"
+  },
+  {
+    "panel_regroupement_code":"ENV",
+    "panel_regroupement_name":"Environmental and Geosciences",
+    "panel_code_1":"V3",
+    "panel_name_1":"Evolutionary, population and environmental biology",
+    "panel_keywords":"Biodiversity, conservation biology, conservation genetics"
+  },
+  {
+    "panel_regroupement_code":"ENV",
+    "panel_regroupement_name":"Environmental and Geosciences",
+    "panel_code_1":"V3",
+    "panel_name_1":"Evolutionary, population and environmental biology",
+    "panel_keywords":"Biogeography, macro-ecology"
+  },
+  {
+    "panel_regroupement_code":"ENV",
+    "panel_regroupement_name":"Environmental and Geosciences",
+    "panel_code_1":"V3",
+    "panel_name_1":"Evolutionary, population and environmental biology",
+    "panel_keywords":"Ecology"
+  },
+  {
+    "panel_regroupement_code":"ENV",
+    "panel_regroupement_name":"Environmental and Geosciences",
+    "panel_code_1":"V3",
+    "panel_name_1":"Evolutionary, population and environmental biology",
+    "panel_keywords":"Environmental toxicology at the population and ecosystems level"
+  },
+  {
+    "panel_regroupement_code":"ENV",
+    "panel_regroupement_name":"Environmental and Geosciences",
+    "panel_code_1":"V3",
+    "panel_name_1":"Evolutionary, population and environmental biology",
+    "panel_keywords":"Freshwater biology"
+  },
+  {
+    "panel_regroupement_code":"ENV",
+    "panel_regroupement_name":"Environmental and Geosciences",
+    "panel_code_1":"V3",
+    "panel_name_1":"Evolutionary, population and environmental biology",
+    "panel_keywords":"Marine biology"
+  },
+  {
+    "panel_regroupement_code":"ENV",
+    "panel_regroupement_name":"Environmental and Geosciences",
+    "panel_code_1":"V3",
+    "panel_name_1":"Evolutionary, population and environmental biology",
+    "panel_keywords":"Population biology, population dynamics, population genetics"
+  },
+  {
+    "panel_regroupement_code":"ENV",
+    "panel_regroupement_name":"Environmental and Geosciences",
+    "panel_code_1":"V3",
+    "panel_name_1":"Evolutionary, population and environmental biology",
+    "panel_keywords":"Species interactions (e.g. food-webs, symbiosis, parasitism, mutualism, bio-invasion)"
+  },
+  {
+    "panel_regroupement_code":"ENV",
+    "panel_regroupement_name":"Environmental and Geosciences",
+    "panel_code_1":"V3",
+    "panel_name_1":"Evolutionary, population and environmental biology",
+    "panel_keywords":"Systems evolution, biological adaptation, phylogenetics, systematics"
+  },
+  {
+    "panel_regroupement_code":"ENV",
+    "panel_regroupement_name":"Environmental and Geosciences",
+    "panel_code_1":"V4",
+    "panel_name_1":"Applied Life Sciences and Non-Medical Biotechnology",
+    "panel_keywords":"Agricultural waste"
+  },
+  {
+    "panel_regroupement_code":"ENV",
+    "panel_regroupement_name":"Environmental and Geosciences",
+    "panel_code_1":"V4",
+    "panel_name_1":"Applied Life Sciences and Non-Medical Biotechnology",
+    "panel_keywords":"Agriculture \/ Forestry \/ Rural Development"
+  },
+  {
+    "panel_regroupement_code":"ENV",
+    "panel_regroupement_name":"Environmental and Geosciences",
+    "panel_code_1":"V4",
+    "panel_name_1":"Applied Life Sciences and Non-Medical Biotechnology",
+    "panel_keywords":"Agriculture related to animal husbandry, dairying, livestock raising"
+  },
+  {
+    "panel_regroupement_code":"ENV",
+    "panel_regroupement_name":"Environmental and Geosciences",
+    "panel_code_1":"V4",
+    "panel_name_1":"Applied Life Sciences and Non-Medical Biotechnology",
+    "panel_keywords":"Agriculture related to crop production, applied plant biology"
+  },
+  {
+    "panel_regroupement_code":"ENV",
+    "panel_regroupement_name":"Environmental and Geosciences",
+    "panel_code_1":"V4",
+    "panel_name_1":"Applied Life Sciences and Non-Medical Biotechnology",
+    "panel_keywords":"Agriculture related to crop production, soil biology and cultivation, applied plant biology"
+  },
+  {
+    "panel_regroupement_code":"ENV",
+    "panel_regroupement_name":"Environmental and Geosciences",
+    "panel_code_1":"V4",
+    "panel_name_1":"Applied Life Sciences and Non-Medical Biotechnology",
+    "panel_keywords":"Agroindustry"
+  },
+  {
+    "panel_regroupement_code":"ENV",
+    "panel_regroupement_name":"Environmental and Geosciences",
+    "panel_code_1":"V4",
+    "panel_name_1":"Applied Life Sciences and Non-Medical Biotechnology",
+    "panel_keywords":"Applied biotechnology (non-medical), bioreactors, applied microbiology"
+  },
+  {
+    "panel_regroupement_code":"ENV",
+    "panel_regroupement_name":"Environmental and Geosciences",
+    "panel_code_1":"V4",
+    "panel_name_1":"Applied Life Sciences and Non-Medical Biotechnology",
+    "panel_keywords":"Aquaculture, fisheries"
+  },
+  {
+    "panel_regroupement_code":"ENV",
+    "panel_regroupement_name":"Environmental and Geosciences",
+    "panel_code_1":"V4",
+    "panel_name_1":"Applied Life Sciences and Non-Medical Biotechnology",
+    "panel_keywords":"Biohazards, biological containment, biosafety, biosecurity"
+  },
+  {
+    "panel_regroupement_code":"ENV",
+    "panel_regroupement_name":"Environmental and Geosciences",
+    "panel_code_1":"V4",
+    "panel_name_1":"Applied Life Sciences and Non-Medical Biotechnology",
+    "panel_keywords":"Biomimetics"
+  },
+  {
+    "panel_regroupement_code":"ENV",
+    "panel_regroupement_name":"Environmental and Geosciences",
+    "panel_code_1":"V4",
+    "panel_name_1":"Applied Life Sciences and Non-Medical Biotechnology",
+    "panel_keywords":"Environmental biotechnology, bioremediation, biodegradation"
+  },
+  {
+    "panel_regroupement_code":"ENV",
+    "panel_regroupement_name":"Environmental and Geosciences",
+    "panel_code_1":"V4",
+    "panel_name_1":"Applied Life Sciences and Non-Medical Biotechnology",
+    "panel_keywords":"Forestry, biomass production (e.g. for biofuels)"
+  },
+  {
+    "panel_regroupement_code":"LIF",
+    "panel_regroupement_name":"Life Sciences",
+    "panel_code_1":"L1",
+    "panel_name_1":"Molecular and Structural Biology",
+    "panel_keywords":"Biophysics (e.g. transport mechanisms, bioenergetics, fluorescence)"
+  },
+  {
+    "panel_regroupement_code":"LIF",
+    "panel_regroupement_name":"Life Sciences",
+    "panel_code_1":"L1",
+    "panel_name_1":"Molecular and Structural Biology",
+    "panel_keywords":"Carbohydrate synthesis, modification and turnover"
+  },
+  {
+    "panel_regroupement_code":"LIF",
+    "panel_regroupement_name":"Life Sciences",
+    "panel_code_1":"L1",
+    "panel_name_1":"Molecular and Structural Biology",
+    "panel_keywords":"DNA synthesis, modification, repair, recombination, degradation"
+  },
+  {
+    "panel_regroupement_code":"LIF",
+    "panel_regroupement_name":"Life Sciences",
+    "panel_code_1":"L1",
+    "panel_name_1":"Molecular and Structural Biology",
+    "panel_keywords":"Lipid synthesis, modification and turnover"
+  },
+  {
+    "panel_regroupement_code":"LIF",
+    "panel_regroupement_name":"Life Sciences",
+    "panel_code_1":"L1",
+    "panel_name_1":"Molecular and Structural Biology",
+    "panel_keywords":"Metabolism"
+  },
+  {
+    "panel_regroupement_code":"LIF",
+    "panel_regroupement_name":"Life Sciences",
+    "panel_code_1":"L1",
+    "panel_name_1":"Molecular and Structural Biology",
+    "panel_keywords":"Molecular biology and interactions"
+  },
+  {
+    "panel_regroupement_code":"LIF",
+    "panel_regroupement_name":"Life Sciences",
+    "panel_code_1":"L1",
+    "panel_name_1":"Molecular and Structural Biology",
+    "panel_keywords":"Protein synthesis, modification and turnover"
+  },
+  {
+    "panel_regroupement_code":"LIF",
+    "panel_regroupement_name":"Life Sciences",
+    "panel_code_1":"L1",
+    "panel_name_1":"Molecular and Structural Biology",
+    "panel_keywords":"RNA synthesis, processing, modification and degradation"
+  },
+  {
+    "panel_regroupement_code":"LIF",
+    "panel_regroupement_name":"Life Sciences",
+    "panel_code_1":"L1",
+    "panel_name_1":"Molecular and Structural Biology",
+    "panel_keywords":"Structural biology"
+  },
+  {
+    "panel_regroupement_code":"LIF",
+    "panel_regroupement_name":"Life Sciences",
+    "panel_code_1":"L2",
+    "panel_name_1":"Genetics, Genomics, Bioinformatics and Systems Biology",
+    "panel_keywords":"Applied genetic engineering, transgenic organisms, recombinant proteins, biosensors"
+  },
+  {
+    "panel_regroupement_code":"LIF",
+    "panel_regroupement_name":"Life Sciences",
+    "panel_code_1":"L2",
+    "panel_name_1":"Genetics, Genomics, Bioinformatics and Systems Biology",
+    "panel_keywords":"Bioinformatics"
+  },
+  {
+    "panel_regroupement_code":"LIF",
+    "panel_regroupement_name":"Life Sciences",
+    "panel_code_1":"L2",
+    "panel_name_1":"Genetics, Genomics, Bioinformatics and Systems Biology",
+    "panel_keywords":"Biological systems analysis, modelling and simulation"
+  },
+  {
+    "panel_regroupement_code":"LIF",
+    "panel_regroupement_name":"Life Sciences",
+    "panel_code_1":"L2",
+    "panel_name_1":"Genetics, Genomics, Bioinformatics and Systems Biology",
+    "panel_keywords":"Biostatistics"
+  },
+  {
+    "panel_regroupement_code":"LIF",
+    "panel_regroupement_name":"Life Sciences",
+    "panel_code_1":"L2",
+    "panel_name_1":"Genetics, Genomics, Bioinformatics and Systems Biology",
+    "panel_keywords":"Computational biology"
+  },
+  {
+    "panel_regroupement_code":"LIF",
+    "panel_regroupement_name":"Life Sciences",
+    "panel_code_1":"L2",
+    "panel_name_1":"Genetics, Genomics, Bioinformatics and Systems Biology",
+    "panel_keywords":"Epigenetics and gene regulation"
+  },
+  {
+    "panel_regroupement_code":"LIF",
+    "panel_regroupement_name":"Life Sciences",
+    "panel_code_1":"L2",
+    "panel_name_1":"Genetics, Genomics, Bioinformatics and Systems Biology",
+    "panel_keywords":"Genetic engineering"
+  },
+  {
+    "panel_regroupement_code":"LIF",
+    "panel_regroupement_name":"Life Sciences",
+    "panel_code_1":"L2",
+    "panel_name_1":"Genetics, Genomics, Bioinformatics and Systems Biology",
+    "panel_keywords":"Genetic epidemiology"
+  },
+  {
+    "panel_regroupement_code":"LIF",
+    "panel_regroupement_name":"Life Sciences",
+    "panel_code_1":"L2",
+    "panel_name_1":"Genetics, Genomics, Bioinformatics and Systems Biology",
+    "panel_keywords":"Genomics, comparative genomics, functional genomics"
+  },
+  {
+    "panel_regroupement_code":"LIF",
+    "panel_regroupement_name":"Life Sciences",
+    "panel_code_1":"L2",
+    "panel_name_1":"Genetics, Genomics, Bioinformatics and Systems Biology",
+    "panel_keywords":"Metabolomics"
+  },
+  {
+    "panel_regroupement_code":"LIF",
+    "panel_regroupement_name":"Life Sciences",
+    "panel_code_1":"L2",
+    "panel_name_1":"Genetics, Genomics, Bioinformatics and Systems Biology",
+    "panel_keywords":"Molecular genetics, reverse genetics and RNAi"
+  },
+  {
+    "panel_regroupement_code":"LIF",
+    "panel_regroupement_name":"Life Sciences",
+    "panel_code_1":"L2",
+    "panel_name_1":"Genetics, Genomics, Bioinformatics and Systems Biology",
+    "panel_keywords":"Pharmacogenomics"
+  },
+  {
+    "panel_regroupement_code":"LIF",
+    "panel_regroupement_name":"Life Sciences",
+    "panel_code_1":"L2",
+    "panel_name_1":"Genetics, Genomics, Bioinformatics and Systems Biology",
+    "panel_keywords":"Plant genetics"
+  },
+  {
+    "panel_regroupement_code":"LIF",
+    "panel_regroupement_name":"Life Sciences",
+    "panel_code_1":"L2",
+    "panel_name_1":"Genetics, Genomics, Bioinformatics and Systems Biology",
+    "panel_keywords":"Proteomics"
+  },
+  {
+    "panel_regroupement_code":"LIF",
+    "panel_regroupement_name":"Life Sciences",
+    "panel_code_1":"L2",
+    "panel_name_1":"Genetics, Genomics, Bioinformatics and Systems Biology",
+    "panel_keywords":"Quantitative genetics"
+  },
+  {
+    "panel_regroupement_code":"LIF",
+    "panel_regroupement_name":"Life Sciences",
+    "panel_code_1":"L2",
+    "panel_name_1":"Genetics, Genomics, Bioinformatics and Systems Biology",
+    "panel_keywords":"Systems biology"
+  },
+  {
+    "panel_regroupement_code":"LIF",
+    "panel_regroupement_name":"Life Sciences",
+    "panel_code_1":"L2",
+    "panel_name_1":"Genetics, Genomics, Bioinformatics and Systems Biology",
+    "panel_keywords":"Transcriptomics"
+  },
+  {
+    "panel_regroupement_code":"LIF",
+    "panel_regroupement_name":"Life Sciences",
+    "panel_code_1":"L3",
+    "panel_name_1":"Cellular and Developmental Biology",
+    "panel_keywords":"Animal-related development, development genetics, pattern formation and embryology"
+  },
+  {
+    "panel_regroupement_code":"LIF",
+    "panel_regroupement_name":"Life Sciences",
+    "panel_code_1":"L3",
+    "panel_name_1":"Cellular and Developmental Biology",
+    "panel_keywords":"Cell biology and molecular transport mechanisms"
+  },
+  {
+    "panel_regroupement_code":"LIF",
+    "panel_regroupement_name":"Life Sciences",
+    "panel_code_1":"L3",
+    "panel_name_1":"Cellular and Developmental Biology",
+    "panel_keywords":"Cell differentiation, physiology and dynamics"
+  },
+  {
+    "panel_regroupement_code":"LIF",
+    "panel_regroupement_name":"Life Sciences",
+    "panel_code_1":"L3",
+    "panel_name_1":"Cellular and Developmental Biology",
+    "panel_keywords":"Cell signalling and cellular interactions"
+  },
+  {
+    "panel_regroupement_code":"LIF",
+    "panel_regroupement_name":"Life Sciences",
+    "panel_code_1":"L3",
+    "panel_name_1":"Cellular and Developmental Biology",
+    "panel_keywords":"Development, developmental genetics, pattern formation and embryology in plants"
+  },
+  {
+    "panel_regroupement_code":"LIF",
+    "panel_regroupement_name":"Life Sciences",
+    "panel_code_1":"L3",
+    "panel_name_1":"Cellular and Developmental Biology",
+    "panel_keywords":"Developmental biology"
+  },
+  {
+    "panel_regroupement_code":"LIF",
+    "panel_regroupement_name":"Life Sciences",
+    "panel_code_1":"L3",
+    "panel_name_1":"Cellular and Developmental Biology",
+    "panel_keywords":"Morphology and functional imaging of cells"
+  },
+  {
+    "panel_regroupement_code":"LIF",
+    "panel_regroupement_name":"Life Sciences",
+    "panel_code_1":"L3",
+    "panel_name_1":"Cellular and Developmental Biology",
+    "panel_keywords":"Organelle biology"
+  },
+  {
+    "panel_regroupement_code":"LIF",
+    "panel_regroupement_name":"Life Sciences",
+    "panel_code_1":"L3",
+    "panel_name_1":"Cellular and Developmental Biology",
+    "panel_keywords":"Signal transduction"
+  },
+  {
+    "panel_regroupement_code":"LIF",
+    "panel_regroupement_name":"Life Sciences",
+    "panel_code_1":"L3",
+    "panel_name_1":"Cellular and Developmental Biology",
+    "panel_keywords":"Stem cell biology"
+  },
+  {
+    "panel_regroupement_code":"LIF",
+    "panel_regroupement_name":"Life Sciences",
+    "panel_code_1":"L4",
+    "panel_name_1":"Physiology, Pathophysiology and Endocrinology",
+    "panel_keywords":"Ageing"
+  },
+  {
+    "panel_regroupement_code":"LIF",
+    "panel_regroupement_name":"Life Sciences",
+    "panel_code_1":"L4",
+    "panel_name_1":"Physiology, Pathophysiology and Endocrinology",
+    "panel_keywords":"Cancer and its biological basis"
+  },
+  {
+    "panel_regroupement_code":"LIF",
+    "panel_regroupement_name":"Life Sciences",
+    "panel_code_1":"L4",
+    "panel_name_1":"Physiology, Pathophysiology and Endocrinology",
+    "panel_keywords":"Cardiovascular diseases"
+  },
+  {
+    "panel_regroupement_code":"LIF",
+    "panel_regroupement_name":"Life Sciences",
+    "panel_code_1":"L4",
+    "panel_name_1":"Physiology, Pathophysiology and Endocrinology",
+    "panel_keywords":"Comparative physiology and pathophysiology"
+  },
+  {
+    "panel_regroupement_code":"LIF",
+    "panel_regroupement_name":"Life Sciences",
+    "panel_code_1":"L4",
+    "panel_name_1":"Physiology, Pathophysiology and Endocrinology",
+    "panel_keywords":"Endocrinology"
+  },
+  {
+    "panel_regroupement_code":"LIF",
+    "panel_regroupement_name":"Life Sciences",
+    "panel_code_1":"L4",
+    "panel_name_1":"Physiology, Pathophysiology and Endocrinology",
+    "panel_keywords":"Metabolism, biological basis of metabolism related disorders"
+  },
+  {
+    "panel_regroupement_code":"LIF",
+    "panel_regroupement_name":"Life Sciences",
+    "panel_code_1":"L4",
+    "panel_name_1":"Physiology, Pathophysiology and Endocrinology",
+    "panel_keywords":"Organ physiology and pathophysiology"
+  },
+  {
+    "panel_regroupement_code":"LIF",
+    "panel_regroupement_name":"Life Sciences",
+    "panel_code_1":"L4",
+    "panel_name_1":"Physiology, Pathophysiology and Endocrinology",
+    "panel_keywords":"Rare diseases"
+  },
+  {
+    "panel_regroupement_code":"LIF",
+    "panel_regroupement_name":"Life Sciences",
+    "panel_code_1":"L4",
+    "panel_name_1":"Physiology, Pathophysiology and Endocrinology",
+    "panel_keywords":"Technologies involving the manipulation of cells, tissues, organs or the whole organism (assisted reproduction)"
+  },
+  {
+    "panel_regroupement_code":"LIF",
+    "panel_regroupement_name":"Life Sciences",
+    "panel_code_1":"L5",
+    "panel_name_1":"Neurosciences and neural disorders",
+    "panel_keywords":"Behavioural neuroscience (e.g. sleep, consciousness, handedness)"
+  },
+  {
+    "panel_regroupement_code":"LIF",
+    "panel_regroupement_name":"Life Sciences",
+    "panel_code_1":"L5",
+    "panel_name_1":"Neurosciences and neural disorders",
+    "panel_keywords":"Developmental neurobiology"
+  },
+  {
+    "panel_regroupement_code":"LIF",
+    "panel_regroupement_name":"Life Sciences",
+    "panel_code_1":"L5",
+    "panel_name_1":"Neurosciences and neural disorders",
+    "panel_keywords":"Mechanisms of pain"
+  },
+  {
+    "panel_regroupement_code":"LIF",
+    "panel_regroupement_name":"Life Sciences",
+    "panel_code_1":"L5",
+    "panel_name_1":"Neurosciences and neural disorders",
+    "panel_keywords":"Molecular and cellular neuroscience"
+  },
+  {
+    "panel_regroupement_code":"LIF",
+    "panel_regroupement_name":"Life Sciences",
+    "panel_code_1":"L5",
+    "panel_name_1":"Neurosciences and neural disorders",
+    "panel_keywords":"Neuroanatomy and neurophysiology"
+  },
+  {
+    "panel_regroupement_code":"LIF",
+    "panel_regroupement_name":"Life Sciences",
+    "panel_code_1":"L5",
+    "panel_name_1":"Neurosciences and neural disorders",
+    "panel_keywords":"Neuroimaging and computational neuroscience"
+  },
+  {
+    "panel_regroupement_code":"LIF",
+    "panel_regroupement_name":"Life Sciences",
+    "panel_code_1":"L5",
+    "panel_name_1":"Neurosciences and neural disorders",
+    "panel_keywords":"Neurological disorders (e.g. Alzheimer's disease, Huntington's disease, Parkinson's disease)"
+  },
+  {
+    "panel_regroupement_code":"LIF",
+    "panel_regroupement_name":"Life Sciences",
+    "panel_code_1":"L5",
+    "panel_name_1":"Neurosciences and neural disorders",
+    "panel_keywords":"Poisoning"
+  },
+  {
+    "panel_regroupement_code":"LIF",
+    "panel_regroupement_name":"Life Sciences",
+    "panel_code_1":"L5",
+    "panel_name_1":"Neurosciences and neural disorders",
+    "panel_keywords":"Psychiatric disorders"
+  },
+  {
+    "panel_regroupement_code":"LIF",
+    "panel_regroupement_name":"Life Sciences",
+    "panel_code_1":"L5",
+    "panel_name_1":"Neurosciences and neural disorders",
+    "panel_keywords":"Sensory systems (e.g. visual system, auditory system)"
+  },
+  {
+    "panel_regroupement_code":"LIF",
+    "panel_regroupement_name":"Life Sciences",
+    "panel_code_1":"L6",
+    "panel_name_1":"Immunity and infection",
+    "panel_keywords":"Adaptive immunity"
+  },
+  {
+    "panel_regroupement_code":"LIF",
+    "panel_regroupement_name":"Life Sciences",
+    "panel_code_1":"L6",
+    "panel_name_1":"Immunity and infection",
+    "panel_keywords":"Anticancer therapy"
+  },
+  {
+    "panel_regroupement_code":"LIF",
+    "panel_regroupement_name":"Life Sciences",
+    "panel_code_1":"L6",
+    "panel_name_1":"Immunity and infection",
+    "panel_keywords":"Bacteriology"
+  },
+  {
+    "panel_regroupement_code":"LIF",
+    "panel_regroupement_name":"Life Sciences",
+    "panel_code_1":"L6",
+    "panel_name_1":"Immunity and infection",
+    "panel_keywords":"Biological basis of immunity related disorders (e.g. autoimmunity)"
+  },
+  {
+    "panel_regroupement_code":"LIF",
+    "panel_regroupement_name":"Life Sciences",
+    "panel_code_1":"L6",
+    "panel_name_1":"Immunity and infection",
+    "panel_keywords":"Immunogenetics"
+  },
+  {
+    "panel_regroupement_code":"LIF",
+    "panel_regroupement_name":"Life Sciences",
+    "panel_code_1":"L6",
+    "panel_name_1":"Immunity and infection",
+    "panel_keywords":"Immunological memory and tolerance"
+  },
+  {
+    "panel_regroupement_code":"LIF",
+    "panel_regroupement_name":"Life Sciences",
+    "panel_code_1":"L6",
+    "panel_name_1":"Immunity and infection",
+    "panel_keywords":"Immunosignalling"
+  },
+  {
+    "panel_regroupement_code":"LIF",
+    "panel_regroupement_name":"Life Sciences",
+    "panel_code_1":"L6",
+    "panel_name_1":"Immunity and infection",
+    "panel_keywords":"Innate immunity and inflammation"
+  },
+  {
+    "panel_regroupement_code":"LIF",
+    "panel_regroupement_name":"Life Sciences",
+    "panel_code_1":"L6",
+    "panel_name_1":"Immunity and infection",
+    "panel_keywords":"Microbiology"
+  },
+  {
+    "panel_regroupement_code":"LIF",
+    "panel_regroupement_name":"Life Sciences",
+    "panel_code_1":"L6",
+    "panel_name_1":"Immunity and infection",
+    "panel_keywords":"Parasitology"
+  },
+  {
+    "panel_regroupement_code":"LIF",
+    "panel_regroupement_name":"Life Sciences",
+    "panel_code_1":"L6",
+    "panel_name_1":"Immunity and infection",
+    "panel_keywords":"Phagocytosis and cellular immunity"
+  },
+  {
+    "panel_regroupement_code":"LIF",
+    "panel_regroupement_name":"Life Sciences",
+    "panel_code_1":"L6",
+    "panel_name_1":"Immunity and infection",
+    "panel_keywords":"Prevention and treatment of infection by pathogens (e.g. vaccination, antibiotics, fungicide)"
+  },
+  {
+    "panel_regroupement_code":"LIF",
+    "panel_regroupement_name":"Life Sciences",
+    "panel_code_1":"L6",
+    "panel_name_1":"Immunity and infection",
+    "panel_keywords":"Veterinary medicine and infectious diseases in animals"
+  },
+  {
+    "panel_regroupement_code":"LIF",
+    "panel_regroupement_name":"Life Sciences",
+    "panel_code_1":"L6",
+    "panel_name_1":"Immunity and infection",
+    "panel_keywords":"Virology"
+  },
+  {
+    "panel_regroupement_code":"LIF",
+    "panel_regroupement_name":"Life Sciences",
+    "panel_code_1":"L7",
+    "panel_name_1":"Diagnostic tools, therapies and public health",
+    "panel_keywords":"Biophotonics, Imaging, image and data processing"
+  },
+  {
+    "panel_regroupement_code":"LIF",
+    "panel_regroupement_name":"Life Sciences",
+    "panel_code_1":"L7",
+    "panel_name_1":"Diagnostic tools, therapies and public health",
+    "panel_keywords":"Bioremediation, diagnostic biotechnologies (DNA chips and biosensing devices) in environmental management"
+  },
+  {
+    "panel_regroupement_code":"LIF",
+    "panel_regroupement_name":"Life Sciences",
+    "panel_code_1":"L7",
+    "panel_name_1":"Diagnostic tools, therapies and public health",
+    "panel_keywords":"Drug development, clinical phases"
+  },
+  {
+    "panel_regroupement_code":"LIF",
+    "panel_regroupement_name":"Life Sciences",
+    "panel_code_1":"L7",
+    "panel_name_1":"Diagnostic tools, therapies and public health",
+    "panel_keywords":"Environment and health risks, occupational medicine"
+  },
+  {
+    "panel_regroupement_code":"LIF",
+    "panel_regroupement_name":"Life Sciences",
+    "panel_code_1":"L7",
+    "panel_name_1":"Diagnostic tools, therapies and public health",
+    "panel_keywords":"Gene therapy, cell therapy, regenerative medicine"
+  },
+  {
+    "panel_regroupement_code":"LIF",
+    "panel_regroupement_name":"Life Sciences",
+    "panel_code_1":"L7",
+    "panel_name_1":"Diagnostic tools, therapies and public health",
+    "panel_keywords":"Health services, health care research"
+  },
+  {
+    "panel_regroupement_code":"LIF",
+    "panel_regroupement_name":"Life Sciences",
+    "panel_code_1":"L7",
+    "panel_name_1":"Diagnostic tools, therapies and public health",
+    "panel_keywords":"Medical engineering and technology"
+  },
+  {
+    "panel_regroupement_code":"LIF",
+    "panel_regroupement_name":"Life Sciences",
+    "panel_code_1":"L7",
+    "panel_name_1":"Diagnostic tools, therapies and public health",
+    "panel_keywords":"Personalised medicine"
+  },
+  {
+    "panel_regroupement_code":"LIF",
+    "panel_regroupement_name":"Life Sciences",
+    "panel_code_1":"L7",
+    "panel_name_1":"Diagnostic tools, therapies and public health",
+    "panel_keywords":"Pharmacology, pharmacogenomics, drug discovery and design, drug therapy"
+  },
+  {
+    "panel_regroupement_code":"LIF",
+    "panel_regroupement_name":"Life Sciences",
+    "panel_code_1":"L7",
+    "panel_name_1":"Diagnostic tools, therapies and public health",
+    "panel_keywords":"Public health and epidemiology"
+  },
+  {
+    "panel_regroupement_code":"LIF",
+    "panel_regroupement_name":"Life Sciences",
+    "panel_code_1":"L7",
+    "panel_name_1":"Diagnostic tools, therapies and public health",
+    "panel_keywords":"Radiation therapy"
+  },
+  {
+    "panel_regroupement_code":"LIF",
+    "panel_regroupement_name":"Life Sciences",
+    "panel_code_1":"L7",
+    "panel_name_1":"Diagnostic tools, therapies and public health",
+    "panel_keywords":"Radiology, nuclear medicine and medical imaging"
+  },
+  {
+    "panel_regroupement_code":"LIF",
+    "panel_regroupement_name":"Life Sciences",
+    "panel_code_1":"L7",
+    "panel_name_1":"Diagnostic tools, therapies and public health",
+    "panel_keywords":"Surgery"
+  },
+  {
+    "panel_regroupement_code":"LIF",
+    "panel_regroupement_name":"Life Sciences",
+    "panel_code_1":"L7",
+    "panel_name_1":"Diagnostic tools, therapies and public health",
+    "panel_keywords":"Tissue engineering"
+  },
+  {
+    "panel_regroupement_code":"LIF",
+    "panel_regroupement_name":"Life Sciences",
+    "panel_code_1":"L7",
+    "panel_name_1":"Diagnostic tools, therapies and public health",
+    "panel_keywords":"Vaccines"
+  },
+  {
+    "panel_regroupement_code":"MAT",
+    "panel_regroupement_name":"Mathematics",
+    "panel_code_1":"M1",
+    "panel_name_1":"Mathematics",
+    "panel_keywords":"Algebraic and complex geometry"
+  },
+  {
+    "panel_regroupement_code":"MAT",
+    "panel_regroupement_name":"Mathematics",
+    "panel_code_1":"M1",
+    "panel_name_1":"Mathematics",
+    "panel_keywords":"Algorithms and complexity"
+  },
+  {
+    "panel_regroupement_code":"MAT",
+    "panel_regroupement_name":"Mathematics",
+    "panel_code_1":"M1",
+    "panel_name_1":"Mathematics",
+    "panel_keywords":"Discrete mathematics and combinatorics"
+  },
+  {
+    "panel_regroupement_code":"MAT",
+    "panel_regroupement_name":"Mathematics",
+    "panel_code_1":"M1",
+    "panel_name_1":"Mathematics",
+    "panel_keywords":"Geometry"
+  },
+  {
+    "panel_regroupement_code":"MAT",
+    "panel_regroupement_name":"Mathematics",
+    "panel_code_1":"M1",
+    "panel_name_1":"Mathematics",
+    "panel_keywords":"Logic and foundations"
+  },
+  {
+    "panel_regroupement_code":"MAT",
+    "panel_regroupement_name":"Mathematics",
+    "panel_code_1":"M1",
+    "panel_name_1":"Mathematics",
+    "panel_keywords":"Number theory"
+  },
+  {
+    "panel_regroupement_code":"MAT",
+    "panel_regroupement_name":"Mathematics",
+    "panel_code_1":"M1",
+    "panel_name_1":"Mathematics",
+    "panel_keywords":"Operator algebras and functional analysis"
+  },
+  {
+    "panel_regroupement_code":"MAT",
+    "panel_regroupement_name":"Mathematics",
+    "panel_code_1":"M1",
+    "panel_name_1":"Mathematics",
+    "panel_keywords":"Probability"
+  },
+  {
+    "panel_regroupement_code":"MAT",
+    "panel_regroupement_name":"Mathematics",
+    "panel_code_1":"M1",
+    "panel_name_1":"Mathematics",
+    "panel_keywords":"Theoretical aspects of partial differential equations"
+  },
+  {
+    "panel_regroupement_code":"MAT",
+    "panel_regroupement_name":"Mathematics",
+    "panel_code_1":"M1",
+    "panel_name_1":"Mathematics",
+    "panel_keywords":"Topology"
+  },
+  {
+    "panel_regroupement_code":"MAT",
+    "panel_regroupement_name":"Mathematics",
+    "panel_code_1":"M2",
+    "panel_name_1":"Applied Mathematics",
+    "panel_keywords":"Application of mathematics in sciences"
+  },
+  {
+    "panel_regroupement_code":"MAT",
+    "panel_regroupement_name":"Mathematics",
+    "panel_code_1":"M2",
+    "panel_name_1":"Applied Mathematics",
+    "panel_keywords":"Mathematical aspects of Computer Science"
+  },
+  {
+    "panel_regroupement_code":"MAT",
+    "panel_regroupement_name":"Mathematics",
+    "panel_code_1":"M2",
+    "panel_name_1":"Applied Mathematics",
+    "panel_keywords":"Mathematical physics"
+  },
+  {
+    "panel_regroupement_code":"MAT",
+    "panel_regroupement_name":"Mathematics",
+    "panel_code_1":"M2",
+    "panel_name_1":"Applied Mathematics",
+    "panel_keywords":"Numerical analysis and scientific computing"
+  },
+  {
+    "panel_regroupement_code":"MAT",
+    "panel_regroupement_name":"Mathematics",
+    "panel_code_1":"M2",
+    "panel_name_1":"Applied Mathematics",
+    "panel_keywords":"Scientific computing, simulation and modelling tools"
+  },
+  {
+    "panel_regroupement_code":"MAT",
+    "panel_regroupement_name":"Mathematics",
+    "panel_code_1":"M2",
+    "panel_name_1":"Applied Mathematics",
+    "panel_keywords":"Statistics"
+  },
+  {
+    "panel_regroupement_code":"PHY",
+    "panel_regroupement_name":"Physics",
+    "panel_code_1":"P1",
+    "panel_name_1":"Particle and Nuclear Physics",
+    "panel_keywords":"Fundamental interactions and fields"
+  },
+  {
+    "panel_regroupement_code":"PHY",
+    "panel_regroupement_name":"Physics",
+    "panel_code_1":"P1",
+    "panel_name_1":"Particle and Nuclear Physics",
+    "panel_keywords":"Nuclear physics"
+  },
+  {
+    "panel_regroupement_code":"PHY",
+    "panel_regroupement_name":"Physics",
+    "panel_code_1":"P1",
+    "panel_name_1":"Particle and Nuclear Physics",
+    "panel_keywords":"Observational astronomy: cosmic rays, neutrinos, and other particles"
+  },
+  {
+    "panel_regroupement_code":"PHY",
+    "panel_regroupement_name":"Physics",
+    "panel_code_1":"P1",
+    "panel_name_1":"Particle and Nuclear Physics",
+    "panel_keywords":"Particle physics"
+  },
+  {
+    "panel_regroupement_code":"PHY",
+    "panel_regroupement_name":"Physics",
+    "panel_code_1":"P1",
+    "panel_name_1":"Particle and Nuclear Physics",
+    "panel_keywords":"Particles and fields physics"
+  },
+  {
+    "panel_regroupement_code":"PHY",
+    "panel_regroupement_name":"Physics",
+    "panel_code_1":"P2",
+    "panel_name_1":"Atomic and molecular physics, optics",
+    "panel_keywords":"Atomic, molecular physics"
+  },
+  {
+    "panel_regroupement_code":"PHY",
+    "panel_regroupement_name":"Physics",
+    "panel_code_1":"P2",
+    "panel_name_1":"Atomic and molecular physics, optics",
+    "panel_keywords":"Chemical physics"
+  },
+  {
+    "panel_regroupement_code":"PHY",
+    "panel_regroupement_name":"Physics",
+    "panel_code_1":"P2",
+    "panel_name_1":"Atomic and molecular physics, optics",
+    "panel_keywords":"Lasers, ultra-short lasers and laser physics"
+  },
+  {
+    "panel_regroupement_code":"PHY",
+    "panel_regroupement_name":"Physics",
+    "panel_code_1":"P2",
+    "panel_name_1":"Atomic and molecular physics, optics",
+    "panel_keywords":"Metrology and measurement"
+  },
+  {
+    "panel_regroupement_code":"PHY",
+    "panel_regroupement_name":"Physics",
+    "panel_code_1":"P2",
+    "panel_name_1":"Atomic and molecular physics, optics",
+    "panel_keywords":"Nonlinear optics"
+  },
+  {
+    "panel_regroupement_code":"PHY",
+    "panel_regroupement_name":"Physics",
+    "panel_code_1":"P2",
+    "panel_name_1":"Atomic and molecular physics, optics",
+    "panel_keywords":"Optics (including laser optics and quantum optics)"
+  },
+  {
+    "panel_regroupement_code":"PHY",
+    "panel_regroupement_name":"Physics",
+    "panel_code_1":"P2",
+    "panel_name_1":"Atomic and molecular physics, optics",
+    "panel_keywords":"Optics, non-linear optics and nano-optics"
+  },
+  {
+    "panel_regroupement_code":"PHY",
+    "panel_regroupement_name":"Physics",
+    "panel_code_1":"P2",
+    "panel_name_1":"Atomic and molecular physics, optics",
+    "panel_keywords":"Photonics"
+  },
+  {
+    "panel_regroupement_code":"PHY",
+    "panel_regroupement_name":"Physics",
+    "panel_code_1":"P2",
+    "panel_name_1":"Atomic and molecular physics, optics",
+    "panel_keywords":"Quantum optics and quantum information"
+  },
+  {
+    "panel_regroupement_code":"PHY",
+    "panel_regroupement_name":"Physics",
+    "panel_code_1":"P2",
+    "panel_name_1":"Atomic and molecular physics, optics",
+    "panel_keywords":"Statistical physics (gases)"
+  },
+  {
+    "panel_regroupement_code":"PHY",
+    "panel_regroupement_name":"Physics",
+    "panel_code_1":"P2",
+    "panel_name_1":"Atomic and molecular physics, optics",
+    "panel_keywords":"Ultra-cold atoms and molecules"
+  },
+  {
+    "panel_regroupement_code":"PHY",
+    "panel_regroupement_name":"Physics",
+    "panel_code_1":"P2",
+    "panel_name_1":"Atomic and molecular physics, optics",
+    "panel_keywords":"Wave Interaction and Propagation"
+  },
+  {
+    "panel_regroupement_code":"PHY",
+    "panel_regroupement_name":"Physics",
+    "panel_code_1":"P3",
+    "panel_name_1":"Condensed matter physics",
+    "panel_keywords":"Condensed matter physics (including formerly solid state physics, superconductivity)"
+  },
+  {
+    "panel_regroupement_code":"PHY",
+    "panel_regroupement_name":"Physics",
+    "panel_code_1":"P3",
+    "panel_name_1":"Condensed matter physics",
+    "panel_keywords":"Electronic properties of materials, surfaces, interfaces, nanostructures, etc"
+  },
+  {
+    "panel_regroupement_code":"PHY",
+    "panel_regroupement_name":"Physics",
+    "panel_code_1":"P3",
+    "panel_name_1":"Condensed matter physics",
+    "panel_keywords":"Fluid dynamics"
+  },
+  {
+    "panel_regroupement_code":"PHY",
+    "panel_regroupement_name":"Physics",
+    "panel_code_1":"P3",
+    "panel_name_1":"Condensed matter physics",
+    "panel_keywords":"Gas and plasma physics"
+  },
+  {
+    "panel_regroupement_code":"PHY",
+    "panel_regroupement_name":"Physics",
+    "panel_code_1":"P3",
+    "panel_name_1":"Condensed matter physics",
+    "panel_keywords":"Magnetism and strongly correlated systems"
+  },
+  {
+    "panel_regroupement_code":"PHY",
+    "panel_regroupement_name":"Physics",
+    "panel_code_1":"P3",
+    "panel_name_1":"Condensed matter physics",
+    "panel_keywords":"Mechanical and acoustical properties of condensed matter, Lattice dynamics"
+  },
+  {
+    "panel_regroupement_code":"PHY",
+    "panel_regroupement_name":"Physics",
+    "panel_code_1":"P3",
+    "panel_name_1":"Condensed matter physics",
+    "panel_keywords":"Mesoscopic physics"
+  },
+  {
+    "panel_regroupement_code":"PHY",
+    "panel_regroupement_name":"Physics",
+    "panel_code_1":"P3",
+    "panel_name_1":"Condensed matter physics",
+    "panel_keywords":"Nanophysics: nanoelectronics, nanophotonics, nanomagnetism, nanoelectromechanics, etc."
+  },
+  {
+    "panel_regroupement_code":"PHY",
+    "panel_regroupement_name":"Physics",
+    "panel_code_1":"P3",
+    "panel_name_1":"Condensed matter physics",
+    "panel_keywords":"Phase transitions, phase equilibria"
+  },
+  {
+    "panel_regroupement_code":"PHY",
+    "panel_regroupement_name":"Physics",
+    "panel_code_1":"P3",
+    "panel_name_1":"Condensed matter physics",
+    "panel_keywords":"Semiconductors and insulators: material growth, physical properties"
+  },
+  {
+    "panel_regroupement_code":"PHY",
+    "panel_regroupement_name":"Physics",
+    "panel_code_1":"P3",
+    "panel_name_1":"Condensed matter physics",
+    "panel_keywords":"Soft condensed matter"
+  },
+  {
+    "panel_regroupement_code":"PHY",
+    "panel_regroupement_name":"Physics",
+    "panel_code_1":"P3",
+    "panel_name_1":"Condensed matter physics",
+    "panel_keywords":"Spintronics"
+  },
+  {
+    "panel_regroupement_code":"PHY",
+    "panel_regroupement_name":"Physics",
+    "panel_code_1":"P3",
+    "panel_name_1":"Condensed matter physics",
+    "panel_keywords":"Statistical physics (condensed matter)"
+  },
+  {
+    "panel_regroupement_code":"PHY",
+    "panel_regroupement_name":"Physics",
+    "panel_code_1":"P3",
+    "panel_name_1":"Condensed matter physics",
+    "panel_keywords":"Structure of solids and liquids"
+  },
+  {
+    "panel_regroupement_code":"PHY",
+    "panel_regroupement_name":"Physics",
+    "panel_code_1":"P3",
+    "panel_name_1":"Condensed matter physics",
+    "panel_keywords":"Superconductivity"
+  },
+  {
+    "panel_regroupement_code":"PHY",
+    "panel_regroupement_name":"Physics",
+    "panel_code_1":"P3",
+    "panel_name_1":"Condensed matter physics",
+    "panel_keywords":"Superfluids"
+  },
+  {
+    "panel_regroupement_code":"PHY",
+    "panel_regroupement_name":"Physics",
+    "panel_code_1":"P3",
+    "panel_name_1":"Condensed matter physics",
+    "panel_keywords":"Surface Physics"
+  },
+  {
+    "panel_regroupement_code":"PHY",
+    "panel_regroupement_name":"Physics",
+    "panel_code_1":"P3",
+    "panel_name_1":"Condensed matter physics",
+    "panel_keywords":"Thermal properties of condensed matter"
+  },
+  {
+    "panel_regroupement_code":"PHY",
+    "panel_regroupement_name":"Physics",
+    "panel_code_1":"P3",
+    "panel_name_1":"Condensed matter physics",
+    "panel_keywords":"Transport properties of condensed matter"
+  },
+  {
+    "panel_regroupement_code":"PHY",
+    "panel_regroupement_name":"Physics",
+    "panel_code_1":"P4",
+    "panel_name_1":"Astrophysics, Cosmology, Space science",
+    "panel_keywords":"Astrobiology"
+  },
+  {
+    "panel_regroupement_code":"PHY",
+    "panel_regroupement_name":"Physics",
+    "panel_code_1":"P4",
+    "panel_name_1":"Astrophysics, Cosmology, Space science",
+    "panel_keywords":"Astrochemistry"
+  },
+  {
+    "panel_regroupement_code":"PHY",
+    "panel_regroupement_name":"Physics",
+    "panel_code_1":"P4",
+    "panel_name_1":"Astrophysics, Cosmology, Space science",
+    "panel_keywords":"Clusters of galaxies and large scale structures"
+  },
+  {
+    "panel_regroupement_code":"PHY",
+    "panel_regroupement_name":"Physics",
+    "panel_code_1":"P4",
+    "panel_name_1":"Astrophysics, Cosmology, Space science",
+    "panel_keywords":"Cosmology"
+  },
+  {
+    "panel_regroupement_code":"PHY",
+    "panel_regroupement_name":"Physics",
+    "panel_code_1":"P4",
+    "panel_name_1":"Astrophysics, Cosmology, Space science",
+    "panel_keywords":"Dark matter, dark energy"
+  },
+  {
+    "panel_regroupement_code":"PHY",
+    "panel_regroupement_name":"Physics",
+    "panel_code_1":"P4",
+    "panel_name_1":"Astrophysics, Cosmology, Space science",
+    "panel_keywords":"Exoplanets"
+  },
+  {
+    "panel_regroupement_code":"PHY",
+    "panel_regroupement_name":"Physics",
+    "panel_code_1":"P4",
+    "panel_name_1":"Astrophysics, Cosmology, Space science",
+    "panel_keywords":"Formation and evolution of galaxies"
+  },
+  {
+    "panel_regroupement_code":"PHY",
+    "panel_regroupement_name":"Physics",
+    "panel_code_1":"P4",
+    "panel_name_1":"Astrophysics, Cosmology, Space science",
+    "panel_keywords":"Formation of stars and planets"
+  },
+  {
+    "panel_regroupement_code":"PHY",
+    "panel_regroupement_name":"Physics",
+    "panel_code_1":"P4",
+    "panel_name_1":"Astrophysics, Cosmology, Space science",
+    "panel_keywords":"Gravitational astronomy"
+  },
+  {
+    "panel_regroupement_code":"PHY",
+    "panel_regroupement_name":"Physics",
+    "panel_code_1":"P4",
+    "panel_name_1":"Astrophysics, Cosmology, Space science",
+    "panel_keywords":"High energy and particles astronomy - X-rays, cosmic rays, gamma rays, neutrinos"
+  },
+  {
+    "panel_regroupement_code":"PHY",
+    "panel_regroupement_name":"Physics",
+    "panel_code_1":"P4",
+    "panel_name_1":"Astrophysics, Cosmology, Space science",
+    "panel_keywords":"Instrumentation - telescopes, detectors and techniques"
+  },
+  {
+    "panel_regroupement_code":"PHY",
+    "panel_regroupement_name":"Physics",
+    "panel_code_1":"P4",
+    "panel_name_1":"Astrophysics, Cosmology, Space science",
+    "panel_keywords":"Interstellar medium"
+  },
+  {
+    "panel_regroupement_code":"PHY",
+    "panel_regroupement_name":"Physics",
+    "panel_code_1":"P4",
+    "panel_name_1":"Astrophysics, Cosmology, Space science",
+    "panel_keywords":"Nuclear astrophysics"
+  },
+  {
+    "panel_regroupement_code":"PHY",
+    "panel_regroupement_name":"Physics",
+    "panel_code_1":"P4",
+    "panel_name_1":"Astrophysics, Cosmology, Space science",
+    "panel_keywords":"Observational astronomy: radio"
+  },
+  {
+    "panel_regroupement_code":"PHY",
+    "panel_regroupement_name":"Physics",
+    "panel_code_1":"P4",
+    "panel_name_1":"Astrophysics, Cosmology, Space science",
+    "panel_keywords":"Relativistic astrophysics"
+  },
+  {
+    "panel_regroupement_code":"PHY",
+    "panel_regroupement_name":"Physics",
+    "panel_code_1":"P4",
+    "panel_name_1":"Astrophysics, Cosmology, Space science",
+    "panel_keywords":"Solar and interplanetary physics"
+  },
+  {
+    "panel_regroupement_code":"PHY",
+    "panel_regroupement_name":"Physics",
+    "panel_code_1":"P4",
+    "panel_name_1":"Astrophysics, Cosmology, Space science",
+    "panel_keywords":"Solar physics"
+  },
+  {
+    "panel_regroupement_code":"PHY",
+    "panel_regroupement_name":"Physics",
+    "panel_code_1":"P4",
+    "panel_name_1":"Astrophysics, Cosmology, Space science",
+    "panel_keywords":"Space weather"
+  },
+  {
+    "panel_regroupement_code":"PHY",
+    "panel_regroupement_name":"Physics",
+    "panel_code_1":"P4",
+    "panel_name_1":"Astrophysics, Cosmology, Space science",
+    "panel_keywords":"Stellar systems: multiple stars, clusters, and associations"
+  },
+  {
+    "panel_regroupement_code":"PHY",
+    "panel_regroupement_name":"Physics",
+    "panel_code_1":"P5",
+    "panel_name_1":"Applied physics",
+    "panel_keywords":"Acoustics"
+  },
+  {
+    "panel_regroupement_code":"PHY",
+    "panel_regroupement_name":"Physics",
+    "panel_code_1":"P5",
+    "panel_name_1":"Applied physics",
+    "panel_keywords":"Communication Systems"
+  },
+  {
+    "panel_regroupement_code":"PHY",
+    "panel_regroupement_name":"Physics",
+    "panel_code_1":"P5",
+    "panel_name_1":"Applied physics",
+    "panel_keywords":"Computational modelling"
+  },
+  {
+    "panel_regroupement_code":"PHY",
+    "panel_regroupement_name":"Physics",
+    "panel_code_1":"P5",
+    "panel_name_1":"Applied physics",
+    "panel_keywords":"Geophysics"
+  },
+  {
+    "panel_regroupement_code":"PHY",
+    "panel_regroupement_name":"Physics",
+    "panel_code_1":"P5",
+    "panel_name_1":"Applied physics",
+    "panel_keywords":"Lasers and laser optics"
+  },
+  {
+    "panel_regroupement_code":"PHY",
+    "panel_regroupement_name":"Physics",
+    "panel_code_1":"P5",
+    "panel_name_1":"Applied physics",
+    "panel_keywords":"Macroscopic quantum phenomena: superconductivity, superfluidity, etc."
+  },
+  {
+    "panel_regroupement_code":"PHY",
+    "panel_regroupement_name":"Physics",
+    "panel_code_1":"P5",
+    "panel_name_1":"Applied physics",
+    "panel_keywords":"Medical physics"
+  },
+  {
+    "panel_regroupement_code":"PHY",
+    "panel_regroupement_name":"Physics",
+    "panel_code_1":"P5",
+    "panel_name_1":"Applied physics",
+    "panel_keywords":"Optical engineering, photonics, lasers"
+  },
+  {
+    "panel_regroupement_code":"PHY",
+    "panel_regroupement_name":"Physics",
+    "panel_code_1":"P5",
+    "panel_name_1":"Applied physics",
+    "panel_keywords":"Optoelectronics"
+  },
+  {
+    "panel_regroupement_code":"PHY",
+    "panel_regroupement_name":"Physics",
+    "panel_code_1":"P5",
+    "panel_name_1":"Applied physics",
+    "panel_keywords":"Photonic integration, photonic integrated circuits"
+  },
+  {
+    "panel_regroupement_code":"PHY",
+    "panel_regroupement_name":"Physics",
+    "panel_code_1":"P5",
+    "panel_name_1":"Applied physics",
+    "panel_keywords":"Photovoltaics"
+  },
+  {
+    "panel_regroupement_code":"PHY",
+    "panel_regroupement_name":"Physics",
+    "panel_code_1":"P5",
+    "panel_name_1":"Applied physics",
+    "panel_keywords":"Plasmonics and metamaterials"
+  },
+  {
+    "panel_regroupement_code":"PHY",
+    "panel_regroupement_name":"Physics",
+    "panel_code_1":"P5",
+    "panel_name_1":"Applied physics",
+    "panel_keywords":"Solid state materials"
+  },
+  {
+    "panel_regroupement_code":"PHY",
+    "panel_regroupement_name":"Physics",
+    "panel_code_1":"P5",
+    "panel_name_1":"Applied physics",
+    "panel_keywords":"Statistical physics: phase transitions, noise and fluctuations, models of complex systems, etc."
+  },
+  {
+    "panel_regroupement_code":"SOC",
+    "panel_regroupement_name":"Social Sciences and Humanities",
+    "panel_code_1":"S1",
+    "panel_name_1":"Sociology, social anthropology",
+    "panel_keywords":"Ageing, work, social policies"
+  },
+  {
+    "panel_regroupement_code":"SOC",
+    "panel_regroupement_name":"Social Sciences and Humanities",
+    "panel_code_1":"S1",
+    "panel_name_1":"Sociology, social anthropology",
+    "panel_keywords":"Demography"
+  },
+  {
+    "panel_regroupement_code":"SOC",
+    "panel_regroupement_name":"Social Sciences and Humanities",
+    "panel_code_1":"S1",
+    "panel_name_1":"Sociology, social anthropology",
+    "panel_keywords":"Ethnography"
+  },
+  {
+    "panel_regroupement_code":"SOC",
+    "panel_regroupement_name":"Social Sciences and Humanities",
+    "panel_code_1":"S1",
+    "panel_name_1":"Sociology, social anthropology",
+    "panel_keywords":"Globalisation"
+  },
+  {
+    "panel_regroupement_code":"SOC",
+    "panel_regroupement_name":"Social Sciences and Humanities",
+    "panel_code_1":"S1",
+    "panel_name_1":"Sociology, social anthropology",
+    "panel_keywords":"Globalisation, migration, interethnic relations"
+  },
+  {
+    "panel_regroupement_code":"SOC",
+    "panel_regroupement_name":"Social Sciences and Humanities",
+    "panel_code_1":"S1",
+    "panel_name_1":"Sociology, social anthropology",
+    "panel_keywords":"Households, family and fertility"
+  },
+  {
+    "panel_regroupement_code":"SOC",
+    "panel_regroupement_name":"Social Sciences and Humanities",
+    "panel_code_1":"S1",
+    "panel_name_1":"Sociology, social anthropology",
+    "panel_keywords":"Integration of refugees and migrants"
+  },
+  {
+    "panel_regroupement_code":"SOC",
+    "panel_regroupement_name":"Social Sciences and Humanities",
+    "panel_code_1":"S1",
+    "panel_name_1":"Sociology, social anthropology",
+    "panel_keywords":"Kinship, cultural dimensions of classification and cognition, identity"
+  },
+  {
+    "panel_regroupement_code":"SOC",
+    "panel_regroupement_name":"Social Sciences and Humanities",
+    "panel_code_1":"S1",
+    "panel_name_1":"Sociology, social anthropology",
+    "panel_keywords":"Myth, ritual, symbolic representations, religious studies"
+  },
+  {
+    "panel_regroupement_code":"SOC",
+    "panel_regroupement_name":"Social Sciences and Humanities",
+    "panel_code_1":"S1",
+    "panel_name_1":"Sociology, social anthropology",
+    "panel_keywords":"Rural development studies"
+  },
+  {
+    "panel_regroupement_code":"SOC",
+    "panel_regroupement_name":"Social Sciences and Humanities",
+    "panel_code_1":"S1",
+    "panel_name_1":"Sociology, social anthropology",
+    "panel_keywords":"Social and behavioural science"
+  },
+  {
+    "panel_regroupement_code":"SOC",
+    "panel_regroupement_name":"Social Sciences and Humanities",
+    "panel_code_1":"S1",
+    "panel_name_1":"Sociology, social anthropology",
+    "panel_keywords":"Social Inclusion"
+  },
+  {
+    "panel_regroupement_code":"SOC",
+    "panel_regroupement_name":"Social Sciences and Humanities",
+    "panel_code_1":"S1",
+    "panel_name_1":"Sociology, social anthropology",
+    "panel_keywords":"Social policies, work and welfare"
+  },
+  {
+    "panel_regroupement_code":"SOC",
+    "panel_regroupement_name":"Social Sciences and Humanities",
+    "panel_code_1":"S1",
+    "panel_name_1":"Sociology, social anthropology",
+    "panel_keywords":"Social structure, inequalities, social mobility, interethnic relations"
+  },
+  {
+    "panel_regroupement_code":"SOC",
+    "panel_regroupement_name":"Social Sciences and Humanities",
+    "panel_code_1":"S1",
+    "panel_name_1":"Sociology, social anthropology",
+    "panel_keywords":"Sociology"
+  },
+  {
+    "panel_regroupement_code":"SOC",
+    "panel_regroupement_name":"Social Sciences and Humanities",
+    "panel_code_1":"S1",
+    "panel_name_1":"Sociology, social anthropology",
+    "panel_keywords":"Transformation of societies, democratization, social movements"
+  },
+  {
+    "panel_regroupement_code":"SOC",
+    "panel_regroupement_name":"Social Sciences and Humanities",
+    "panel_code_1":"S1",
+    "panel_name_1":"Sociology, social anthropology",
+    "panel_keywords":"Urban studies, regional studies"
+  },
+  {
+    "panel_regroupement_code":"SOC",
+    "panel_regroupement_name":"Social Sciences and Humanities",
+    "panel_code_1":"S1",
+    "panel_name_1":"Sociology, social anthropology",
+    "panel_keywords":"Women and gender studies"
+  },
+  {
+    "panel_regroupement_code":"SOC",
+    "panel_regroupement_name":"Social Sciences and Humanities",
+    "panel_code_1":"S1",
+    "panel_name_1":"Sociology, social anthropology",
+    "panel_keywords":"Youth policy"
+  },
+  {
+    "panel_regroupement_code":"SOC",
+    "panel_regroupement_name":"Social Sciences and Humanities",
+    "panel_code_1":"S2",
+    "panel_name_1":"Political science",
+    "panel_keywords":"Collective Awareness"
+  },
+  {
+    "panel_regroupement_code":"SOC",
+    "panel_regroupement_name":"Social Sciences and Humanities",
+    "panel_code_1":"S2",
+    "panel_name_1":"Political science",
+    "panel_keywords":"EU International Relations and Diplomacy Studies"
+  },
+  {
+    "panel_regroupement_code":"SOC",
+    "panel_regroupement_name":"Social Sciences and Humanities",
+    "panel_code_1":"S2",
+    "panel_name_1":"Political science",
+    "panel_keywords":"EU research policy \/Research policies in the EU"
+  },
+  {
+    "panel_regroupement_code":"SOC",
+    "panel_regroupement_name":"Social Sciences and Humanities",
+    "panel_code_1":"S2",
+    "panel_name_1":"Political science",
+    "panel_keywords":"Geopolitics"
+  },
+  {
+    "panel_regroupement_code":"SOC",
+    "panel_regroupement_name":"Social Sciences and Humanities",
+    "panel_code_1":"S2",
+    "panel_name_1":"Political science",
+    "panel_keywords":"Human and social geography"
+  },
+  {
+    "panel_regroupement_code":"SOC",
+    "panel_regroupement_name":"Social Sciences and Humanities",
+    "panel_code_1":"S2",
+    "panel_name_1":"Political science",
+    "panel_keywords":"Migration"
+  },
+  {
+    "panel_regroupement_code":"SOC",
+    "panel_regroupement_name":"Social Sciences and Humanities",
+    "panel_code_1":"S2",
+    "panel_name_1":"Political science",
+    "panel_keywords":"Non-discrimination"
+  },
+  {
+    "panel_regroupement_code":"SOC",
+    "panel_regroupement_name":"Social Sciences and Humanities",
+    "panel_code_1":"S2",
+    "panel_name_1":"Political science",
+    "panel_keywords":"Peace and conflict studies"
+  },
+  {
+    "panel_regroupement_code":"SOC",
+    "panel_regroupement_name":"Social Sciences and Humanities",
+    "panel_code_1":"S2",
+    "panel_name_1":"Political science",
+    "panel_keywords":"Political economy, institutional economics, law and economics"
+  },
+  {
+    "panel_regroupement_code":"SOC",
+    "panel_regroupement_name":"Social Sciences and Humanities",
+    "panel_code_1":"S2",
+    "panel_name_1":"Political science",
+    "panel_keywords":"Political systems and institutions, governance"
+  },
+  {
+    "panel_regroupement_code":"SOC",
+    "panel_regroupement_name":"Social Sciences and Humanities",
+    "panel_code_1":"S2",
+    "panel_name_1":"Political science",
+    "panel_keywords":"Political theory"
+  },
+  {
+    "panel_regroupement_code":"SOC",
+    "panel_regroupement_name":"Social Sciences and Humanities",
+    "panel_code_1":"S2",
+    "panel_name_1":"Political science",
+    "panel_keywords":"Public administration"
+  },
+  {
+    "panel_regroupement_code":"SOC",
+    "panel_regroupement_name":"Social Sciences and Humanities",
+    "panel_code_1":"S2",
+    "panel_name_1":"Political science",
+    "panel_keywords":"Violence, conflict and conflict resolution"
+  },
+  {
+    "panel_regroupement_code":"SOC",
+    "panel_regroupement_name":"Social Sciences and Humanities",
+    "panel_code_1":"S3",
+    "panel_name_1":"Law",
+    "panel_keywords":"Civil law, commercial law"
+  },
+  {
+    "panel_regroupement_code":"SOC",
+    "panel_regroupement_name":"Social Sciences and Humanities",
+    "panel_code_1":"S3",
+    "panel_name_1":"Law",
+    "panel_keywords":"Criminal law"
+  },
+  {
+    "panel_regroupement_code":"SOC",
+    "panel_regroupement_name":"Social Sciences and Humanities",
+    "panel_code_1":"S3",
+    "panel_name_1":"Law",
+    "panel_keywords":"Data protection"
+  },
+  {
+    "panel_regroupement_code":"SOC",
+    "panel_regroupement_name":"Social Sciences and Humanities",
+    "panel_code_1":"S3",
+    "panel_name_1":"Law",
+    "panel_keywords":"Global and transnational governance, international law, human rights"
+  },
+  {
+    "panel_regroupement_code":"SOC",
+    "panel_regroupement_name":"Social Sciences and Humanities",
+    "panel_code_1":"S3",
+    "panel_name_1":"Law",
+    "panel_keywords":"Health law rights"
+  },
+  {
+    "panel_regroupement_code":"SOC",
+    "panel_regroupement_name":"Social Sciences and Humanities",
+    "panel_code_1":"S3",
+    "panel_name_1":"Law",
+    "panel_keywords":"Intellectual property rights"
+  },
+  {
+    "panel_regroupement_code":"SOC",
+    "panel_regroupement_name":"Social Sciences and Humanities",
+    "panel_code_1":"S3",
+    "panel_name_1":"Law",
+    "panel_keywords":"International private law"
+  },
+  {
+    "panel_regroupement_code":"SOC",
+    "panel_regroupement_name":"Social Sciences and Humanities",
+    "panel_code_1":"S3",
+    "panel_name_1":"Law",
+    "panel_keywords":"Law"
+  },
+  {
+    "panel_regroupement_code":"SOC",
+    "panel_regroupement_name":"Social Sciences and Humanities",
+    "panel_code_1":"S3",
+    "panel_name_1":"Law",
+    "panel_keywords":"Legal studies, constitutions, comparative law"
+  },
+  {
+    "panel_regroupement_code":"SOC",
+    "panel_regroupement_name":"Social Sciences and Humanities",
+    "panel_code_1":"S3",
+    "panel_name_1":"Law",
+    "panel_keywords":"Legal systems, constitutions, foundations of law"
+  },
+  {
+    "panel_regroupement_code":"SOC",
+    "panel_regroupement_name":"Social Sciences and Humanities",
+    "panel_code_1":"S3",
+    "panel_name_1":"Law",
+    "panel_keywords":"Private, public and social law"
+  },
+  {
+    "panel_regroupement_code":"SOC",
+    "panel_regroupement_name":"Social Sciences and Humanities",
+    "panel_code_1":"S4",
+    "panel_name_1":"Communication",
+    "panel_keywords":"Communication networks, media, information society"
+  },
+  {
+    "panel_regroupement_code":"SOC",
+    "panel_regroupement_name":"Social Sciences and Humanities",
+    "panel_code_1":"S4",
+    "panel_name_1":"Communication",
+    "panel_keywords":"Crisis management"
+  },
+  {
+    "panel_regroupement_code":"SOC",
+    "panel_regroupement_name":"Social Sciences and Humanities",
+    "panel_code_1":"S4",
+    "panel_name_1":"Communication",
+    "panel_keywords":"Digital Social Innovation"
+  },
+  {
+    "panel_regroupement_code":"SOC",
+    "panel_regroupement_name":"Social Sciences and Humanities",
+    "panel_code_1":"S4",
+    "panel_name_1":"Communication",
+    "panel_keywords":"Media and socio-cultural communication"
+  },
+  {
+    "panel_regroupement_code":"SOC",
+    "panel_regroupement_name":"Social Sciences and Humanities",
+    "panel_code_1":"S4",
+    "panel_name_1":"Communication",
+    "panel_keywords":"Social Media"
+  },
+  {
+    "panel_regroupement_code":"SOC",
+    "panel_regroupement_name":"Social Sciences and Humanities",
+    "panel_code_1":"S4",
+    "panel_name_1":"Communication",
+    "panel_keywords":"Social studies of science and technology"
+  },
+  {
+    "panel_regroupement_code":"SOC",
+    "panel_regroupement_name":"Social Sciences and Humanities",
+    "panel_code_1":"S5",
+    "panel_name_1":"Cognition, psychology, linguistics",
+    "panel_keywords":"Cognition (e.g. learning, memory, emotions, speech)"
+  },
+  {
+    "panel_regroupement_code":"SOC",
+    "panel_regroupement_name":"Social Sciences and Humanities",
+    "panel_code_1":"S5",
+    "panel_name_1":"Cognition, psychology, linguistics",
+    "panel_keywords":"Developmental psychology"
+  },
+  {
+    "panel_regroupement_code":"SOC",
+    "panel_regroupement_name":"Social Sciences and Humanities",
+    "panel_code_1":"S5",
+    "panel_name_1":"Cognition, psychology, linguistics",
+    "panel_keywords":"Ergonomic and Human factors"
+  },
+  {
+    "panel_regroupement_code":"SOC",
+    "panel_regroupement_name":"Social Sciences and Humanities",
+    "panel_code_1":"S5",
+    "panel_name_1":"Cognition, psychology, linguistics",
+    "panel_keywords":"Evolution of mind and cognitive functions, animal communication"
+  },
+  {
+    "panel_regroupement_code":"SOC",
+    "panel_regroupement_name":"Social Sciences and Humanities",
+    "panel_code_1":"S5",
+    "panel_name_1":"Cognition, psychology, linguistics",
+    "panel_keywords":"Fatigue and stress observation, analysis and coping"
+  },
+  {
+    "panel_regroupement_code":"SOC",
+    "panel_regroupement_name":"Social Sciences and Humanities",
+    "panel_code_1":"S5",
+    "panel_name_1":"Cognition, psychology, linguistics",
+    "panel_keywords":"Human cognition, perception, and action"
+  },
+  {
+    "panel_regroupement_code":"SOC",
+    "panel_regroupement_name":"Social Sciences and Humanities",
+    "panel_code_1":"S5",
+    "panel_name_1":"Cognition, psychology, linguistics",
+    "panel_keywords":"Human factors, ergonomics"
+  },
+  {
+    "panel_regroupement_code":"SOC",
+    "panel_regroupement_name":"Social Sciences and Humanities",
+    "panel_code_1":"S5",
+    "panel_name_1":"Cognition, psychology, linguistics",
+    "panel_keywords":"Language acquisition and processing"
+  },
+  {
+    "panel_regroupement_code":"SOC",
+    "panel_regroupement_name":"Social Sciences and Humanities",
+    "panel_code_1":"S5",
+    "panel_name_1":"Cognition, psychology, linguistics",
+    "panel_keywords":"Learning and memory"
+  },
+  {
+    "panel_regroupement_code":"SOC",
+    "panel_regroupement_name":"Social Sciences and Humanities",
+    "panel_code_1":"S5",
+    "panel_name_1":"Cognition, psychology, linguistics",
+    "panel_keywords":"Linguistics (e.g. syntax, semantics, phonology)"
+  },
+  {
+    "panel_regroupement_code":"SOC",
+    "panel_regroupement_name":"Social Sciences and Humanities",
+    "panel_code_1":"S5",
+    "panel_name_1":"Cognition, psychology, linguistics",
+    "panel_keywords":"Neuropsychology and neurocognition"
+  },
+  {
+    "panel_regroupement_code":"SOC",
+    "panel_regroupement_name":"Social Sciences and Humanities",
+    "panel_code_1":"S5",
+    "panel_name_1":"Cognition, psychology, linguistics",
+    "panel_keywords":"Psycholinguistics"
+  },
+  {
+    "panel_regroupement_code":"SOC",
+    "panel_regroupement_name":"Social Sciences and Humanities",
+    "panel_code_1":"S5",
+    "panel_name_1":"Cognition, psychology, linguistics",
+    "panel_keywords":"Psychology (e.g. clinical, social, developmental)"
+  },
+  {
+    "panel_regroupement_code":"SOC",
+    "panel_regroupement_name":"Social Sciences and Humanities",
+    "panel_code_1":"S5",
+    "panel_name_1":"Cognition, psychology, linguistics",
+    "panel_keywords":"Sensation and perception"
+  },
+  {
+    "panel_regroupement_code":"SOC",
+    "panel_regroupement_name":"Social Sciences and Humanities",
+    "panel_code_1":"S5",
+    "panel_name_1":"Cognition, psychology, linguistics",
+    "panel_keywords":"Social cognition and social neuroscience"
+  },
+  {
+    "panel_regroupement_code":"SOC",
+    "panel_regroupement_name":"Social Sciences and Humanities",
+    "panel_code_1":"S5",
+    "panel_name_1":"Cognition, psychology, linguistics",
+    "panel_keywords":"Speech and language disorders"
+  },
+  {
+    "panel_regroupement_code":"SOC",
+    "panel_regroupement_name":"Social Sciences and Humanities",
+    "panel_code_1":"S5",
+    "panel_name_1":"Cognition, psychology, linguistics",
+    "panel_keywords":"Theoretical and cognitive modeling"
+  },
+  {
+    "panel_regroupement_code":"SOC",
+    "panel_regroupement_name":"Social Sciences and Humanities",
+    "panel_code_1":"S6",
+    "panel_name_1":"Philosophy",
+    "panel_keywords":"Aesthetics"
+  },
+  {
+    "panel_regroupement_code":"SOC",
+    "panel_regroupement_name":"Social Sciences and Humanities",
+    "panel_code_1":"S6",
+    "panel_name_1":"Philosophy",
+    "panel_keywords":"Ancient philosophy"
+  },
+  {
+    "panel_regroupement_code":"SOC",
+    "panel_regroupement_name":"Social Sciences and Humanities",
+    "panel_code_1":"S6",
+    "panel_name_1":"Philosophy",
+    "panel_keywords":"Applied ethics"
+  },
+  {
+    "panel_regroupement_code":"SOC",
+    "panel_regroupement_name":"Social Sciences and Humanities",
+    "panel_code_1":"S6",
+    "panel_name_1":"Philosophy",
+    "panel_keywords":"Continental philosophy"
+  },
+  {
+    "panel_regroupement_code":"SOC",
+    "panel_regroupement_name":"Social Sciences and Humanities",
+    "panel_code_1":"S6",
+    "panel_name_1":"Philosophy",
+    "panel_keywords":"Epistemology"
+  },
+  {
+    "panel_regroupement_code":"SOC",
+    "panel_regroupement_name":"Social Sciences and Humanities",
+    "panel_code_1":"S6",
+    "panel_name_1":"Philosophy",
+    "panel_keywords":"Ethics"
+  },
+  {
+    "panel_regroupement_code":"SOC",
+    "panel_regroupement_name":"Social Sciences and Humanities",
+    "panel_code_1":"S6",
+    "panel_name_1":"Philosophy",
+    "panel_keywords":"History of philosophy"
+  },
+  {
+    "panel_regroupement_code":"SOC",
+    "panel_regroupement_name":"Social Sciences and Humanities",
+    "panel_code_1":"S6",
+    "panel_name_1":"Philosophy",
+    "panel_keywords":"Logic"
+  },
+  {
+    "panel_regroupement_code":"SOC",
+    "panel_regroupement_name":"Social Sciences and Humanities",
+    "panel_code_1":"S6",
+    "panel_name_1":"Philosophy",
+    "panel_keywords":"Medieval philosophy"
+  },
+  {
+    "panel_regroupement_code":"SOC",
+    "panel_regroupement_name":"Social Sciences and Humanities",
+    "panel_code_1":"S6",
+    "panel_name_1":"Philosophy",
+    "panel_keywords":"Metaphysics"
+  },
+  {
+    "panel_regroupement_code":"SOC",
+    "panel_regroupement_name":"Social Sciences and Humanities",
+    "panel_code_1":"S6",
+    "panel_name_1":"Philosophy",
+    "panel_keywords":"Philosophy of language"
+  },
+  {
+    "panel_regroupement_code":"SOC",
+    "panel_regroupement_name":"Social Sciences and Humanities",
+    "panel_code_1":"S6",
+    "panel_name_1":"Philosophy",
+    "panel_keywords":"Philosophy of law"
+  },
+  {
+    "panel_regroupement_code":"SOC",
+    "panel_regroupement_name":"Social Sciences and Humanities",
+    "panel_code_1":"S6",
+    "panel_name_1":"Philosophy",
+    "panel_keywords":"Philosophy of mind"
+  },
+  {
+    "panel_regroupement_code":"SOC",
+    "panel_regroupement_name":"Social Sciences and Humanities",
+    "panel_code_1":"S6",
+    "panel_name_1":"Philosophy",
+    "panel_keywords":"Philosophy of religion"
+  },
+  {
+    "panel_regroupement_code":"SOC",
+    "panel_regroupement_name":"Social Sciences and Humanities",
+    "panel_code_1":"S6",
+    "panel_name_1":"Philosophy",
+    "panel_keywords":"Philosophy of science"
+  },
+  {
+    "panel_regroupement_code":"SOC",
+    "panel_regroupement_name":"Social Sciences and Humanities",
+    "panel_code_1":"S6",
+    "panel_name_1":"Philosophy",
+    "panel_keywords":"Political philosophy"
+  },
+  {
+    "panel_regroupement_code":"SOC",
+    "panel_regroupement_name":"Social Sciences and Humanities",
+    "panel_code_1":"S6",
+    "panel_name_1":"Philosophy",
+    "panel_keywords":"Social and political philosophy"
+  }
+]

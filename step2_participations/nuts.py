@@ -19,7 +19,7 @@ def nuts_department():
         pp_app = unzip_zip(ZIPNAME, f"{PATH_SOURCE}{FRAMEWORK}/", 'proposals_applicants_departments.json', 'utf8')
         pp_app = pd.DataFrame(pp_app)
         pp_app = (pp_app.loc[~pp_app.nutsCode.isnull(), ['proposalNbr', 'generalPic', 'applicantPic', 'nutsCode']]
-                .rename(columns={'proposalNbr':'project_id', 'applicantPic':'proposal_participant_pic'})
+                .rename(columns={'proposalNbr':'project_id', 'applicantPic':'applicant_participant_pic'})
                 .astype(str)
                 .drop_duplicates()
                 )
@@ -43,8 +43,8 @@ def nuts_lien(app1, part, lien):
 
     print("\n### NUTS avec LIEN")
     nuts_a=(app1[['project_id', 'orderNumber', 'generalPic', 'participant_pic','nutsCode']]
-            .rename(columns={'orderNumber':'proposal_orderNumber',
-                                'participant_pic':'proposal_participant_pic',
+            .rename(columns={'orderNumber':'applicant_orderNumber',
+                                'participant_pic':'applicant_participant_pic',
                                 'nutsCode':'nuts_app'
                                 })
 
@@ -62,11 +62,11 @@ def nuts_lien(app1, part, lien):
     l=len(nuts_a) 
     nuts_a = (nuts_a.merge(pp_app, 
                            how='left', 
-                           on=['project_id', 'generalPic', 'proposal_participant_pic'])
+                           on=['project_id', 'generalPic', 'applicant_participant_pic'])
                     )
     nuts_a['ncount'] = (nuts_a
-                    .groupby(['project_id', 'proposal_orderNumber', 
-                                'generalPic','proposal_participant_pic'], 
+                    .groupby(['project_id', 'applicant_orderNumber', 
+                                'generalPic','applicant_participant_pic'], 
                                 as_index=False)['nuts_app']
                     .transform('count'))
 
@@ -76,7 +76,7 @@ def nuts_lien(app1, part, lien):
     nuts_a.nuts_app = (nuts_a[['nuts_app', 'nutsCode']]
                        .apply(lambda x: ','.join(x.dropna().unique()).split(','), axis=1))
     nuts_a = (nuts_a.drop(columns=['nutsCode'])
-                    .groupby(['project_id', 'proposal_orderNumber', 'generalPic','proposal_participant_pic'])['nuts_app']
+                    .groupby(['project_id', 'applicant_orderNumber', 'generalPic', 'applicant_participant_pic'])['nuts_app']
                     .apply(lambda x: list(set(x.sum())))
                     .reset_index())
     # nuts_a.loc[nuts_a.nutsCode.isnull(), 'nuts_code'] = nuts_a.nuts_app
@@ -127,7 +127,7 @@ def nuts_lien(app1, part, lien):
 
     # lien = lien.reset_index()
     lien = (lien.merge(nuts_p, how='left', on=['project_id', 'orderNumber', 'generalPic', 'calculated_pic'])
-            .merge(nuts_a, how='left', on=['project_id', 'proposal_orderNumber', 'generalPic', 'proposal_participant_pic'])
+            .merge(nuts_a, how='left', on=['project_id', 'applicant_orderNumber', 'generalPic', 'applicant_participant_pic'])
             )
 
     lien['nuts_part'] = [ [] if x is np.nan else x for x in lien['nuts_part'] ]
@@ -135,6 +135,6 @@ def nuts_lien(app1, part, lien):
  
     lien['participation_nuts'] = lien.apply(lambda x: ';'.join(list(set(x['nuts_app'] + x['nuts_part']))), axis=1)
 
-    lien.rename(columns={'nuts_part':'nuts_participant', 'nuts_app':'nuts_applicants'}, inplace=True)
+    lien.rename(columns={'nuts_part':'participant_nuts', 'nuts_app':'applicant_nuts'}, inplace=True)
     print(f"- size lien: {len(lien)}")
     return lien

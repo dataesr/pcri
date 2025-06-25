@@ -19,9 +19,9 @@ def ror_getRefInfo(lid_source, countries):
     with open(file_name, 'wb') as file:
         pd.to_pickle(ror, file)
 
-def paysage_getRefInfo(paysage_id, paysage_old=None):
+def paysage_getRefInfo(paysage_id, df_old=False):
     from config_path import PATH_REF
-    from api_process.paysage import IDpaysage_cj,IDpaysage_name,IDpaysage_parent,IDpaysage_siret,IDpaysage_status,IDpaysage_successor,check_var_null,get_mires
+    from api_process.paysage import IDpaysage_cj,IDpaysage_name,IDpaysage_parent,IDpaysage_siret,IDpaysage_status,IDpaysage_successor,check_var_null
     print("### PAYSAGE HARVEST")
     
     paysage_id, doublon=IDpaysage_status(paysage_id)
@@ -31,26 +31,26 @@ def paysage_getRefInfo(paysage_id, paysage_old=None):
     paysage=IDpaysage_name(paysage)
     paysage=IDpaysage_siret(paysage)
     check_var_null(paysage)
-    paysage_mires=get_mires()
 
     x=paysage.loc[~paysage.id_clean.isin(paysage.id.unique())]
     x.loc[:,'id']=x.loc[:,'id_clean']
     x=x.drop_duplicates()
     paysage = pd.concat([paysage, x], ignore_index=True)
 
-    if 'paysage_old' in globals() or 'paysage_old' in locals():
-        tmp=pd.concat([paysage, paysage_old], ignore_index=True).drop_duplicates()
-        print(f"1 - paysage_old + paysage -> new size :{len(tmp)}")
+    if df_old==True:
+        paysage_old=pd.read_pickle(f"{PATH_REF}paysage_df.pkl")
+        paysage=pd.concat([paysage, paysage_old], ignore_index=True).drop_duplicates()
+        print(f"1 - paysage_old + paysage -> new size :{len(paysage)}")
         
         file_name = f"{PATH_REF}paysage_df.pkl"
         with open(file_name, 'wb') as file:
-            pd.to_pickle(tmp, file) 
+            pd.to_pickle(paysage, file) 
     else:
         file_name = f"{PATH_REF}paysage_df.pkl"
         with open(file_name, 'wb') as file:
             pd.to_pickle(paysage, file)
-    
-    return paysage, paysage_mires
+
+    return paysage
 
 def ID_getRefInfo(lid_source):
     from config_path import PATH_REF
@@ -69,3 +69,11 @@ def ID_getRefInfo(lid_source):
     sirene = get_sirene(lid_source, sirene_old=None)
 
     return ror, paysage, paysage_category, paysage_mires, sirene
+
+def new_search(ref, df_ID):
+    if ref=='paysage':
+        from step3_entities.ID_getRefInformations import paysage_getRefInfo
+        paysage = paysage_getRefInfo(df_ID, df_old=True)
+        print(f"1 - paysage_old + paysage -> new size :{len(paysage)}")
+      
+        return paysage

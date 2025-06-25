@@ -43,6 +43,9 @@ def merge_paysage(entities_tmp, paysage, cat_filter):
     entities_tmp=(entities_tmp
         .drop_duplicates()
         .merge(paysage, how='left', on='id_extend'))
+    
+    if len(entities_tmp.groupby(['generalPic', 'country_code', 'country_code_mapping']).size().reset_index(name='nb').query('nb>1'))>0:
+        print(f"-ATTENTION ! fix entities_tmp rows duplicated: {entities_tmp.groupby(['generalPic', 'legalName', 'country_code', 'country_code_mapping']).size().reset_index(name='nb').query('nb>1')}")
 
     entities_tmp.loc[entities_tmp.entities_id.isnull(), 'entities_id'] = entities_tmp.id_clean
     entities_tmp.loc[entities_tmp.entities_name.isnull(), 'entities_name'] = entities_tmp.name_clean

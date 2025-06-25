@@ -76,7 +76,7 @@ def msca_erc_projects(FP6, FP7, h20, projects, part):
 def msca_erc_resume(msca_erc):
     print("### MSCA / ERC evol preparation")
     me_resume = (msca_erc
-            .groupby(list(msca_erc.columns.difference(['coordination_number', 'number_involved', 'calculated_fund', 'beneficiary_subv', 'fund_ent_erc'])), dropna=False)
+            .groupby(list(msca_erc.columns.difference(['coordination_number', 'number_involved', 'calculated_fund', 'beneficiary_fund', 'fund_ent_erc'])), dropna=False)
             .agg({'number_involved':'sum', 'calculated_fund':'sum', 'coordination_number':'sum','fund_ent_erc':'sum'})
             .reset_index()
             .rename(columns={'calculated_fund':'funding_part', 'fund_ent_erc':'funding_entity'})

@@ -16,7 +16,7 @@ def participants_calcul(part_step, part, proj):
                 left_on=['project_id', 'pic_old', 'country_code_mapping', 'orderNumber'],
                 right_on=['project_id', 'pic_old', 'country_code_mapping', 'orderNumber']))
 
-    subv_pt['beneficiary_subv'] = np.where(subv_pt['propNlien']>1, subv_pt['euContribution']/subv_pt['propNlien'], subv_pt['euContribution'])
+    subv_pt['beneficiary_fund'] = np.where(subv_pt['propNlien']>1, subv_pt['euContribution']/subv_pt['propNlien'], subv_pt['euContribution'])
     subv_pt['calculated_fund'] = np.where(subv_pt['propNlien']>1, subv_pt['netEuContribution']/subv_pt['propNlien'], subv_pt['netEuContribution'])
     subv_pt.drop(['propNlien'], axis=1, inplace=True)
 
@@ -30,21 +30,21 @@ def participants_calcul(part_step, part, proj):
                 'cordis_type_entity_code', 'cordis_type_entity_name_fr', 'cordis_type_entity_name_en', 'cordis_type_entity_acro',
                 'participation_nuts', 'region_1_name', 'region_2_name', 'regional_unit_name', 
                 'country_code', 'country_code_mapping', 'extra_joint_organization', 'role', 'partnerType', 'erc_role', 
-                'calculated_fund', 'beneficiary_subv']]
+                'calculated_fund', 'beneficiary_fund']]
                 # .rename(columns={'participant_pic':'pic'})
                 .assign(stage='successful'))    
 
     #calcul budget ERC
     part_proj = part_proj.assign(fund_ent_erc=np.where(part_proj.project_id.isin(proj.project_id.unique()), part_proj.calculated_fund, np.nan))
-    part_proj.loc[part_proj.project_id.isin(proj.project_id.unique()), 'calculated_fund'] = part_proj.loc[part_proj.project_id.isin(proj.project_id.unique())].beneficiary_subv
+    part_proj.loc[part_proj.project_id.isin(proj.project_id.unique()), 'calculated_fund'] = part_proj.loc[part_proj.project_id.isin(proj.project_id.unique())].beneficiary_fund
 
     if part_step_first_len != len(part_step):
         print(f"2- ATTENTION ! pas le même nbre de lignes-> part_step: {len(part_step)}, first_part_step: {part_step_first_len}")    
 
-    if '{:,.1f}'.format(part_proj['beneficiary_subv'].sum())=='{:,.1f}'.format(part['euContribution'].sum()):
-        print("3- Etape part_step/part1 -> beneficiary_subv OK")
+    if '{:,.1f}'.format(part_proj['beneficiary_fund'].sum())=='{:,.1f}'.format(part['euContribution'].sum()):
+        print("3- Etape part_step/part1 -> beneficiary_fund OK")
     else:
-        print(f"4- ATTENTION ! Revoir le calcul de beneficiary_subv:{'{:,.1f}'.format(part_proj['beneficiary_subv'].sum())}, euContribution:{'{:,.1f}'.format(part['euContribution'].sum())}")
+        print(f"4- ATTENTION ! Revoir le calcul de beneficiary_fund:{'{:,.1f}'.format(part_proj['beneficiary_fund'].sum())}, euContribution:{'{:,.1f}'.format(part['euContribution'].sum())}")
         
     if '{:,.1f}'.format(part_proj['calculated_fund'].sum())=='{:,.1f}'.format(part['netEuContribution'].sum()):
         print("5- Etape part_step/part1 -> calculated_fund OK")

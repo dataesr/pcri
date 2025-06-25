@@ -27,10 +27,10 @@ def synthese_preparation(participation, countries):
 
     print(f"nouvelle longueur pour les participations regroupées: {len(part)}")
 
-    if '{:,.1f}'.format(participation['beneficiary_subv'].sum())=='{:,.1f}'.format(part['beneficiary_subv'].sum()):
-        print("Etape participation/regroupement -> beneficiary_subv OK")
+    if '{:,.1f}'.format(participation['beneficiary_fund'].sum())=='{:,.1f}'.format(part['beneficiary_fund'].sum()):
+        print("Etape participation/regroupement -> beneficiary_fund OK")
     else:
-        print(f"ATTENTION ! Revoir le calcul de beneficiary_subv:{'{:,.1f}'.format(part['beneficiary_subv'].sum())}")
+        print(f"ATTENTION ! Revoir le calcul de beneficiary_fund:{'{:,.1f}'.format(part['beneficiary_fund'].sum())}")
 
     if '{:,.1f}'.format(participation.loc[participation.stage=='successful', 'calculated_fund'].sum())=='{:,.1f}'.format(part.loc[part.stage=='successful', 'calculated_fund'].sum()):
         print("Etape participation/regroupement -> calculated_fund_successful OK")

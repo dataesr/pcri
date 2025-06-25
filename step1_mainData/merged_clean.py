@@ -42,7 +42,7 @@ def dates_year(df):
         dt=pd.DataFrame(dt)
         dt['year'] = dt.open_date.str.split().str[-1]
         df = df.merge(dt[['topic_code', 'year']].drop_duplicates(), how='left', left_on='topicCode', right_on='topic_code')
-        df.loc[~df.year.isnull(), 'call_year'] = df.loc[~df.year.isnull()].year
+        df.loc[df.call_year.isnull(), 'call_year'] = df.loc[df.call_year.isnull()].year
         df.drop(columns=['topic_code', 'year'], inplace=True)
 
     # traitement YEAR
