@@ -1,5 +1,5 @@
 import pandas as pd, numpy as np, os
-from functions_shared import unzip_zip, del_list_in_col, columns_comparison, gps_col, num_to_string, bugs_excel
+from functions_shared import unzip_zip, del_list_in_col, columns_comparison, gps_col, num_to_string, bugs_excel, clean_keyword
 from constant_vars import ZIPNAME, FRAMEWORK
 from config_path import PATH_SOURCE, PATH_CONNECT, PATH_CLEAN
 
@@ -22,7 +22,7 @@ def projects_load():
 
         rep = [{'stage_process': '_loading', 'project_size': len(proj)}]
 
-        if len(proj.groupby('projectNbr').agg({'lastUpdateDate':'count'}).reset_index().query('lastUpdateDate>1')>0):
+        if len(proj.groupby('projectNbr').agg({'lastUpdateDate':'count'}).reset_index().query('lastUpdateDate>1'))>0:
             proj=proj.sort_values(['projectNbr', 'lastUpdateDate'], ascending=[True, False]).drop_duplicates('projectNbr')
             print(f"ATTENTION ! proj load : {tot_pid}, after remove old records by lastUpdateDate {len(proj)}")
             print(f"new size : {len(proj)}")
@@ -37,6 +37,8 @@ def projects_load():
 
         proj.rename(columns={"projectNbr": "project_id", "projectStatus":"status_code",'numberOfParticipants':'number_involved',
                             'totalCost':'total_cost', 'euContribution':'eu_reqrec_grant'}, inplace=True)
+        
+        proj['freeKeywords'] = proj['freeKeywords'].apply(lambda lst: [clean_keyword(k) for k in lst])
         proj = del_list_in_col(proj, 'freeKeywords', 'freekw')
         proj = proj.drop_duplicates()
         proj['stage'] = 'successful'
@@ -71,7 +73,7 @@ def proposals_load():
         tot_ppid = prop.proposalNbr.nunique()
         rep = [{'stage_process': '_loading', 'proposal_size': len(prop)}]
 
-        if len(prop.groupby('proposalNbr').agg({'lastUpdateDate':'count'}).reset_index().query('lastUpdateDate>1')>0):
+        if len(prop.groupby('proposalNbr').agg({'lastUpdateDate':'count'}).reset_index().query('lastUpdateDate>1'))>0:
             prop = prop.sort_values(['proposalNbr', 'lastUpdateDate'], ascending=[True, False]).drop_duplicates('proposalNbr')
             print(f"ATTENTION ! prop load : {tot_ppid}, after remove old records by lastUpdateDate {len(prop)}")
             print(f"new size : {len(prop)}")
@@ -89,6 +91,8 @@ def proposals_load():
         prop[prop.columns[prop.columns.isin(keep_eval)]].to_json(f"{PATH_CLEAN}proposal_evaluation.json", orient='records')
         prop = prop.assign(score=np.where(prop['expertScore.total'].isnull(), False, True))
         prop = prop.drop(['expertScore.total','expertScore.excellence','expertScore.impact','expertScore.quality','rank','isProject','isEligibile'],  axis=1)
+        
+        prop['freeKeywords'] = prop['freeKeywords'].apply(lambda lst: [clean_keyword(k) for k in lst])
         prop = del_list_in_col(prop, 'freeKeywords', 'freekw')
         prop = del_list_in_col(prop, 'eicPanels', 'eic_panels')
         prop.loc[:, "eic_panels"] = prop.loc[:, "eic_panels"].str.replace(' / ', '|')
@@ -127,7 +131,7 @@ def participants_load(proj):
         tot_pid = len(part)
         rep = [{'stage_process': '_loading', 'participant_size': len(part)}]
 
-        if len(part.groupby(['projectNbr','orderNumber', 'generalPic', 'participantPic', 'partnerRole', 'partnerType']).agg({'lastUpdateDate':'count'}).reset_index().query('lastUpdateDate>1')>0):
+        if len(part.groupby(['projectNbr','orderNumber', 'generalPic', 'participantPic', 'partnerRole', 'partnerType']).agg({'lastUpdateDate':'count'}).reset_index().query('lastUpdateDate>1'))>0:
             part = (part.sort_values(['projectNbr','orderNumber', 'generalPic', 'participantPic', 'partnerRole', 'partnerType', 'lastUpdateDate'], 
                                      ascending=[True,True,True,True,True,True,False])
                                      .drop_duplicates(['projectNbr','orderNumber', 'generalPic', 'participantPic', 'partnerRole', 'partnerType']))
@@ -205,7 +209,7 @@ def applicants_load(prop):
         tot_pid = len(app)
         rep = [{'stage_process': '_loading', 'applicant_size': len(app)}]
 
-        if len(app.groupby(['proposalNbr','orderNumber', 'generalPic', 'applicantPic', 'role']).agg({'lastUpdateDate':'count'}).reset_index().query('lastUpdateDate>1')>0):
+        if len(app.groupby(['proposalNbr','orderNumber', 'generalPic', 'applicantPic', 'role']).agg({'lastUpdateDate':'count'}).reset_index().query('lastUpdateDate>1'))>0:
             app = (app.sort_values(['proposalNbr','orderNumber', 'generalPic', 'applicantPic', 'role', 'lastUpdateDate'], 
                                      ascending=[True,True,True,True,True,False])
                                      .drop_duplicates(['proposalNbr','orderNumber', 'generalPic', 'applicantPic', 'role']))
