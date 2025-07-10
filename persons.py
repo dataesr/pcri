@@ -1,11 +1,11 @@
 import pandas as pd, pickle, numpy as np, warnings, time, os
 warnings.filterwarnings("ignore", "FutureWarning: Setting an item of incompatible dtype is deprecated and will raise an error in a future version of pandas")
 pd.options.mode.copy_on_write = True
-from config_path import PATH_CLEAN, PATH_API
+from config_path import PATH_CLEAN, PATH_HARVEST
 from functions_shared import chunkify, work_csv
 from step7_persons.prep_persons import persons_preparation
 from step7_persons.affiliations import affiliations, persons_files_import, persons_api_simplify, persons_results_clean
-PATH_PERSONS=f"{PATH_API}persons/"
+PATH_PERSONS=f"{PATH_HARVEST}persons/"
 CSV_DATE='20250516'
 
 #######
