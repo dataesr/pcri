@@ -1,7 +1,7 @@
 
 import math, requests, time, pickle
 from retry import retry
-from config_path import PATH_API
+from config_path import PATH_HARVEST
 
 @retry(delay=100, tries=3)
 def get_all_from_openalex(url):
@@ -64,7 +64,7 @@ def harvest_openalex(df, iso2):
 
         if n % 2000 == 0:
             a = str(int(n/1000))
-            with open(f'{PATH_API}persons/persons_authors_{a}.pkl', 'wb') as f:
+            with open(f'{PATH_HARVEST}persons/persons_authors_{a}.pkl', 'wb') as f:
                 pickle.dump(rlist, f)
     print(time.strftime("%H:%M:%S"))
     return rlist

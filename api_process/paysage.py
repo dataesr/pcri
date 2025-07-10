@@ -1,5 +1,5 @@
 import time, requests, pandas as pd, copy, numpy as np
-from config_path import PATH_API
+from config_path import PATH_HARVEST
 from retry import retry
 from dotenv import load_dotenv
 load_dotenv()
@@ -58,7 +58,7 @@ def get_paysageODS(dataset):
 #############################################################################################
 def ID_to_IDpaysage(lid_source, siren_siret=[]):
     import pandas as pd
-    from config_path import PATH_API
+    from config_path import PATH_HARVEST
     from api_process.paysage import get_paysageODS
 
     print("## harvest IDpaysage from ID")
@@ -85,7 +85,7 @@ def ID_to_IDpaysage(lid_source, siren_siret=[]):
         paysage_id = x
         paysage_id['id_paysage'] = paysage_id.id_source
 
-    file_name = f"{PATH_API}paysage_id.pkl"
+    file_name = f"{PATH_HARVEST}paysage_id.pkl"
     with open(file_name, 'wb') as file:
         pd.to_pickle(paysage_id, file)
 
@@ -259,7 +259,7 @@ def IDpaysage_parent(paysage):
             print(f"\n{i} -> An unexpected error occurred: {e}")
             paysage_relat.append(str(i))
 
-    file_name = f"{PATH_API}paysage_parent.pkl"
+    file_name = f"{PATH_HARVEST}paysage_parent.pkl"
     with open(file_name, 'wb') as file:
         pd.to_pickle(paysage_relation, file)
 
@@ -408,7 +408,7 @@ def IDpaysage_name(paysage):
     verif2 = [i.get('id_parent') for i in paysage_name if i.get('status')]
     print(f"\nErreurs lévées automatiquement, vérifier la liste\n{[i for i in paysage_name if i.get('id_parent') in verif2]}")
 
-    file_name = f"{PATH_API}paysage_name.pkl"
+    file_name = f"{PATH_HARVEST}paysage_name.pkl"
     with open(file_name, 'wb') as file:
         pd.to_pickle(paysage_name, file)
         
@@ -519,14 +519,14 @@ def IDpaysage_category(paysage):
     print(f"- size paysage id à catégoriser:{len(paysage_liste)}")
 
     for i in paysage_liste:
-        time.sleep(0.2)
+        time.sleep(0.6)
         n=n+1
         if n % 100 == 0: 
             print(f"{n}", end=',')  
         
         try:
             url2=f'https://api.paysage.dataesr.ovh/relations?filters[relationTag]=structure-categorie&filters[resourceId]={str(i)}&limit=100&sort=-endDate'
-            rinit = requests.get(url2, headers=paysage_headers, verify=False)
+            rinit = requests.get(url2, headers=paysage_headers)
             r = rinit.json()['data']
             if r:
                 temp = pd.json_normalize(r)
@@ -571,7 +571,7 @@ def IDpaysage_category(paysage):
                             .sort_values(['id_clean', 'category_priority', 'category_id'])
                             .drop_duplicates())
         
-        file_name = f"{PATH_API}paysage_category.pkl"
+        file_name = f"{PATH_HARVEST}paysage_category.pkl"
         with open(file_name, 'wb') as file:
             pd.to_pickle(paysage_category, file)
         return paysage_category
@@ -609,7 +609,7 @@ def get_mires():
                   ))      
     paysage_mires.operateur_lib = paysage_mires.operateur_lib+" ("+paysage_mires.operateur_num+")"
 
-    file_name = f"{PATH_API}operateurs_mires.pkl"
+    file_name = f"{PATH_HARVEST}operateurs_mires.pkl"
     with open(file_name, 'wb') as file:
         pd.to_pickle(paysage_mires, file)
     return paysage_mires
