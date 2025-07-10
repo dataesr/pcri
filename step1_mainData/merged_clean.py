@@ -61,10 +61,9 @@ def dates_year(df):
     print(f"- size after year cleaned: {len(df)}")
     return df    
 
-
 def strings_v(df):
     for i in ['title','abstract', 'freekw', 'eic_panels', 'url']:
-        df[i]=df[i].str.replace('\\n|\\t|\\r|\\s+', ' ', regex=True).str.strip()   
+        df[i]=df[i].str.replace('\\n|\\t|\\r|\\s+', ' ', regex=True).str.strip()
     return df
 
 def empty_str_to_none(df):
@@ -83,3 +82,5 @@ def projects_complete_cleaned(df, extractDate):
     with open(file_name, 'wb') as file:
         pd.to_pickle(df, file)
     return df
+
+# def key_words(df):
