@@ -9,7 +9,7 @@ def category_paysage(df):
           .rename(columns={'usualNameFr':'paysage_category', 'id':'paysage_category_id'}))
     miss_x = df.loc[~df.category_id.isin(pc.paysage_category_id.unique())]
     if len(miss_x)>0:
-        print(f"1- nouvelles catégories à intégrer à la liste de categories dans data_files")
+        print(f"1- nouvelles catégories à intégrer à la liste de categories dans data_files (PATH_WORK new_cat.csv)")
         miss_x[['category_id', 'category_name']].drop_duplicates().to_csv(f"{PATH_WORK}new_cat.csv", sep=';', encoding='utf-8', index=False)
         exit()
     else:
@@ -19,6 +19,22 @@ def category_paysage(df):
                     'category_name':'paysage_category', 
                     'category_id':'paysage_category_id',
                     'category_priority':'paysage_category_priority'}))
+
+
+
+def naf_etab_sirene(df):
+    from config_path import PATH
+    import pandas as pd
+    naf = pd.read_csv(f"{PATH}nomenclatures/naf/naf_nomenclature.csv", sep=';', encoding='ANSI')
+    df = (df.merge(naf, how='left', left_on='naf_et', right_on='naf')
+          .drop(columns='naf')
+          .rename(columns={'naf_et': 'activity_code',
+                           'naf_lib':'activity_name',
+                           'naf1_gen':'activity_group_code', 
+                           'naf1_lib':'activity_group_name'})
+        )
+    return df
+
 
 
 def category_woven(df, sirene):
@@ -52,6 +68,7 @@ def category_woven(df, sirene):
 
     print(f"- taille de df après cat: {len(df)}")
     return df
+
 
 def category_agreg(df):
 
