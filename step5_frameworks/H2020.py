@@ -2,10 +2,10 @@ def H2020_process():
     import pandas as pd, numpy as np, json
     from step3_entities.references import ref_source_load, ref_source_2d_select
     from step3_entities.merge_referentiels import merge_paysage, merge_ror, merge_sirene
-    from step3_entities.categories import category_agreg, category_paysage,category_woven, cordis_type, mires
+    from step3_entities.categories import category_agreg, category_paysage,category_woven, cordis_type, mires, naf_etab_sirene
     from step3_entities.ID_getSourceRef import get_source_ID
     from step4_calculations.collaborations import collab_base, collab_cross
-    from config_path import PATH_SOURCE, PATH_CLEAN, PATH_REF, PATH_CONNECT
+    from config_path import PATH_SOURCE, PATH_CLEAN, PATH_REF, PATH_CONNECT, PATH_HARVEST
     from functions_shared import unzip_zip, my_country_code
 
     def h20_nom_load():
@@ -40,6 +40,7 @@ def H2020_process():
     country_h20 = my_country_code()
 
     part.loc[part.role=='participant', 'role'] = 'partner'
+    part['role']= part['role'].str.capitalize()
     # part.loc[part.countryCode=='ZZ', 'country_code_mapping'] = 'ZZZ'
     part = part[part.participates_as!='utro']
     part.rename(columns={'order_number':'orderNumber'}, inplace=True)
@@ -262,12 +263,14 @@ def H2020_process():
 
     def proj_cleaning(proj):
         print("## PROJ cleaning")
-        from functions_shared import website_to_clean
+        from functions_shared import website_to_clean, clean_keyword
+
         for i in ['title','abstract', 'free_keywords', 'eic_panels', 'url_project']:
             proj[i]=proj[i].str.replace('\\n|\\t|\\r|\\s+', ' ', regex=True).str.strip()
             
         kw = proj[['project_id','stage','free_keywords']].drop_duplicates()
         kw = kw.assign(free_keywords = kw.free_keywords.str.split(';|,')).explode('free_keywords')
+        kw.loc[~kw.free_keywords.isnull(), 'free_keywords'] = kw.loc[~kw.free_keywords.isnull(), 'free_keywords'].apply(lambda x: clean_keyword(x))
         kw['free_keywords'] = kw.free_keywords.str.replace('\\.+', '', regex=True)
         kw = kw.loc[kw.free_keywords.str.len()>3].drop_duplicates()
         kw.free_keywords = kw.free_keywords.groupby(level=0).apply(lambda x: '|'.join(x.str.strip().unique()))
@@ -337,9 +340,9 @@ def H2020_process():
     ref, genPic_to_new, ror, paysage, sirene, groupe = ref_select('H20')
 
     print(f"- si ++id pour un generalPic: {ref[ref.id.str.contains(';', na=False)]}")
-    ref = (ref.merge(country_h20[['iso3', 'parent_iso3']], how='left', left_on='country_code_mapping', right_on='iso3')
-        .drop(columns='iso3')
-        .rename(columns={'parent_iso3':'country_code'}))
+    # ref = (ref.merge(country_h20[['iso3', 'parent_iso3']], how='left', left_on='country_code_mapping', right_on='iso3')
+    #     .drop(columns='iso3')
+    #     .rename(columns={'parent_iso3':'country_code'}))
     print(f"parent_iso missing : {ref[ref.country_code.isnull()].country_code_mapping.unique()}")
     ref.loc[ref.country_code.isnull(), 'country_code'] = ref.loc[ref.country_code.isnull()].country_code_mapping 
 
@@ -384,6 +387,7 @@ def H2020_process():
 
     ### entities
     entities_tmp = part1.loc[~part1.id.isnull(), ['generalPic','id','country_code_mapping']].drop_duplicates()
+    # entities_tmp = part1.loc[~part1.id.isnull(), ['generalPic','legalName', 'id', 'id_secondaire', 'ZONAGE', 'country_code_mapping', 'country_code']].drop_duplicates()
     print(f"- size entities {len(entities_tmp)}")
     if any(entities_tmp.id.str.contains(';')):
         entities_tmp = entities_tmp.assign(id_extend=entities_tmp.id.str.split(';')).explode('id_extend')
@@ -395,12 +399,13 @@ def H2020_process():
 
     # PAYSAGE
     ### si besoin de charger paysage pickle
-    paysage_category = pd.read_pickle(f"{PATH_SOURCE}paysage_category.pkl")
+    paysage_category = pd.read_pickle(f"{PATH_HARVEST}paysage_category.pkl")
     cat_filter = category_paysage(paysage_category)
     entities_tmp = merge_paysage(entities_tmp, paysage, cat_filter)
 
     # SIRENE
     ### si besoin de charger paysage pickle
+    sirene = naf_etab_sirene(sirene)
     entities_tmp = merge_sirene(entities_tmp, sirene)
     entities_tmp['nb']=entities_tmp.groupby(['generalPic', 'id_extend', 'country_code_mapping'])['entities_id'].transform('count')
     if any(entities_tmp['nb']>1):
@@ -498,8 +503,7 @@ def H2020_process():
     # create calculated_fund and coordination_number
     part_tmp = (part_tmp
                 .assign(calculated_fund=np.where(part_tmp.stage=='successful', part_tmp['subv_net'], part_tmp['requestedGrant']), 
-                        coordination_number=np.where(part_tmp.role=='coordinator', 1, 0)))
-
+                        coordination_number=np.where(part_tmp.role.str.lower()=='coordinator', 1, 0)))
 
     #############################################################
     ### ERC
@@ -511,10 +515,10 @@ def H2020_process():
     # traitement erc ROLE
     part_tmp['erc_role'] = 'other'
     mask=(~part_tmp.destination_code.isnull())
-    part_tmp.loc[mask&(part_tmp.stage=='evaluated')&(part_tmp.destination_code=='SyG')&((part_tmp.participates_as=='host')|(part_tmp.role=='coordinator')), 'erc_role'] = 'PI'
+    part_tmp.loc[mask&(part_tmp.stage=='evaluated')&(part_tmp.destination_code=='SyG')&((part_tmp.participates_as=='host')|(part_tmp.role.str.lower()=='coordinator')), 'erc_role'] = 'PI'
     part_tmp.loc[mask&(part_tmp.stage=='successful')&(part_tmp.destination_code=='SyG')&(part_tmp.participates_as=='beneficiary')&(pd.to_numeric(part_tmp.orderNumber, errors='coerce')<5.), 'erc_role'] = 'PI'
-    part_tmp.loc[mask&(part_tmp.role=='coordinator')&(part_tmp.destination_code!='SyG'), 'erc_role'] = 'PI'
-    part_tmp.loc[mask&(part_tmp.destination_code=='SyG')&(part_tmp.role=='coordinator'), 'role'] = 'CO-PI'
+    part_tmp.loc[mask&(part_tmp.role.str.lower()=='coordinator')&(part_tmp.destination_code!='SyG'), 'erc_role'] = 'PI'
+    part_tmp.loc[mask&(part_tmp.destination_code=='SyG')&(part_tmp.role.str.lower()=='coordinator'), 'role'] = 'CO-PI'
     part_tmp.loc[mask&(part_tmp.erc_role=='PI')&(part_tmp.role!='CO-PI'), 'role'] = 'PI'
     
     # traitement subv pour ERC
@@ -559,7 +563,7 @@ def H2020_process():
     print(f"size part_tmp after clean codis legal type: {len(part_tmp)}")
 
     # merge countries 
-    if any(part_tmp.country_code_mapping.isnull()):
+    if (any(part_tmp.country_code_mapping.isnull())):
         print(f"ATTENTION ! country_code_mapping null: {part_tmp[part_tmp.country_code_mapping.isnull()].countryCode.unique()}")
     else:
         part_tmp = (part_tmp
