@@ -85,6 +85,9 @@ if UPDATE_PROJECT==True:
     if any(merged.loc[merged.stage=='successful', 'project_id'].value_counts()[merged.loc[merged.stage=='successful', 'project_id'].value_counts()> 1]):
         print(merged.loc[merged.stage=='successful', 'project_id'].value_counts()[merged.loc[merged.stage=='successful', 'project_id'].value_counts()> 1])
 
+    if UPDATE_PROJECT==True:
+        panel_lib_update("ERC_panel_structure_2024_calls")
+        
     merged = merged_panels(merged)
     reporting.append({'stage_process':'process6_panels', 'merged_size':len(merged)})
     merged = merged_topics(merged)
@@ -248,7 +251,7 @@ if UPDATE_PARTICIPANT==True:
     lid_source, unknow_list = ID_entities_list(ref_source)
     ror_getRefInfo(lid_source, countries)
     get_siret_siege(lid_source)
-    siren_siret = pd.read_pickle(f"{PATH_API}siren_siret.pkl")
+    siren_siret = pd.read_pickle(f"{PATH_HARVEST}siren_siret.pkl")
     paysage_id = ID_to_IDpaysage(lid_source, siren_siret)
     paysage = paysage_getRefInfo(paysage_id, df_old=False)
     paysage_category = IDpaysage_category(paysage)
@@ -272,8 +275,9 @@ reporting.append({'stage_process':'process_ror', 'entities_size':len(entities_tm
 # PAYSAGE
 ### si besoin de charger paysage pickle
 paysage = pd.read_pickle(f"{PATH_REF}paysage_df.pkl")
-# paysage_category = IDpaysage_category(paysage)
-paysage_category = pd.read_pickle(f"{PATH_SOURCE}paysage_category.pkl")
+if UPDATE_PARTICIPANT==True:
+    paysage_category = IDpaysage_category(paysage)
+paysage_category = pd.read_pickle(f"{PATH_HARVEST}paysage_category.pkl")
 cat_filter = category_paysage(paysage_category)
 entities_tmp = merge_paysage(entities_tmp, paysage, cat_filter)
 reporting.append({'stage_process':'process_paysage', 'entities_size':len(entities_tmp)})
@@ -281,6 +285,7 @@ reporting.append({'stage_process':'process_paysage', 'entities_size':len(entitie
 # SIRENE
 ### si besoin de charger paysage pickle
 sirene = pd.read_pickle(f"{PATH_REF}sirene_df.pkl")
+sirene = naf_etab_sirene(sirene)
 entities_tmp = merge_sirene(entities_tmp, sirene)
 reporting.append({'stage_process':'process_sirene', 'entities_size':len(entities_tmp)})
 
@@ -302,6 +307,7 @@ print(f"taille de entities_tmp avant groupe:{len(entities_tmp)}")
 entities_tmp = merge_groupe(entities_tmp, groupe)
 reporting.append({'stage_process':'process_groupe', 'entities_size':len(entities_tmp)})
 
+
 #983764495  
 entities_tmp = entities_clean(entities_tmp)
 entities_check_null(entities_tmp)
@@ -309,6 +315,7 @@ entities_check_null(entities_tmp)
 # traitement catégorie
 entities_tmp = category_woven(entities_tmp, sirene)
 entities_tmp = category_agreg(entities_tmp)
+
 entities_info = entities_info_add(entities_tmp, entities_info, countries)
 entities_info = cordis_type(entities_info)
 
