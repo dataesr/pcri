@@ -44,8 +44,9 @@ def merge_paysage(entities_tmp, paysage, cat_filter):
         .drop_duplicates()
         .merge(paysage, how='left', on='id_extend'))
     
-    if len(entities_tmp.groupby(['generalPic', 'country_code', 'country_code_mapping']).size().reset_index(name='nb').query('nb>1'))>0:
-        print(f"-ATTENTION ! fix entities_tmp rows duplicated: {entities_tmp.groupby(['generalPic', 'legalName', 'country_code', 'country_code_mapping']).size().reset_index(name='nb').query('nb>1')}")
+    if ('legalName' in entities_tmp.columns) & ('country_code' in entities_tmp.columns):
+            if (len(entities_tmp.groupby(['generalPic', 'country_code', 'country_code_mapping']).size().reset_index(name='nb').query('nb>1'))>0):
+                print(f"-ATTENTION ! fix entities_tmp rows duplicated: {entities_tmp.groupby(['generalPic', 'legalName', 'country_code', 'country_code_mapping']).size().reset_index(name='nb').query('nb>1')}")
 
     entities_tmp.loc[entities_tmp.entities_id.isnull(), 'entities_id'] = entities_tmp.id_clean
     entities_tmp.loc[entities_tmp.entities_name.isnull(), 'entities_name'] = entities_tmp.name_clean
@@ -62,6 +63,7 @@ def merge_paysage(entities_tmp, paysage, cat_filter):
 
 def merge_sirene(entities_tmp, sirene):
     print("### merge SIRENE")
+    sirene[sirene.select_dtypes(include=['object']).columns] = sirene.select_dtypes(include=['object']).replace(r'^\s*$', np.nan, regex=True)
     sirene = sirene.drop_duplicates()
     print(f"- first size sirene : {len(sirene)}")
 
@@ -102,9 +104,11 @@ def merge_sirene(entities_tmp, sirene):
     if any(df.loc[df.orig=='siret']):
         print(f"1 - A vérifier -> liste des noms à traiter:\n {df.loc[df.orig=='siret', ['ens', 'denom_us', 'nom_ul']]}\n#####")
 
-    df=df.assign(nom=np.where((df.orig=='siret')&(df.denom_us.isnull()), df.ens, df.denom_us))
-    df.loc[df.nom.isnull(), 'nom']=df['nom_ul']
-    df.loc[df.nom.isnull(), 'nom']=df['nom_perso']
+    # df=df.assign(nom=np.where((df.orig=='siret')&(df.denom_us.isnull()), df.ens, df.denom_us))
+    df=df.assign(nom=np.where(df.nom_ul.isnull(), df.nom_perso, df.nom_ul))
+
+    # df.loc[df.nom.isnull(), 'nom']=df.loc[df.nom.isnull()].nom_ul
+    # df.loc[df.nom.isnull(), 'nom']=df.loc[df.nom.isnull()].nom_perso
 
     if df.loc[df.nom.isnull()].empty:
         pass
@@ -114,7 +118,7 @@ def merge_sirene(entities_tmp, sirene):
     df['nom']= df.nom.str.capitalize()
     df=df.assign(id_m=np.where(df.orig.isin(['siret', 'rna']), df.siren.fillna('')+' '+df.rna.fillna(''), df.rna))
 
-    df=df[['id_extend', 'nom', 'sigle', 'siret_closeDate', 'id_m', 'siren', 'orig', 'siege']].drop_duplicates()
+    df=df[['id_extend', 'nom', 'sigle', 'siret_closeDate', 'id_m', 'siren', 'orig', 'siege', 'activity_code', 'activity_name', 'activity_group_code', 'activity_group_name']].drop_duplicates()
 
     entities_tmp = entities_tmp.merge(df, how='left', on='id_extend').drop_duplicates()
     entities_tmp.loc[~(entities_tmp.sigle.isnull())&(entities_tmp.entities_acronym.isnull()), 'entities_acronym'] = entities_tmp['sigle']
@@ -122,6 +126,8 @@ def merge_sirene(entities_tmp, sirene):
     entities_tmp.loc[(entities_tmp.entities_id.isnull())&(entities_tmp.orig=='siret'), 'entities_id'] = entities_tmp['id_extend']
     entities_tmp.loc[~(entities_tmp.siren.isnull())&(entities_tmp.entities_id.isnull()), 'entities_id'] = entities_tmp['siren']
 
+    for i in ['entities_name', 'entities_acronym']:
+        entities_tmp.loc[entities_tmp[i].str.lower()=='[nd]', i] = np.nan
 
     entities_tmp.drop(columns=['nom','sigle', 'orig'], inplace=True)
 
