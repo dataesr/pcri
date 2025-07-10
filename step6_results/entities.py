@@ -45,10 +45,10 @@ def entities_ods(FP, entities_participation):
     tmp.loc[~tmp.action_id.isin(act_liste), 'action_group_code'] = 'ACT-OTHER'
     tmp.loc[~tmp.action_id.isin(act_liste), 'action_group_name'] = 'Others actions'
 
-    for i in ['abstract', 'free_keywords']:
-        tmp[i] = tmp[i].str.replace('\\n|\\t|\\r|\\s+|^\\"', ' ', regex=True).str.strip()
+    # for i in ['abstract', 'free_keywords']:
+    #     tmp[i] = tmp[i].str.replace('\\n|\\t|\\r|\\s+|^\\"', ' ', regex=True).str.strip()
 
-    tmp['free_keywords'] = tmp['free_keywords'].str.lower()
+    # tmp['free_keywords'] = tmp['free_keywords'].str.lower()
 
     tmp.loc[(tmp.stage=='successful')&(tmp.status_code=='UNDER_PREPARATION'), 'abstract'] = np.nan
 
