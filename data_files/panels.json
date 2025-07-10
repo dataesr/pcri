@@ -1,222 +1,163 @@
 [
     {
         "panel_code": "LS",
-        "panel_name": "Life Science",
-        "panel_regroupement_code": "LS",
-        "panel_regroupement_name": "Life Science"
+        "panel_name": "Life Science"
     },
     {
         "panel_code": "LS1",
-        "panel_name": "Molecules of Life: Biological Mechanisms, Structures and Functions",
-        "panel_description": "Molecular biology, biochemistry, structural biology, molecular biophysics, synthetic and chemical biology, drug design, innovative methods and modelling",
-        "panel_regroupement_code": "LS",
-        "panel_regroupement_name": "Life Science"
+        "panel_name": "Molecules of Life: B iological  Mechanisms , Structures  and Functions",
+        "panel_description": "For all organisms : Molecular biology , biochemistry, structural biology, molecular biophysics , synthetic and chemical biology, drug design, innovative methods and modelling"
     },
     {
         "panel_code": "LS2",
-        "panel_name": "Integrative Biology: from Genes and Genomes to Systems",
-        "panel_description": "Genetics, epigenetics, genomics and other ‘omics studies, bioinformatics, systems biology, genetic diseases, gene editing, innovative methods and modelling, ‘omics for personalised medicine",
-        "panel_regroupement_code": "LS",
-        "panel_regroupement_name": "Life Science"
+        "panel_name": "Integrative B iology : from Genes and Genomes to S ystems",
+        "panel_description": "For all organis ms: Genetics, epigenetics, genomics  and other \u2018omics studies , bioinformatics, systems biology , genetic diseases , gene editing, innovative methods and modelling,  \u2018omics for personalised  medicine"
     },
     {
         "panel_code": "LS3",
-        "panel_name": "Cellular, Developmental and Regenerative Biology",
-        "panel_description": "Structure and function of the cell, cell-cell communication, embryogenesis, tissue differentiation, organogenesis, growth, development, evolution of development, organoids, stem cells, regeneration, therapeutic approaches",
-        "panel_regroupement_code": "LS",
-        "panel_regroupement_name": "Life Science"
+        "panel_name": "Cell Biology, Development, Stem Cells and R egeneration",
+        "panel_description": "For all organisms : Structure and function of the cell, cell -cell communication, embryogenesis, tissue differentiation, organogenesis, growth, development, evolution of development, organoids, stem cells, regeneration, therapeutic approaches"
     },
     {
         "panel_code": "LS4",
-        "panel_name": "Physiology in Health, Disease and Ageing", 
-        "panel_description": "Organ and tissue physiology, comparative physiology, physiology of ageing, pathophysiology, interorgan and tissue communication, endocrinology, nutrition, metabolism, interaction with the microbiome, non-communicable diseases including cancer (and except disorders of the nervous system and immunity-related diseases)",
-        "panel_regroupement_code": "LS",
-        "panel_regroupement_name": "Life Science"
+        "panel_name": "Physiology in Health, Disease and Ageing",
+        "panel_description": "Organ and tissue physiology, comparative physiology, physiology  of ageing , pathophysiology, inter - organ and tissue communication, endocrinology, nutrition,  metabolism, interaction with the microbiome, non -communicable diseases including cancer (and except disorders of the nervous system  and immunity -related diseases)"
     },
     {
         "panel_code": "LS5",
         "panel_name": "Neuroscience and Disorders of the Nervous System",
-        "panel_description": "Nervous system development, homeostasis and ageing, nervous system function and dysfunction, systems neuroscience and modelling, biological basis of cognitive processes and of behaviour, neurological and mental disorders",
-        "panel_regroupement_code": "LS",
-        "panel_regroupement_name": "Life Science"
+        "panel_description": "Nervous system development, homeostasis and ageing , nervous system  function and dysfunction , systems neuroscience  and modelling , biological basis of cognitive processes and of behaviour, neurological and mental disorders \u2013 In humans and all other organisms"
     },
     {
         "panel_code": "LS6",
-        "panel_name": "Immunity, Infection and Immunotherapy",
-        "panel_description": "The immune system, related disorders and their mechanisms, biology of infectious agents and infection, biological basis of prevention and treatment of infectious diseases, innovative immunological tools and approaches, including therapies",
-        "panel_regroupement_code": "LS",
-        "panel_regroupement_name": "Life Science"
+        "panel_name": "Immunity, Infection and I mmunotherapy",
+        "panel_description": "The immune system , related disorders  and their mechanisms , biology of infectious agents and infection, biological basis of prevention and treatment of infectious diseases , innovative imm unological tools and approaches , including  therapies"
     },
     {
         "panel_code": "LS7",
-        "panel_name": "Prevention, Diagnosis and Treatment of Human Diseases",
-        "panel_description": "Medical technologies and tools for prevention, diagnosis and treatment of human diseases, therapeutic approaches and interventions, pharmacology, preventative medicine, epidemiology and public health, digital medicine",
-        "panel_regroupement_code": "LS",
-        "panel_regroupement_name": "Life Science"
+        "panel_name": "Prevention,  Diagnosis and T reatment of Human Diseases",
+        "panel_description": "Medical technologies  and tools for prevention, diagnosis and treatment of human diseases, therapeutic approaches and interventions , pharmacology, preventative  medicine, epidemiology and public health , digital medicine"
     },
     {
         "panel_code": "LS8",
-        "panel_name": "Environmental Biology, Ecology and Evolution",
-        "panel_description": "Ecology, biodiversity, environmental change, evolutionary biology, behavioural ecology, microbial ecology, marine biology, ecophysiology, theoretical developments and modelling",
-        "panel_regroupement_code": "LS",
-        "panel_regroupement_name": "Life Science"
+        "panel_name": "Environmental B iology, Ecology  and E volution",
+        "panel_description": "For all organisms : Ecology, biodiversity, environmental change , evolutionary biology, behavioural ecology, microbial ecology , marine biology, ecophysiology, theoretical developments and mod elling"
     },
     {
         "panel_code": "LS9",
-        "panel_name": "Biotechnology and Biosystems Engineering",
-        "panel_description": "Biotechnology using all organisms, biotechnology for environment and food applications, applied plant and animal sciences, bioengineering and synthetic biology, biomass and biofuels, biohazards",
-        "panel_regroupement_code": "LS",
-        "panel_regroupement_name": "Life Science"
+        "panel_name": "Biotechnology and Biosystems E ngineering",
+        "panel_description": "Biotechnology using all organisms , biotechnology for environment  and food applications, applied plant and animal sciences , bioengineering and synthetic biology , biomass and biofuels , biohazards"
     },
     {
         "panel_code": "PC",
-        "panel_name": "Proof of concept",
-        "panel_regroupement_code": "PC",
-        "panel_regroupement_name": "Proof of concept"
+        "panel_name": "Proof of concept"
     },
     {
         "panel_code": "PC1",
-        "panel_name": "Proof of concept",
-        "panel_regroupement_code": "PC",
-        "panel_regroupement_name": "Proof of concept"
+        "panel_name": "Proof of concept"
     },
     {
         "panel_code": "PE",
-        "panel_name": "Physical Sciences and Engineering",
-        "panel_regroupement_code": "PE",
-        "panel_regroupement_name": "Physical Sciences and Engineering"
+        "panel_name": "Physical Sciences and Engineering"
     },
     {
         "panel_code": "PE1",
         "panel_name": "Mathematics",
-        "panel_description": "All areas of mathematics, pure and applied, plus mathematical foundations of computer science, mathematical physics and statistics",
-        "panel_regroupement_code": "PE",
-        "panel_regroupement_name": "Physical Sciences and Engineering"
+        "panel_description": "All areas of mathematics, pure and applied, plus mathematical foundations of computer science, mathematical physics and statistics"
     },
     {
         "panel_code": "PE2",
-        "panel_name": "Fundamental constituents of matter",
-        "panel_description": "Particle, nuclear, plasma, atomic, molecular, gas, and optical physics",
-        "panel_regroupement_code": "PE",
-        "panel_regroupement_name": "Physical Sciences and Engineering"
+        "panel_name": "Fundamental Constituents of Matter",
+        "panel_description": "Particle, nuclear, plasma, atomic, molecular, gas, and optical physics"
     },
     {
         "panel_code": "PE3",
-        "panel_name": "Condensed matter physics",
-		"panel_description": "Structure, electronic properties, fluids, nanosciences, biological physics",
-        "panel_regroupement_code": "PE",
-        "panel_regroupement_name": "Physical Sciences and Engineering"
+        "panel_name": "Condensed Matter Physics",
+        "panel_description": "Structure, electronic properties, fluids, nanosciences, biological physics"
     },
     {
         "panel_code": "PE4",
-        "panel_name": "Physical and analytical chemical sciences",
-        "panel_description": "Analytical chemistry, chemical theory, physical chemistry/chemical physics",
-        "panel_regroupement_code": "PE",
-        "panel_regroupement_name": "Physical Sciences and Engineering"
+        "panel_name": "Physical and Analytical Chemical Sciences",
+        "panel_description": "Analytical chemistry, chemical theory, physical chemistry/chemical physics"
     },
     {
         "panel_code": "PE5",
         "panel_name": "Synthetic Chemistry and Materials",
-        "panel_description": "New materials and new synthetic approaches, structure-properties relations, solid state chemistry, molecular architecture, organic chemistry",
-        "panel_regroupement_code": "PE",
-        "panel_regroupement_name": "Physical Sciences and Engineering"
+        "panel_description": "New materials and new synthetic approaches, structure -properties relations, solid state chemistry, molecular architecture, organic chemistry"
     },
     {
         "panel_code": "PE6",
-        "panel_name": "Computer science and informatics",
-        "panel_description": "Informatics and information systems, computer science, scientific computing, intelligent systems",
-        "panel_regroupement_code": "PE",
-        "panel_regroupement_name": "Physical Sciences and Engineering"
+        "panel_name": "Computer Science and Informatics",
+        "panel_description": "Informatics and information systems, computer science, scientific computing, intelligent systems"
     },
     {
         "panel_code": "PE7",
-        "panel_name": "Systems and communication engineering",
-        "panel_description": "Electrical, electronic, communication, optical and systems engineering",
-        "panel_regroupement_code": "PE",
-        "panel_regroupement_name": "Physical Sciences and Engineering"
+        "panel_name": "Systems and Communication Engineering",
+        "panel_description": "Electrical, electronic, communication, optical and systems engineering"
     },
     {
         "panel_code": "PE8",
-        "panel_name": "Products and processes engineering",
-        "panel_description": "Product and process design, chemical, civil, environmental, mechanical, vehicle engineering, energy processes and relevant computational methods",
-        "panel_regroupement_code": "PE",
-        "panel_regroupement_name": "Physical Sciences and Engineering"
+        "panel_name": "Products and Processes Engineering",
+        "panel_description": "Product and process design, chemical, civil, environmental, mechanical, vehicle engineering, energy processes and relevant computational methods"
     },
     {
         "panel_code": "PE9",
-        "panel_name": "Universe sciences",
-        "panel_description": "Astro-physics/-chemistry/-biology; solar system; planetary systems; stellar, galactic and extragalactic astronomy; cosmology; space sciences; astronomical instrumentation and data",
-        "panel_regroupement_code": "PE",
-        "panel_regroupement_name": "Physical Sciences and Engineering"
+        "panel_name": "Universe Sciences",
+        "panel_description": "Astro -physics/ -chemistry/ -biology; solar system; planetary systems; stellar, galactic and extragalactic astronomy; cosmology; space sciences; astronomical instrumentation and data"
     },
     {
         "panel_code": "PE10",
-        "panel_name": "Earth system science",
-        "panel_description": "Physical geography, geology, geophysics, atmospheric sciences, oceanography, climatology, cryology, ecology, global environmental change, biogeochemical cycles, natural resources management",
-        "panel_regroupement_code": "PE",
-        "panel_regroupement_name": "Physical Sciences and Engineering"
+        "panel_name": "Earth System Science",
+        "panel_description": "Physical geography, geo logy, geophysics, atmospheric sciences, oceanography, climatology, cryology, ecology, global environmental change, biogeochemical cycles, natural resources management"
     },
     {
         "panel_code": "PE11",
         "panel_name": "Materials Engineering",
-        "panel_description": "Advanced materials development: performance enhancement, modelling, large-scale preparation, modification, tailoring, optimisation, novel and combined use of materials, etc.",
-        "panel_regroupement_code": "PE",
-        "panel_regroupement_name": "Physical Sciences and Engineering"
+        "panel_description": "Advanced materials development: performance enhancement, modelling, large -scale preparation, modification, tailoring, optimisation, novel  and combined use of materials, etc."
     },
     {
         "panel_code": "SH",
-        "panel_name": "Social Sciences and Humanities",
-        "panel_regroupement_code": "SH",
-        "panel_regroupement_name": "Social Sciences and Humanities"
+        "panel_name": "Social Sciences and Humanities"
     },
     {
         "panel_code": "SH1",
         "panel_name": "Individuals, Markets and Organisations",
-        "panel_description": "Economics, finance and management",
-        "panel_regroupement_code": "SH",
-        "panel_regroupement_name": "Social Sciences and Humanities"
+        "panel_description": "Economics, finance , management"
     },
     {
         "panel_code": "SH2",
         "panel_name": "Institutions, Governance and Legal Systems",
-        "panel_description": "Political science, international relations, law",
-        "panel_regroupement_code": "SH",
-        "panel_regroupement_name": "Social Sciences and Humanities"
+        "panel_description": "Political science, international relations, law"
     },
     {
         "panel_code": "SH3",
-        "panel_name": "The Social World and Its Diversity",
-        "panel_description": "Sociology, social psychology, social anthropology, education sciences, communication studies",
-        "panel_regroupement_code": "SH",
-        "panel_regroupement_name": "Social Sciences and Humanities"
+        "panel_name": "The Soci al World and Its Interactions",
+        "panel_description": "Sociology, social psychology, education  sciences , communication  studies"
     },
     {
         "panel_code": "SH4",
-        "panel_name": "The Human Mind and Its Complexity",
-        "panel_description": "Cognitive science, psychology, linguistics, theoretical philosophy",
-        "panel_regroupement_code": "SH",
-        "panel_regroupement_name": "Social Sciences and Humanities"
+        "panel_name": "The Human Mind and Its Compl exity",
+        "panel_description": "Cognitive science, psychology, linguistics"
     },
     {
         "panel_code": "SH5",
-        "panel_name": "Cultures and cultural production",
-        "panel_description": "Literary studies, cultural studies, study of the arts, philosophy",
-        "panel_regroupement_code": "SH",
-        "panel_regroupement_name": "Social Sciences and Humanities"
+        "panel_name": "Texts and Concepts",
+        "panel_description": "Literary studies , literature,  philosophy"
     },
     {
         "panel_code": "SH6",
-        "panel_name": "The study of the human past",
-        "panel_description": "Archaeology, history and memory",
-        "panel_regroupement_code": "SH",
-        "panel_regroupement_name": "Social Sciences and Humanities"
+        "panel_name": "The Study of the Human Past",
+        "panel_description": "Archaeology and history"
     },
     {
         "panel_code": "SH7",
         "panel_name": "Human Mobility, Environment, and Space",
-        "panel_description": "Human geography, demography, health, sustainability science, territorial planning, spatial analysis",
-        "panel_regroupement_code": "SH",
-        "panel_regroupement_name": "Social Sciences and Humanities"
+        "panel_description": "Human geography, demography, health, susta inability science, territorial planning, spatial analysis"
+    },
+    {
+        "panel_code": "SH8",
+        "panel_name": "Studies of Cultures and Arts",
+        "panel_description": "Social anthropology, studies of cultur es, stud ies of arts"
     },
     {
         "panel_code": "CHE",

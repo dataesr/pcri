@@ -25,7 +25,7 @@
     "panel_regroupement_name":"Chemistry",
     "panel_code_1":"C1",
     "panel_name_1":"Inorganic Chemistry",
-    "panel_keywords":"NMP Non-Metallic Materials & basic processes"
+    "panel_keywords":"NMP Non-Metallic Materials and basic processes"
   },
   {
     "panel_regroupement_code":"CHE",
@@ -683,7 +683,7 @@
     "panel_regroupement_name":"Economic Sciences",
     "panel_code_1":"E3",
     "panel_name_1":"Management",
-    "panel_keywords":"Organization studies: theory & strategy, industrial organization"
+    "panel_keywords":"Organization studies: theory and strategy, industrial organization"
   },
   {
     "panel_regroupement_code":"ECO",
@@ -718,7 +718,7 @@
     "panel_regroupement_name":"Economic Sciences",
     "panel_code_1":"E4",
     "panel_name_1":"Finance",
-    "panel_keywords":"Financial & Investment management"
+    "panel_keywords":"Financial and Investment management"
   },
   {
     "panel_regroupement_code":"ECO",
@@ -1264,7 +1264,7 @@
     "panel_regroupement_name":"Environmental and Geosciences",
     "panel_code_1":"V2",
     "panel_name_1":"Earth system science",
-    "panel_keywords":"Environment, Pollution & Climate"
+    "panel_keywords":"Environment, Pollution and Climate"
   },
   {
     "panel_regroupement_code":"ENV",
