@@ -43,13 +43,13 @@ def entities_clean(entities_tmp):
         print(f"- End size entities_tmp: {len(entities_tmp)}")
     return entities_tmp
 
-def entities_check_null(entities_tmp):
+def entities_check_null(df):
     print("\n## check entities null")
     for i in ['entities_name', 'entities_id']:
-        if len(entities_tmp[entities_tmp[i].isnull()])>0:
-            print(f"{len(entities_tmp[entities_tmp[i].isnull()])} {i} manquants\n {entities_tmp[entities_tmp[i].isnull()]}") 
+        if len(df[df[i].isnull()])>0:
+            print(f"{len(df[df[i].isnull()])} {i} manquants\n {df[df[i].isnull()]}") 
 
-    test=entities_tmp[['entities_id','entities_name', 'entities_acronym']].drop_duplicates()
+    test=df[['entities_id','entities_name', 'entities_acronym']].drop_duplicates()
     test['nb']=test.groupby(['entities_id','entities_name'], dropna=False)['entities_acronym'].transform('count')
     acro_to_delete=test[test.nb>1].entities_id.unique()
     if acro_to_delete.size>0:
@@ -74,9 +74,10 @@ def entities_info_add(entities_tmp, entities_info, countries):
             'id_secondaire', 'entities_id',  'entities_name', 'entities_acronym', 
             'insee_cat_code', 'insee_cat_name',  'category_agregation',
             'paysage_category', 'entreprise_flag', 
+            'groupe_acronym', 'groupe_id', 'groupe_name',
             'ror_category', 'category_woven', 'source_id', 'sector',  
-            'siret_closeDate', 'cat_an',
-            'groupe_name','groupe_acronym', 'groupe_id', 'groupe_sector']],
+            'activity_code', 'activity_name', 'activity_group_code', 'activity_group_name',
+            'siret_closeDate', 'cat_an']],
         how='left', on=['generalPic', 'country_code_mapping'])
         .drop_duplicates()
         # .drop(columns=['legalName', 'businessName'])
