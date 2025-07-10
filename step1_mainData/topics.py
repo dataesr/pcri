@@ -151,16 +151,18 @@ def topics_divisions(chemin):
 
     # JU-JTI
     spec={
+    'CHIPS':'JU-JTI',
     'JU':'JU-JTI',
     'JTI':'JU-JTI',
     'EUSPA':'EUSPA',
     'SESAR':'JU-JTI'
     }
 
-    top = topics_divisions.loc[(topics_divisions.lvl2Code=='HORIZON.2')&(topics_divisions.topicCode.str.contains('|'.join([*spec]))), ['topicCode']]
+    # certains call n'ont pas JU/JTI dans le libellé
+    top = topics_divisions.loc[(topics_divisions.lvl2Code=='HORIZON.2')&(topics_divisions.topicCode.str.upper().str.contains('|'.join([*spec]))), ['topicCode']]
 
     for k,v in spec.items():
-        top.loc[top.topicCode.str.contains(k), 'thema_code'] = v
+        top.loc[top.topicCode.str.upper().str.contains(k), 'thema_code'] = v
     if any(pd.isna(top.thema_code.unique())):
         print('top_hor2 : thema_code à null après traitement')
 
