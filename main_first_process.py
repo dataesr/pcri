@@ -17,6 +17,7 @@ if UPDATE_PROJECT==True:
 
 #     get_topic_info_europa('HORIZON')
 
+    # panel_lib_update("ERC_panel_structure_2024_calls")
     ################################
 
     ## data load / adjustements*
@@ -84,9 +85,6 @@ if UPDATE_PROJECT==True:
 
     if any(merged.loc[merged.stage=='successful', 'project_id'].value_counts()[merged.loc[merged.stage=='successful', 'project_id'].value_counts()> 1]):
         print(merged.loc[merged.stage=='successful', 'project_id'].value_counts()[merged.loc[merged.stage=='successful', 'project_id'].value_counts()> 1])
-
-    if UPDATE_PROJECT==True:
-        panel_lib_update("ERC_panel_structure_2024_calls")
         
     merged = merged_panels(merged)
     reporting.append({'stage_process':'process6_panels', 'merged_size':len(merged)})
