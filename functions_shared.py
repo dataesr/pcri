@@ -28,6 +28,15 @@ def work_csv(df, file_csv_name):
     name = file_csv_name
     return df.to_csv(f"{PATH_WORK}{name}.csv", sep=';', na_rep='', encoding='utf-8', index=False)
 
+def clean_keyword(keyword):
+    import re
+    # Convertir en minuscules
+    keyword = keyword.lower().replace("&", "and")
+    # Supprimer les caractères spéciaux
+    keyword = re.sub(r'[^a-zA-Z0-9\s]', ' ', keyword)
+    return keyword
+
+
 def website_to_clean(web_var: str):
     import re
     pat=re.compile(r"((((https|http)://)?(www\.)?)([\w\d#@%;$()~_?=&]+\.)+([a-z]{2,3}){1}([\w\d:#@%/;$()~_?\+-=\\\.&]+))")
@@ -141,7 +150,7 @@ def prep_str_col(df, cols):
     from unidecode import unidecode
     from functions_shared import tokenization
 
-    punct="'|–|,|\\.|:|;|\\!|`|=|\\*|\\+|\\-|‑|\\^|_|~|\\[|\\]|\\{|\\}|\\(|\\)|<|>|@|#|\\$"
+    punct=r"'|–|,|\\.|:|;|\\!|`|=|\\*|\\+|\\-|‑|\\^|_|~|\\[|\\]|\\{|\\}|\\(|\\)|<|>|@|#|\\$"
     
     ## caracteres speciaux
     for i in cols:
@@ -155,35 +164,13 @@ def prep_str_col(df, cols):
             df[i] = df[i].str.replace(punct, ' ', regex=True)
             df[i] = df[i].str.replace(r"\n|\t|\r|\xc2|\xa9|\s+", ' ', regex=True).str.strip()
             df[i] = df[i].str.lower().replace('n/a|ndeg', ' ', regex=True).str.strip()
-            df[i] = df[i].str.replace('/', ' ').str.strip()
-            df[i] = df[i].str.replace('\\', ' ').str.strip()
+            df[i] = df[i].str.replace('/', ' ', regex=True).str.strip()
+            df[i] = df[i].str.replace(r"\\", ' ', regex=True).str.strip()
             df[i] = df[i].str.replace('"', ' ').str.strip()
             df[i] = df[i].str.replace(r"\s+", ' ', regex=True).str.strip()
 
     return df
 
-# def stop_word(df, cc_iso3 ,cols_list):
-#     import re, pandas as pd
-#     from functions_shared import tokenization
-    
-#     stop_word=pd.read_json('data_files/stop_word.json')
-
-#     for col_ref in cols_list:
-#         print(f"-col being cleanind: {col_ref}")
-#         df[f'{col_ref}_2'] = df[col_ref].apply(lambda x: tokenization(x))
-#         print("- end tokenization")
-
-#         for i, row in stop_word.iterrows():
-#             if row['iso3']=='ALL':
-#                 w = r"\b"+row['word'].strip()+r"\b"
-#                 df.loc[~df[f'{col_ref}_2'].isnull(), f'{col_ref}_2'] = df.loc[~df[f'{col_ref}_2'].isnull(), f'{col_ref}_2'].apply(lambda x: [re.sub(w, '',  s) for s in x]).apply(lambda x: list(filter(None, x)))
-#                 print("- end all")
-#             else:
-#                 mask = df[cc_iso3]==row['iso3']
-#                 w = r"\b"+row['word'].strip()+r"\b"
-#                 df.loc[mask&(~df[f'{col_ref}_2'].isnull()), f'{col_ref}_2'] = df.loc[mask&(~df[f'{col_ref}_2'].isnull()), f'{col_ref}_2'].apply(lambda x: [re.sub(w, '',  s) for s in x]).apply(lambda x: list(filter(None, x)))
-#                 print("- end country_code")
-#     return df
 
 def stop_word(df, cc_iso3 ,cols_list):
     import pandas as pd
