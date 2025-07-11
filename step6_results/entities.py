@@ -59,7 +59,7 @@ def entities_ods(FP, entities_participation):
     x = (tmp[(tmp.stage=='successful')]
             .drop(columns=['panel_regroupement_code', 'panel_code', 'erc_role', 'fund_ent_erc']))
     x.loc[x.thema_code.isin(['ERC','MSCA']), ['destination_code', 'destination_name_en']] = np.nan
-    x = entreprise_cat_cleaning(x)
+    # x = entreprise_cat_cleaning(x)
     chunk_size = int(math.ceil((x.shape[0] / 2)))
     i=0
     for start in range(0, x.shape[0], chunk_size):
