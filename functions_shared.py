@@ -137,8 +137,6 @@ def entreprise_group_cleaning(df):
     for i in ['groupe_id', 'groupe_name', 'groupe_acronym']:
         if i in df.columns:
             df = df.drop(columns=i)
-    df = df.rename(columns={'insee_cat_code':'entreprise_type_code',
-            'insee_cat_name':'entreprise_type_name'})
     return df
 
 def tokenization(text):
