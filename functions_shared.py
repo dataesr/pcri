@@ -125,13 +125,13 @@ def zipfile_ods(df, file_export):
             df.to_csv(f, sep=';', encoding='utf-8', index=False, na_rep='', decimal=".")
 
 
-def entreprise_cat_cleaning(df):
+def entreprise_group_cleaning(df):
     import numpy as np
     df.loc[(df.entreprise_flag==True)&(~df.groupe_id.isnull()), 'entities_id'] = df.groupe_id
     df.loc[(df.entreprise_flag==True)&(~df.groupe_id.isnull()), 'entities_name'] = df.groupe_name
     if 'groupe_acronym' in df.columns:
-        df.loc[(df.entreprise_flag==True)&(~df.groupe_id.isnull())&(~df.entities_acronym.isnull()), 'entities_acronym'] = df.groupe_acronym
-        df.loc[(df.entreprise_flag==True)&(~df.groupe_id.isnull())&(df.groupe_acronym.isnull()), 'entities_acronym'] = np.nan
+        df.loc[(df.entreprise_flag==True)&(~df.groupe_id.isnull()), 'entities_acronym'] = df.groupe_acronym
+        # df.loc[(df.entreprise_flag==True)&(~df.groupe_id.isnull())&(df.groupe_acronym.isnull()), 'entities_acronym'] = np.nan
     df.loc[(df.entities_id.str.contains('^gent', na=False))&(df.insee_cat_code.isnull()), 'insee_cat_code'] = 'GE'
     df.loc[(df.entities_id.str.contains('^gent', na=False))&(df.insee_cat_name.isnull()), 'insee_cat_name'] = 'Grandes entreprises'
     for i in ['groupe_id', 'groupe_name', 'groupe_acronym']:
