@@ -42,13 +42,15 @@ msca_collab_ods(collaboration)
 msca_collab(collaboration)
 # collab_evolution(collaboration)
 
+#999954183
+
 entities_participation = entities_preparation(entities_part, h20)
 entities_participation.to_pickle(f"{PATH_CLEAN}entities_participation_current.pkl")
 print(f"size entities_participation: {len(entities_participation)}")
 entities_ods('h20', entities_participation)
 entities_ods('horizon', entities_participation)
 
-# entities_participation = entreprise_cat_cleaning(entities_participation)
+# entities_participation = entreprise_group_cleaning(entities_participation)
 (entities_participation.drop(columns=['ecorda_date','action_code2','action_name2',
                 'free_keywords', 'abstract', 'acronym', 'call_deadline', 'topic_name','topic_code'])
     .to_csv(f"{PATH_CONNECT}entities_participation_current.csv", sep=";", 
