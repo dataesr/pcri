@@ -1,6 +1,6 @@
 import pandas as pd, numpy as np, json
 from config_path import PATH_CONNECT
-from functions_shared import entreprise_cat_cleaning, FP_suivi
+from functions_shared import entreprise_group_cleaning, FP_suivi
 
 
 def msca_erc_projects(FP6, FP7, h20, projects, part):
@@ -66,7 +66,7 @@ def msca_erc_projects(FP6, FP7, h20, projects, part):
     msca_erc = msca_erc.assign(is_ejo=np.where(msca_erc.extra_joint_organization.isnull(), 'Sans', 'Avec'))
 
     print(f"size projects_MSCA_ERC with others fp: {len(msca_erc)}")
-    # msca_erc = entreprise_cat_cleaning(msca_erc)
+    # msca_erc = entreprise_group_cleaning(msca_erc)
     (msca_erc.loc[~((msca_erc.framework=='FP7')&(msca_erc.thema_code=='ERC'))].drop(columns=['ecorda_date', 'free_keywords', 'abstract', 'acronym'])
      .to_csv(PATH_CONNECT+"msca_projects_part.csv", index=False, encoding="UTF-8", sep=";", na_rep='', decimal="."))
 
@@ -100,7 +100,7 @@ def msca_erc_ent(entities_participation):
     print("### MSCA /ERC entities")
     me_entities = entities_participation.loc[entities_participation.action_code.isin(['MSCA','ERC'])]
 
-    me_entities = entreprise_cat_cleaning(me_entities)
+    # me_entities = entreprise_group_cleaning(me_entities)
 
     print(f"size msca_entities: {len(me_entities)}")
     me_entities.drop(columns=['ecorda_date', 'free_keywords', 'abstract']).to_csv(PATH_CONNECT+"msca_entities.csv", index=False, encoding="UTF-8", sep=";", na_rep='', decimal=".")
