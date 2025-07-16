@@ -2,8 +2,7 @@ import pandas as pd, numpy as np
 
 def entities_clean(entities_tmp):
     print("### ENTITIES TMP cleaning name")
-    x=(entities_tmp.loc[entities_tmp.entities_name.isnull(), 
-                    ['generalPic', 'legalName', 'businessName', 'entities_id', 'country_code_mapping']]
+    x=(entities_tmp.loc[entities_tmp.entities_name.isnull()]
                     .drop_duplicates())
     print(f"- size entities_tmp without entities_name: {len(x)}")
     if not x.empty:
@@ -19,8 +18,8 @@ def entities_clean(entities_tmp):
         x = (x
             .merge(y[['generalPic', 'entities_id', 'country_code_mapping']], 
             how='outer', on=['generalPic', 'entities_id', 'country_code_mapping'], indicator=True)
-            .query('_merge!="both"').
-            drop(columns='_merge'))
+            .query('_merge!="both"')
+            .drop(columns='_merge'))
         x = pd.concat([x, y], ignore_index=True)
 
         x.loc[x.businessName.str.contains('^\\d+$', na=True), 'businessName'] = np.nan
@@ -36,8 +35,8 @@ def entities_clean(entities_tmp):
         entities_tmp = (entities_tmp
                         .merge(x[['generalPic', 'entities_id', 'country_code_mapping']], 
                                how='outer', on=['generalPic', 'entities_id', 'country_code_mapping'], indicator=True)
-                        .query('_merge!="both"').
-                        drop(columns='_merge'))
+                        .query('_merge!="both"')
+                        .drop(columns='_merge'))
         entities_tmp = pd.concat([entities_tmp, x], ignore_index=True)
     
         print(f"- End size entities_tmp: {len(entities_tmp)}")
