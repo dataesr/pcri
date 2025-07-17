@@ -8,7 +8,7 @@ def collab_base(tab, stage_value:str):
 
     tmp['part_num'] = (tmp[["orderNumber", "generalPic", 'participates_as']]
                                 .apply(lambda row:"-".join(row.values.astype(str)), axis=1))
-    tmp['coord_num'] = (tmp.loc[tmp['role']=='coordinator', ["orderNumber", "generalPic"]]
+    tmp['coord_num'] = (tmp.loc[tmp['role'].str.lower()=='coordinator', ["orderNumber", "generalPic"]]
                                 .apply(lambda row:"-".join(row.values.astype(str)), axis=1))
 
     copy = (tab[(tab['stage']==stage_value)]

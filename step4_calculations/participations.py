@@ -146,7 +146,7 @@ def participations_complete(part_step, proj_no_coord):
     # participation = pd.concat([part_prop, part_proj], ignore_index=True)
 
     print(f"- control role: {part_step.role.unique()}")
-    part_step['coordination_number']=np.where(part_step['role']=='coordinator', 1, 0)
+    part_step['coordination_number']=np.where(part_step['role'].str.lower()=='coordinator', 1, 0)
     part_step.loc[part_step.project_id.isin(proj_no_coord), 'coordination_number'] = 0
     part_step = part_step.assign(with_coord=True)
     part_step.loc[part_step.project_id.isin(proj_no_coord), 'with_coord'] = False
