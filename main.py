@@ -63,6 +63,11 @@ part = synthese_preparation(participation, countries)
 projects_current = projects_participations(projects, part)
 synthese(projects_current)
 
+resume(projects_current)
+pc = evol_preparation(FP6, FP7, h20, projects_current)
+evolution_FP(pc, countries)
+evolution_type(FP6, FP7, h20, projects_current)
+
 calls_current(projects_current, calls)
 calls_all = calls_all(projects)
 
@@ -78,10 +83,7 @@ me_entities = msca_erc_ent(entities_participation)
 msca_entities(me_entities)
 erc_entities(me_entities)
 
-resume(projects_current)
-pc = evol_preparation(FP6, FP7, h20, projects_current)
-evolution_FP(pc, countries)
-evolution_type(FP6, FP7, h20, projects_current)
+
 
 #####################
 # persons

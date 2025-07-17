@@ -118,6 +118,7 @@ else:
     projects = pd.read_pickle(f"{PATH_CLEAN}projects_current.pkl")
     reporting = json.load(open('reporting.json', 'r', encoding='utf-8'))
 
+
 #############################################################
 ##### PARTICIPATIONS
 if UPDATE_PARTICIPANT == True:
@@ -149,7 +150,7 @@ if UPDATE_PARTICIPANT == True:
     acc_folio = unzip_zip(ZIPNAME, f"{PATH_SOURCE}{FRAMEWORK}/", 'proposals_eicFundPortfolio.json', 'utf8')
     acc_folio = pd.DataFrame(acc_folio)
     print(f"size acc_folio: {len(acc_folio)}")
-    acc = (app1.loc[(app1.project_id.isin(acc_folio.proposalNbr.unique()))&(app1.role=='Coordinator'),['project_id', 'role']]
+    acc = (app1.loc[(app1.project_id.isin(acc_folio.proposalNbr.unique()))&(app1.role.str.lower()=='coordinator'),['project_id', 'role']]
         .merge(acc_folio[['proposalNbr','grantRequested']], how='inner', left_on='project_id', right_on='proposalNbr')
         .drop(columns='proposalNbr'))
     print(f"size acc: {len(acc)}")
@@ -273,8 +274,10 @@ reporting.append({'stage_process':'process_ror', 'entities_size':len(entities_tm
 # PAYSAGE
 ### si besoin de charger paysage pickle
 paysage = pd.read_pickle(f"{PATH_REF}paysage_df.pkl")
+
 if UPDATE_PARTICIPANT==True:
     paysage_category = IDpaysage_category(paysage)
+
 paysage_category = pd.read_pickle(f"{PATH_HARVEST}paysage_category.pkl")
 cat_filter = category_paysage(paysage_category)
 entities_tmp = merge_paysage(entities_tmp, paysage, cat_filter)
@@ -306,7 +309,7 @@ entities_tmp = merge_groupe(entities_tmp, groupe)
 reporting.append({'stage_process':'process_groupe', 'entities_size':len(entities_tmp)})
 
 
-#983764495  
+# 983764495 / 878875582
 entities_tmp = entities_clean(entities_tmp)
 entities_check_null(entities_tmp)
 
