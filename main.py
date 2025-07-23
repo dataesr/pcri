@@ -61,9 +61,11 @@ collab_ent = entities_collab(entities_participation)
 
 part = synthese_preparation(participation, countries)
 projects_current = projects_participations(projects, part)
+
 synthese(projects_current)
 
 resume(projects_current)
+
 pc = evol_preparation(FP6, FP7, h20, projects_current)
 evolution_FP(pc, countries)
 evolution_type(FP6, FP7, h20, projects_current)
