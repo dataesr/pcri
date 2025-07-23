@@ -1,5 +1,6 @@
 import pandas as pd, numpy as np, json
 from config_path import PATH_CONNECT
+from functions_shared import zipfile_ods
 
 def evol_preparation(FP6, FP7, h20, projects_current):
     print("### preparation EVOL")
@@ -46,7 +47,8 @@ def evol_preparation(FP6, FP7, h20, projects_current):
 def evolution_FP(pc, countries):
     print("### evolution TAB")
 
-    cc=countries[['countryCode_iso3', 'country_name_fr']].rename(columns={'countryCode_iso3':'country_code'}).drop_duplicates()
+    cc=(countries[['countryCode_iso3', 'country_name_fr', 'country_group_association_code']]
+        .rename(columns={'countryCode_iso3':'country_code', 'country_group_association_code':'asso'}).drop_duplicates())
     
     total=(pc
             .groupby(['framework', 'call_year', 'stage', 'with_coord'], dropna=False)
@@ -100,19 +102,54 @@ def evolution_FP(pc, countries):
         
         _pc=_pc.merge(temp, how='left', on=['framework', 'country_code',  'is_ejo'])
         country.extend(list(_pc[_pc[f'rank_{i}']<11]['country_code'].unique()))
-    country = list(set(country))
-    _pc = _pc[_pc['country_code'].isin(country)]
 
-    _pc = pd.concat([_pc, total, _pc_ue, _pc1_ue], ignore_index=True)
 
-    # creation de plusieurs niveaux de periode
-    _pc['mixte_periode_H']=np.where(_pc['framework'].isin(['FP6', 'FP7']), _pc['framework'], _pc['call_year'])
-    _pc['mixte_periode_HE']=np.where(_pc['framework'].isin(['FP6', 'FP7', 'Horizon 2020']), _pc['framework'], _pc['call_year'])
+    for extract in ['member', '_topten']:
+        if extract=='member':
+            tmp=_pc.loc[_pc.is_ejo=='Avec'].merge(cc[cc.asso=='MEMBER-ASSOCIATED'], how='inner', on='country_code')
+            tmp = pd.concat([tmp, total, _pc1_ue], ignore_index=True)
+            tmp.loc[tmp.country_code=='UE', 'country_name_fr'] = 'Etats membres & associés'
+            tmp.loc[tmp.country_code=='ALL', 'country_name_fr'] = 'Tous pays'
 
-    _pc = _pc.merge(cc, how='left', on='country_code')
-    _pc.loc[_pc.country_code=='UE', 'country_name_fr'] = 'Etats membres & associés'
+            tmp=(tmp.groupby(['call_year', 'framework','country_name_fr', 'country_code', 'stage'], dropna=False)
+            .agg({'project_id':'nunique', 'number_involved':'sum', 'coordination_number':'sum', 'funding':'sum', 'project_number':'sum'})
+            .reset_index())
+            tmp.loc[tmp.project_id>0, 'project_number'] = tmp.loc[tmp.project_id>0].project_id
 
-    _pc.to_csv(PATH_CONNECT+"all_FW_resume.csv", index=False, encoding="UTF-8", sep=";", na_rep='', decimal=".")
+
+            all_data = tmp[tmp['country_code'] == 'ALL']
+
+            # Créer un dictionnaire pour stocker les valeurs pour "ALL"
+            all_values = {
+                'number_involved': dict(zip(all_data['call_year'], all_data['number_involved'])),
+                'coordination_number': dict(zip(all_data['call_year'], all_data['coordination_number'])),
+                'funding': dict(zip(all_data['call_year'], all_data['funding'])),
+                'project_number': dict(zip(all_data['call_year'], all_data['project_number']))
+            }
+
+            # Calculer la part pour chaque colonne
+            for column in ['number_involved', 'coordination_number', 'funding', 'project_number']:
+                tmp[f'share_{column}'] = tmp.apply(
+                    lambda row: row[column] / all_values[column][row['call_year']], axis=1
+                )
+
+            zipfile_ods(tmp.drop(columns='project_id').sort_values(['funding'], ascending=False), "fr-esr-countries-evolution-pcri")
+
+        if extract=='_topten':
+
+            _pc = _pc.merge(cc.drop(columns='asso'), how='left', on='country_code')
+            _pc.loc[_pc.country_code=='UE', 'country_name_fr'] = 'Etats membres & associés'
+
+            _pc = pd.concat([_pc, total, _pc_ue, _pc1_ue], ignore_index=True)
+
+            country = list(set(country))
+            _pc = _pc[_pc['country_code'].isin(country)]
+
+            # creation de plusieurs niveaux de periode
+            _pc['mixte_periode_H']=np.where(_pc['framework'].isin(['FP6', 'FP7']), _pc['framework'], _pc['call_year'])
+            _pc['mixte_periode_HE']=np.where(_pc['framework'].isin(['FP6', 'FP7', 'Horizon 2020']), _pc['framework'], _pc['call_year'])
+
+            _pc.to_csv(PATH_CONNECT+"all_FW_resume.csv", index=False, encoding="UTF-8", sep=";", na_rep='', decimal=".")
 
 
 def evolution_type(FP6, FP7, h20, projects_current):
