@@ -119,18 +119,17 @@ def evolution_FP(pc, countries):
 
             all_data = tmp[tmp['country_code'] == 'ALL']
 
-            # Créer un dictionnaire pour stocker les valeurs pour "ALL"
             all_values = {
-                'number_involved': dict(zip(all_data['call_year'], all_data['number_involved'])),
-                'coordination_number': dict(zip(all_data['call_year'], all_data['coordination_number'])),
-                'funding': dict(zip(all_data['call_year'], all_data['funding'])),
-                'project_number': dict(zip(all_data['call_year'], all_data['project_number']))
+                'number_involved': dict(zip(zip(all_data['call_year'], all_data['stage']), all_data['number_involved'])),
+                'coordination_number': dict(zip(zip(all_data['call_year'], all_data['stage']), all_data['coordination_number'])),
+                'funding': dict(zip(zip(all_data['call_year'], all_data['stage']), all_data['funding'])),
+                'project_number': dict(zip(zip(all_data['call_year'], all_data['stage']), all_data['project_number']))
             }
 
             # Calculer la part pour chaque colonne
             for column in ['number_involved', 'coordination_number', 'funding', 'project_number']:
                 tmp[f'share_{column}'] = tmp.apply(
-                    lambda row: row[column] / all_values[column][row['call_year']], axis=1
+                    lambda row: row[column] / all_values[column][(row['call_year'], row['stage'])], axis=1
                 )
 
             zipfile_ods(tmp.drop(columns='project_id').sort_values(['funding'], ascending=False), "fr-esr-countries-evolution-pcri")
