@@ -59,6 +59,7 @@ entities_ods('horizon', entities_participation)
 
 collab_ent = entities_collab(entities_participation)
 
+#############################
 part = synthese_preparation(participation, countries)
 projects_current = projects_participations(projects, part)
 
