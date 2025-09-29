@@ -1,25 +1,38 @@
+def get_only_new_persons(df, PATH_PERSONS):
+    from functions_shared import last_file_into_folder_by_pat
+    import re, pandas as pd
 
-def persons_files_import(thema, PATH_PERSONS):
-    import re, os, pickle
-    fname=''.join([filename for filename in os.listdir(PATH_PERSONS) if thema in filename])
-    print(fname)
+    pat = re.compile(r'^persons_\d+')
+    path_file=last_file_into_folder_by_pat(PATH_PERSONS, pat, 'pkl')
 
-    if fname:
-        with open(f"{PATH_PERSONS}{fname}", 'rb') as f:
-            return pickle.load(f)
+    old_res = pd.read_pickle(path_file)
 
-    if fname == []:
-        fmax=max(int(os.path.splitext(filename)[0].split('_')[-1]) for filename in os.listdir(PATH_PERSONS) if re.search(r"persons_authors_[0-9]+",filename))
-        if fmax:
-            with open(f"{PATH_PERSONS}persons_authors_{fmax}.pkl", 'rb') as f:
-                return pickle.load(f)
+    df=(df.merge(old_res[['display_name', 'institution_country']].drop_duplicates(), 
+            how='left', 
+            left_on=['contact2', 'country_code'], 
+            right_on=['display_name', 'institution_country'], 
+            indicator=True).query('_merge=="left_only"')
+            .drop(columns=['display_name', 'institution_country', '_merge']))
+    return df
 
 
 def affiliations(df, PATH_PERSONS, CSV_DATE):
-    import pandas as pd, pickle
+    import pandas as pd, pickle, re
     from api_process.openalex import harvest_openalex
-    
+    from functions_shared import remove_file_by_pattern
+
+    # remove files 'persons_authors_' suivi de chiffres
+    pat = re.compile(r'^persons_authors_\d+')
+    remove_file_by_pattern(PATH_PERSONS, pat)
+
     ### search persons into openalex
+    em=df.loc[df.thema_code.isin(['ERC', 'MSCA']), ['contact2', 'orcid_id']].drop_duplicates().reset_index(drop=True)
+    print(f"size erc_msca: {len(em)}")
+    # erc_msca=erc_msca[:2]
+    erc_msca=harvest_openalex(em, iso2=False)
+    with open(f'{PATH_PERSONS}persons_authors_erc_{CSV_DATE}.pkl', 'wb') as f:
+        pickle.dump(erc_msca, f)
+
     #masia odile
     oth=df.loc[~df.thema_code.isin(['ERC', 'MSCA']), ['contact2', 'orcid_id', 'iso2']].drop_duplicates().reset_index(drop=True)
     print(f"size tmp1: {len(oth)}")
@@ -28,12 +41,24 @@ def affiliations(df, PATH_PERSONS, CSV_DATE):
     with open(f'{PATH_PERSONS}persons_authors_other_{CSV_DATE}.pkl', 'wb') as f:
         pickle.dump(other, f)
 
-    em=df.loc[df.thema_code.isin(['ERC', 'MSCA']), ['contact2', 'orcid_id']].drop_duplicates().reset_index(drop=True)
-    print(f"size erc_msca: {len(em)}")
-    # erc_msca=erc_msca[:2]
-    erc_msca=harvest_openalex(em, iso2=False)
-    with open(f'{PATH_PERSONS}persons_authors_erc_{CSV_DATE}.pkl', 'wb') as f:
-        pickle.dump(erc_msca, f)
+
+
+def persons_files_import(thema, PATH_PERSONS):
+    import re, os, pickle
+
+    fname=''.join([filename for filename in os.listdir(PATH_PERSONS) if thema in filename])
+    print(fname)
+
+    try:
+        with open(f"{PATH_PERSONS}{fname}", 'rb') as f:
+            return pickle.load(f)
+
+    except:
+        fmax=max(int(os.path.splitext(filename)[0].split('_')[-1]) for filename in os.listdir(PATH_PERSONS) if re.search(r"persons_authors_[0-9]+",filename))
+        if fmax:
+            with open(f"{PATH_PERSONS}persons_authors_{fmax}.pkl", 'rb') as f:
+                return pickle.load(f)
+
 
 def persons_api_simplify(df):
     pers = [] 

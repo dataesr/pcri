@@ -57,7 +57,44 @@ entities_ods('horizon', entities_participation)
             index=False, encoding='UTF-8', na_rep='', decimal='.'))
 
 
-collab_ent = entities_collab(entities_participation)
+entities_collab(entities_participation, tab=True)
+# collab_ent = entities_collab(entities_participation, tab=False)
+
+# df=collab_ent.loc[(collab_ent.framework=='Horizon Europe')&(collab_ent.stage=='successful')]
+# df=df.loc[(df.country_code=='FRA')&(df.country_code_collab!='FRA'), 
+#         ['call_year', 'project_id', 'action_code',
+#        'programme_name_fr', 'thema_code', 'thema_name_fr', 'destination_code',
+#        'entities_id', 'entities_name', 'entities_acronym', 
+#        'entities_id_collab', 'entities_name_collab', 'entities_acronym_collab', 
+#        'country_code_collab', 'country_name_fr_collab']]
+# df['entities_fr'] = np.where(df.entities_acronym.isnull(), df.entities_name, df.entities_acronym)
+
+# project_count = (
+#     df.groupby(['entities_id_collab', 'country_code_collab'])['project_id']
+#     .nunique()
+#     .reset_index()
+#     .rename(columns={'project_id': 'project_count'})
+# )
+
+# # 2. Trier par ordre décroissant du nombre unique de project_id
+# project_count = project_count.sort_values(by='project_count', ascending=False)
+
+# grouped = df.groupby([
+#     'entities_id_collab',
+#     'entities_name_collab',
+#     'country_code_collab',
+#     'country_name_fr_collab',
+#     'entities_id',
+#     'entities_fr',
+#     'call_year'
+# ])['project_id'].nunique().unstack(fill_value=0)
+
+# # 2. Calculer le total par groupe d'index
+# grouped['total'] = grouped.sum(axis=1)
+
+# result = grouped.reset_index().merge(project_count, how='left', on=['entities_id_collab', 'country_code_collab'])
+
+
 
 #############################
 part = synthese_preparation(participation, countries)
@@ -86,7 +123,9 @@ me_entities = msca_erc_ent(entities_participation)
 msca_entities(me_entities)
 erc_entities(me_entities)
 
+#####################
 
+scanr_update(entities_participation)
 
 #####################
 # persons

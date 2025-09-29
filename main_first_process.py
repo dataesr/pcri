@@ -107,6 +107,8 @@ if UPDATE_PROJECT==True:
 
     calls = calls_to_check(calls, call_id)
 
+    # add script -> contrôler et remplir les variables null dans successful et pas dans proposals comme abstrcat
+
     projects = projects_complete_cleaned(merged, extractDate)
     reporting.extend([{'stage_process':'process10_projects_all', 'merged_size':len(projects)},
     {'stage_process':'process10_projects_all', 'project_size':len(projects[projects.stage=='successful'])},

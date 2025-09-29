@@ -6,6 +6,7 @@ def persons_preparation(csv_date):
     from constant_vars import FRAMEWORK
     from config_path import PATH_SOURCE, PATH_CLEAN
     from functions_shared import unzip_zip, my_country_code, country_iso_shift, prop_string
+    
 
     ###############################
     participation = pd.read_pickle(f"{PATH_CLEAN}participation_current.pkl")
@@ -302,6 +303,10 @@ def persons_preparation(csv_date):
     # fill missing value with other df part/app
     print(f"\n### GENDER/TITLE missing")
     def gender_title_missing(part, app):
+        import json
+        from api_process.gender_determine import gender_by_first_name
+        from functions_shared import work_csv
+
         cl=['gender', 'title_clean']
         for i in cl:
             tab=(part.loc[~part[i].isnull(), ['project_id', 'contact', i]].drop_duplicates()
@@ -321,9 +326,36 @@ def persons_preparation(csv_date):
             app.loc[app[i].isnull(), i] = app.loc[app[i].isnull(), f"{i}_y"]
             app.drop(columns=f"{i}_y", inplace=True)
 
+
+        gender_f=json.load(open('data_files/gender_fixed.json'))
+        mapping = {
+            item['first_name']: item['gender']
+            for item in gender_f
+        }
+
+        def update_gender(row):
+            first_name = row['first_name']
+            current_gender = row['gender']
+
+            # Vérifie si le prénom existe dans le mapping et si le genre actuel est invalide
+            if pd.notna(first_name) and first_name.lower() in mapping:
+                if pd.isna(current_gender):
+                    return mapping[first_name.lower()]
+            return current_gender
+
+            # Applique la fonction au DataFrame
+        part['gender'] = part.apply(update_gender, axis=1)
+        app['gender'] = app.apply(update_gender, axis=1)
+
+        l=list(set(list(part.loc[(part.country_code=='FRA')&(part.gender.isnull())].first_name.unique())+list(app.loc[(app.country_code=='FRA')&(app.gender.isnull())].first_name.unique())))
+        # l=part.loc[(part.country_code=='FRA')&(part.gender.isnull())].first_name.unique()
+        print(f"- size first_name list: {len(l)}")
+        res=gender_by_first_name(l)
+        work_csv(pd.DataFrame(res), 'gender_part')
         return part, app
 
     perso_part, perso_app = gender_title_missing(perso_part, perso_app)
+
 
     print(f"\n### EXPORT final datasets")
     (perso_part[['project_id', 'generalPic', 'role', 'first_name', 'last_name',
