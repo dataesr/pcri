@@ -6,13 +6,14 @@ def entities_clean(entities_tmp):
                     .drop_duplicates())
     print(f"- size entities_tmp without entities_name: {len(x)}")
     if not x.empty:
-        if any(x.loc[(x.legalName.str.contains("\\00",  na=True))]):
-            print(f"legalName contains car spec: {x.loc[(x.legalName.str.contains("\\00",  na=True))].legalName}")
+        p=r'\\00'
+        if any(x.loc[(x.legalName.str.contains(p, na=True))]):
+            print(f"legalName contains car spec: {x.loc[(x.legalName.str.contains(p, na=True))].legalName}")
 
         y=x.loc[(x.businessName.str.contains("00",  na=True))]
         for i, row in y.iterrows():
             try:
-                y.at[i, 'businessName'] = row.businessName.replace("\\", "\\u").encode().decode('unicode_escape')
+                y.at[i, 'businessName'] = row.businessName.replace('\\', '\\u').encode().decode('unicode_escape')
             except:
                 y.at[i, 'businessName'] = np.nan
         x = (x
@@ -22,7 +23,7 @@ def entities_clean(entities_tmp):
             .drop(columns='_merge'))
         x = pd.concat([x, y], ignore_index=True)
 
-        x.loc[x.businessName.str.contains('^\\d+$', na=True), 'businessName'] = np.nan
+        x.loc[x.businessName.str.contains(r'^\\d+$', na=True), 'businessName'] = np.nan
         x.loc[x.legalName.str.lower()==x.businessName.str.lower(), 'businessName'] = np.nan
 
         # liste=['legalName', 'businessName']

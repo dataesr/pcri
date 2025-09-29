@@ -56,7 +56,7 @@ def projects_participations(projects, part):
     projects_current=projects[['project_id', 'total_cost', 'start_date', 'end_date',  'call_deadline',
                 'duration',  'call_id', 'call_year', 'stage', 'status_code', 'topic_code', 'topic_name',
                 'pilier_name_en', 'pilier_name_fr', 'programme_code', 'programme_name_en', 'programme_name_fr', 
-                'thema_code', 'thema_name_fr', 'thema_name_en', 
+                'thema_code', 'thema_name_fr', 'thema_name_en', 'pilier_code',
                 'destination_code', 'destination_name_en', 'destination_lib',
                 'destination_detail_code', 'destination_detail_name_en',
                 'action_code', 'action_name', 'action_code2', 'action_name2', 'ecorda_date']].drop_duplicates()
@@ -71,7 +71,7 @@ def projects_participations(projects, part):
     print(f"size: {len(projects_current)}, fund_signed: {'{:,.1f}'.format(projects_current.loc[(projects_current.stage=='successful')&(projects_current.country_code=='FRA')].calculated_fund.sum())}, participant_signed: {'{:,.1f}'.format(projects_current.loc[(projects_current.stage=='successful')&(projects_current.country_code=='FRA'),'number_involved'].sum())}")
 
     (pd.DataFrame(projects_current)
-    .drop(columns=['topic_name','ecorda_date'])
+    .drop(columns=['topic_name','ecorda_date','pilier_code', 'programme_code'])
     .to_csv(f"{PATH_CONNECT}projects_participations_current.csv", index=False, encoding="UTF-8", sep=";", na_rep=''))
 
     return projects_current
@@ -87,7 +87,8 @@ def synthese(projects_current):
         'role', 'pilier_name_fr',  'calculated_fund', 'coordination_number', 'number_involved','project_id', 
         'country_group_association_name_fr','country_group_association_name_en', 
         'country_name_en', 'country_code', 'country_group_association_code', 'with_coord',
-        'pilier_name_en','programme_name_en','thema_name_en','stage', 'status_code', 'ecorda_date'
+        'pilier_name_en','programme_name_en','thema_name_en','stage', 'status_code', 'pilier_code', 'programme_code',
+        'ecorda_date'
         ]]
             .rename(columns={ 
             'action_code':'action_id', 

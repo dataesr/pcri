@@ -1,12 +1,12 @@
 import pandas as pd, pickle, numpy as np, warnings, time, os
 warnings.filterwarnings("ignore", "FutureWarning: Setting an item of incompatible dtype is deprecated and will raise an error in a future version of pandas")
 pd.options.mode.copy_on_write = True
-from config_path import PATH_CLEAN, PATH_HARVEST
+from config_path import PATH_CLEAN, PATH_HARVEST, PATH_WORK
 from functions_shared import chunkify, work_csv
 from step7_persons.prep_persons import persons_preparation
-from step7_persons.affiliations import affiliations, persons_files_import, persons_api_simplify, persons_results_clean
+from step7_persons.affiliations import affiliations, persons_files_import, persons_api_simplify, persons_results_clean, get_only_new_persons
 PATH_PERSONS=f"{PATH_HARVEST}persons/"
-CSV_DATE='20250516'
+CSV_DATE='20250715'
 
 #######
 persons_preparation(CSV_DATE)
@@ -29,7 +29,15 @@ df=pp.loc[mask, lvar].sort_values(['country_code','orcid_id'], ascending=False).
 print(f"size pp: {len(df)}, info sur pp with orcid: {len(df.loc[df.orcid_id.isnull()])}")
 
 #############
+df=get_only_new_persons(df, PATH_PERSONS)
 # request OPENALEX
+affiliations(df, PATH_PERSONS, CSV_DATE)
+
+#prob limite requete
+oth=persons_files_import('other', PATH_PERSONS)
+oth=pd.json_normalize(oth)[['display_name']].drop_duplicates()
+oth['contact2'] = oth['display_name'].str.lower()
+df=df.merge(oth, how='left', on='contact2', indicator=True).query('_merge=="left_only"').drop(columns=['_merge', 'display_name'])
 affiliations(df, PATH_PERSONS, CSV_DATE)
 ######################################################################
 
@@ -45,10 +53,13 @@ em=persons_results_clean(em)
 result=pd.concat([oth, em], ignore_index=True)
 result=result[~result.astype(str).duplicated()]
 
+
+##### ATTENTION peut être sauve result###################
+
 #######################################################################
 
 ## provisoire
-result=pd.read_pickle(f"{PATH_PERSONS}persons_{CSV_DATE}.pkl")
+# result=pd.read_pickle(f"{PATH_PERSONS}persons_{CSV_DATE}.pkl")
 ######################################################################
 
 # merge match orcid

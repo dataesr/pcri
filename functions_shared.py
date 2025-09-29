@@ -373,3 +373,29 @@ def FP_suivi(df):
         
     return df
 
+
+def remove_file_by_pattern(path_folder, pat):
+    import os   
+
+    # Parcourir tous les fichiers dans le dossier
+    for fichier in os.listdir(path_folder):
+        # Vérifier si le fichier correspond au motif
+        if pat.match(fichier):
+            chemin_complet = os.path.join(path_folder, fichier)
+            try:
+                # Supprimer le fichier
+                os.remove(chemin_complet)
+                print(f"Fichier supprimé : {chemin_complet}")
+            except Exception as e:
+                print(f"Erreur lors de la suppression de {chemin_complet}: {e}")
+
+def last_file_into_folder_by_pat(path, pat, extension):
+    import os
+    files_list = [f for f in os.listdir(path) if pat.search(f) and f.endswith(f'.{extension}')]
+
+    # Trouver le fichier le plus récent
+    latest_file = max(files_list, key=lambda f: os.path.getmtime(os.path.join(path, f)))
+
+    # Chemin complet vers le fichier le plus récent
+    print(f"Le fichier {extension} le plus récent est : {os.path.join(path, latest_file)}")
+    return os.path.join(path, latest_file)
