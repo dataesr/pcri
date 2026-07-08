@@ -3,7 +3,7 @@ from config_path import PATH_SOURCE, PATH_CLEAN, PATH
 from step3_entities.references import *
 from step3_entities.merge_referentiels import *
 from step3_entities.categories import *
-from step3_entities.ID_getSourceRef import *
+from remote_process.ID_getSourceRef import *
 from step5_frameworks.functions_shared import *
 
 def FP7_process():

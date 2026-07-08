@@ -70,7 +70,8 @@ def sirene_get_headers(key, secret):
                      token.get('expire_date', "1998-07-12"), "%Y-%m-%d")
             if last_token and (expire_date > datetime.datetime.today()):
                  return last_token
-            return get_new_token(key, secret)
+            else:
+                return get_new_token(key, secret)
     
     
 

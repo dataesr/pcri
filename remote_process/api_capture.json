@@ -1,0 +1,3768 @@
+{
+  "search_url": "https://api.tech.ec.europa.eu/search-api/prod/rest/search?apiKey=SEDIA&text=***&pageSize=50&pageNumber=1",
+  "method": "POST",
+  "request_headers": {
+    "sec-ch-ua-platform": "\"Windows\"",
+    "cache-control": "No-Cache",
+    "referer": "https://ec.europa.eu/",
+    "sec-ch-ua": "\"Chromium\";v=\"145\", \"Not:A-Brand\";v=\"99\"",
+    "sec-ch-ua-mobile": "?0",
+    "x-requested-with": "XMLHttpRequest",
+    "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36",
+    "accept": "application/json, text/plain, */*",
+    "content-type": "multipart/form-data; boundary=----WebKitFormBoundaryBP8YPbq2kBdbcUPK"
+  },
+  "post_data": null,
+  "response_sample": {
+    "apiVersion": "2.144",
+    "terms": "***",
+    "responseTime": 46,
+    "totalResults": 4065,
+    "pageNumber": 1,
+    "pageSize": 50,
+    "sort": "[startDate:DESC]",
+    "groupByField": "sortStatus",
+    "queryLanguage": {
+      "language": "en",
+      "probability": 0.0
+    },
+    "spellingSuggestion": null,
+    "bestBets": [],
+    "results": [
+      {
+        "apiVersion": "2.144",
+        "reference": "50129926TOPICSen",
+        "url": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-CL5-2027-07-D3-27",
+        "title": null,
+        "contentType": "text/plain",
+        "language": "en",
+        "databaseLabel": "SEDIA",
+        "database": "SEDIA",
+        "summary": "Integrated Approaches for Retrofitting Infrastructures with Innovative Energy Storage Technologies",
+        "weight": 0.0,
+        "groupById": null,
+        "content": "Integrated Approaches for Retrofitting Infrastructures with Innovative Energy Storage Technologies",
+        "accessRestriction": false,
+        "pages": null,
+        "checksum": null,
+        "metadata": {
+          "identifier": [
+            "HORIZON-CL5-2027-07-D3-27"
+          ],
+          "es_ContentType": [
+            "text/plain"
+          ],
+          "es_SortDate": [
+            "2027-08-04T00:00:00.000+0000"
+          ],
+          "deadlineDate": [
+            "2027-12-01T00:00:00.000+0000"
+          ],
+          "language": [
+            "en"
+          ],
+          "title": [
+            "Integrated Approaches for Retrofitting Infrastructures with Innovative Energy Storage Technologies"
+          ],
+          "type": [
+            "1"
+          ],
+          "url": [
+            "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-CL5-2027-07-D3-27"
+          ],
+          "typesOfAction": [
+            "HORIZON Innovation Actions"
+          ],
+          "esST_URL": [
+            "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-CL5-2027-07-D3-27"
+          ],
+          "callccm2Id": [
+            "50161357"
+          ],
+          "DATASOURCE": [
+            "SEDIA"
+          ],
+          "REFERENCE": [
+            "50129926TOPICSen"
+          ],
+          "frameworkProgramme": [
+            "43108390"
+          ],
+          "startDate": [
+            "2027-08-04T00:00:00.000+0000"
+          ],
+          "deadlineModel": [
+            "single-stage"
+          ],
+          "status": [
+            "31094501"
+          ]
+        },
+        "enrichedMetadata": {},
+        "children": [],
+        "highlightedFragments": []
+      },
+      {
+        "apiVersion": "2.144",
+        "reference": "50129464TOPICSen",
+        "url": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-CL5-2027-07-D3-11",
+        "title": null,
+        "contentType": "text/plain",
+        "language": "en",
+        "databaseLabel": "SEDIA",
+        "database": "SEDIA",
+        "summary": "Demonstration of hydropower technologies for efficient and forward-looking refurbishment of existing hydropower plants",
+        "weight": 0.0,
+        "groupById": null,
+        "content": "Demonstration of hydropower technologies for efficient and forward-looking refurbishment of existing hydropower plants",
+        "accessRestriction": false,
+        "pages": null,
+        "checksum": null,
+        "metadata": {
+          "identifier": [
+            "HORIZON-CL5-2027-07-D3-11"
+          ],
+          "es_ContentType": [
+            "text/plain"
+          ],
+          "es_SortDate": [
+            "2027-08-04T00:00:00.000+0000"
+          ],
+          "deadlineDate": [
+            "2027-12-01T00:00:00.000+0000"
+          ],
+          "language": [
+            "en"
+          ],
+          "title": [
+            "Demonstration of hydropower technologies for efficient and forward-looking refurbishment of existing hydropower plants"
+          ],
+          "type": [
+            "1"
+          ],
+          "url": [
+            "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-CL5-2027-07-D3-11"
+          ],
+          "typesOfAction": [
+            "HORIZON Innovation Actions"
+          ],
+          "esST_URL": [
+            "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-CL5-2027-07-D3-11"
+          ],
+          "callccm2Id": [
+            "50161357"
+          ],
+          "DATASOURCE": [
+            "SEDIA"
+          ],
+          "REFERENCE": [
+            "50129464TOPICSen"
+          ],
+          "frameworkProgramme": [
+            "43108390"
+          ],
+          "startDate": [
+            "2027-08-04T00:00:00.000+0000"
+          ],
+          "deadlineModel": [
+            "single-stage"
+          ],
+          "status": [
+            "31094501"
+          ]
+        },
+        "enrichedMetadata": {},
+        "children": [],
+        "highlightedFragments": []
+      },
+      {
+        "apiVersion": "2.144",
+        "reference": "50129698TOPICSen",
+        "url": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-CL5-2027-07-D3-16",
+        "title": null,
+        "contentType": "text/plain",
+        "language": "en",
+        "databaseLabel": "SEDIA",
+        "database": "SEDIA",
+        "summary": "Industrial processes and equipment for innovative, reliable and scalable tandem technologies (EUPI-PV Partnership)",
+        "weight": 0.0,
+        "groupById": null,
+        "content": "Industrial processes and equipment for innovative, reliable and scalable tandem technologies (EUPI-PV Partnership)",
+        "accessRestriction": false,
+        "pages": null,
+        "checksum": null,
+        "metadata": {
+          "identifier": [
+            "HORIZON-CL5-2027-07-D3-16"
+          ],
+          "es_ContentType": [
+            "text/plain"
+          ],
+          "es_SortDate": [
+            "2027-08-04T00:00:00.000+0000"
+          ],
+          "deadlineDate": [
+            "2027-12-01T00:00:00.000+0000"
+          ],
+          "language": [
+            "en"
+          ],
+          "title": [
+            "Industrial processes and equipment for innovative, reliable and scalable tandem technologies (EUPI-PV Partnership)"
+          ],
+          "type": [
+            "1"
+          ],
+          "url": [
+            "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-CL5-2027-07-D3-16"
+          ],
+          "typesOfAction": [
+            "HORIZON Innovation Actions"
+          ],
+          "esST_URL": [
+            "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-CL5-2027-07-D3-16"
+          ],
+          "callccm2Id": [
+            "50161357"
+          ],
+          "DATASOURCE": [
+            "SEDIA"
+          ],
+          "REFERENCE": [
+            "50129698TOPICSen"
+          ],
+          "frameworkProgramme": [
+            "43108390"
+          ],
+          "startDate": [
+            "2027-08-04T00:00:00.000+0000"
+          ],
+          "deadlineModel": [
+            "single-stage"
+          ],
+          "status": [
+            "31094501"
+          ]
+        },
+        "enrichedMetadata": {},
+        "children": [],
+        "highlightedFragments": []
+      },
+      {
+        "apiVersion": "2.144",
+        "reference": "50129948TOPICSen",
+        "url": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-CL5-2027-07-D3-28",
+        "title": null,
+        "contentType": "text/plain",
+        "language": "en",
+        "databaseLabel": "SEDIA",
+        "database": "SEDIA",
+        "summary": "Community of practice - Data-Driven Decision-Making in Energy",
+        "weight": 0.0,
+        "groupById": null,
+        "content": "Community of practice - Data-Driven Decision-Making in Energy",
+        "accessRestriction": false,
+        "pages": null,
+        "checksum": null,
+        "metadata": {
+          "identifier": [
+            "HORIZON-CL5-2027-07-D3-28"
+          ],
+          "es_ContentType": [
+            "text/plain"
+          ],
+          "es_SortDate": [
+            "2027-08-04T00:00:00.000+0000"
+          ],
+          "deadlineDate": [
+            "2027-12-01T00:00:00.000+0000"
+          ],
+          "language": [
+            "en"
+          ],
+          "title": [
+            "Community of practice - Data-Driven Decision-Making in Energy"
+          ],
+          "type": [
+            "1"
+          ],
+          "url": [
+            "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-CL5-2027-07-D3-28"
+          ],
+          "typesOfAction": [
+            "HORIZON Coordination and Support Actions"
+          ],
+          "esST_URL": [
+            "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-CL5-2027-07-D3-28"
+          ],
+          "callccm2Id": [
+            "50161357"
+          ],
+          "DATASOURCE": [
+            "SEDIA"
+          ],
+          "REFERENCE": [
+            "50129948TOPICSen"
+          ],
+          "frameworkProgramme": [
+            "43108390"
+          ],
+          "startDate": [
+            "2027-08-04T00:00:00.000+0000"
+          ],
+          "deadlineModel": [
+            "single-stage"
+          ],
+          "status": [
+            "31094501"
+          ]
+        },
+        "enrichedMetadata": {},
+        "children": [],
+        "highlightedFragments": []
+      },
+      {
+        "apiVersion": "2.144",
+        "reference": "50129793TOPICSen",
+        "url": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-CL5-2027-07-D3-17",
+        "title": null,
+        "contentType": "text/plain",
+        "language": "en",
+        "databaseLabel": "SEDIA",
+        "database": "SEDIA",
+        "summary": "PV based electrification of the economy: Designing &amp; optimising PV systems supporting industrial electrification and promoting participation in electricity markets (EUPI-PV Partnership)",
+        "weight": 0.0,
+        "groupById": null,
+        "content": "PV based electrification of the economy: Designing &amp; optimising PV systems supporting industrial electrification and promoting participation in electricity markets (EUPI-PV Partnership)",
+        "accessRestriction": false,
+        "pages": null,
+        "checksum": null,
+        "metadata": {
+          "identifier": [
+            "HORIZON-CL5-2027-07-D3-17"
+          ],
+          "es_ContentType": [
+            "text/plain"
+          ],
+          "es_SortDate": [
+            "2027-08-04T00:00:00.000+0000"
+          ],
+          "deadlineDate": [
+            "2027-12-01T00:00:00.000+0000"
+          ],
+          "language": [
+            "en"
+          ],
+          "title": [
+            "PV based electrification of the economy: Designing & optimising PV systems supporting industrial electrification and promoting participation in electricity markets (EUPI-PV Partnership)"
+          ],
+          "type": [
+            "1"
+          ],
+          "url": [
+            "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-CL5-2027-07-D3-17"
+          ],
+          "typesOfAction": [
+            "HORIZON Innovation Actions"
+          ],
+          "esST_URL": [
+            "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-CL5-2027-07-D3-17"
+          ],
+          "callccm2Id": [
+            "50161357"
+          ],
+          "DATASOURCE": [
+            "SEDIA"
+          ],
+          "REFERENCE": [
+            "50129793TOPICSen"
+          ],
+          "frameworkProgramme": [
+            "43108390"
+          ],
+          "startDate": [
+            "2027-08-04T00:00:00.000+0000"
+          ],
+          "deadlineModel": [
+            "single-stage"
+          ],
+          "status": [
+            "31094501"
+          ]
+        },
+        "enrichedMetadata": {},
+        "children": [],
+        "highlightedFragments": []
+      },
+      {
+        "apiVersion": "2.144",
+        "reference": "50129841TOPICSen",
+        "url": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-CL5-2027-07-D3-25",
+        "title": null,
+        "contentType": "text/plain",
+        "language": "en",
+        "databaseLabel": "SEDIA",
+        "database": "SEDIA",
+        "summary": "Advanced TSO control rooms to enhance grid observability, stability and resilience",
+        "weight": 0.0,
+        "groupById": null,
+        "content": "Advanced TSO control rooms to enhance grid observability, stability and resilience",
+        "accessRestriction": false,
+        "pages": null,
+        "checksum": null,
+        "metadata": {
+          "identifier": [
+            "HORIZON-CL5-2027-07-D3-25"
+          ],
+          "es_ContentType": [
+            "text/plain"
+          ],
+          "es_SortDate": [
+            "2027-08-04T00:00:00.000+0000"
+          ],
+          "deadlineDate": [
+            "2027-12-01T00:00:00.000+0000"
+          ],
+          "language": [
+            "en"
+          ],
+          "title": [
+            "Advanced TSO control rooms to enhance grid observability, stability and resilience"
+          ],
+          "type": [
+            "1"
+          ],
+          "url": [
+            "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-CL5-2027-07-D3-25"
+          ],
+          "typesOfAction": [
+            "HORIZON Innovation Actions"
+          ],
+          "esST_URL": [
+            "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-CL5-2027-07-D3-25"
+          ],
+          "callccm2Id": [
+            "50161357"
+          ],
+          "DATASOURCE": [
+            "SEDIA"
+          ],
+          "REFERENCE": [
+            "50129841TOPICSen"
+          ],
+          "frameworkProgramme": [
+            "43108390"
+          ],
+          "startDate": [
+            "2027-08-04T00:00:00.000+0000"
+          ],
+          "deadlineModel": [
+            "single-stage"
+          ],
+          "status": [
+            "31094501"
+          ]
+        },
+        "enrichedMetadata": {},
+        "children": [],
+        "highlightedFragments": []
+      },
+      {
+        "apiVersion": "2.144",
+        "reference": "50129862TOPICSen",
+        "url": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-CL5-2027-07-D3-26",
+        "title": null,
+        "contentType": "text/plain",
+        "language": "en",
+        "databaseLabel": "SEDIA",
+        "database": "SEDIA",
+        "summary": "Advanced Distribution Management Systems (ADSM) for more efficient and flexible distribution grids",
+        "weight": 0.0,
+        "groupById": null,
+        "content": "Advanced Distribution Management Systems (ADSM) for more efficient and flexible distribution grids",
+        "accessRestriction": false,
+        "pages": null,
+        "checksum": null,
+        "metadata": {
+          "identifier": [
+            "HORIZON-CL5-2027-07-D3-26"
+          ],
+          "es_ContentType": [
+            "text/plain"
+          ],
+          "es_SortDate": [
+            "2027-08-04T00:00:00.000+0000"
+          ],
+          "deadlineDate": [
+            "2027-12-01T00:00:00.000+0000"
+          ],
+          "language": [
+            "en"
+          ],
+          "title": [
+            "Advanced Distribution Management Systems (ADSM) for more efficient and flexible distribution grids"
+          ],
+          "type": [
+            "1"
+          ],
+          "url": [
+            "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-CL5-2027-07-D3-26"
+          ],
+          "typesOfAction": [
+            "HORIZON Innovation Actions"
+          ],
+          "esST_URL": [
+            "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-CL5-2027-07-D3-26"
+          ],
+          "callccm2Id": [
+            "50161357"
+          ],
+          "DATASOURCE": [
+            "SEDIA"
+          ],
+          "REFERENCE": [
+            "50129862TOPICSen"
+          ],
+          "frameworkProgramme": [
+            "43108390"
+          ],
+          "startDate": [
+            "2027-08-04T00:00:00.000+0000"
+          ],
+          "deadlineModel": [
+            "single-stage"
+          ],
+          "status": [
+            "31094501"
+          ]
+        },
+        "enrichedMetadata": {},
+        "children": [],
+        "highlightedFragments": []
+      },
+      {
+        "apiVersion": "2.144",
+        "reference": "50130080TOPICSen",
+        "url": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-CL5-2027-07-D3-32",
+        "title": null,
+        "contentType": "text/plain",
+        "language": "en",
+        "databaseLabel": "SEDIA",
+        "database": "SEDIA",
+        "summary": "Delivery of industrial CCUS clusters – Societal Readiness pilot",
+        "weight": 0.0,
+        "groupById": null,
+        "content": "Delivery of industrial CCUS clusters – Societal Readiness pilot",
+        "accessRestriction": false,
+        "pages": null,
+        "checksum": null,
+        "metadata": {
+          "identifier": [
+            "HORIZON-CL5-2027-07-D3-32"
+          ],
+          "es_ContentType": [
+            "text/plain"
+          ],
+          "es_SortDate": [
+            "2027-08-04T00:00:00.000+0000"
+          ],
+          "deadlineDate": [
+            "2027-12-01T00:00:00.000+0000"
+          ],
+          "language": [
+            "en"
+          ],
+          "title": [
+            "Delivery of industrial CCUS clusters – Societal Readiness pilot"
+          ],
+          "type": [
+            "1"
+          ],
+          "url": [
+            "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-CL5-2027-07-D3-32"
+          ],
+          "typesOfAction": [
+            "HORIZON Innovation Actions"
+          ],
+          "esST_URL": [
+            "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-CL5-2027-07-D3-32"
+          ],
+          "callccm2Id": [
+            "50161357"
+          ],
+          "DATASOURCE": [
+            "SEDIA"
+          ],
+          "REFERENCE": [
+            "50130080TOPICSen"
+          ],
+          "frameworkProgramme": [
+            "43108390"
+          ],
+          "startDate": [
+            "2027-08-04T00:00:00.000+0000"
+          ],
+          "deadlineModel": [
+            "single-stage"
+          ],
+          "status": [
+            "31094501"
+          ]
+        },
+        "enrichedMetadata": {},
+        "children": [],
+        "highlightedFragments": []
+      },
+      {
+        "apiVersion": "2.144",
+        "reference": "50161257TOPICSen",
+        "url": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-HLTH-2027-03-TOOL-04",
+        "title": null,
+        "contentType": "text/plain",
+        "language": "en",
+        "databaseLabel": "SEDIA",
+        "database": "SEDIA",
+        "summary": "Virtual Human Twins (VHTs) for integrated clinical decision support in prevention and diagnosis",
+        "weight": 0.0,
+        "groupById": null,
+        "content": "Virtual Human Twins (VHTs) for integrated clinical decision support in prevention and diagnosis",
+        "accessRestriction": false,
+        "pages": null,
+        "checksum": null,
+        "metadata": {
+          "identifier": [
+            "HORIZON-HLTH-2027-03-TOOL-04"
+          ],
+          "es_ContentType": [
+            "text/plain"
+          ],
+          "es_SortDate": [
+            "2027-06-03T00:00:00.000+0000"
+          ],
+          "deadlineDate": [
+            "2027-09-22T00:00:00.000+0000"
+          ],
+          "language": [
+            "en"
+          ],
+          "title": [
+            "Virtual Human Twins (VHTs) for integrated clinical decision support in prevention and diagnosis"
+          ],
+          "type": [
+            "1"
+          ],
+          "url": [
+            "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-HLTH-2027-03-TOOL-04"
+          ],
+          "typesOfAction": [
+            "HORIZON  Research and Innovation Actions"
+          ],
+          "esST_URL": [
+            "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-HLTH-2027-03-TOOL-04"
+          ],
+          "callccm2Id": [
+            "50161316"
+          ],
+          "DATASOURCE": [
+            "SEDIA"
+          ],
+          "REFERENCE": [
+            "50161257TOPICSen"
+          ],
+          "frameworkProgramme": [
+            "43108390"
+          ],
+          "startDate": [
+            "2027-06-03T00:00:00.000+0000"
+          ],
+          "deadlineModel": [
+            "single-stage"
+          ],
+          "status": [
+            "31094501"
+          ]
+        },
+        "enrichedMetadata": {},
+        "children": [],
+        "highlightedFragments": []
+      },
+      {
+        "apiVersion": "2.144",
+        "reference": "50161195TOPICSen",
+        "url": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-HLTH-2027-03-TOOL-08",
+        "title": null,
+        "contentType": "text/plain",
+        "language": "en",
+        "databaseLabel": "SEDIA",
+        "database": "SEDIA",
+        "summary": "Towards Artificial General Intelligence (AGI) for healthcare",
+        "weight": 0.0,
+        "groupById": null,
+        "content": "Towards Artificial General Intelligence (AGI) for healthcare",
+        "accessRestriction": false,
+        "pages": null,
+        "checksum": null,
+        "metadata": {
+          "identifier": [
+            "HORIZON-HLTH-2027-03-TOOL-08"
+          ],
+          "es_ContentType": [
+            "text/plain"
+          ],
+          "es_SortDate": [
+            "2027-06-03T00:00:00.000+0000"
+          ],
+          "deadlineDate": [
+            "2027-09-22T00:00:00.000+0000"
+          ],
+          "language": [
+            "en"
+          ],
+          "title": [
+            "Towards Artificial General Intelligence (AGI) for healthcare"
+          ],
+          "type": [
+            "1"
+          ],
+          "url": [
+            "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-HLTH-2027-03-TOOL-08"
+          ],
+          "typesOfAction": [
+            "HORIZON Coordination and Support Actions"
+          ],
+          "esST_URL": [
+            "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-HLTH-2027-03-TOOL-08"
+          ],
+          "callccm2Id": [
+            "50161316"
+          ],
+          "DATASOURCE": [
+            "SEDIA"
+          ],
+          "REFERENCE": [
+            "50161195TOPICSen"
+          ],
+          "frameworkProgramme": [
+            "43108390"
+          ],
+          "startDate": [
+            "2027-06-03T00:00:00.000+0000"
+          ],
+          "deadlineModel": [
+            "single-stage"
+          ],
+          "status": [
+            "31094501"
+          ]
+        },
+        "enrichedMetadata": {},
+        "children": [],
+        "highlightedFragments": []
+      },
+      {
+        "apiVersion": "2.144",
+        "reference": "50161234TOPICSen",
+        "url": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-HLTH-2027-03-TOOL-02",
+        "title": null,
+        "contentType": "text/plain",
+        "language": "en",
+        "databaseLabel": "SEDIA",
+        "database": "SEDIA",
+        "summary": "Advancing bio-printing of living cells for regenerative medicine",
+        "weight": 0.0,
+        "groupById": null,
+        "content": "Advancing bio-printing of living cells for regenerative medicine",
+        "accessRestriction": false,
+        "pages": null,
+        "checksum": null,
+        "metadata": {
+          "identifier": [
+            "HORIZON-HLTH-2027-03-TOOL-02"
+          ],
+          "es_ContentType": [
+            "text/plain"
+          ],
+          "es_SortDate": [
+            "2027-06-03T00:00:00.000+0000"
+          ],
+          "deadlineDate": [
+            "2027-09-22T00:00:00.000+0000"
+          ],
+          "language": [
+            "en"
+          ],
+          "title": [
+            "Advancing bio-printing of living cells for regenerative medicine"
+          ],
+          "type": [
+            "1"
+          ],
+          "url": [
+            "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-HLTH-2027-03-TOOL-02"
+          ],
+          "typesOfAction": [
+            "HORIZON  Research and Innovation Actions"
+          ],
+          "esST_URL": [
+            "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-HLTH-2027-03-TOOL-02"
+          ],
+          "callccm2Id": [
+            "50161316"
+          ],
+          "DATASOURCE": [
+            "SEDIA"
+          ],
+          "REFERENCE": [
+            "50161234TOPICSen"
+          ],
+          "frameworkProgramme": [
+            "43108390"
+          ],
+          "startDate": [
+            "2027-06-03T00:00:00.000+0000"
+          ],
+          "deadlineModel": [
+            "single-stage"
+          ],
+          "status": [
+            "31094501"
+          ]
+        },
+        "enrichedMetadata": {},
+        "children": [],
+        "highlightedFragments": []
+      },
+      {
+        "apiVersion": "2.144",
+        "reference": "50130643TOPICSen",
+        "url": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-CL5-2027-06-D6-04",
+        "title": null,
+        "contentType": "text/plain",
+        "language": "en",
+        "databaseLabel": "SEDIA",
+        "database": "SEDIA",
+        "summary": "Holistic solutions for CCAM integration in critical scenarios (CCAM Partnership)",
+        "weight": 0.0,
+        "groupById": null,
+        "content": "Holistic solutions for CCAM integration in critical scenarios (CCAM Partnership)",
+        "accessRestriction": false,
+        "pages": null,
+        "checksum": null,
+        "metadata": {
+          "identifier": [
+            "HORIZON-CL5-2027-06-D6-04"
+          ],
+          "es_ContentType": [
+            "text/plain"
+          ],
+          "es_SortDate": [
+            "2027-06-03T00:00:00.000+0000"
+          ],
+          "deadlineDate": [
+            "2027-10-07T00:00:00.000+0000"
+          ],
+          "language": [
+            "en"
+          ],
+          "title": [
+            "Holistic solutions for CCAM integration in critical scenarios (CCAM Partnership)"
+          ],
+          "type": [
+            "1"
+          ],
+          "url": [
+            "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-CL5-2027-06-D6-04"
+          ],
+          "typesOfAction": [
+            "HORIZON  Research and Innovation Actions"
+          ],
+          "esST_URL": [
+            "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-CL5-2027-06-D6-04"
+          ],
+          "callccm2Id": [
+            "50161152"
+          ],
+          "DATASOURCE": [
+            "SEDIA"
+          ],
+          "REFERENCE": [
+            "50130643TOPICSen"
+          ],
+          "frameworkProgramme": [
+            "43108390"
+          ],
+          "startDate": [
+            "2027-06-03T00:00:00.000+0000"
+          ],
+          "deadlineModel": [
+            "single-stage"
+          ],
+          "status": [
+            "31094501"
+          ]
+        },
+        "enrichedMetadata": {},
+        "children": [],
+        "highlightedFragments": []
+      },
+      {
+        "apiVersion": "2.144",
+        "reference": "50130810TOPICSen",
+        "url": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-CL5-2027-06-D6-11",
+        "title": null,
+        "contentType": "text/plain",
+        "language": "en",
+        "databaseLabel": "SEDIA",
+        "database": "SEDIA",
+        "summary": "Enhancing Resilience and Accuracy in Positioning, Navigation, and Timing (PNT) Systems and e-conspicuity solutions",
+        "weight": 0.0,
+        "groupById": null,
+        "content": "Enhancing Resilience and Accuracy in Positioning, Navigation, and Timing (PNT) Systems and e-conspicuity solutions",
+        "accessRestriction": false,
+        "pages": null,
+        "checksum": null,
+        "metadata": {
+          "identifier": [
+            "HORIZON-CL5-2027-06-D6-11"
+          ],
+          "es_ContentType": [
+            "text/plain"
+          ],
+          "es_SortDate": [
+            "2027-06-03T00:00:00.000+0000"
+          ],
+          "deadlineDate": [
+            "2027-10-07T00:00:00.000+0000"
+          ],
+          "language": [
+            "en"
+          ],
+          "title": [
+            "Enhancing Resilience and Accuracy in Positioning, Navigation, and Timing (PNT) Systems and e-conspicuity solutions"
+          ],
+          "type": [
+            "1"
+          ],
+          "url": [
+            "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-CL5-2027-06-D6-11"
+          ],
+          "typesOfAction": [
+            "HORIZON Innovation Actions"
+          ],
+          "esST_URL": [
+            "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-CL5-2027-06-D6-11"
+          ],
+          "callccm2Id": [
+            "50161152"
+          ],
+          "DATASOURCE": [
+            "SEDIA"
+          ],
+          "REFERENCE": [
+            "50130810TOPICSen"
+          ],
+          "frameworkProgramme": [
+            "43108390"
+          ],
+          "startDate": [
+            "2027-06-03T00:00:00.000+0000"
+          ],
+          "deadlineModel": [
+            "single-stage"
+          ],
+          "status": [
+            "31094501"
+          ]
+        },
+        "enrichedMetadata": {},
+        "children": [],
+        "highlightedFragments": []
+      },
+      {
+        "apiVersion": "2.144",
+        "reference": "50130689TOPICSen",
+        "url": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-CL5-2027-06-D6-05",
+        "title": null,
+        "contentType": "text/plain",
+        "language": "en",
+        "databaseLabel": "SEDIA",
+        "database": "SEDIA",
+        "summary": "European CCAM knowledge hub and tools for safe and scalable deployment (CCAM Partnership)",
+        "weight": 0.0,
+        "groupById": null,
+        "content": "European CCAM knowledge hub and tools for safe and scalable deployment (CCAM Partnership)",
+        "accessRestriction": false,
+        "pages": null,
+        "checksum": null,
+        "metadata": {
+          "identifier": [
+            "HORIZON-CL5-2027-06-D6-05"
+          ],
+          "es_ContentType": [
+            "text/plain"
+          ],
+          "es_SortDate": [
+            "2027-06-03T00:00:00.000+0000"
+          ],
+          "deadlineDate": [
+            "2027-10-07T00:00:00.000+0000"
+          ],
+          "language": [
+            "en"
+          ],
+          "title": [
+            "European CCAM knowledge hub and tools for safe and scalable deployment (CCAM Partnership)"
+          ],
+          "type": [
+            "1"
+          ],
+          "url": [
+            "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-CL5-2027-06-D6-05"
+          ],
+          "typesOfAction": [
+            "HORIZON Coordination and Support Actions"
+          ],
+          "esST_URL": [
+            "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-CL5-2027-06-D6-05"
+          ],
+          "callccm2Id": [
+            "50161152"
+          ],
+          "DATASOURCE": [
+            "SEDIA"
+          ],
+          "REFERENCE": [
+            "50130689TOPICSen"
+          ],
+          "frameworkProgramme": [
+            "43108390"
+          ],
+          "startDate": [
+            "2027-06-03T00:00:00.000+0000"
+          ],
+          "deadlineModel": [
+            "single-stage"
+          ],
+          "status": [
+            "31094501"
+          ]
+        },
+        "enrichedMetadata": {},
+        "children": [],
+        "highlightedFragments": []
+      },
+      {
+        "apiVersion": "2.144",
+        "reference": "50130730TOPICSen",
+        "url": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-CL5-2027-06-D6-08",
+        "title": null,
+        "contentType": "text/plain",
+        "language": "en",
+        "databaseLabel": "SEDIA",
+        "database": "SEDIA",
+        "summary": "Enhancing Mobility for All: affordable, reliable, and accessible multimodal transport for inclusive rural and urban connectivity – Societal Readiness pilot",
+        "weight": 0.0,
+        "groupById": null,
+        "content": "Enhancing Mobility for All: affordable, reliable, and accessible multimodal transport for inclusive rural and urban connectivity – Societal Readiness pilot",
+        "accessRestriction": false,
+        "pages": null,
+        "checksum": null,
+        "metadata": {
+          "identifier": [
+            "HORIZON-CL5-2027-06-D6-08"
+          ],
+          "es_ContentType": [
+            "text/plain"
+          ],
+          "es_SortDate": [
+            "2027-06-03T00:00:00.000+0000"
+          ],
+          "deadlineDate": [
+            "2027-10-07T00:00:00.000+0000"
+          ],
+          "language": [
+            "en"
+          ],
+          "title": [
+            "Enhancing Mobility for All: affordable, reliable, and accessible multimodal transport for inclusive rural and urban connectivity – Societal Readiness pilot"
+          ],
+          "type": [
+            "1"
+          ],
+          "url": [
+            "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-CL5-2027-06-D6-08"
+          ],
+          "typesOfAction": [
+            "HORIZON Innovation Actions"
+          ],
+          "esST_URL": [
+            "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-CL5-2027-06-D6-08"
+          ],
+          "callccm2Id": [
+            "50161152"
+          ],
+          "DATASOURCE": [
+            "SEDIA"
+          ],
+          "REFERENCE": [
+            "50130730TOPICSen"
+          ],
+          "frameworkProgramme": [
+            "43108390"
+          ],
+          "startDate": [
+            "2027-06-03T00:00:00.000+0000"
+          ],
+          "deadlineModel": [
+            "single-stage"
+          ],
+          "status": [
+            "31094501"
+          ]
+        },
+        "enrichedMetadata": {},
+        "children": [],
+        "highlightedFragments": []
+      },
+      {
+        "apiVersion": "2.144",
+        "reference": "50128894TOPICSen",
+        "url": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-CL5-2027-06-D6-12",
+        "title": null,
+        "contentType": "text/plain",
+        "language": "en",
+        "databaseLabel": "SEDIA",
+        "database": "SEDIA",
+        "summary": "Support for dissemination events in the field of Transport Research",
+        "weight": 0.0,
+        "groupById": null,
+        "content": "Support for dissemination events in the field of Transport Research",
+        "accessRestriction": false,
+        "pages": null,
+        "checksum": null,
+        "metadata": {
+          "identifier": [
+            "HORIZON-CL5-2027-06-D6-12"
+          ],
+          "es_ContentType": [
+            "text/plain"
+          ],
+          "es_SortDate": [
+            "2027-06-03T00:00:00.000+0000"
+          ],
+          "deadlineDate": [
+            "2027-10-07T00:00:00.000+0000"
+          ],
+          "language": [
+            "en"
+          ],
+          "title": [
+            "Support for dissemination events in the field of Transport Research"
+          ],
+          "type": [
+            "1"
+          ],
+          "url": [
+            "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-CL5-2027-06-D6-12"
+          ],
+          "typesOfAction": [
+            "HORIZON Coordination and Support Actions"
+          ],
+          "esST_URL": [
+            "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-CL5-2027-06-D6-12"
+          ],
+          "callccm2Id": [
+            "50161152"
+          ],
+          "DATASOURCE": [
+            "SEDIA"
+          ],
+          "REFERENCE": [
+            "50128894TOPICSen"
+          ],
+          "frameworkProgramme": [
+            "43108390"
+          ],
+          "startDate": [
+            "2027-06-03T00:00:00.000+0000"
+          ],
+          "deadlineModel": [
+            "single-stage"
+          ],
+          "status": [
+            "31094501"
+          ]
+        },
+        "enrichedMetadata": {},
+        "children": [],
+        "highlightedFragments": []
+      },
+      {
+        "apiVersion": "2.144",
+        "reference": "50149659TOPICSen",
+        "url": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-CL2-2027-01-DEMOCRACY-03",
+        "title": null,
+        "contentType": "text/plain",
+        "language": "en",
+        "databaseLabel": "SEDIA",
+        "database": "SEDIA",
+        "summary": "Student and family engagement for developing a culture of democratic/civic participation",
+        "weight": 0.0,
+        "groupById": null,
+        "content": "Student and family engagement for developing a culture of democratic/civic participation",
+        "accessRestriction": false,
+        "pages": null,
+        "checksum": null,
+        "metadata": {
+          "identifier": [
+            "HORIZON-CL2-2027-01-DEMOCRACY-03"
+          ],
+          "es_ContentType": [
+            "text/plain"
+          ],
+          "es_SortDate": [
+            "2027-05-13T00:00:00.000+0000"
+          ],
+          "deadlineDate": [
+            "2027-09-23T00:00:00.000+0000"
+          ],
+          "language": [
+            "en"
+          ],
+          "title": [
+            "Student and family engagement for developing a culture of democratic/civic participation"
+          ],
+          "type": [
+            "1"
+          ],
+          "url": [
+            "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-CL2-2027-01-DEMOCRACY-03"
+          ],
+          "typesOfAction": [
+            "HORIZON  Research and Innovation Actions"
+          ],
+          "esST_URL": [
+            "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-CL2-2027-01-DEMOCRACY-03"
+          ],
+          "callccm2Id": [
+            "50149973"
+          ],
+          "DATASOURCE": [
+            "SEDIA"
+          ],
+          "REFERENCE": [
+            "50149659TOPICSen"
+          ],
+          "frameworkProgramme": [
+            "43108390"
+          ],
+          "startDate": [
+            "2027-05-13T00:00:00.000+0000"
+          ],
+          "deadlineModel": [
+            "single-stage"
+          ],
+          "status": [
+            "31094501"
+          ]
+        },
+        "enrichedMetadata": {},
+        "children": [],
+        "highlightedFragments": []
+      },
+      {
+        "apiVersion": "2.144",
+        "reference": "50149799TOPICSen",
+        "url": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-CL2-2027-01-DEMOCRACY-05",
+        "title": null,
+        "contentType": "text/plain",
+        "language": "en",
+        "databaseLabel": "SEDIA",
+        "database": "SEDIA",
+        "summary": "Development aid and democratic governance",
+        "weight": 0.0,
+        "groupById": null,
+        "content": "Development aid and democratic governance",
+        "accessRestriction": false,
+        "pages": null,
+        "checksum": null,
+        "metadata": {
+          "identifier": [
+            "HORIZON-CL2-2027-01-DEMOCRACY-05"
+          ],
+          "es_ContentType": [
+            "text/plain"
+          ],
+          "es_SortDate": [
+            "2027-05-13T00:00:00.000+0000"
+          ],
+          "deadlineDate": [
+            "2027-09-23T00:00:00.000+0000"
+          ],
+          "language": [
+            "en"
+          ],
+          "title": [
+            "Development aid and democratic governance"
+          ],
+          "type": [
+            "1"
+          ],
+          "url": [
+            "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-CL2-2027-01-DEMOCRACY-05"
+          ],
+          "typesOfAction": [
+            "HORIZON  Research and Innovation Actions"
+          ],
+          "esST_URL": [
+            "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-CL2-2027-01-DEMOCRACY-05"
+          ],
+          "callccm2Id": [
+            "50149973"
+          ],
+          "DATASOURCE": [
+            "SEDIA"
+          ],
+          "REFERENCE": [
+            "50149799TOPICSen"
+          ],
+          "frameworkProgramme": [
+            "43108390"
+          ],
+          "startDate": [
+            "2027-05-13T00:00:00.000+0000"
+          ],
+          "deadlineModel": [
+            "single-stage"
+          ],
+          "status": [
+            "31094501"
+          ]
+        },
+        "enrichedMetadata": {},
+        "children": [],
+        "highlightedFragments": []
+      },
+      {
+        "apiVersion": "2.144",
+        "reference": "50149768TOPICSen",
+        "url": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-CL2-2027-01-HERITAGE-08",
+        "title": null,
+        "contentType": "text/plain",
+        "language": "en",
+        "databaseLabel": "SEDIA",
+        "database": "SEDIA",
+        "summary": "Safeguarding &amp; transmission of intangible cultural heritage",
+        "weight": 0.0,
+        "groupById": null,
+        "content": "Safeguarding &amp; transmission of intangible cultural heritage",
+        "accessRestriction": false,
+        "pages": null,
+        "checksum": null,
+        "metadata": {
+          "identifier": [
+            "HORIZON-CL2-2027-01-HERITAGE-08"
+          ],
+          "es_ContentType": [
+            "text/plain"
+          ],
+          "es_SortDate": [
+            "2027-05-13T00:00:00.000+0000"
+          ],
+          "deadlineDate": [
+            "2027-09-23T00:00:00.000+0000"
+          ],
+          "language": [
+            "en"
+          ],
+          "title": [
+            "Safeguarding & transmission of intangible cultural heritage"
+          ],
+          "type": [
+            "1"
+          ],
+          "url": [
+            "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-CL2-2027-01-HERITAGE-08"
+          ],
+          "typesOfAction": [
+            "HORIZON  Research and Innovation Actions"
+          ],
+          "esST_URL": [
+            "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-CL2-2027-01-HERITAGE-08"
+          ],
+          "callccm2Id": [
+            "50149973"
+          ],
+          "DATASOURCE": [
+            "SEDIA"
+          ],
+          "REFERENCE": [
+            "50149768TOPICSen"
+          ],
+          "frameworkProgramme": [
+            "43108390"
+          ],
+          "startDate": [
+            "2027-05-13T00:00:00.000+0000"
+          ],
+          "deadlineModel": [
+            "single-stage"
+          ],
+          "status": [
+            "31094501"
+          ]
+        },
+        "enrichedMetadata": {},
+        "children": [],
+        "highlightedFragments": []
+      },
+      {
+        "apiVersion": "2.144",
+        "reference": "50149633TOPICSen",
+        "url": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-CL2-2027-01-TRANSFO-04",
+        "title": null,
+        "contentType": "text/plain",
+        "language": "en",
+        "databaseLabel": "SEDIA",
+        "database": "SEDIA",
+        "summary": "The impact of EU labour mobility on the Member States of the EU",
+        "weight": 0.0,
+        "groupById": null,
+        "content": "The impact of EU labour mobility on the Member States of the EU",
+        "accessRestriction": false,
+        "pages": null,
+        "checksum": null,
+        "metadata": {
+          "identifier": [
+            "HORIZON-CL2-2027-01-TRANSFO-04"
+          ],
+          "es_ContentType": [
+            "text/plain"
+          ],
+          "es_SortDate": [
+            "2027-05-13T00:00:00.000+0000"
+          ],
+          "deadlineDate": [
+            "2027-09-23T00:00:00.000+0000"
+          ],
+          "language": [
+            "en"
+          ],
+          "title": [
+            "The impact of EU labour mobility on the Member States of the EU"
+          ],
+          "type": [
+            "1"
+          ],
+          "url": [
+            "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-CL2-2027-01-TRANSFO-04"
+          ],
+          "typesOfAction": [
+            "HORIZON  Research and Innovation Actions"
+          ],
+          "esST_URL": [
+            "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-CL2-2027-01-TRANSFO-04"
+          ],
+          "callccm2Id": [
+            "50149973"
+          ],
+          "DATASOURCE": [
+            "SEDIA"
+          ],
+          "REFERENCE": [
+            "50149633TOPICSen"
+          ],
+          "frameworkProgramme": [
+            "43108390"
+          ],
+          "startDate": [
+            "2027-05-13T00:00:00.000+0000"
+          ],
+          "deadlineModel": [
+            "single-stage"
+          ],
+          "status": [
+            "31094501"
+          ]
+        },
+        "enrichedMetadata": {},
+        "children": [],
+        "highlightedFragments": []
+      },
+      {
+        "apiVersion": "2.144",
+        "reference": "50149561TOPICSen",
+        "url": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-CL2-2027-01-HERITAGE-07",
+        "title": null,
+        "contentType": "text/plain",
+        "language": "en",
+        "databaseLabel": "SEDIA",
+        "database": "SEDIA",
+        "summary": "Societal impact of cultural heritage",
+        "weight": 0.0,
+        "groupById": null,
+        "content": "Societal impact of cultural heritage",
+        "accessRestriction": false,
+        "pages": null,
+        "checksum": null,
+        "metadata": {
+          "identifier": [
+            "HORIZON-CL2-2027-01-HERITAGE-07"
+          ],
+          "es_ContentType": [
+            "text/plain"
+          ],
+          "es_SortDate": [
+            "2027-05-13T00:00:00.000+0000"
+          ],
+          "deadlineDate": [
+            "2027-09-23T00:00:00.000+0000"
+          ],
+          "language": [
+            "en"
+          ],
+          "title": [
+            "Societal impact of cultural heritage"
+          ],
+          "type": [
+            "1"
+          ],
+          "url": [
+            "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-CL2-2027-01-HERITAGE-07"
+          ],
+          "typesOfAction": [
+            "HORIZON  Research and Innovation Actions"
+          ],
+          "esST_URL": [
+            "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-CL2-2027-01-HERITAGE-07"
+          ],
+          "callccm2Id": [
+            "50149973"
+          ],
+          "DATASOURCE": [
+            "SEDIA"
+          ],
+          "REFERENCE": [
+            "50149561TOPICSen"
+          ],
+          "frameworkProgramme": [
+            "43108390"
+          ],
+          "startDate": [
+            "2027-05-13T00:00:00.000+0000"
+          ],
+          "deadlineModel": [
+            "single-stage"
+          ],
+          "status": [
+            "31094501"
+          ]
+        },
+        "enrichedMetadata": {},
+        "children": [],
+        "highlightedFragments": []
+      },
+      {
+        "apiVersion": "2.144",
+        "reference": "50149693TOPICSen",
+        "url": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-CL2-2027-01-DEMOCRACY-07",
+        "title": null,
+        "contentType": "text/plain",
+        "language": "en",
+        "databaseLabel": "SEDIA",
+        "database": "SEDIA",
+        "summary": "The role of private companies in democracy",
+        "weight": 0.0,
+        "groupById": null,
+        "content": "The role of private companies in democracy",
+        "accessRestriction": false,
+        "pages": null,
+        "checksum": null,
+        "metadata": {
+          "identifier": [
+            "HORIZON-CL2-2027-01-DEMOCRACY-07"
+          ],
+          "es_ContentType": [
+            "text/plain"
+          ],
+          "es_SortDate": [
+            "2027-05-13T00:00:00.000+0000"
+          ],
+          "deadlineDate": [
+            "2027-09-23T00:00:00.000+0000"
+          ],
+          "language": [
+            "en"
+          ],
+          "title": [
+            "The role of private companies in democracy"
+          ],
+          "type": [
+            "1"
+          ],
+          "url": [
+            "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-CL2-2027-01-DEMOCRACY-07"
+          ],
+          "typesOfAction": [
+            "HORIZON  Research and Innovation Actions"
+          ],
+          "esST_URL": [
+            "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-CL2-2027-01-DEMOCRACY-07"
+          ],
+          "callccm2Id": [
+            "50149973"
+          ],
+          "DATASOURCE": [
+            "SEDIA"
+          ],
+          "REFERENCE": [
+            "50149693TOPICSen"
+          ],
+          "frameworkProgramme": [
+            "43108390"
+          ],
+          "startDate": [
+            "2027-05-13T00:00:00.000+0000"
+          ],
+          "deadlineModel": [
+            "single-stage"
+          ],
+          "status": [
+            "31094501"
+          ]
+        },
+        "enrichedMetadata": {},
+        "children": [],
+        "highlightedFragments": []
+      },
+      {
+        "apiVersion": "2.144",
+        "reference": "50149852TOPICSen",
+        "url": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-CL2-2027-01-DEMOCRACY-06",
+        "title": null,
+        "contentType": "text/plain",
+        "language": "en",
+        "databaseLabel": "SEDIA",
+        "database": "SEDIA",
+        "summary": "Identifying user-focused solutions to support news media freedom",
+        "weight": 0.0,
+        "groupById": null,
+        "content": "Identifying user-focused solutions to support news media freedom",
+        "accessRestriction": false,
+        "pages": null,
+        "checksum": null,
+        "metadata": {
+          "identifier": [
+            "HORIZON-CL2-2027-01-DEMOCRACY-06"
+          ],
+          "es_ContentType": [
+            "text/plain"
+          ],
+          "es_SortDate": [
+            "2027-05-13T00:00:00.000+0000"
+          ],
+          "deadlineDate": [
+            "2027-09-23T00:00:00.000+0000"
+          ],
+          "language": [
+            "en"
+          ],
+          "title": [
+            "Identifying user-focused solutions to support news media freedom"
+          ],
+          "type": [
+            "1"
+          ],
+          "url": [
+            "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-CL2-2027-01-DEMOCRACY-06"
+          ],
+          "typesOfAction": [
+            "HORIZON  Research and Innovation Actions"
+          ],
+          "esST_URL": [
+            "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-CL2-2027-01-DEMOCRACY-06"
+          ],
+          "callccm2Id": [
+            "50149973"
+          ],
+          "DATASOURCE": [
+            "SEDIA"
+          ],
+          "REFERENCE": [
+            "50149852TOPICSen"
+          ],
+          "frameworkProgramme": [
+            "43108390"
+          ],
+          "startDate": [
+            "2027-05-13T00:00:00.000+0000"
+          ],
+          "deadlineModel": [
+            "single-stage"
+          ],
+          "status": [
+            "31094501"
+          ]
+        },
+        "enrichedMetadata": {},
+        "children": [],
+        "highlightedFragments": []
+      },
+      {
+        "apiVersion": "2.144",
+        "reference": "50149727TOPICSen",
+        "url": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-CL2-2027-01-TRANSFO-01",
+        "title": null,
+        "contentType": "text/plain",
+        "language": "en",
+        "databaseLabel": "SEDIA",
+        "database": "SEDIA",
+        "summary": "Impact of access to nature-positive environments in promoting social cohesion and reducing inequalities in urban and peri-urban settings",
+        "weight": 0.0,
+        "groupById": null,
+        "content": "Impact of access to nature-positive environments in promoting social cohesion and reducing inequalities in urban and peri-urban settings",
+        "accessRestriction": false,
+        "pages": null,
+        "checksum": null,
+        "metadata": {
+          "identifier": [
+            "HORIZON-CL2-2027-01-TRANSFO-01"
+          ],
+          "es_ContentType": [
+            "text/plain"
+          ],
+          "es_SortDate": [
+            "2027-05-13T00:00:00.000+0000"
+          ],
+          "deadlineDate": [
+            "2027-09-23T00:00:00.000+0000"
+          ],
+          "language": [
+            "en"
+          ],
+          "title": [
+            "Impact of access to nature-positive environments in promoting social cohesion and reducing inequalities in urban and peri-urban settings"
+          ],
+          "type": [
+            "1"
+          ],
+          "url": [
+            "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-CL2-2027-01-TRANSFO-01"
+          ],
+          "typesOfAction": [
+            "HORIZON  Research and Innovation Actions"
+          ],
+          "esST_URL": [
+            "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-CL2-2027-01-TRANSFO-01"
+          ],
+          "callccm2Id": [
+            "50149973"
+          ],
+          "DATASOURCE": [
+            "SEDIA"
+          ],
+          "REFERENCE": [
+            "50149727TOPICSen"
+          ],
+          "frameworkProgramme": [
+            "43108390"
+          ],
+          "startDate": [
+            "2027-05-13T00:00:00.000+0000"
+          ],
+          "deadlineModel": [
+            "single-stage"
+          ],
+          "status": [
+            "31094501"
+          ]
+        },
+        "enrichedMetadata": {},
+        "children": [],
+        "highlightedFragments": []
+      },
+      {
+        "apiVersion": "2.144",
+        "reference": "50149329TOPICSen",
+        "url": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-CL2-2027-01-HERITAGE-03",
+        "title": null,
+        "contentType": "text/plain",
+        "language": "en",
+        "databaseLabel": "SEDIA",
+        "database": "SEDIA",
+        "summary": "Crafting routes to a circular economy",
+        "weight": 0.0,
+        "groupById": null,
+        "content": "Crafting routes to a circular economy",
+        "accessRestriction": false,
+        "pages": null,
+        "checksum": null,
+        "metadata": {
+          "identifier": [
+            "HORIZON-CL2-2027-01-HERITAGE-03"
+          ],
+          "es_ContentType": [
+            "text/plain"
+          ],
+          "es_SortDate": [
+            "2027-05-13T00:00:00.000+0000"
+          ],
+          "deadlineDate": [
+            "2027-09-23T00:00:00.000+0000"
+          ],
+          "language": [
+            "en"
+          ],
+          "title": [
+            "Crafting routes to a circular economy"
+          ],
+          "type": [
+            "1"
+          ],
+          "url": [
+            "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-CL2-2027-01-HERITAGE-03"
+          ],
+          "typesOfAction": [
+            "HORIZON  Research and Innovation Actions"
+          ],
+          "esST_URL": [
+            "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-CL2-2027-01-HERITAGE-03"
+          ],
+          "callccm2Id": [
+            "50149973"
+          ],
+          "DATASOURCE": [
+            "SEDIA"
+          ],
+          "REFERENCE": [
+            "50149329TOPICSen"
+          ],
+          "frameworkProgramme": [
+            "43108390"
+          ],
+          "startDate": [
+            "2027-05-13T00:00:00.000+0000"
+          ],
+          "deadlineModel": [
+            "single-stage"
+          ],
+          "status": [
+            "31094501"
+          ]
+        },
+        "enrichedMetadata": {},
+        "children": [],
+        "highlightedFragments": []
+      },
+      {
+        "apiVersion": "2.144",
+        "reference": "50149419TOPICSen",
+        "url": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-CL2-2027-01-HERITAGE-05",
+        "title": null,
+        "contentType": "text/plain",
+        "language": "en",
+        "databaseLabel": "SEDIA",
+        "database": "SEDIA",
+        "summary": "Re-imagining the creative economy: the interplay between the cultural and creative sectors and industries and the social economy",
+        "weight": 0.0,
+        "groupById": null,
+        "content": "Re-imagining the creative economy: the interplay between the cultural and creative sectors and industries and the social economy",
+        "accessRestriction": false,
+        "pages": null,
+        "checksum": null,
+        "metadata": {
+          "identifier": [
+            "HORIZON-CL2-2027-01-HERITAGE-05"
+          ],
+          "es_ContentType": [
+            "text/plain"
+          ],
+          "es_SortDate": [
+            "2027-05-13T00:00:00.000+0000"
+          ],
+          "deadlineDate": [
+            "2027-09-23T00:00:00.000+0000"
+          ],
+          "language": [
+            "en"
+          ],
+          "title": [
+            "Re-imagining the creative economy: the interplay between the cultural and creative sectors and industries and the social economy"
+          ],
+          "type": [
+            "1"
+          ],
+          "url": [
+            "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-CL2-2027-01-HERITAGE-05"
+          ],
+          "typesOfAction": [
+            "HORIZON  Research and Innovation Actions"
+          ],
+          "esST_URL": [
+            "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-CL2-2027-01-HERITAGE-05"
+          ],
+          "callccm2Id": [
+            "50149973"
+          ],
+          "DATASOURCE": [
+            "SEDIA"
+          ],
+          "REFERENCE": [
+            "50149419TOPICSen"
+          ],
+          "frameworkProgramme": [
+            "43108390"
+          ],
+          "startDate": [
+            "2027-05-13T00:00:00.000+0000"
+          ],
+          "deadlineModel": [
+            "single-stage"
+          ],
+          "status": [
+            "31094501"
+          ]
+        },
+        "enrichedMetadata": {},
+        "children": [],
+        "highlightedFragments": []
+      },
+      {
+        "apiVersion": "2.144",
+        "reference": "50148919TOPICSen",
+        "url": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-CL2-2027-01-HERITAGE-02",
+        "title": null,
+        "contentType": "text/plain",
+        "language": "en",
+        "databaseLabel": "SEDIA",
+        "database": "SEDIA",
+        "summary": "AI4Creatives Support Platform: embracing a fair AI revolution",
+        "weight": 0.0,
+        "groupById": null,
+        "content": "AI4Creatives Support Platform: embracing a fair AI revolution",
+        "accessRestriction": false,
+        "pages": null,
+        "checksum": null,
+        "metadata": {
+          "identifier": [
+            "HORIZON-CL2-2027-01-HERITAGE-02"
+          ],
+          "es_ContentType": [
+            "text/plain"
+          ],
+          "es_SortDate": [
+            "2027-05-13T00:00:00.000+0000"
+          ],
+          "deadlineDate": [
+            "2027-09-23T00:00:00.000+0000"
+          ],
+          "language": [
+            "en"
+          ],
+          "title": [
+            "AI4Creatives Support Platform: embracing a fair AI revolution"
+          ],
+          "type": [
+            "1"
+          ],
+          "url": [
+            "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-CL2-2027-01-HERITAGE-02"
+          ],
+          "typesOfAction": [
+            "HORIZON Coordination and Support Actions"
+          ],
+          "esST_URL": [
+            "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-CL2-2027-01-HERITAGE-02"
+          ],
+          "callccm2Id": [
+            "50149973"
+          ],
+          "DATASOURCE": [
+            "SEDIA"
+          ],
+          "REFERENCE": [
+            "50148919TOPICSen"
+          ],
+          "frameworkProgramme": [
+            "43108390"
+          ],
+          "startDate": [
+            "2027-05-13T00:00:00.000+0000"
+          ],
+          "deadlineModel": [
+            "single-stage"
+          ],
+          "status": [
+            "31094501"
+          ]
+        },
+        "enrichedMetadata": {},
+        "children": [],
+        "highlightedFragments": []
+      },
+      {
+        "apiVersion": "2.144",
+        "reference": "50149001TOPICSen",
+        "url": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-CL2-2027-01-TRANSFO-02",
+        "title": null,
+        "contentType": "text/plain",
+        "language": "en",
+        "databaseLabel": "SEDIA",
+        "database": "SEDIA",
+        "summary": "Impact of in-kind benefits on income distribution and on vulnerable populations",
+        "weight": 0.0,
+        "groupById": null,
+        "content": "Impact of in-kind benefits on income distribution and on vulnerable populations",
+        "accessRestriction": false,
+        "pages": null,
+        "checksum": null,
+        "metadata": {
+          "identifier": [
+            "HORIZON-CL2-2027-01-TRANSFO-02"
+          ],
+          "es_ContentType": [
+            "text/plain"
+          ],
+          "es_SortDate": [
+            "2027-05-13T00:00:00.000+0000"
+          ],
+          "deadlineDate": [
+            "2027-09-23T00:00:00.000+0000"
+          ],
+          "language": [
+            "en"
+          ],
+          "title": [
+            "Impact of in-kind benefits on income distribution and on vulnerable populations"
+          ],
+          "type": [
+            "1"
+          ],
+          "url": [
+            "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-CL2-2027-01-TRANSFO-02"
+          ],
+          "typesOfAction": [
+            "HORIZON  Research and Innovation Actions"
+          ],
+          "esST_URL": [
+            "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-CL2-2027-01-TRANSFO-02"
+          ],
+          "callccm2Id": [
+            "50149973"
+          ],
+          "DATASOURCE": [
+            "SEDIA"
+          ],
+          "REFERENCE": [
+            "50149001TOPICSen"
+          ],
+          "frameworkProgramme": [
+            "43108390"
+          ],
+          "startDate": [
+            "2027-05-13T00:00:00.000+0000"
+          ],
+          "deadlineModel": [
+            "single-stage"
+          ],
+          "status": [
+            "31094501"
+          ]
+        },
+        "enrichedMetadata": {},
+        "children": [],
+        "highlightedFragments": []
+      },
+      {
+        "apiVersion": "2.144",
+        "reference": "50149025TOPICSen",
+        "url": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-CL2-2027-01-TRANSFO-07",
+        "title": null,
+        "contentType": "text/plain",
+        "language": "en",
+        "databaseLabel": "SEDIA",
+        "database": "SEDIA",
+        "summary": "Persons with disabilities: opportunities for labour inclusion and social protection through the life course",
+        "weight": 0.0,
+        "groupById": null,
+        "content": "Persons with disabilities: opportunities for labour inclusion and social protection through the life course",
+        "accessRestriction": false,
+        "pages": null,
+        "checksum": null,
+        "metadata": {
+          "identifier": [
+            "HORIZON-CL2-2027-01-TRANSFO-07"
+          ],
+          "es_ContentType": [
+            "text/plain"
+          ],
+          "es_SortDate": [
+            "2027-05-13T00:00:00.000+0000"
+          ],
+          "deadlineDate": [
+            "2027-09-23T00:00:00.000+0000"
+          ],
+          "language": [
+            "en"
+          ],
+          "title": [
+            "Persons with disabilities: opportunities for labour inclusion and social protection through the life course"
+          ],
+          "type": [
+            "1"
+          ],
+          "url": [
+            "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-CL2-2027-01-TRANSFO-07"
+          ],
+          "typesOfAction": [
+            "HORIZON  Research and Innovation Actions"
+          ],
+          "esST_URL": [
+            "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-CL2-2027-01-TRANSFO-07"
+          ],
+          "callccm2Id": [
+            "50149973"
+          ],
+          "DATASOURCE": [
+            "SEDIA"
+          ],
+          "REFERENCE": [
+            "50149025TOPICSen"
+          ],
+          "frameworkProgramme": [
+            "43108390"
+          ],
+          "startDate": [
+            "2027-05-13T00:00:00.000+0000"
+          ],
+          "deadlineModel": [
+            "single-stage"
+          ],
+          "status": [
+            "31094501"
+          ]
+        },
+        "enrichedMetadata": {},
+        "children": [],
+        "highlightedFragments": []
+      },
+      {
+        "apiVersion": "2.144",
+        "reference": "50149059TOPICSen",
+        "url": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-CL2-2027-01-TRANSFO-03",
+        "title": null,
+        "contentType": "text/plain",
+        "language": "en",
+        "databaseLabel": "SEDIA",
+        "database": "SEDIA",
+        "summary": "Rethinking sustainable competitiveness beyond traditional perspectives: role and contribution of the Social Economy",
+        "weight": 0.0,
+        "groupById": null,
+        "content": "Rethinking sustainable competitiveness beyond traditional perspectives: role and contribution of the Social Economy",
+        "accessRestriction": false,
+        "pages": null,
+        "checksum": null,
+        "metadata": {
+          "identifier": [
+            "HORIZON-CL2-2027-01-TRANSFO-03"
+          ],
+          "es_ContentType": [
+            "text/plain"
+          ],
+          "es_SortDate": [
+            "2027-05-13T00:00:00.000+0000"
+          ],
+          "deadlineDate": [
+            "2027-09-23T00:00:00.000+0000"
+          ],
+          "language": [
+            "en"
+          ],
+          "title": [
+            "Rethinking sustainable competitiveness beyond traditional perspectives: role and contribution of the Social Economy"
+          ],
+          "type": [
+            "1"
+          ],
+          "url": [
+            "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-CL2-2027-01-TRANSFO-03"
+          ],
+          "typesOfAction": [
+            "HORIZON  Research and Innovation Actions"
+          ],
+          "esST_URL": [
+            "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-CL2-2027-01-TRANSFO-03"
+          ],
+          "callccm2Id": [
+            "50149973"
+          ],
+          "DATASOURCE": [
+            "SEDIA"
+          ],
+          "REFERENCE": [
+            "50149059TOPICSen"
+          ],
+          "frameworkProgramme": [
+            "43108390"
+          ],
+          "startDate": [
+            "2027-05-13T00:00:00.000+0000"
+          ],
+          "deadlineModel": [
+            "single-stage"
+          ],
+          "status": [
+            "31094501"
+          ]
+        },
+        "enrichedMetadata": {},
+        "children": [],
+        "highlightedFragments": []
+      },
+      {
+        "apiVersion": "2.144",
+        "reference": "50149284TOPICSen",
+        "url": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-CL2-2027-01-HERITAGE-01",
+        "title": null,
+        "contentType": "text/plain",
+        "language": "en",
+        "databaseLabel": "SEDIA",
+        "database": "SEDIA",
+        "summary": "Towards a consolidated culture and creativity driven European innovation ecosystem",
+        "weight": 0.0,
+        "groupById": null,
+        "content": "Towards a consolidated culture and creativity driven European innovation ecosystem",
+        "accessRestriction": false,
+        "pages": null,
+        "checksum": null,
+        "metadata": {
+          "identifier": [
+            "HORIZON-CL2-2027-01-HERITAGE-01"
+          ],
+          "es_ContentType": [
+            "text/plain"
+          ],
+          "es_SortDate": [
+            "2027-05-13T00:00:00.000+0000"
+          ],
+          "deadlineDate": [
+            "2027-09-23T00:00:00.000+0000"
+          ],
+          "language": [
+            "en"
+          ],
+          "title": [
+            "Towards a consolidated culture and creativity driven European innovation ecosystem"
+          ],
+          "type": [
+            "1"
+          ],
+          "url": [
+            "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-CL2-2027-01-HERITAGE-01"
+          ],
+          "typesOfAction": [
+            "HORIZON Coordination and Support Actions"
+          ],
+          "esST_URL": [
+            "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-CL2-2027-01-HERITAGE-01"
+          ],
+          "callccm2Id": [
+            "50149973"
+          ],
+          "DATASOURCE": [
+            "SEDIA"
+          ],
+          "REFERENCE": [
+            "50149284TOPICSen"
+          ],
+          "frameworkProgramme": [
+            "43108390"
+          ],
+          "startDate": [
+            "2027-05-13T00:00:00.000+0000"
+          ],
+          "deadlineModel": [
+            "single-stage"
+          ],
+          "status": [
+            "31094501"
+          ]
+        },
+        "enrichedMetadata": {},
+        "children": [],
+        "highlightedFragments": []
+      },
+      {
+        "apiVersion": "2.144",
+        "reference": "50149211TOPICSen",
+        "url": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-CL2-2027-01-HERITAGE-04",
+        "title": null,
+        "contentType": "text/plain",
+        "language": "en",
+        "databaseLabel": "SEDIA",
+        "database": "SEDIA",
+        "summary": "Culture, heritage and creative industries for health and well-being",
+        "weight": 0.0,
+        "groupById": null,
+        "content": "Culture, heritage and creative industries for health and well-being",
+        "accessRestriction": false,
+        "pages": null,
+        "checksum": null,
+        "metadata": {
+          "identifier": [
+            "HORIZON-CL2-2027-01-HERITAGE-04"
+          ],
+          "es_ContentType": [
+            "text/plain"
+          ],
+          "es_SortDate": [
+            "2027-05-13T00:00:00.000+0000"
+          ],
+          "deadlineDate": [
+            "2027-09-23T00:00:00.000+0000"
+          ],
+          "language": [
+            "en"
+          ],
+          "title": [
+            "Culture, heritage and creative industries for health and well-being"
+          ],
+          "type": [
+            "1"
+          ],
+          "url": [
+            "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-CL2-2027-01-HERITAGE-04"
+          ],
+          "typesOfAction": [
+            "HORIZON  Research and Innovation Actions"
+          ],
+          "esST_URL": [
+            "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-CL2-2027-01-HERITAGE-04"
+          ],
+          "callccm2Id": [
+            "50149973"
+          ],
+          "DATASOURCE": [
+            "SEDIA"
+          ],
+          "REFERENCE": [
+            "50149211TOPICSen"
+          ],
+          "frameworkProgramme": [
+            "43108390"
+          ],
+          "startDate": [
+            "2027-05-13T00:00:00.000+0000"
+          ],
+          "deadlineModel": [
+            "single-stage"
+          ],
+          "status": [
+            "31094501"
+          ]
+        },
+        "enrichedMetadata": {},
+        "children": [],
+        "highlightedFragments": []
+      },
+      {
+        "apiVersion": "2.144",
+        "reference": "50149265TOPICSen",
+        "url": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-CL2-2027-01-TRANSFO-06",
+        "title": null,
+        "contentType": "text/plain",
+        "language": "en",
+        "databaseLabel": "SEDIA",
+        "database": "SEDIA",
+        "summary": "Closing the learning gap: uncovering causes and effective policy interventions for declining youth skills in mathematics, reading, and science",
+        "weight": 0.0,
+        "groupById": null,
+        "content": "Closing the learning gap: uncovering causes and effective policy interventions for declining youth skills in mathematics, reading, and science",
+        "accessRestriction": false,
+        "pages": null,
+        "checksum": null,
+        "metadata": {
+          "identifier": [
+            "HORIZON-CL2-2027-01-TRANSFO-06"
+          ],
+          "es_ContentType": [
+            "text/plain"
+          ],
+          "es_SortDate": [
+            "2027-05-13T00:00:00.000+0000"
+          ],
+          "deadlineDate": [
+            "2027-09-23T00:00:00.000+0000"
+          ],
+          "language": [
+            "en"
+          ],
+          "title": [
+            "Closing the learning gap: uncovering causes and effective policy interventions for declining youth skills in mathematics, reading, and science"
+          ],
+          "type": [
+            "1"
+          ],
+          "url": [
+            "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-CL2-2027-01-TRANSFO-06"
+          ],
+          "typesOfAction": [
+            "HORIZON  Research and Innovation Actions"
+          ],
+          "esST_URL": [
+            "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-CL2-2027-01-TRANSFO-06"
+          ],
+          "callccm2Id": [
+            "50149973"
+          ],
+          "DATASOURCE": [
+            "SEDIA"
+          ],
+          "REFERENCE": [
+            "50149265TOPICSen"
+          ],
+          "frameworkProgramme": [
+            "43108390"
+          ],
+          "startDate": [
+            "2027-05-13T00:00:00.000+0000"
+          ],
+          "deadlineModel": [
+            "single-stage"
+          ],
+          "status": [
+            "31094501"
+          ]
+        },
+        "enrichedMetadata": {},
+        "children": [],
+        "highlightedFragments": []
+      },
+      {
+        "apiVersion": "2.144",
+        "reference": "50149486TOPICSen",
+        "url": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-CL2-2027-01-HERITAGE-06",
+        "title": null,
+        "contentType": "text/plain",
+        "language": "en",
+        "databaseLabel": "SEDIA",
+        "database": "SEDIA",
+        "summary": "Future-proofing sustainable cultural tourism",
+        "weight": 0.0,
+        "groupById": null,
+        "content": "Future-proofing sustainable cultural tourism",
+        "accessRestriction": false,
+        "pages": null,
+        "checksum": null,
+        "metadata": {
+          "identifier": [
+            "HORIZON-CL2-2027-01-HERITAGE-06"
+          ],
+          "es_ContentType": [
+            "text/plain"
+          ],
+          "es_SortDate": [
+            "2027-05-13T00:00:00.000+0000"
+          ],
+          "deadlineDate": [
+            "2027-09-23T00:00:00.000+0000"
+          ],
+          "language": [
+            "en"
+          ],
+          "title": [
+            "Future-proofing sustainable cultural tourism"
+          ],
+          "type": [
+            "1"
+          ],
+          "url": [
+            "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-CL2-2027-01-HERITAGE-06"
+          ],
+          "typesOfAction": [
+            "HORIZON  Research and Innovation Actions"
+          ],
+          "esST_URL": [
+            "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-CL2-2027-01-HERITAGE-06"
+          ],
+          "callccm2Id": [
+            "50149973"
+          ],
+          "DATASOURCE": [
+            "SEDIA"
+          ],
+          "REFERENCE": [
+            "50149486TOPICSen"
+          ],
+          "frameworkProgramme": [
+            "43108390"
+          ],
+          "startDate": [
+            "2027-05-13T00:00:00.000+0000"
+          ],
+          "deadlineModel": [
+            "single-stage"
+          ],
+          "status": [
+            "31094501"
+          ]
+        },
+        "enrichedMetadata": {},
+        "children": [],
+        "highlightedFragments": []
+      },
+      {
+        "apiVersion": "2.144",
+        "reference": "50149248TOPICSen",
+        "url": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-CL2-2027-01-TRANSFO-05",
+        "title": null,
+        "contentType": "text/plain",
+        "language": "en",
+        "databaseLabel": "SEDIA",
+        "database": "SEDIA",
+        "summary": "The effective use of artificial intelligence in learning environments in pre-primary and primary education",
+        "weight": 0.0,
+        "groupById": null,
+        "content": "The effective use of artificial intelligence in learning environments in pre-primary and primary education",
+        "accessRestriction": false,
+        "pages": null,
+        "checksum": null,
+        "metadata": {
+          "identifier": [
+            "HORIZON-CL2-2027-01-TRANSFO-05"
+          ],
+          "es_ContentType": [
+            "text/plain"
+          ],
+          "es_SortDate": [
+            "2027-05-13T00:00:00.000+0000"
+          ],
+          "deadlineDate": [
+            "2027-09-23T00:00:00.000+0000"
+          ],
+          "language": [
+            "en"
+          ],
+          "title": [
+            "The effective use of artificial intelligence in learning environments in pre-primary and primary education"
+          ],
+          "type": [
+            "1"
+          ],
+          "url": [
+            "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-CL2-2027-01-TRANSFO-05"
+          ],
+          "typesOfAction": [
+            "HORIZON  Research and Innovation Actions"
+          ],
+          "esST_URL": [
+            "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-CL2-2027-01-TRANSFO-05"
+          ],
+          "callccm2Id": [
+            "50149973"
+          ],
+          "DATASOURCE": [
+            "SEDIA"
+          ],
+          "REFERENCE": [
+            "50149248TOPICSen"
+          ],
+          "frameworkProgramme": [
+            "43108390"
+          ],
+          "startDate": [
+            "2027-05-13T00:00:00.000+0000"
+          ],
+          "deadlineModel": [
+            "single-stage"
+          ],
+          "status": [
+            "31094501"
+          ]
+        },
+        "enrichedMetadata": {},
+        "children": [],
+        "highlightedFragments": []
+      },
+      {
+        "apiVersion": "2.144",
+        "reference": "50149891TOPICSen",
+        "url": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-CL2-2027-01-DEMOCRACY-08",
+        "title": null,
+        "contentType": "text/plain",
+        "language": "en",
+        "databaseLabel": "SEDIA",
+        "database": "SEDIA",
+        "summary": "Global Human Rights and EU values",
+        "weight": 0.0,
+        "groupById": null,
+        "content": "Global Human Rights and EU values",
+        "accessRestriction": false,
+        "pages": null,
+        "checksum": null,
+        "metadata": {
+          "identifier": [
+            "HORIZON-CL2-2027-01-DEMOCRACY-08"
+          ],
+          "es_ContentType": [
+            "text/plain"
+          ],
+          "es_SortDate": [
+            "2027-05-13T00:00:00.000+0000"
+          ],
+          "deadlineDate": [
+            "2027-09-23T00:00:00.000+0000"
+          ],
+          "language": [
+            "en"
+          ],
+          "title": [
+            "Global Human Rights and EU values"
+          ],
+          "type": [
+            "1"
+          ],
+          "url": [
+            "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-CL2-2027-01-DEMOCRACY-08"
+          ],
+          "typesOfAction": [
+            "HORIZON  Research and Innovation Actions"
+          ],
+          "esST_URL": [
+            "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-CL2-2027-01-DEMOCRACY-08"
+          ],
+          "callccm2Id": [
+            "50149973"
+          ],
+          "DATASOURCE": [
+            "SEDIA"
+          ],
+          "REFERENCE": [
+            "50149891TOPICSen"
+          ],
+          "frameworkProgramme": [
+            "43108390"
+          ],
+          "startDate": [
+            "2027-05-13T00:00:00.000+0000"
+          ],
+          "deadlineModel": [
+            "single-stage"
+          ],
+          "status": [
+            "31094501"
+          ]
+        },
+        "enrichedMetadata": {},
+        "children": [],
+        "highlightedFragments": []
+      },
+      {
+        "apiVersion": "2.144",
+        "reference": "50149595TOPICSen",
+        "url": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-CL2-2027-01-TRANSFO-08",
+        "title": null,
+        "contentType": "text/plain",
+        "language": "en",
+        "databaseLabel": "SEDIA",
+        "database": "SEDIA",
+        "summary": "Scaling and deploying innovations in migration management",
+        "weight": 0.0,
+        "groupById": null,
+        "content": "Scaling and deploying innovations in migration management",
+        "accessRestriction": false,
+        "pages": null,
+        "checksum": null,
+        "metadata": {
+          "identifier": [
+            "HORIZON-CL2-2027-01-TRANSFO-08"
+          ],
+          "es_ContentType": [
+            "text/plain"
+          ],
+          "es_SortDate": [
+            "2027-05-13T00:00:00.000+0000"
+          ],
+          "deadlineDate": [
+            "2027-09-23T00:00:00.000+0000"
+          ],
+          "language": [
+            "en"
+          ],
+          "title": [
+            "Scaling and deploying innovations in migration management"
+          ],
+          "type": [
+            "1"
+          ],
+          "url": [
+            "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-CL2-2027-01-TRANSFO-08"
+          ],
+          "typesOfAction": [
+            "HORIZON Innovation Actions"
+          ],
+          "esST_URL": [
+            "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-CL2-2027-01-TRANSFO-08"
+          ],
+          "callccm2Id": [
+            "50149973"
+          ],
+          "DATASOURCE": [
+            "SEDIA"
+          ],
+          "REFERENCE": [
+            "50149595TOPICSen"
+          ],
+          "frameworkProgramme": [
+            "43108390"
+          ],
+          "startDate": [
+            "2027-05-13T00:00:00.000+0000"
+          ],
+          "deadlineModel": [
+            "single-stage"
+          ],
+          "status": [
+            "31094501"
+          ]
+        },
+        "enrichedMetadata": {},
+        "children": [],
+        "highlightedFragments": []
+      },
+      {
+        "apiVersion": "2.144",
+        "reference": "50149121TOPICSen",
+        "url": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-CL2-2027-01-DEMOCRACY-02",
+        "title": null,
+        "contentType": "text/plain",
+        "language": "en",
+        "databaseLabel": "SEDIA",
+        "database": "SEDIA",
+        "summary": "Women’s, LGBTIQ and minority rights in a context of autocracy, conflict and geopolitical shifts",
+        "weight": 0.0,
+        "groupById": null,
+        "content": "Women’s, LGBTIQ and minority rights in a context of autocracy, conflict and geopolitical shifts",
+        "accessRestriction": false,
+        "pages": null,
+        "checksum": null,
+        "metadata": {
+          "identifier": [
+            "HORIZON-CL2-2027-01-DEMOCRACY-02"
+          ],
+          "es_ContentType": [
+            "text/plain"
+          ],
+          "es_SortDate": [
+            "2027-05-13T00:00:00.000+0000"
+          ],
+          "deadlineDate": [
+            "2027-09-23T00:00:00.000+0000"
+          ],
+          "language": [
+            "en"
+          ],
+          "title": [
+            "Women’s, LGBTIQ and minority rights in a context of autocracy, conflict and geopolitical shifts"
+          ],
+          "type": [
+            "1"
+          ],
+          "url": [
+            "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-CL2-2027-01-DEMOCRACY-02"
+          ],
+          "typesOfAction": [
+            "HORIZON  Research and Innovation Actions"
+          ],
+          "esST_URL": [
+            "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-CL2-2027-01-DEMOCRACY-02"
+          ],
+          "callccm2Id": [
+            "50149973"
+          ],
+          "DATASOURCE": [
+            "SEDIA"
+          ],
+          "REFERENCE": [
+            "50149121TOPICSen"
+          ],
+          "frameworkProgramme": [
+            "43108390"
+          ],
+          "startDate": [
+            "2027-05-13T00:00:00.000+0000"
+          ],
+          "deadlineModel": [
+            "single-stage"
+          ],
+          "status": [
+            "31094501"
+          ]
+        },
+        "enrichedMetadata": {},
+        "children": [],
+        "highlightedFragments": []
+      },
+      {
+        "apiVersion": "2.144",
+        "reference": "50149169TOPICSen",
+        "url": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-CL2-2027-01-DEMOCRACY-04",
+        "title": null,
+        "contentType": "text/plain",
+        "language": "en",
+        "databaseLabel": "SEDIA",
+        "database": "SEDIA",
+        "summary": "Addressing the impact of artificial intelligence, cyberviolence, and deepfakes on equality, democracy and inclusive societies",
+        "weight": 0.0,
+        "groupById": null,
+        "content": "Addressing the impact of artificial intelligence, cyberviolence, and deepfakes on equality, democracy and inclusive societies",
+        "accessRestriction": false,
+        "pages": null,
+        "checksum": null,
+        "metadata": {
+          "identifier": [
+            "HORIZON-CL2-2027-01-DEMOCRACY-04"
+          ],
+          "es_ContentType": [
+            "text/plain"
+          ],
+          "es_SortDate": [
+            "2027-05-13T00:00:00.000+0000"
+          ],
+          "deadlineDate": [
+            "2027-09-23T00:00:00.000+0000"
+          ],
+          "language": [
+            "en"
+          ],
+          "title": [
+            "Addressing the impact of artificial intelligence, cyberviolence, and deepfakes on equality, democracy and inclusive societies"
+          ],
+          "type": [
+            "1"
+          ],
+          "url": [
+            "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-CL2-2027-01-DEMOCRACY-04"
+          ],
+          "typesOfAction": [
+            "HORIZON  Research and Innovation Actions"
+          ],
+          "esST_URL": [
+            "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-CL2-2027-01-DEMOCRACY-04"
+          ],
+          "callccm2Id": [
+            "50149973"
+          ],
+          "DATASOURCE": [
+            "SEDIA"
+          ],
+          "REFERENCE": [
+            "50149169TOPICSen"
+          ],
+          "frameworkProgramme": [
+            "43108390"
+          ],
+          "startDate": [
+            "2027-05-13T00:00:00.000+0000"
+          ],
+          "deadlineModel": [
+            "single-stage"
+          ],
+          "status": [
+            "31094501"
+          ]
+        },
+        "enrichedMetadata": {},
+        "children": [],
+        "highlightedFragments": []
+      },
+      {
+        "apiVersion": "2.144",
+        "reference": "50149084TOPICSen",
+        "url": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-CL2-2027-01-DEMOCRACY-01",
+        "title": null,
+        "contentType": "text/plain",
+        "language": "en",
+        "databaseLabel": "SEDIA",
+        "database": "SEDIA",
+        "summary": "Advisory support and network for countering and preventing radicalisation, extremism, hate speech and polarisation",
+        "weight": 0.0,
+        "groupById": null,
+        "content": "Advisory support and network for countering and preventing radicalisation, extremism, hate speech and polarisation",
+        "accessRestriction": false,
+        "pages": null,
+        "checksum": null,
+        "metadata": {
+          "identifier": [
+            "HORIZON-CL2-2027-01-DEMOCRACY-01"
+          ],
+          "es_ContentType": [
+            "text/plain"
+          ],
+          "es_SortDate": [
+            "2027-05-13T00:00:00.000+0000"
+          ],
+          "deadlineDate": [
+            "2027-09-23T00:00:00.000+0000"
+          ],
+          "language": [
+            "en"
+          ],
+          "title": [
+            "Advisory support and network for countering and preventing radicalisation, extremism, hate speech and polarisation"
+          ],
+          "type": [
+            "1"
+          ],
+          "url": [
+            "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-CL2-2027-01-DEMOCRACY-01"
+          ],
+          "typesOfAction": [
+            "HORIZON Coordination and Support Actions"
+          ],
+          "esST_URL": [
+            "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-CL2-2027-01-DEMOCRACY-01"
+          ],
+          "callccm2Id": [
+            "50149973"
+          ],
+          "DATASOURCE": [
+            "SEDIA"
+          ],
+          "REFERENCE": [
+            "50149084TOPICSen"
+          ],
+          "frameworkProgramme": [
+            "43108390"
+          ],
+          "startDate": [
+            "2027-05-13T00:00:00.000+0000"
+          ],
+          "deadlineModel": [
+            "single-stage"
+          ],
+          "status": [
+            "31094501"
+          ]
+        },
+        "enrichedMetadata": {},
+        "children": [],
+        "highlightedFragments": []
+      },
+      {
+        "apiVersion": "2.144",
+        "reference": "50129330TOPICSen",
+        "url": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-CL5-2027-05-D2-08",
+        "title": null,
+        "contentType": "text/plain",
+        "language": "en",
+        "databaseLabel": "SEDIA",
+        "database": "SEDIA",
+        "summary": "Demonstration for Long-duration Battery Energy Storage Systems (BATT4EU Partnership)",
+        "weight": 0.0,
+        "groupById": null,
+        "content": "Demonstration for Long-duration Battery Energy Storage Systems (BATT4EU Partnership)",
+        "accessRestriction": false,
+        "pages": null,
+        "checksum": null,
+        "metadata": {
+          "identifier": [
+            "HORIZON-CL5-2027-05-D2-08"
+          ],
+          "es_ContentType": [
+            "text/plain"
+          ],
+          "es_SortDate": [
+            "2027-05-05T00:00:00.000+0000"
+          ],
+          "deadlineDate": [
+            "2027-09-15T00:00:00.000+0000"
+          ],
+          "language": [
+            "en"
+          ],
+          "title": [
+            "Demonstration for Long-duration Battery Energy Storage Systems (BATT4EU Partnership)"
+          ],
+          "type": [
+            "1"
+          ],
+          "url": [
+            "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-CL5-2027-05-D2-08"
+          ],
+          "typesOfAction": [
+            "HORIZON Innovation Actions"
+          ],
+          "esST_URL": [
+            "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-CL5-2027-05-D2-08"
+          ],
+          "callccm2Id": [
+            "50148138"
+          ],
+          "DATASOURCE": [
+            "SEDIA"
+          ],
+          "REFERENCE": [
+            "50129330TOPICSen"
+          ],
+          "frameworkProgramme": [
+            "43108390"
+          ],
+          "startDate": [
+            "2027-05-05T00:00:00.000+0000"
+          ],
+          "deadlineModel": [
+            "single-stage"
+          ],
+          "status": [
+            "31094501"
+          ]
+        },
+        "enrichedMetadata": {},
+        "children": [],
+        "highlightedFragments": []
+      },
+      {
+        "apiVersion": "2.144",
+        "reference": "50130167TOPICSen",
+        "url": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-CL5-2027-05-D4-05",
+        "title": null,
+        "contentType": "text/plain",
+        "language": "en",
+        "databaseLabel": "SEDIA",
+        "database": "SEDIA",
+        "summary": "On-site robotic and automated techniques for building renovation and new construction",
+        "weight": 0.0,
+        "groupById": null,
+        "content": "On-site robotic and automated techniques for building renovation and new construction",
+        "accessRestriction": false,
+        "pages": null,
+        "checksum": null,
+        "metadata": {
+          "identifier": [
+            "HORIZON-CL5-2027-05-D4-05"
+          ],
+          "es_ContentType": [
+            "text/plain"
+          ],
+          "es_SortDate": [
+            "2027-05-05T00:00:00.000+0000"
+          ],
+          "deadlineDate": [
+            "2027-09-15T00:00:00.000+0000"
+          ],
+          "language": [
+            "en"
+          ],
+          "title": [
+            "On-site robotic and automated techniques for building renovation and new construction"
+          ],
+          "type": [
+            "1"
+          ],
+          "url": [
+            "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-CL5-2027-05-D4-05"
+          ],
+          "typesOfAction": [
+            "HORIZON Innovation Actions"
+          ],
+          "esST_URL": [
+            "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-CL5-2027-05-D4-05"
+          ],
+          "callccm2Id": [
+            "50148138"
+          ],
+          "DATASOURCE": [
+            "SEDIA"
+          ],
+          "REFERENCE": [
+            "50130167TOPICSen"
+          ],
+          "frameworkProgramme": [
+            "43108390"
+          ],
+          "startDate": [
+            "2027-05-05T00:00:00.000+0000"
+          ],
+          "deadlineModel": [
+            "single-stage"
+          ],
+          "status": [
+            "31094501"
+          ]
+        },
+        "enrichedMetadata": {},
+        "children": [],
+        "highlightedFragments": []
+      },
+      {
+        "apiVersion": "2.144",
+        "reference": "50130209TOPICSen",
+        "url": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-CL5-2027-05-D4-06",
+        "title": null,
+        "contentType": "text/plain",
+        "language": "en",
+        "databaseLabel": "SEDIA",
+        "database": "SEDIA",
+        "summary": "Thermal energy optimisation and waste heat recovery of high energy demand IT rooms in buildings or small edge data centres",
+        "weight": 0.0,
+        "groupById": null,
+        "content": "Thermal energy optimisation and waste heat recovery of high energy demand IT rooms in buildings or small edge data centres",
+        "accessRestriction": false,
+        "pages": null,
+        "checksum": null,
+        "metadata": {
+          "identifier": [
+            "HORIZON-CL5-2027-05-D4-06"
+          ],
+          "es_ContentType": [
+            "text/plain"
+          ],
+          "es_SortDate": [
+            "2027-05-05T00:00:00.000+0000"
+          ],
+          "deadlineDate": [
+            "2027-09-15T00:00:00.000+0000"
+          ],
+          "language": [
+            "en"
+          ],
+          "title": [
+            "Thermal energy optimisation and waste heat recovery of high energy demand IT rooms in buildings or small edge data centres"
+          ],
+          "type": [
+            "1"
+          ],
+          "url": [
+            "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-CL5-2027-05-D4-06"
+          ],
+          "typesOfAction": [
+            "HORIZON Innovation Actions"
+          ],
+          "esST_URL": [
+            "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-CL5-2027-05-D4-06"
+          ],
+          "callccm2Id": [
+            "50148138"
+          ],
+          "DATASOURCE": [
+            "SEDIA"
+          ],
+          "REFERENCE": [
+            "50130209TOPICSen"
+          ],
+          "frameworkProgramme": [
+            "43108390"
+          ],
+          "startDate": [
+            "2027-05-05T00:00:00.000+0000"
+          ],
+          "deadlineModel": [
+            "single-stage"
+          ],
+          "status": [
+            "31094501"
+          ]
+        },
+        "enrichedMetadata": {},
+        "children": [],
+        "highlightedFragments": []
+      },
+      {
+        "apiVersion": "2.144",
+        "reference": "50130230TOPICSen",
+        "url": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-CL5-2027-05-D4-07",
+        "title": null,
+        "contentType": "text/plain",
+        "language": "en",
+        "databaseLabel": "SEDIA",
+        "database": "SEDIA",
+        "summary": "Integrating circularity in LCA-based modelling frameworks for renovation of buildings (Built4People Partnership)",
+        "weight": 0.0,
+        "groupById": null,
+        "content": "Integrating circularity in LCA-based modelling frameworks for renovation of buildings (Built4People Partnership)",
+        "accessRestriction": false,
+        "pages": null,
+        "checksum": null,
+        "metadata": {
+          "identifier": [
+            "HORIZON-CL5-2027-05-D4-07"
+          ],
+          "es_ContentType": [
+            "text/plain"
+          ],
+          "es_SortDate": [
+            "2027-05-05T00:00:00.000+0000"
+          ],
+          "deadlineDate": [
+            "2027-09-15T00:00:00.000+0000"
+          ],
+          "language": [
+            "en"
+          ],
+          "title": [
+            "Integrating circularity in LCA-based modelling frameworks for renovation of buildings (Built4People Partnership)"
+          ],
+          "type": [
+            "1"
+          ],
+          "url": [
+            "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-CL5-2027-05-D4-07"
+          ],
+          "typesOfAction": [
+            "HORIZON Innovation Actions"
+          ],
+          "esST_URL": [
+            "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-CL5-2027-05-D4-07"
+          ],
+          "callccm2Id": [
+            "50148138"
+          ],
+          "DATASOURCE": [
+            "SEDIA"
+          ],
+          "REFERENCE": [
+            "50130230TOPICSen"
+          ],
+          "frameworkProgramme": [
+            "43108390"
+          ],
+          "startDate": [
+            "2027-05-05T00:00:00.000+0000"
+          ],
+          "deadlineModel": [
+            "single-stage"
+          ],
+          "status": [
+            "31094501"
+          ]
+        },
+        "enrichedMetadata": {},
+        "children": [],
+        "highlightedFragments": []
+      },
+      {
+        "apiVersion": "2.144",
+        "reference": "50130277TOPICSen",
+        "url": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-CL5-2027-05-D4-09",
+        "title": null,
+        "contentType": "text/plain",
+        "language": "en",
+        "databaseLabel": "SEDIA",
+        "database": "SEDIA",
+        "summary": "Demonstration of industrial excess/waste heat conversion to mechanical or electrical power",
+        "weight": 0.0,
+        "groupById": null,
+        "content": "Demonstration of industrial excess/waste heat conversion to mechanical or electrical power",
+        "accessRestriction": false,
+        "pages": null,
+        "checksum": null,
+        "metadata": {
+          "identifier": [
+            "HORIZON-CL5-2027-05-D4-09"
+          ],
+          "es_ContentType": [
+            "text/plain"
+          ],
+          "es_SortDate": [
+            "2027-05-05T00:00:00.000+0000"
+          ],
+          "deadlineDate": [
+            "2027-09-15T00:00:00.000+0000"
+          ],
+          "language": [
+            "en"
+          ],
+          "title": [
+            "Demonstration of industrial excess/waste heat conversion to mechanical or electrical power"
+          ],
+          "type": [
+            "1"
+          ],
+          "url": [
+            "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-CL5-2027-05-D4-09"
+          ],
+          "typesOfAction": [
+            "HORIZON Innovation Actions"
+          ],
+          "esST_URL": [
+            "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-CL5-2027-05-D4-09"
+          ],
+          "callccm2Id": [
+            "50148138"
+          ],
+          "DATASOURCE": [
+            "SEDIA"
+          ],
+          "REFERENCE": [
+            "50130277TOPICSen"
+          ],
+          "frameworkProgramme": [
+            "43108390"
+          ],
+          "startDate": [
+            "2027-05-05T00:00:00.000+0000"
+          ],
+          "deadlineModel": [
+            "single-stage"
+          ],
+          "status": [
+            "31094501"
+          ]
+        },
+        "enrichedMetadata": {},
+        "children": [],
+        "highlightedFragments": []
+      },
+      {
+        "apiVersion": "2.144",
+        "reference": "50147543TOPICSen",
+        "url": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-CL3-2027-01-FCT-04",
+        "title": null,
+        "contentType": "text/plain",
+        "language": "en",
+        "databaseLabel": "SEDIA",
+        "database": "SEDIA",
+        "summary": "Open topic on increasing security of citizens against terrorism, including in public spaces",
+        "weight": 0.0,
+        "groupById": null,
+        "content": "Open topic on increasing security of citizens against terrorism, including in public spaces",
+        "accessRestriction": false,
+        "pages": null,
+        "checksum": null,
+        "metadata": {
+          "identifier": [
+            "HORIZON-CL3-2027-01-FCT-04"
+          ],
+          "es_ContentType": [
+            "text/plain"
+          ],
+          "es_SortDate": [
+            "2027-05-05T00:00:00.000+0000"
+          ],
+          "deadlineDate": [
+            "2027-11-04T00:00:00.000+0000"
+          ],
+          "language": [
+            "en"
+          ],
+          "title": [
+            "Open topic on increasing security of citizens against terrorism, including in public spaces"
+          ],
+          "type": [
+            "1"
+          ],
+          "url": [
+            "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-CL3-2027-01-FCT-04"
+          ],
+          "typesOfAction": [
+            "HORIZON Innovation Actions"
+          ],
+          "esST_URL": [
+            "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-CL3-2027-01-FCT-04"
+          ],
+          "callccm2Id": [
+            "50147919"
+          ],
+          "DATASOURCE": [
+            "SEDIA"
+          ],
+          "REFERENCE": [
+            "50147543TOPICSen"
+          ],
+          "frameworkProgramme": [
+            "43108390"
+          ],
+          "startDate": [
+            "2027-05-05T00:00:00.000+0000"
+          ],
+          "deadlineModel": [
+            "single-stage"
+          ],
+          "status": [
+            "31094501"
+          ]
+        },
+        "enrichedMetadata": {},
+        "children": [],
+        "highlightedFragments": []
+      },
+      {
+        "apiVersion": "2.144",
+        "reference": "50147875TOPICSen",
+        "url": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-CL3-2027-01-SSRI-02",
+        "title": null,
+        "contentType": "text/plain",
+        "language": "en",
+        "databaseLabel": "SEDIA",
+        "database": "SEDIA",
+        "summary": "Open grounds for future pre-commercial procurement of innovative security technologies",
+        "weight": 0.0,
+        "groupById": null,
+        "content": "Open grounds for future pre-commercial procurement of innovative security technologies",
+        "accessRestriction": false,
+        "pages": null,
+        "checksum": null,
+        "metadata": {
+          "identifier": [
+            "HORIZON-CL3-2027-01-SSRI-02"
+          ],
+          "es_ContentType": [
+            "text/plain"
+          ],
+          "es_SortDate": [
+            "2027-05-05T00:00:00.000+0000"
+          ],
+          "deadlineDate": [
+            "2027-11-04T00:00:00.000+0000"
+          ],
+          "language": [
+            "en"
+          ],
+          "title": [
+            "Open grounds for future pre-commercial procurement of innovative security technologies"
+          ],
+          "type": [
+            "1"
+          ],
+          "url": [
+            "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-CL3-2027-01-SSRI-02"
+          ],
+          "typesOfAction": [
+            "HORIZON Coordination and Support Actions"
+          ],
+          "esST_URL": [
+            "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-CL3-2027-01-SSRI-02"
+          ],
+          "callccm2Id": [
+            "50147919"
+          ],
+          "DATASOURCE": [
+            "SEDIA"
+          ],
+          "REFERENCE": [
+            "50147875TOPICSen"
+          ],
+          "frameworkProgramme": [
+            "43108390"
+          ],
+          "startDate": [
+            "2027-05-05T00:00:00.000+0000"
+          ],
+          "deadlineModel": [
+            "single-stage"
+          ],
+          "status": [
+            "31094501"
+          ]
+        },
+        "enrichedMetadata": {},
+        "children": [],
+        "highlightedFragments": []
+      },
+      {
+        "apiVersion": "2.144",
+        "reference": "50147803TOPICSen",
+        "url": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-CL3-2027-01-DRS-03",
+        "title": null,
+        "contentType": "text/plain",
+        "language": "en",
+        "databaseLabel": "SEDIA",
+        "database": "SEDIA",
+        "summary": "Enhancing decision support system for disaster crises: leveraging emerging technologies for improved civil preparedness and crisis management",
+        "weight": 0.0,
+        "groupById": null,
+        "content": "Enhancing decision support system for disaster crises: leveraging emerging technologies for improved civil preparedness and crisis management",
+        "accessRestriction": false,
+        "pages": null,
+        "checksum": null,
+        "metadata": {
+          "identifier": [
+            "HORIZON-CL3-2027-01-DRS-03"
+          ],
+          "es_ContentType": [
+            "text/plain"
+          ],
+          "es_SortDate": [
+            "2027-05-05T00:00:00.000+0000"
+          ],
+          "deadlineDate": [
+            "2027-11-04T00:00:00.000+0000"
+          ],
+          "language": [
+            "en"
+          ],
+          "title": [
+            "Enhancing decision support system for disaster crises: leveraging emerging technologies for improved civil preparedness and crisis management"
+          ],
+          "type": [
+            "1"
+          ],
+          "url": [
+            "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-CL3-2027-01-DRS-03"
+          ],
+          "typesOfAction": [
+            "HORIZON Innovation Actions"
+          ],
+          "esST_URL": [
+            "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-CL3-2027-01-DRS-03"
+          ],
+          "callccm2Id": [
+            "50147919"
+          ],
+          "DATASOURCE": [
+            "SEDIA"
+          ],
+          "REFERENCE": [
+            "50147803TOPICSen"
+          ],
+          "frameworkProgramme": [
+            "43108390"
+          ],
+          "startDate": [
+            "2027-05-05T00:00:00.000+0000"
+          ],
+          "deadlineModel": [
+            "single-stage"
+          ],
+          "status": [
+            "31094501"
+          ]
+        },
+        "enrichedMetadata": {},
+        "children": [],
+        "highlightedFragments": []
+      },
+      {
+        "apiVersion": "2.144",
+        "reference": "50148280TOPICSen",
+        "url": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-NEB-2027-01-REGEN-01",
+        "title": null,
+        "contentType": "text/plain",
+        "language": "en",
+        "databaseLabel": "SEDIA",
+        "database": "SEDIA",
+        "summary": "Combining conventional and innovative construction materials, products and techniques for sustainable and beautiful buildings",
+        "weight": 0.0,
+        "groupById": null,
+        "content": "Combining conventional and innovative construction materials, products and techniques for sustainable and beautiful buildings",
+        "accessRestriction": false,
+        "pages": null,
+        "checksum": null,
+        "metadata": {
+          "identifier": [
+            "HORIZON-NEB-2027-01-REGEN-01"
+          ],
+          "es_ContentType": [
+            "text/plain"
+          ],
+          "es_SortDate": [
+            "2027-05-05T00:00:00.000+0000"
+          ],
+          "deadlineDate": [
+            "2027-12-01T00:00:00.000+0000"
+          ],
+          "language": [
+            "en"
+          ],
+          "title": [
+            "Combining conventional and innovative construction materials, products and techniques for sustainable and beautiful buildings"
+          ],
+          "type": [
+            "1"
+          ],
+          "url": [
+            "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-NEB-2027-01-REGEN-01"
+          ],
+          "typesOfAction": [
+            "HORIZON  Research and Innovation Actions"
+          ],
+          "esST_URL": [
+            "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-NEB-2027-01-REGEN-01"
+          ],
+          "callccm2Id": [
+            "50148600"
+          ],
+          "DATASOURCE": [
+            "SEDIA"
+          ],
+          "REFERENCE": [
+            "50148280TOPICSen"
+          ],
+          "frameworkProgramme": [
+            "43108390"
+          ],
+          "startDate": [
+            "2027-05-05T00:00:00.000+0000"
+          ],
+          "deadlineModel": [
+            "single-stage"
+          ],
+          "status": [
+            "31094501"
+          ]
+        },
+        "enrichedMetadata": {},
+        "children": [],
+        "highlightedFragments": []
+      },
+      {
+        "apiVersion": "2.144",
+        "reference": "50148234TOPICSen",
+        "url": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-NEB-2027-01-PARTICIPATION-03",
+        "title": null,
+        "contentType": "text/plain",
+        "language": "en",
+        "databaseLabel": "SEDIA",
+        "database": "SEDIA",
+        "summary": "Novel combinations of knowledge and research methods to address social issues and advance a fair green transition of neighbourhoods",
+        "weight": 0.0,
+        "groupById": null,
+        "content": "Novel combinations of knowledge and research methods to address social issues and advance a fair green transition of neighbourhoods",
+        "accessRestriction": false,
+        "pages": null,
+        "checksum": null,
+        "metadata": {
+          "identifier": [
+            "HORIZON-NEB-2027-01-PARTICIPATION-03"
+          ],
+          "es_ContentType": [
+            "text/plain"
+          ],
+          "es_SortDate": [
+            "2027-05-05T00:00:00.000+0000"
+          ],
+          "deadlineDate": [
+            "2027-12-01T00:00:00.000+0000"
+          ],
+          "language": [
+            "en"
+          ],
+          "title": [
+            "Novel combinations of knowledge and research methods to address social issues and advance a fair green transition of neighbourhoods"
+          ],
+          "type": [
+            "1"
+          ],
+          "url": [
+            "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-NEB-2027-01-PARTICIPATION-03"
+          ],
+          "typesOfAction": [
+            "HORIZON  Research and Innovation Actions"
+          ],
+          "esST_URL": [
+            "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-NEB-2027-01-PARTICIPATION-03"
+          ],
+          "callccm2Id": [
+            "50148600"
+          ],
+          "DATASOURCE": [
+            "SEDIA"
+          ],
+          "REFERENCE": [
+            "50148234TOPICSen"
+          ],
+          "frameworkProgramme": [
+            "43108390"
+          ],
+          "startDate": [
+            "2027-05-05T00:00:00.000+0000"
+          ],
+          "deadlineModel": [
+            "single-stage"
+          ],
+          "status": [
+            "31094501"
+          ]
+        },
+        "enrichedMetadata": {},
+        "children": [],
+        "highlightedFragments": []
+      }
+    ],
+    "warnings": []
+  },
+  "cookies": [
+    {
+      "name": "_pk_id.7bcd6c43-58a3-489c-aa36-10b24f1fd5b9.465b",
+      "value": "2c7b4efeb5499c7f.1770804399.1.1770804399..",
+      "domain": "ec.europa.eu",
+      "path": "/info",
+      "expires": 1804759599,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "_pk_ses.7bcd6c43-58a3-489c-aa36-10b24f1fd5b9.465b",
+      "value": "*",
+      "domain": "ec.europa.eu",
+      "path": "/info",
+      "expires": 1770806199,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "dtCookie",
+      "value": "v_4_srv_-2D1684_sn_5II7P0F6430G86P3R1ODATPC85P163E7",
+      "domain": ".europa.eu",
+      "path": "/",
+      "expires": -1,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "rxVisitor",
+      "value": "1770804397470BTM0EOP9D2V3T1CANVE8O5QR5ADR8M0M",
+      "domain": ".europa.eu",
+      "path": "/",
+      "expires": -1,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "dtSa",
+      "value": "-",
+      "domain": ".europa.eu",
+      "path": "/",
+      "expires": -1,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "rxvt",
+      "value": "1770806198348|1770804397472",
+      "domain": ".europa.eu",
+      "path": "/",
+      "expires": -1,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "dtPC",
+      "value": "-1684$204397467_29h-vAKBPVRTBNHMWRUPCIDHDCVRPDMAUFERU-0e0",
+      "domain": ".europa.eu",
+      "path": "/",
+      "expires": -1,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "cck1",
+      "value": "%7B%22cm%22%3Afalse%2C%22all1st%22%3Afalse%7D",
+      "domain": ".ec.europa.eu",
+      "path": "/",
+      "expires": 1786356398,
+      "httpOnly": false,
+      "secure": true,
+      "sameSite": "Lax"
+    }
+  ],
+  "origin_page": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/calls-for-proposals?order=DESC&pageNumber=1&pageSize=50&sortBy=startDate&isExactMatch=true&type=1,8&status=31094501,31094502,31094503&frameworkProgramme=43108390"
+}

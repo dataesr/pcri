@@ -1,4 +1,12 @@
 def merged_partApp(app1, part):
+    """
+    merge app1 and part to create a table with all the possible links between applicants and participants, 
+    with the most complete information possible on each of them.
+    The merge is done in several steps to try to keep the most complete information possible on each link,
+    and to be able to identify the links that are only in app1 or only in part, and to be able to identify the links that are in both but with different information (e.g. orderNumber, participant_pic).   
+    The final table will be used to create the table of participations with the most complete information possible on each participation, and to be able to identify the participations that are only in app1 or only in part, and to be able to identify the participations that are in both but with different information (e.g. orderNumber, participant_pic).   
+    """
+
     import pandas as pd, numpy as np
     print("\n### create LIEN")
 
@@ -141,31 +149,31 @@ def merged_partApp(app1, part):
     
     # add countryCode
     lien = (lien
-            .merge(part[['project_id', 'orderNumber', 'generalPic', 'participant_pic', 'country_code_mapping']],
+            .merge(part[['project_id', 'orderNumber', 'generalPic', 'participant_pic', 'country_code_source']],
                    how='left', on=['project_id', 'orderNumber', 'generalPic', 'participant_pic']))
 
     lien = (lien
-            .merge(app1[['project_id', 'orderNumber', 'generalPic', 'participant_pic', 'country_code_mapping']], 
+            .merge(app1[['project_id', 'orderNumber', 'generalPic', 'participant_pic', 'country_code_source']], 
                    how='left', left_on=['project_id', 'applicant_orderNumber', 'generalPic', 'applicant_participant_pic'],
                    right_on=['project_id', 'orderNumber', 'generalPic', 'participant_pic'],
                    suffixes=[ '','.y'])
             .drop(columns=[ 'participant_pic.y', 'orderNumber.y'])
-            .rename(columns={'country_code_mapping.y':'applicant_country_code_mapping'}))
+            .rename(columns={'country_code_source.y':'applicant_country_code_source'}))
 
-    lien.loc[lien.country_code_mapping.isnull(), 'country_code_mapping'] = lien.loc[lien.country_code_mapping.isnull(), 'applicant_country_code_mapping']
+    lien.loc[lien.country_code_source.isnull(), 'country_code_source'] = lien.loc[lien.country_code_source.isnull(), 'applicant_country_code_source']
 
-    if any(lien.country_code_mapping.isnull()):
-        print(f"- ATTENTION {lien[lien.country_code_mapping.isnull()].generalPic.nunique()} countryCode missing {lien[lien.country_code_mapping.isnull()].generalPic.unique()}")
+    if any(lien.country_code_source.isnull()):
+        print(f"- ATTENTION {lien[lien.country_code_source.isnull()].generalPic.nunique()} countryCode missing {lien[lien.country_code_source.isnull()].generalPic.unique()}")
 
 
     #add contribution 
-    rename_dict = {col: 'applicant_' + col for col in ['orderNumber', 'participant_pic', 'country_code_mapping', 'role', 'partnerType', 'erc_role']}
+    rename_dict = {col: 'applicant_' + col for col in ['orderNumber', 'participant_pic', 'country_code_source', 'role', 'partnerType', 'erc_role']}
 
     lien=(lien
-            .merge(app1[['project_id', 'generalPic', 'requestedGrant', 'orderNumber', 'participant_pic', 'country_code_mapping', 'role', 'partnerType', 'erc_role']]
+            .merge(app1[['project_id', 'generalPic', 'requestedGrant', 'orderNumber', 'participant_pic', 'country_code_source', 'role', 'partnerType', 'erc_role']]
                         .rename(columns=rename_dict),
             how='left', 
-            on=['project_id', 'applicant_orderNumber', 'generalPic', 'applicant_participant_pic', 'applicant_country_code_mapping']))
+            on=['project_id', 'applicant_orderNumber', 'generalPic', 'applicant_participant_pic', 'applicant_country_code_source']))
 
     lien['app_fund'] = (np.where((lien['projNlien']>1.), lien['requestedGrant']/lien['projNlien'], lien['requestedGrant']))
    
@@ -175,9 +183,9 @@ def merged_partApp(app1, part):
         print(f"- check difference between requestGrant and app_fund: {'{:,.1f}'.format(app1['requestedGrant'].sum())}, {'{:,.1f}'.format(lien['app_fund'].sum())}")
 
 
-    lien=(lien.merge(part[['project_id', 'orderNumber', 'generalPic', 'participant_pic', 'country_code_mapping', 'role', 'partnerType', 'erc_role', 'euContribution', 'netEuContribution']],
+    lien=(lien.merge(part[['project_id', 'orderNumber', 'generalPic', 'participant_pic', 'country_code_source', 'role', 'partnerType', 'erc_role', 'euContribution', 'netEuContribution']],
     how='left', 
-    on=['project_id', 'orderNumber', 'generalPic', 'participant_pic', 'country_code_mapping']))
+    on=['project_id', 'orderNumber', 'generalPic', 'participant_pic', 'country_code_source']))
 
     lien['beneficiary_fund'] = (np.where((lien['propNlien']>1.), lien['euContribution']/lien['propNlien'], lien['euContribution']))
     if part['euContribution'].sum()==lien['beneficiary_fund'].sum():

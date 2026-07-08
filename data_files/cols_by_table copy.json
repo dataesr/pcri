@@ -1,0 +1,37 @@
+{
+    "projects_columns": ["projectNbr", "contractVersion", "callId", "masterCallId",
+       "callDeadlineDate", "typeOfActionCode", "acronym", "projectStatus",
+       "startDate", "endDate", "ecSignatureDate", "ecHiearchyResp", "title",
+       "abstract", "freeKeywords", "url", "topicCode", "uniqueProgrammePart",
+       "duration", "totalCost", "euContribution", "numberOfParticipants",
+       "linkedFpaProjectNbr", "framework", "lastUpdateDate", "totalGrant",
+       "nationalContribution", "otherContribution", "partnershipName",
+       "partnershipType"],
+    
+       "proposals_columns": ["proposalNbr", "stage", "acronym", "title", "abstract",
+       "ecHiearchyResp", "callId", "masterCallId", "callDeadlineDate",
+       "submissionDate", "typeOfActionCode", "topicCode",
+       "uniqueProgrammePart", "freeKeywords", "budget", "requestedGrant",
+       "numberOfApplicants", "isAboveTreshold", "rank", "stageExitStatus",
+       "isEligibile", "duration", "scientificPanel", "isProject", "eicPanels",
+       "isSeo", "isSeoDuplicate", "mgaTypeCode", "mgaTypeDescription",
+       "framework", "lastUpdateDate", "expertScore.total",
+       "expertScore.excellence", "expertScore.impact", "expertScore.quality"],
+
+       "participants_columns": ["projectNbr", "contractVersion", "orderNumber", "generalPic",
+       "participantPic", "parentPic", "partnerType", "partnerRole",
+       "participantLegalName", "totalCosts", "totalGrant", "euContribution",
+       "netEuContribution", "nationalContribution", "otherContribution",
+       "dirFinSuppTp", "countryCode", "nutsCode", "location",
+       "legalEntityTypeCode", "isSme", "partnershipName", "fundAgencyPic",
+       "fundAgencyName", "projectEnterDate", "projectExitDate",
+       "partnerSgaStatus", "partnerRemovalStatus", "framework",
+       "lastUpdateDate"],
+
+       "applicants_columns": ["proposalNbr", "orderNumber", "generalPic", "applicantPic",
+       "applicantPicLegalName", "shortName", "role", "countryCode", "nutsCode",
+       "location", "url", "legalEntityTypeCode", "isSme", "naceCode", "budget",
+       "requestedGrant", "framework", "lastUpdateDate"]
+
+
+}

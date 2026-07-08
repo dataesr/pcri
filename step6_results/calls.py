@@ -1,4 +1,4 @@
-from config_path import PATH_CONNECT, PATH_WORK, PATH_SOURCE, PATH_REF
+from config_path import PATH_CONNECT, PATH_CLEAN
 from constant_vars import FRAMEWORK
 import requests, pandas as pd, numpy as np, datetime as dt
 
@@ -27,24 +27,28 @@ def calls_all(projects):
     tops=(projects[['call_id','call_year', 'topic_code', 'call_deadline']]
         .drop_duplicates()
         .assign(inBase=True, closed=True))
+    tops['end_date'] = tops["call_deadline"].dt.strftime('%Y-%m')
+    print(f"- size tops before drop calldeadline: {len(tops)}")
+    tops = tops.drop(columns='call_deadline').drop_duplicates()
+    print(f"- size tops after drop calldeadline: {len(tops)}")
 
-    call_info_date = pd.read_pickle(f"{PATH_SOURCE}{FRAMEWORK}/call_info_harvest.pkl")
-    call_info_date = pd.DataFrame(call_info_date)
-    call_info_date['call_deadline'] = pd.to_datetime(call_info_date['deadline'], format='%d %B %Y')
-    call_info_date['call_open_date'] = pd.to_datetime(call_info_date['open_date'], format='%d %B %Y')
-    call_info_date['year'] = call_info_date['topic_code'].str.extract('(?<=-)(\\d{4})(?=-)')
+    call_info_date = pd.read_pickle(f"{PATH_CLEAN}topic_call_info.pkl")
+    # call_info_date = pd.DataFrame(call_info_date)
+    # call_info_date["deadline"] = pd.to_datetime(call_info_date["deadline"], format="%d %B %Y")
+    # call_info_date['call_deadline'] = call_info_date['deadline'].dt.to_period("M").dt.to_timestamp()
+    # call_info_date['call_open_date'] = pd.to_datetime(call_info_date['open_date'], format='%d %B %Y')
+    # call_info_date['year'] = call_info_date['topic_code'].str.extract('(?<=-)(\\d{4})(?=-)?')
   
-    call_info_date = (call_info_date
-                    .loc[call_info_date.type=='Call for proposal']
-                    .drop(columns=['open_date','deadline', 'type'])
-                    .drop_duplicates())
-    print(len(call_info_date))
+    call_info_date = call_info_date.rename(columns={'topicCode':'topic_code', 'call_year':'year'})
+    print(len(call_info_date)) 
 
-    calls_all = call_info_date.merge(tops, how='outer', on=['topic_code', 'call_deadline'])
+    calls_all = pd.merge(call_info_date[['topic_code', 'year', 'call_deadline', 'end_date']], tops, how='outer', on=['topic_code', 'end_date'])
     calls_all['topic_code'] = calls_all.topic_code.str.replace('SYG', 'SyG')
     calls_all['topic_code'] = calls_all.topic_code.str.replace('CIRCBIO', 'CircBio')
     calls_all.loc[calls_all.inBase.isnull(), 'inBase'] = False
-    calls_all.loc[(calls_all.closed.isnull())&(calls_all.call_deadline<pd.to_datetime(dt.date.today(), format='%d %B %Y')), 'closed'] = True
+
+    today = pd.Timestamp.now(tz="UTC").normalize()
+    calls_all.loc[(calls_all.closed.isnull()), 'closed'] = calls_all["call_deadline"] < today
     calls_all.loc[(calls_all.closed.isnull()), 'closed'] = False
     calls_all = calls_all.loc[calls_all.closed==True]
 
@@ -72,7 +76,7 @@ def calls_all(projects):
         calls_all.loc[(calls_all.call_id.isnull())&(calls_all.topic_code.str.contains(i)), 'call_id'] = i
     
     if any(calls_all[calls_all.call_id.isnull()]):
-        print(f"{calls_all[calls_all.call_id.isnull()].topic_code.unique()}")
+        print(f"- liste of topics which call_id is null: {calls_all[calls_all.call_id.isnull()].topic_code.unique()}")
     calls_all.loc[calls_all.call_id.isnull(), 'call_id'] = calls_all.topic_code
     calls_all.loc[calls_all.call_year.isnull(), 'call_year'] = calls_all.year
         
@@ -95,7 +99,7 @@ def calls_all(projects):
             pat=r"ADG|STG|COG|POC|SyG"
         calls_all.loc[(calls_all.theme==i)&(calls_all.topic_code.str.contains(pat, na=False, regex=True)), 'action_code'] = i
     
-    calls_all.drop(columns=['year'], inplace=True)
+    calls_all = calls_all.drop(columns=['year']).drop_duplicates()
 
     calls_all['nb']=calls_all.groupby('call_id')['inBase'].transform('nunique')
 

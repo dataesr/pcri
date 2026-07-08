@@ -71,7 +71,7 @@ def projects_participations(projects, part):
     print(f"size: {len(projects_current)}, fund_signed: {'{:,.1f}'.format(projects_current.loc[(projects_current.stage=='successful')&(projects_current.country_code=='FRA')].calculated_fund.sum())}, participant_signed: {'{:,.1f}'.format(projects_current.loc[(projects_current.stage=='successful')&(projects_current.country_code=='FRA'),'number_involved'].sum())}")
 
     (pd.DataFrame(projects_current)
-    .drop(columns=['topic_name','ecorda_date','pilier_code', 'programme_code'])
+    .drop(columns=['topic_name','ecorda_date','pilier_code', 'numero_national_de_structure', 'structure_name'])
     .to_csv(f"{PATH_CONNECT}projects_participations_current.csv", index=False, encoding="UTF-8", sep=";", na_rep=''))
 
     return projects_current
@@ -95,7 +95,7 @@ def synthese(projects_current):
             'action_name':'action_name',
             'action_code2':'action_detail_id', 
             'action_name2':'action_detail_name',
-            'calculated_fund':'fund_€',
+            'calculated_fund':'fund_eur',
             'country_group_association_code':'country_association_code',
             'country_group_association_name_en':'country_association_name_en',
             'country_group_association_name_fr':'country_association_name_fr',
@@ -108,7 +108,7 @@ def synthese(projects_current):
     # attention si changement de nom de vars -> la modifier aussi dans pcri_info_columns_order
     tmp = cols_order(tmp, 'proj_synthese')
 
-    print(f"{'{:,.1f}'.format(tmp.loc[tmp.stage=='successful','fund_€'].sum())}")
+    print(f"{'{:,.1f}'.format(tmp.loc[tmp.stage=='successful','fund_eur'].sum())}")
     zipfile_ods(tmp, 'fr-esr-all-projects-synthese')
 
 

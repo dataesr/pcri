@@ -1,5 +1,5 @@
 import pandas as pd, os
-from config_path import PATH_SOURCE, PATH_WORK
+from config_path import PATH_SOURCE, PATH_WORK, PATH_HARVEST
 from functions_shared import zipfile_ods, cols_order, load_last_file_csv, cols_select
 
 def projects_ods(projects, participation, calls, countries, h20_p, FP6_p, FP7_p):
@@ -7,8 +7,8 @@ def projects_ods(projects, participation, calls, countries, h20_p, FP6_p, FP7_p)
     cc = countries[['countryCode_iso3', 'country_name_en', 'country_name_fr']].drop_duplicates()
     part= (participation.loc[participation.stage=='successful', 
                 ['project_id', 'country_code', 'country_code_mapping', 
-                 'participation_nuts', 'region_1_name', 'region_2_name', 
-                 'regional_unit_name']].drop_duplicates()
+                #  'participation_nuts', 'region_1_name', 'region_2_name', 'regional_unit_name'
+                 ]].drop_duplicates()
     .merge(cc[['countryCode_iso3','country_name_fr']]
            .rename(columns={'countryCode_iso3':'country_code'}), how='left', on='country_code')
     .merge(cc[['countryCode_iso3', 'country_name_en']]
@@ -55,7 +55,7 @@ def projects_ods(projects, participation, calls, countries, h20_p, FP6_p, FP7_p)
 
 
     file_prefix = 'data_cordis_check_cordis'
-    cordis = load_last_file_csv(PATH_SOURCE, file_prefix, sep=',')
+    cordis = load_last_file_csv(PATH_HARVEST, file_prefix, sep=',')
     cordis['project_id']=cordis['project_id'].astype('str')
     tmp = tmp.merge(cordis[cordis.cordis_webPage_status==200].drop_duplicates(), how='left', on='project_id')
     tmp.loc[tmp.cordis_webPage_status==200, 'cordis_project_webpage'] = "https://cordis.europa.eu/project/id/"+tmp.project_id.astype('str').str.strip()

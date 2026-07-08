@@ -1,138 +1,219 @@
 import pandas as pd, numpy as np, json
 from config_path import PATH_WORK
+from step3_entities.references import paysage_id_extract, paysage_id_extract_prepare
+from remote_process.ID_checkingRefExist import check_id_in_paysage
 
-def merge_ror(entities_tmp, ror):
-    print("### merge ROR")
-    # ccode=json.load(open("data_files/countryCode_match.json"))
-    # for k,v in ccode.items():
-    #     ror.loc[ror.country_code==k, 'country_code'] = v
-    #     ror.loc[ror.country_code==k, 'country_code'] = v
-    # ror = (ror
-    #        .merge(countries[['countryCode', 'country_code_mapping']], 
-    #               how='left', left_on='iso2', right_on='countryCode')
-    #         .drop(columns=['countryCode', 'iso2']))
+def merge_id_to_ref(df, var: str):
+    """
+    reload link between from_id_to_ref and paysage IDs after updating paysage app
+    
+    """
+    paysage_identifiers = paysage_id_extract(list(df['source_id'].unique()))
+    paysage_identifiers = paysage_id_extract_prepare(paysage_identifiers)
+    df = check_id_in_paysage(df, var, paysage_identifiers)
+    return df
+
+def merge_paysage(entities_tmp, paysage, cat_filter):
+    print(f"\n### merge PAYSAGE")            
+
+    paysage = (paysage
+            .rename(columns={'id_source':'id_extend',
+                            'id_clean':'entities_id', 
+                            'name_clean':'entities_name', 
+                            'acronym_clean':'entities_acronym',
+                            'category_name':'catname'
+                            })
+            .assign(link_to_ref=True)
+            .drop_duplicates()
+            .merge(cat_filter, how='left', left_on='entities_id', right_on='pid')
+            .drop(columns=['pid', 'acronymEn', 'acronymLocal', 'cityid']))
+    print(f"-1 size paysage to merge: {len(paysage)}")
+
+    if any(paysage['paysage_category_id'].isnull()):
+        paysage.loc[paysage['paysage_category_id'].isnull(), 'paysage_category_id'] = paysage.loc[paysage['paysage_category_id'].isnull(), 'category_id']
+        paysage.loc[paysage['category_name'].isnull(), 'category_name'] = paysage.loc[paysage['category_name'].isnull(), 'catname']
+
 
     entities_tmp = (entities_tmp
-                    .merge(ror.drop(columns='country_code_mapping'), 
-                           how='left', left_on=['id_extend'], right_on=['id_source'])
-                    .drop(columns='id_source')
-                    .drop_duplicates())
+        .drop_duplicates()
+        .merge(paysage.drop(columns='catname'), 
+               how='left', on='id_extend'))
+    print(f"-2 size entities_merge+paysage: {len(entities_tmp[entities_tmp['source_id']=='paysage'])}")
+
+    if any(entities_tmp['paysage_category_id'].isnull()):
+        print(f"-3 ATTENTION, missing entities_tmp category: {entities_tmp.loc[entities_tmp['paysage_category_id'].isnull(), ['entities_id', 'cj_code']].drop_duplicates()}")
+
+    if ('legalName' in entities_tmp.columns) & ('country_code' in entities_tmp.columns):
+            if (len(entities_tmp.groupby(['generalPic', 'country_code', 'country_code_source', 'id_extend']).size().reset_index(name='nb').query('nb>1'))>0):
+                print(f"-4 ATTENTION ! fix entities_tmp rows duplicated: {entities_tmp.groupby(['generalPic', 'id_extend', 'legalName', 'country_code', 'country_code_source']).size().reset_index(name='nb').query('nb>1')}")
+
+    if ('legalName' in entities_tmp.columns) & (any(entities_tmp.groupby(['generalPic', 'country_code_source'])['generalPic'].transform('count')>1)):
+        print(f"-5 PIC duplicated\n{entities_tmp[entities_tmp.groupby(['generalPic', 'country_code_source'])['generalPic'].transform('count')>1][['generalPic', 'legalName','country_code_source', 'id_first']].drop_duplicates()}")
+        
+    print(f"-6 End size entities_tmp+paysage_info: {len(entities_tmp)}")
+    return entities_tmp.drop(columns='category_id')
+
+
+def merge_ror(entities_tmp, ror, cat, paysage_cj):
+    print("### merge ROR")
+
+    ror = ror.merge(paysage_cj, how='left', left_on='cj', right_on='id')
+    tmp = ror[['id_clean', 'paysageCat']].drop_duplicates()
+    tmp = tmp.assign(paysageCat=tmp['paysageCat'].str.split(';')).explode('paysageCat')
+    tmp = (pd.merge(tmp, cat, how='left', left_on='paysageCat', right_on='category_id')
+           .drop(columns=['paysageCat'])
+    )
+    tmp = (tmp.rename(columns={'category_id':'paysage_category_id'})
+              .groupby('id_clean', as_index=False).agg({
+                'paysage_category_id': ';'.join,
+                'category_name': ';'.join,
+                'paysage_category_priority': lambda x: ';'.join(map(str, x))
+            })
+    )
+    
+    ror = pd.merge(ror, tmp, how='left', on='id_clean').drop(columns='paysageCat')
+
+    ror = (ror[['id_source', 'id_clean', 'inseeCode', 'longNameFr', 'paysage_category_id',
+        'category_name', 'paysage_category_priority', 'name_usual', 'acronym']]
+        .drop_duplicates()
+        .rename(columns={'inseeCode':'cj_code',
+                        'longNameFr':'cj_name',
+                        'name_usual':'entities_name',
+                        'acronym':'entities_acronym',
+                        'id_clean':'entities_id'
+                            })
+    )
+    
+    ids_select = set(ror['id_source'])
+    entities_select = (entities_tmp[entities_tmp['id_extend'].isin(ids_select)]
+                        .drop(columns=[ 'entities_id', 'entities_name', 'entities_acronym',
+                                        'paysage_category_id', 'cj_code', 'cj_name',
+                                        'category_name', 'paysage_category_priority'])
+                                        )
+    print(f"- size entities_select before ror: {len(entities_select)}")  
+
+    entities_select = (entities_select          
+                        .merge(ror, how='inner', left_on='id_extend', right_on='id_source')
+                        .drop(columns='id_source')
+                        .assign(link_to_ref=True))
+    print(f"- size entities_select with ror: {len(entities_select)}")
+    
+    ids_select = set(entities_select['id_extend'])
+    tmp = entities_tmp[~entities_tmp['id_extend'].isin(ids_select)]
+    entities_tmp = pd.concat([tmp, entities_select], ignore_index=True).drop_duplicates()
+    
     print(f"- End size entities_tmp+ror_info: {len(entities_tmp)}")
     if any(entities_tmp.groupby('generalPic')['generalPic'].transform('count')>1):
         entities_tmp[entities_tmp.groupby('generalPic')['generalPic'].transform('count')>1]
     return entities_tmp
 
-def merge_paysage(entities_tmp, paysage, cat_filter):
-    print("### merge PAYSAGE")            
 
-    paysage = (paysage
-            .rename(columns={'id':'id_extend',
-                                'id_clean':'entities_id', 
-                                'name_clean':'entities_name', 
-                                'acronym_clean':'entities_acronym', 
-                                'cj_name':'paysage_cj_name',
-                            'siren':'paysage_siren'})
-            .drop(columns=['acro_tmp'])
-            .drop_duplicates()
-            .merge(cat_filter, how='left', left_on='entities_id', right_on='id_clean')
-            .drop(columns='id_clean'))
+def merge_sirene(entities_tmp, sirene, cat, paysage_cj):
 
-    paysage.loc[paysage.id_extend.str.len()==14, 'id_extend'] = paysage.id_extend.str[0:9]
-    paysage = paysage.loc[~(paysage.entities_id.isin(['sJKd8','pG74N']))] # BioEnTech  792918765  
-
-    entities_tmp=(entities_tmp
-        .drop_duplicates()
-        .merge(paysage, how='left', on='id_extend'))
-    
-    if ('legalName' in entities_tmp.columns) & ('country_code' in entities_tmp.columns):
-            if (len(entities_tmp.groupby(['generalPic', 'country_code', 'country_code_mapping']).size().reset_index(name='nb').query('nb>1'))>0):
-                print(f"-ATTENTION ! fix entities_tmp rows duplicated: {entities_tmp.groupby(['generalPic', 'legalName', 'country_code', 'country_code_mapping']).size().reset_index(name='nb').query('nb>1')}")
-
-    entities_tmp.loc[entities_tmp.entities_id.isnull(), 'entities_id'] = entities_tmp.id_clean
-    entities_tmp.loc[entities_tmp.entities_name.isnull(), 'entities_name'] = entities_tmp.name_clean
-    entities_tmp.loc[entities_tmp.entities_acronym.isnull(), 'entities_acronym'] = entities_tmp.acronym_clean
-
-    entities_tmp = entities_tmp.drop(['id_clean','name_clean','acronym_clean'], axis=1).drop_duplicates()
-
-    if ('legalName' in entities_tmp.columns) & (any(entities_tmp.groupby('generalPic')['generalPic'].transform('count')>1)):
-        print(f"- doublons PIC\n{entities_tmp[entities_tmp.groupby('generalPic')['generalPic'].transform('count')>1][['generalPic', 'legalName','country_code_mapping', 'id']]}")
-        
-    print(f"- End size entities_tmp+paysage_info: {len(entities_tmp)}")
-    return entities_tmp
-
-
-def merge_sirene(entities_tmp, sirene):
     print("### merge SIRENE")
-    sirene[sirene.select_dtypes(include=['object']).columns] = sirene.select_dtypes(include=['object']).replace(r'^\s*$', np.nan, regex=True)
-    sirene = sirene.drop_duplicates()
-    print(f"- first size sirene : {len(sirene)}")
+    sirene = (sirene[['siren', 'siret', 'siege', 'sigle', 'nom', 'inseeCode', 'paysageCat', 'cat']]
+              .rename(columns={'cat':'cat_entreprise'})
+    )
+    sirene = pd.merge(sirene, paysage_cj, how='left', on='inseeCode').drop(columns=['id'])
+    sirene = (pd.merge(sirene, cat,
+                        how='left', left_on='paysageCat', right_on='category_id')
+                        .drop(columns=['paysageCat'])
+                        .rename(columns={
+                            'category_id':'paysage_category_id',
+                            'inseeCode':'cj_code',
+                            'longNameFr':'cj_name',
+                            'nom':'entities_name',
+                            'sigle':'entities_acronym'})
+    )
+    
+    # siret merge
+    entities_select = (entities_tmp[entities_tmp['source_id']=='siret']
+                        .drop(columns=[ 'entities_id', 'cj_code', 'cj_name', 
+                                        'sector', 'entities_name', 'entities_acronym',
+                                        'paysage_category_id', 'category_name', 'paysage_category_priority'])
+                        .merge(sirene, how='inner', left_on='id_extend', right_on='siret')
+                        .drop(columns=['siege', 'siren'])
+                        .rename(columns={'siret':'entities_id'})
+                        .assign(link_to_ref=True))
+    
+    entities_tmp = pd.concat([entities_tmp[~entities_tmp['id_extend'].isin(entities_select['entities_id'].unique())], entities_select], ignore_index=True).drop_duplicates()
 
-    sirene=sirene.loc[~sirene.siren.isin(['889664413'])]
+    # siren merge
+    entities_select = (entities_tmp[(entities_tmp['source_id']=='siren')&(entities_tmp['entities_id'].isnull())]
+                    .drop(columns=[ 'entities_id', 'cj_code', 'cj_name', 'cat_entreprise',
+                                    'sector', 'entities_name', 'entities_acronym',
+                                    'paysage_category_id', 'category_name', 'paysage_category_priority']))
+    print(f"- size entities_select siren before merge: {len(entities_select)}")
 
-    # si doublon siren/siret
-    sirene['nb']=sirene.groupby(['siren', 'siret'], as_index=False)['siret'].transform('count')
-    sirene=sirene.loc[~((sirene.nb>1)&(sirene.etat_ul=='C'))]
-    sirene['nb']=sirene.groupby(['siren', 'siret'], as_index=False)['siret'].transform('count')
-    sirene=sirene.sort_values(['siren', 'siret','date_debut'], ascending=False)
-    sirene=sirene.groupby(['siren', 'siret']).first().reset_index()
+    entities_select = (pd.merge(entities_select, sirene[sirene['siege']==True], 
+                               how='inner', left_on='id_extend', right_on='siren')
+                    .drop(columns=['siret', 'siege'])
+                    .rename(columns={'siren':'entities_id'})
+                    .assign(link_to_ref=True)
+                    )
+    print(f"-1 size entities_select siren before merge: {len(entities_select)}")
 
-    print(f"- size sirene : {len(sirene)}")
-
-
-    sirene=sirene.rename(columns={'date_debut':"siret_closeDate"})
-    sirene.loc[sirene.etat_ul=='A', 'siren_closeDate']=np.nan
-
-    sirene=sirene.assign(ens=sirene[['ens1', 'ens2', 'ens3']].fillna('').agg(' '.join, axis=1).str.strip()).drop(columns=['ens1', 'ens2', 'ens3'])
-    sirene=sirene.assign(nom_perso=sirene[['nom_pp', 'prenom']].fillna('').agg(' '.join, axis=1).str.strip()).drop(columns=['nom_pp', 'prenom'])
-
-    sirene.mask(sirene=='', inplace=True)
-
-    df = (entities_tmp.loc[~entities_tmp.id_extend.isnull(), ['id_extend']]
-        .merge(sirene, how='inner', left_on='id_extend', right_on='siret')
-        .drop_duplicates().assign(orig="siret"))
-
-    s = sirene.loc[sirene.siege==True]
-    df1 = (entities_tmp.loc[~entities_tmp.id_extend.isnull(), ['id_extend']]
-        .merge(s, how='inner', left_on='id_extend', right_on='rna')
-        .drop_duplicates()
-        .assign(orig="rna"))
-    df2 = (entities_tmp.loc[~entities_tmp.id_extend.isnull(), ['id_extend']]
-        .merge(s, how='inner', left_on='id_extend', right_on='siren')
-        .drop_duplicates().assign(orig="siren"))
-    df = pd.concat([df, df1, df2], ignore_index=True).drop_duplicates()
-
-    if any(df.loc[df.orig=='siret']):
-        print(f"1 - A vérifier -> liste des noms à traiter:\n {df.loc[df.orig=='siret', ['ens', 'denom_us', 'nom_ul']]}\n#####")
-
-    # df=df.assign(nom=np.where((df.orig=='siret')&(df.denom_us.isnull()), df.ens, df.denom_us))
-    df=df.assign(nom=np.where(df.nom_ul.isnull(), df.nom_perso, df.nom_ul))
-
-    # df.loc[df.nom.isnull(), 'nom']=df.loc[df.nom.isnull()].nom_ul
-    # df.loc[df.nom.isnull(), 'nom']=df.loc[df.nom.isnull()].nom_perso
-
-    if df.loc[df.nom.isnull()].empty:
-        pass
-    else:
-        print(f"2 - compléter code pour récupérer une valeur pour nom manquant - {df.loc[df.nom.isnull()]}")
-        
-    df['nom']= df.nom.str.capitalize()
-    df=df.assign(id_m=np.where(df.orig.isin(['siret', 'rna']), df.siren.fillna('')+' '+df.rna.fillna(''), df.rna))
-
-    df=df[['id_extend', 'nom', 'sigle', 'siret_closeDate', 'id_m', 'siren', 'orig', 'siege', 'activity_code', 'activity_name', 'activity_group_code', 'activity_group_name']].drop_duplicates()
-
-    entities_tmp = entities_tmp.merge(df, how='left', on='id_extend').drop_duplicates()
-    entities_tmp.loc[~(entities_tmp.sigle.isnull())&(entities_tmp.entities_acronym.isnull()), 'entities_acronym'] = entities_tmp['sigle']
-    entities_tmp.loc[~(entities_tmp.nom.isnull())&(entities_tmp.entities_name.isnull()), 'entities_name'] = entities_tmp['nom']
-    entities_tmp.loc[(entities_tmp.entities_id.isnull())&(entities_tmp.orig=='siret'), 'entities_id'] = entities_tmp['id_extend']
-    entities_tmp.loc[~(entities_tmp.siren.isnull())&(entities_tmp.entities_id.isnull()), 'entities_id'] = entities_tmp['siren']
-
-    for i in ['entities_name', 'entities_acronym']:
-        entities_tmp.loc[entities_tmp[i].str.lower()=='[nd]', i] = np.nan
-
-    entities_tmp.drop(columns=['nom','sigle', 'orig'], inplace=True)
+    entities_tmp = pd.concat([entities_tmp[~entities_tmp['id_extend'].isin(entities_select['entities_id'].unique())], entities_select], ignore_index=True).drop_duplicates()
+    print(f"-2 End size entities_tmp+sirene_info: {len(entities_tmp)}")
 
     if ('legalName' in entities_tmp.columns)&(any(entities_tmp.groupby('generalPic')['generalPic'].transform('count')>1)):
-        print(f"3 - si ++ lignes / pics :\n{entities_tmp[entities_tmp.groupby('generalPic')['generalPic'].transform('count')>1][['generalPic', 'legalName', 'country_code_mapping', 'id']]}")
+        print(f"-3 ++ rows per pic because ++ countries for a PIC ? :\n{entities_tmp[entities_tmp.groupby('generalPic')['generalPic'].transform('count')>1][['generalPic', 'legalName', 'country_code_source', 'id_first']]}")
+
 
     print(f"- End size entities_tmp+sirene: {len(entities_tmp)}")
     return entities_tmp
+
+
+def merge_pic(entities_tmp, pic, cat, paysage_cj):
+
+    print(f"- with identifiant but not linked : \n{entities_tmp.loc[entities_tmp.link_to_ref.isnull()]['source_id'].value_counts(dropna=False)}")
+    tmp = entities_tmp.loc[entities_tmp.link_to_ref.isnull(), ['generalPic', 'id_extend', 'country_code_source']]
+
+    pic = pd.merge(tmp, pic, how='inner', on=['generalPic', 'country_code_source']).drop_duplicates()
+    pic['entities_id'] = np.where(pic['id_extend'].notnull(), pic['id_extend'], pic['pic_new'])
+    pic['entities_name'] = pic['legalName']
+    pic['entities_acronym'] = pic['businessName']
+    mapping={'PRIVATE':'privé', 'INDIVIDUAL':'privé','PUBLIC':'public'}
+    pic.loc[pic['legalType'].isin(mapping.keys()), 'sector'] = pic.loc[pic['legalType'].isin(mapping.keys()), 'legalType'].map(mapping)  
+
+    pic = (pd.merge(pic, paysage_cj, how='left', left_on='cj', right_on='id')
+           .rename(columns={'inseeCode':'cj_code',
+                            'longNameFr':'cj_name'
+                        })
+            .drop(columns=['cj', 'id'])
+    )
+
+
+    # convert cordis type in paysageCat just for missing paysageCat
+    mapping={'REC':'lcblh',
+             'HES':'8rh6n',
+             'PUB':'rslqh',
+             'PRC':'2fy6x',
+             'OTH':'7w3QE'
+    }
+
+    pic.loc[pic['paysageCat'].isnull(), 'paysageCat'] = (
+    pic.loc[pic['paysageCat'].isnull(), 'legalEntityTypeCode'].map(mapping)
+    )
+ 
+
+    pic = (pd.merge(pic, cat, how='left', left_on='paysageCat', right_on='category_id')
+             .rename(columns={'category_id':'paysage_category_id'})
+             .drop(columns=['paysageCat'])
+    )
+    
+    pic.loc[(pic['entities_id'].str.match('^[W|w]([A-Z0-9]{8})[0-9]{1}$', na=False)), 'source_id'] = 'rna'
+    pic.loc[pic['source_id']=='rna', 'cj_code'] = '9220'
+    pic.loc[pic['source_id']=='rna', 'cj_name'] = 'Association loi de 1901'
+    pic.loc[pic['source_id']=='rnsr', 'cj_name'] = 'Sans personnalité juridique - secteur public'
+    if len(pic.loc[(pic.country_code=='FRA')&(pic.cj_code.isnull())&(pic.cj_name.isnull())])>0:
+        print(f"- For France -> cj missing, check if it's possible to provide information:\n{pic.loc[(pic.country_code=='FRA')&(pic.cj_code.isnull())&(pic.cj_name.isnull())].value_counts(['source_id', 'entities_id'], dropna=False)}")
+    if len(pic.loc[(pic.country_code!='FRA')&(pic.cj_code.isnull())&(pic.cj_name.isnull())])>0:
+        print(f"- For other -> cj missing, check if it's possible to provide information:\n{pic.loc[(pic.country_code!='FRA')&(pic.cj_code.isnull())&(pic.cj_name.isnull())].value_counts(['source_id', 'entities_id'], dropna=False)}")
+    
+        
+    entities_tmp = entities_tmp.loc[entities_tmp['link_to_ref'].notnull()]
+    entities_tmp = pd.concat([entities_tmp, pic], ignore_index=True).drop_duplicates()
+    
+    print(f"- End size entities_tmp+pic: {len(entities_tmp)}")
+    return entities_tmp.drop(columns=(['pic_new', 'project'])).drop_duplicates()

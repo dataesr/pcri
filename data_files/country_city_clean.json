@@ -1,0 +1,308 @@
+{
+    "CH":
+    {
+        "kriens": "kriens",
+        "basel": "basel"
+    },
+    "CL":
+    {
+        "santiafo": "santiago"
+    },
+    "CI":
+    {
+        "abidjan": "abidjan"
+    },
+    "IE":
+    {   "windy arbour":"dundrum",
+        "westmeath":"mullingar",
+        "waterford":"waterford",
+        "tralee": "tralee",
+        "swords":"dublin",
+        "sandyford":"dublin",
+        "rathcoole":"dublin",
+        "navan": "navan",
+        "naas": "naas",
+        "moycullen": "moycullen",
+        "mornington": "mornington",
+        "midleton": "midleton",
+        "limerick":"limerick",
+        "letterkenny": "letterkenny",
+        "kilrush": "kilrush",
+        "killarney": "killarney",
+        "galway": "galway",
+        "enniscorthy": "enniscorthy",
+        "dundalk": "dundalk",
+        "dropheda": "drogheda",
+        "donegal": "donegal",
+        "cork":"cork",
+        "clonmel": "clonmel",
+        "carrigtwohill": "carrigtwohill",
+        "carrick": "carrick",
+        "athlone": "athlone",
+        "athenry": "athenry"
+    },
+    "GB":
+    {
+        "peterborough": "peterborough",
+        "london": "london",
+        "livingston": "livingston",
+        "liverpool": "liverpool",
+        "leatherhead": "leatherhead",
+        "heanor": "heanor",
+        "edinburgh": "edinburgh"
+    },
+
+    "GE":
+    {
+        "tbilisi": "tbilisi",
+        "tibilisi": "tbilisi",
+        "tbiilisi": "tbilisi",
+        "alenjikha": "tsalenjikha"
+    },
+    "GH":
+    {
+        "accra": "accra",
+        "wa": "wa"
+    },
+    "GR":
+    {
+        "pilea": "pilea thessaloniki",
+        "pyrgos": "rhodes",
+        "rhod": "rhodes",
+        "spata": "spata",
+        "zografou": "zografou",
+        "panepistimioupoli": "zografou",
+        "mitilini": "mitilini",
+        "mitilene": "mitilini",
+        "marousi": "marousi",
+        "livadeia": "levadeia",
+        "lagkadas": "lagadas",
+        "lagadas": "lagadas",
+        "holargos": "holargos",
+        "chalki": "chalki"
+    },
+    "BF":
+    {
+        "ouagadougou": "ouagadougou",
+        "bobo d": "bobo dioulasso"
+    },
+    "BR":
+    {
+        "belo horiz": "belo horizonte",
+        "brasilia": "brasilia",
+        "janeiro": "rio de janeiro",
+        "sao paulo": "sao paulo"
+    },
+    "CM":
+    {
+        "yaound": "yaounde",
+        "younde": "yaounde"
+    },
+    "DK":
+    {
+        "randers s": "randers so",
+        "aarhus": "aarhus"
+    },
+    "DZ":
+    {
+        "algairs": "algiers"
+    },
+    "EG":
+    {
+        "cairo": "cairo"
+    },
+    "ET":
+    {
+        "addis": "addis ababa"
+    },
+    "FI":
+    {
+        "helsingin": "helsinki",
+        "helen": "helsinki"
+    },
+    "ID":
+    {
+        "jakarta": "jakarta",
+        "yogyakarta": "yogyakarta"
+    },
+    "IN":
+    {
+
+        "bangalore": "bangalore",
+        "kolkata": "kolkata",
+        "chennai": "chennai",
+        "bengaluru":"bengaluru",
+        "kandi":"hyderabad"
+    },
+    "IT":
+    {
+        "pula": "pula",
+        "bagno a ripoli": "bagno a ripoli",
+        "napoli": "napoli",
+        "palermo": "palermo",
+        "torino": "torino"
+    },
+    "KR":
+    {   
+        "cheonan":"cheonan",
+        "daejon":"daejoen",
+        "daejoen":"daejoen",
+        "jeju": "jeju",
+        "seongnam": "seongnam",
+        "yongin": "yongin"
+    },
+    "LB":
+    {
+        "beirut": "beirut",
+        "beyrouth": "beirut"
+    },
+    "LK":
+    {
+        "colombo": "colombo",
+        "ratmalana": "colombo"
+    },
+    "LT":
+    {
+        "birzu raj":"Biržai",
+        "didzasalis": "Druskininkai",
+        "domeikava":"kaunas",
+        "jonava": "jonava",
+        "kedainiu": "kedainiai",
+        "mazeikiai": "mazeikiai",
+        "kaunas": "kaunas",
+        "seniava kauno raj": "kaunas",
+        "taurages r": "taurage",
+        "vilnius": "vilnius",
+        "vilniaus": "vilniaus"
+    },
+    "LV":
+    {
+        "adazu": "adazu",
+        "cesis": "cesis",
+        "ozolnieki": "ozolnieki"
+    },
+    "MA":
+    {
+        "csablanca":"casablanca",
+        "tangier":"tanger"
+    },
+    "MD":{
+        "comrat":"comrat",
+        "chisnau":"chisinau"
+    },
+    "MN":{
+        "ulan bator":"ulaanbaatar"
+    },
+    "MW":{
+        "guanajuato":"guanajuato",
+        "mexico":"mexico",
+        "lilongwe":"lilongwe",
+        "blantyre":"blantyre"
+
+    },
+    "MZ":{
+        "maputo":"maputo",
+        "nampula":"nampula"
+    },
+    "NA":{
+        "windhoek":"windhoek",
+        "windhoej":"windhoek"
+    },
+    "NG":{
+        "yola":"yola",
+        "port harcourt":"port harcourt",
+        "oshogbo":"osogbo",
+        "lagos":"lagos",
+        "ibadan":"ibadan"
+    },
+    "NL":{
+        "lelystat":"lelystad",
+        "brussel":"bruxelles",
+        "beverwij":"beverwijk"
+    },
+    "NP":{
+        "kathmandu":"kathmandu"
+    },
+    "PT":{
+        "terra cha":"terra cha",
+        "setubal":"setubal",
+        "porto salvo":"porto salvo",
+        "ponta delgada":"ponta delgada",
+        "lisboa":"lisboa",
+        "guimaraes":"guimaraes",
+        "cacia":"cacia",
+        "braga":"braga",
+        "aveiro":"aveiro",
+        "avanca":"avanca"
+    },
+    "RO":{
+        "timisora":"timisoara"
+    },
+    "RS":{
+        "zrenjanim":"zrenjanin",
+        "belgrado":"beograd",
+        "belgrade":"belgrade"
+    },
+    "RU":{
+    "st petersburg":"saint petersburg"
+    },
+    "SK":{
+        "bratislava":"bratislava"
+    },
+    "SN":{
+        "dakar":"dakar"
+    },
+    "TH":{
+        "pathumthani":"pathumthani",
+        "pathumtani":"pathumthani",
+        "pathum thani":"pathumthani",
+        "khon kaen":"khonkaen",
+        "chiangmai":"chiang mai"   
+    },
+    "TN":{
+        "tunis":"tunis",
+        "sousse":"sousse"
+    },
+    "TR":{
+        "yenimahalle":"yenimahalle",
+        "golbasi":"golbasi",
+        "ankara":"ankara",
+        "tepebasi":"tepebasi",
+        "sinkan":"sincan",
+        "adana":"adana",
+        "duzce":"duzce",
+        "istanbul":"istanbul",
+        "kutahya":"kutahya",
+        "izmr":"izmir",
+        "esksehir":"eskisehir",
+        "elazg":"elazig",
+        "antakya":"antakya",
+        "altndag":"ankara"
+    },
+    "TZ":{
+        "dar es saalam":"dar es salaam"
+    },
+    "UA":{
+        "zaporizhzhya":"zaporizhzhya",
+        "lviv":"lviv",
+        "kyiv":"kyiv"
+    },
+    "UG":{
+        "kampala":"kampala",
+        "kampapa":"kampala",
+        "arua":"arua"
+    },
+    "US":{
+        "chicago":"chicago"
+    },
+    "VN":{
+        "ho chi minh":"ho chi minh",
+        "hochiminh":"ho chi minh"
+    },
+    "ZA":{
+        "pretora":"pretoria",
+        "muizenberg":"muizenberg",
+        "johannesburg":"johannesburg",
+        "cape town":"cape town"
+    }
+}

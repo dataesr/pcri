@@ -65,6 +65,12 @@ def msca_erc_projects(FP6, FP7, h20, projects, part):
     msca_erc = pd.concat([msca_erc, me20, me7, me6], ignore_index=True, axis=0, join='outer')
     msca_erc = msca_erc.assign(is_ejo=np.where(msca_erc.extra_joint_organization.isnull(), 'Sans', 'Avec'))
 
+    msca_erc['panel_lib'] = (
+                    msca_erc['panel_code'].fillna('')
+                    .str.cat(msca_erc['panel_name'].fillna(''), sep=' - ')
+                    .str.strip(' -')
+                )
+
     print(f"size projects_MSCA_ERC with others fp: {len(msca_erc)}")
     # msca_erc = entreprise_group_cleaning(msca_erc)
     (msca_erc.loc[~((msca_erc.framework=='FP7')&(msca_erc.thema_code=='ERC'))].drop(columns=['ecorda_date', 'free_keywords', 'abstract', 'acronym'])
@@ -100,8 +106,22 @@ def msca_erc_ent(entities_participation):
     print("### MSCA /ERC entities")
     me_entities = entities_participation.loc[entities_participation.action_code.isin(['MSCA','ERC'])]
 
-    # me_entities = entreprise_group_cleaning(me_entities)
+    me_entities['panel_lib'] = (
+                me_entities['panel_code'].fillna('')
+                .str.cat(me_entities['panel_name'].fillna(''), sep=' - ')
+                .str.strip(' -')
+            )
+
 
     print(f"size msca_entities: {len(me_entities)}")
-    me_entities.drop(columns=['ecorda_date', 'free_keywords', 'abstract']).to_csv(PATH_CONNECT+"msca_entities.csv", index=False, encoding="UTF-8", sep=";", na_rep='', decimal=".")
+
+    me = (me_entities
+                   .drop(columns=['ecorda_date', 'panel_lib', 'free_keywords', 'abstract', 'numero_national_de_structure', 'structure_name'])
+    )
+    # me_entities = entreprise_group_cleaning(me_entities)
+
+
+    me.to_csv(PATH_CONNECT+"msca_entities.csv", index=False, encoding="UTF-8", sep=";", na_rep='', decimal=".")
+
+    
     return me_entities

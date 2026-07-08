@@ -1,7 +1,7 @@
 import numpy as np, pandas as pd
 from config_path import PATH_ODS
 from functions_shared import cols_order, zipfile_ods, select_cols_FP, rename_cols_FP, df_order_cols_FP
-from step3_entities.ID_getSourceRef import *
+from remote_process.ID_getSourceRef import *
 
 def erc_ods(msca_erc):
     # ERC -> ODS
@@ -11,11 +11,11 @@ def erc_ods(msca_erc):
         .loc[(msca_erc.action_code=='ERC')&(msca_erc.framework.isin(['Horizon 2020', 'Horizon Europe'])),   
         ['calculated_fund', 'fund_ent_erc', 'call_year', 'extra_joint_organization', 'is_ejo',
         'cordis_type_entity_acro', 'cordis_type_entity_code','cordis_type_entity_name_en', 'cordis_type_entity_name_fr',
-        'country_group_association_code', 'country_group_association_name_en', 'with_coord',
-        'country_group_association_name_fr', 'country_name_en', 'participation_linked',
+        'country_group_association_code', 'country_group_association_name_en', 
+        'country_group_association_name_fr', 'country_name_en', 'participation_linked', 'panel_lib',
         'country_name_fr', 'destination_code', 'destination_name_en', 'erc_role','framework', 'number_involved',
         'panel_regroupement_code', 'panel_regroupement_name','panel_code', 'panel_name', 
-        'participates_as', 'project_id', 'role', 'ecorda_date', 'stage', 'stage_name', 'country_code']]
+        'project_id', 'role', 'ecorda_date', 'stage', 'stage_name', 'country_code']]
         .rename(columns={
         'panel_code':'panel_id',
         'panel_regroupement_code':'domaine_scientifique', 
@@ -27,9 +27,9 @@ def erc_ods(msca_erc):
         'country_group_association_code':'country_association_code',
         'country_group_association_name_en':'country_association_name_en',
         'country_group_association_name_fr':'country_association_name_fr',
-        'with_coord':'flag_coordination',
         'is_ejo':'flag_organization'
         }))
+    
 
     e = e.reindex(sorted(e.columns), axis=1)
     # attention si changement de nom de vars -> la modifier aussi dans pcri_info_columns_order
@@ -44,10 +44,10 @@ def erc_evol_ods(msca_resume):
         .assign(status_name=np.where(msca_resume.stage=='evaluated', 'projets évalués', 'projets lauréats'),
                 coordination_number=np.where(msca_resume.erc_role=='PI', 1, 0))
         .loc[(msca_resume.action_code=='ERC')&(msca_resume.framework.isin(['Horizon 2020', 'Horizon Europe'])),
-        ['framework', 'status_name','country_name_fr', 'call_year',
-        'destination_name_en', 'panel_name', 'erc_role', 'participates_as', 'role', 'funding_entity',
-        'extra_joint_organization', 'is_ejo', 'with_coord', 'panel_regroupement_code', 'panel_regroupement_name',
-        'funding_part', 'number_involved', 'coordination_number', 'project_id', 'country_code',
+        ['framework', 'status_name','country_name_fr', 'call_year', 'panel_lib',
+        'destination_name_en', 'panel_name', 'erc_role', 'role', 'funding_entity',
+        'extra_joint_organization', 'is_ejo', 'panel_regroupement_code', 'panel_regroupement_name',
+        'funding_part', 'number_involved', 'project_id', 'country_code',
         'country_name_en', 'country_group_association_code','country_group_association_name_en',
         'country_group_association_name_fr', 'stage', 'panel_code', 'destination_code', 'ecorda_date']]
         
@@ -61,7 +61,6 @@ def erc_evol_ods(msca_resume):
             'country_group_association_code':'country_association_code',
             'country_group_association_name_en':'country_association_name_en',
             'country_group_association_name_fr':'country_association_name_fr',
-            'with_coord':'flag_coordination',
             'is_ejo':'flag_organization'           
             }))
 
@@ -69,7 +68,7 @@ def erc_evol_ods(msca_resume):
     tmp.loc[(tmp.country_code=='ALL'), 'country_name_fr'] = 'Tous pays'
 
 
-    for i in ['coordination_number', 'number_involved', 'funding_project', 'funding_entity']:
+    for i in [ 'number_involved', 'funding_project', 'funding_entity']:
         tmp.loc[(tmp.country_code=='ALL'), f'{i}_all'] = tmp[i]
         tmp.loc[(tmp.country_code=='ALL'), i] = np.nan
 

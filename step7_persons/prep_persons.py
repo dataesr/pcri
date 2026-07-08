@@ -17,7 +17,7 @@ def persons_preparation(csv_date):
     print(f"size participation: {len(participation)}")
     ######################
     print(f"\n### IMPORT datasets")
-    perso_part = unzip_zip(f'he_grants_ecorda_pd_{csv_date}.zip', f"{PATH_SOURCE}{FRAMEWORK}/", "participant_persons.csv", 'utf-8')
+    perso_part = unzip_zip(f'{PATH_SOURCE}{FRAMEWORK}/he_grants_ecorda_pd_{csv_date}.zip', "participant_persons.csv", 'utf-8')
     perso_part = (perso_part.loc[perso_part.FRAMEWORK=='HORIZON',
             ['PROJECT_NBR', 'GENERAL_PIC', 'PARTICIPANT_PIC', 'ROLE', 'FIRST_NAME',
             'LAST_NAME', 'TITLE', 'GENDER', 'PHONE', 'EMAIL',
@@ -28,7 +28,7 @@ def persons_preparation(csv_date):
     print(f"size perso_part import: {len(perso_part)}")
 
     ######################################
-    perso_app = unzip_zip(f'he_proposals_ecorda_pd_{csv_date}.zip', f"{PATH_SOURCE}{FRAMEWORK}/", "applicant_persons.csv", 'utf-8')
+    perso_app = unzip_zip(f'{PATH_SOURCE}{FRAMEWORK}/he_proposals_ecorda_pd_{csv_date}.zip', "applicant_persons.csv", 'utf-8')
 
     perso_app = (perso_app.loc[perso_app.FRAMEWORK=='HORIZON',
         ['PROPOSAL_NBR', 'GENERAL_PIC', 'APPLICANT_PIC', 'ROLE', 'FIRST_NAME',
@@ -56,6 +56,26 @@ def persons_preparation(csv_date):
     perso_app = title_clean(perso_app)
 
     ###############################
+    print(f"\n### NAME fix encoding issues")
+
+    def fix_string(s):
+        import re
+        if not isinstance(s, str):
+            return s
+        
+        prev = None
+        while prev != s:          # on répète tant que ça change encore
+            prev = s
+            s = s.replace('\\005C', '\\')
+            s = re.sub(r'\\([0-9A-Fa-f]{4})', lambda m: chr(int(m.group(1), 16)), s)
+        return s
+
+    cols = ['first_name', 'last_name']
+    perso_part[f'{cols}_clean']=perso_part[f'{cols}_clean'].apply(fix_string)
+
+
+
+    ####################################
     print(f"\n### STRING cleaning")
     cols = ['role', 'first_name', 'last_name','title_clean', 'gender']
     perso_part = prop_string(perso_part, cols)
@@ -191,16 +211,16 @@ def persons_preparation(csv_date):
     def perso_participation(df, participation, project, entities, stage):
         
         df=df.loc[df.project_id.isin(participation[participation.stage==stage].project_id.unique())]
-        df=df.merge(participation.loc[participation.stage==stage, ['project_id', 'generalPic', 'country_code']], how='outer', on=['project_id', 'generalPic'], indicator=True).query('_merge!="right_only"')
+        df=df.merge(participation.loc[participation.stage==stage, ['project_id', 'generalPic', 'country_code', 'numero_national_de_structure']], how='outer', on=['project_id', 'generalPic'], indicator=True).query('_merge!="right_only"')
         df.loc[df._merge=='left_only', 'institution_shift'] = 'past'
 
         if stage=='successful':
             df.loc[(df._merge=='both')&(df.host_country_code.isnull()), 'host_country_code'] = df.loc[(df._merge=='both')&(df.host_country_code.isnull()), 'country_code']
 
-        df=df.merge(project.loc[project.stage==stage, ['project_id', 'call_year', 'thema_code', 'destination_code']], how='inner', on=['project_id'])
+        df=df.merge(project.loc[project.stage==stage, ['project_id', 'call_year', 'thema_code', 'action_code', 'destination_code', 'panel_code', 'panel_regroupement_code']], how='inner', on=['project_id'])
         print(f"- size df after merge participation+project: {len(df)}")
 
-        x=entities[['entities_id', 'entities_name', 'generalPic', 'id_secondaire', 'country_code', 'country_code_mapping']].drop_duplicates()
+        x=entities[['entities_id', 'entities_name', 'operateur_num', 'operateur_name', 'generalPic', 'country_code', 'country_code_source']].drop_duplicates()
         temp=df[~df.country_code.isnull()].merge(x, how='left', on=['generalPic', 'country_code'])
         if any(df.country_code.isnull()):
             temp2=df[df.country_code.isnull()].drop(columns='country_code').merge(x, how='left', on='generalPic')
@@ -304,7 +324,7 @@ def persons_preparation(csv_date):
     print(f"\n### GENDER/TITLE missing")
     def gender_title_missing(part, app):
         import json
-        from api_process.gender_determine import gender_by_first_name
+        from remote_process.gender_determine import gender_by_first_name
         from functions_shared import work_csv
 
         cl=['gender', 'title_clean']
@@ -361,16 +381,16 @@ def persons_preparation(csv_date):
     (perso_part[['project_id', 'generalPic', 'role', 'first_name', 'last_name',
         'title_clean', 'gender', 'email', 'tel_clean', 'domaine_email', 'orcid_id', 'birth_country_code',
         'nationality_country_code', 'host_country_code', 'sending_country_code', 'country_code2',
-        'stage', 'contact', 'country_code', 'institution_shift', 'call_year', 'thema_code', 'destination_code',
-        'entities_id', 'entities_name','id_secondaire', 'country_code_mapping']]
+        'stage', 'contact', 'country_code', 'institution_shift', 'call_year', 'thema_code', 'action_code', 'destination_code', 'panel_code', 'panel_regroupement_code',
+        'entities_id', 'entities_name', 'operateur_num', 'operateur_name', 'numero_national_de_structure', 'country_code_source']]
         .drop_duplicates()
         .to_pickle(f"{PATH_CLEAN}persons_participants.pkl"))
 
     (perso_app[['project_id', 'generalPic', 'role', 'first_name', 'last_name', 'nationality_country_code',
         'title_clean', 'gender', 'tel_clean', 'email', 'domaine_email', 'researcher_id', 'orcid_id',
         'google_scholar_id', 'scopus_author_id', 'stage', 'country_code2',
-        'contact', 'country_code', 'institution_shift', 'call_year', 'thema_code', 'destination_code',
-        'entities_id', 'entities_name','id_secondaire', 'country_code_mapping']]
+        'contact', 'country_code', 'institution_shift', 'call_year', 'thema_code', 'action_code', 'destination_code', 'panel_code', 'panel_regroupement_code',
+        'entities_id', 'entities_name', 'operateur_num', 'operateur_name', 'numero_national_de_structure', 'country_code_source']]
         .drop_duplicates()
         .to_pickle(f"{PATH_CLEAN}persons_applicants.pkl"))
 

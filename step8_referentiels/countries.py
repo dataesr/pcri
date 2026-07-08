@@ -1,13 +1,13 @@
 
-def ref_countries():
-    from constant_vars import ZIPNAME, FRAMEWORK
+def ref_countries(zipname):
+    from constant_vars import FRAMEWORK
     from config_path import PATH_SOURCE
     from functions_shared import unzip_zip
     from config_api import ODS_API
     import pandas as pd, requests, pycountry
 
 
-    cc = unzip_zip(ZIPNAME, f'{PATH_SOURCE}{FRAMEWORK}/', "countries.json", 'utf8')
+    cc = unzip_zip(zipname, f'{PATH_SOURCE}{FRAMEWORK}/', "countries.json", 'utf8')
     cc = pd.DataFrame(cc)
 
 

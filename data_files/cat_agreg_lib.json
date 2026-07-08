@@ -6,7 +6,7 @@
         "ORG_PUB": "Institution publique"
     },
     {
-        "SANTE": "Etablissement de santé"
+        "SANTE": "Santé"
     },
     {
         "ES": "Enseignement supérieur"
@@ -33,7 +33,7 @@
         "ENT": "Entreprise"
     },
     {
-        "GCS": "Etablissement de santé"
+        "GCS": "Santé"
     },
     {
         "ISBL": "Institution sans but lucratif (ISBL)"
@@ -46,5 +46,12 @@
     },
     {
         "EPIC": "Institution publique"
+    },
+    {
+        "INNOV": "Innovation"
+    },
+    {
+        "EURO":"Agence européenne"
+
     }
 ]

@@ -1,17 +1,24 @@
 
-def country_load(framework, liste_country):
-    from constant_vars import FRAMEWORK, ZIPNAME
+def country_load(source, liste_country):
+    """
+    load country, unzip, clean and add country group association for h2020 and horizon, 
+    add country name in fr, add article in fr, add ZOE and ZOI for orga europeennes et internationales
+    return a dataframe with countryCode, countryCode_iso3, country_name_en, countryCode_parent, country_code, country_association_code_2020, country_association_name_2020_en, country_group_association_code_2020, country_group_association_name_2020_en, country_association_code, country_association_name_en, country_group_association_code, country_group_association_name_en, country_name_fr, article_fr
+    """
     from config_path import PATH_SOURCE, PATH_CONNECT, PATH_CLEAN
     from functions_shared import unzip_zip, my_country_code
     import json, pandas as pd, numpy as np
 
     print("\n### LOADING COUNTRY")
-    data = unzip_zip(ZIPNAME, f"{PATH_SOURCE}{FRAMEWORK}/", "countries.json", 'utf8')
+    data = unzip_zip(source, "countries.json", 'utf8')
     data = pd.DataFrame(data)
     clist = list(set(data.countryCode.to_list()+liste_country))
+
+    # my_country_code => import pycountry and add old country_code in the list because some countryCode are old for h2020 and other pcri
     my_country=my_country_code()
     df = my_country.loc[my_country.iso2.isin(clist)]
 
+    # if some countryCode in clist not in my_country, print them to check if we can find them in my_country with old code or if we need to add them in country list
     countryCode_error=list(set(clist)-set(df.iso2.to_list()))
     print(f"- ATTENTION countryCode missing in countryBase {countryCode_error}")
 

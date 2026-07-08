@@ -3,15 +3,32 @@ def timing(st):
     return "[{:.2f}s]".format(time.time() - st)
 
 
+def last_data_zip(path, framework, type):
+    import glob, os
+
+    folder = f"{path}{framework}/"
+    if type == 'json':
+        zipname = "HE_*.json.zip"
+    else:
+        zipname = "HE_*.csv.zip"
+    
+    return os.path.basename(
+            max(
+                glob.glob(folder + zipname),
+                key=os.path.getmtime
+            )
+        )
+    
+
 # load json file in a zipfile
-def unzip_zip(namezip, path, data, encode):
+def unzip_zip(source, data, encode):
     import pandas as pd
     import zipfile, json
     if 'json' in data:
-        with zipfile.ZipFile(f"{path}{namezip}", 'r', metadata_encoding=encode) as z:
+        with zipfile.ZipFile(source, 'r', metadata_encoding=encode) as z:
             return json.load(z.open(data, 'r'))
     if 'csv' in data:
-        with zipfile.ZipFile(f"{path}{namezip}", 'r', metadata_encoding=encode) as z:
+        with zipfile.ZipFile(source, 'r', metadata_encoding=encode) as z:
             return pd.read_csv(z.open(data), low_memory=False, dtype='str')
 
 
@@ -44,12 +61,22 @@ def website_to_clean(web_var: str):
     if y is not None:
         return y.group()
     
-def columns_comparison(df, namefile):
-    import numpy as np
-    old_cols = np.load(f"data_files/{namefile}.npy").tolist()
+def columns_comparison(df, source):
+    path = "data_files/cols_by_table.json"
+    j = json.load(open(path, "r", encoding="utf-8"))
+    if source not in j:
+        raise KeyError(f"source '{source}' introuvable.")
+    
+    old_cols = j[source]
     new_cols = df.columns.to_list()
-    if any(set(new_cols) - set(old_cols)):
-        print(f"- new cols: {set(new_cols) - set(old_cols)}")
+    new_entries = set(new_cols) - set(old_cols)
+
+    if new_entries:
+        print(f"- new cols: {new_entries}")
+        j[source].extend(new_entries)
+        with open(path, "w", encoding="utf-8") as f:
+            json.dump(j, f, indent=4, ensure_ascii=False)
+        print(f"- ajoutées dans '{source}': {new_entries}")
     else:
         print("- no new columns")
 
@@ -70,8 +97,10 @@ def num_to_string(var):
         return str(var).replace('.0', '')
 
 def bugs_excel(df, chemin, name_sheet):
+    """
+    save a dataframe in an excel file in the folder bugs_found with the name of the sheet as name_sheet
+    """
     import pandas as pd, os
-    print("#FCT bugs_excel")
     chemin=f"{chemin}bugs_found.xlsx"
     if not os.path.exists(chemin):
         with pd.ExcelWriter(chemin) as writer:
@@ -132,8 +161,8 @@ def entreprise_group_cleaning(df):
     if 'groupe_acronym' in df.columns:
         df.loc[(df.entreprise_flag==True)&(~df.groupe_id.isnull()), 'entities_acronym'] = df.groupe_acronym
         # df.loc[(df.entreprise_flag==True)&(~df.groupe_id.isnull())&(df.groupe_acronym.isnull()), 'entities_acronym'] = np.nan
-    df.loc[(df.entities_id.str.contains('^gent', na=False))&(df.insee_cat_code.isnull()), 'insee_cat_code'] = 'GE'
-    df.loc[(df.entities_id.str.contains('^gent', na=False))&(df.insee_cat_name.isnull()), 'insee_cat_name'] = 'Grandes entreprises'
+    df.loc[(df.entities_id.str.contains('^gent', na=False))&(df['cat_entreprise_code'].isnull()), 'cat_entreprise_code'] = 'GE'
+    df.loc[(df.entities_id.str.contains('^gent', na=False))&(df['cat_entreprise_name'].isnull()), 'cat_entreprise_name'] = 'Grandes entreprises'
     for i in ['groupe_id', 'groupe_name', 'groupe_acronym']:
         if i in df.columns:
             df = df.drop(columns=i)
@@ -399,3 +428,231 @@ def last_file_into_folder_by_pat(path, pat, extension):
     # Chemin complet vers le fichier le plus récent
     print(f"Le fichier {extension} le plus récent est : {os.path.join(path, latest_file)}")
     return os.path.join(path, latest_file)
+
+def length_code_geo(var):
+    if var is None:
+        return None
+    if len(str(var)) != 5:
+        return '0' * (5 - len(str(var))) + str(var)
+    else:
+        return str(var)
+    
+def get_gs(sheet_name: str, vars_list: list=None):
+    import pandas as pd, os, json
+    url=f"https://docs.google.com/spreadsheet/ccc?key={os.environ.get('GOOGLE_KEY')}&output=xls"
+    df_c = pd.read_excel(url, sheet_name=sheet_name, dtype=str, na_filter=False)
+
+    names=[('G_PAYS', 'country_gs_insee')]
+    for name_old, name_new in names:
+        if sheet_name == name_old:
+            json.dump(df_c[vars_list].to_dict('records'), open(f'data_files/{name_new}.json', 'w', encoding='utf-8'), ensure_ascii=False, indent=4)
+    if vars_list == None:
+        return df_c
+    else:
+        return df_c[vars_list]
+
+
+def convert_lambert_to_gps(x_col, y_col):
+    """
+    Convertit les colonnes Lambert d'un DataFrame en coordonnées GPS (WGS84).
+
+    Args:
+        x_col (str): Nom de la colonne des abscisses (x) en Lambert.
+        y_col (str): Nom de la colonne des ordonnées (y) en Lambert.
+    Returns:
+        pd.DataFrame: DataFrame avec les colonnes 'gps' ajoutées.
+    """
+
+def convert_lambert_to_gps(x_col, y_col):
+    """
+    Convertit les colonnes Lambert en coordonnées GPS (WGS84) et retourne une chaîne de caractères.
+    Gère les valeurs NaN en retournant une chaîne vide.
+
+    Args:
+        x_col (str/float): Valeur de l'abscisse (x) en Lambert.
+        y_col (str/float): Valeur de l'ordonnée (y) en Lambert.
+
+    Returns:
+        str: Coordonnées GPS sous forme de chaîne "longitude,latitude" ou "" si NaN.
+    """
+    import pandas as pd
+    from pyproj import Transformer, CRS
+    
+    # Vérifier si x_col ou y_col est NaN
+    if pd.isna(x_col) or pd.isna(y_col):
+        return ""
+
+    try:
+        # Convertir les entrées en float
+        X = float(x_col)
+        Y = float(y_col)
+    except (ValueError, TypeError):
+        return ""
+
+    # Créer un transformateur Lambert → WGS84
+    transformer = Transformer.from_crs(CRS('EPSG:2154'), CRS('EPSG:4326'))
+
+    # Appliquer la transformation
+    latitude, longitude = transformer.transform(X, Y)
+
+    # Retourner sous forme de chaîne "longitude,latitude"
+    return f"{latitude:.3f},{longitude:.3f}"
+
+def upper_word_in_text(word, text):
+    words = text.split()
+    for i, w in enumerate(words):
+        if word in text:
+            words[i] = w.capitalize()
+    return ' '.join(words)
+
+def upper_word_in_text(text, words):
+    text_split = text.split()
+    for i, w in enumerate(text_split):
+        if w.lower() in words:
+            text_split[i] = w.capitalize()
+    return ' '.join(text_split)
+
+import json
+
+def extract_json_from_file(file_path):
+    with open(file_path, 'r', encoding='utf-8') as file:
+        content = file.read()
+
+    # Trouver le début et la fin du JSON valide
+    start_index = content.find('[')
+    end_index = content.rfind(']') + 1
+
+    if start_index == -1 or end_index == 0:
+        raise ValueError("Aucune liste JSON valide trouvée dans le fichier.")
+
+    json_str = content[start_index:end_index]
+
+    # Charger la liste de dictionnaires
+    try:
+        data = json.loads(json_str)
+        return data
+    except json.JSONDecodeError as e:
+        raise ValueError(f"Erreur lors de la lecture du JSON : {e}")
+    
+def clean_invisible_chars(s: str):
+    if isinstance(s, str):
+        # Remplace les caractères invisibles par un espace
+        s = s.replace('\r', ' ').replace('\n', ' ').replace('\t', ' ')
+        # Supprime les espaces multiples et les espaces en début/fin
+        s = ' '.join(s.split())
+        return s
+    return s
+
+def check_if_only_charact_special(s):
+    import re
+    return bool(re.fullmatch(r'[^a-zA-Z0-9]+', str(s)))
+
+def clean_quotation_marks(s):
+    # Supprimer toutes les guillemets
+    import re
+    return re.sub(r"[^\w\s]", " ", str(s), flags=re.UNICODE)
+
+def clean_if_only_at_start(s):
+    import re
+    return re.sub(r'^[^a-zA-Z0-9]+', '', s)
+
+def trace_chain(child, mapping):
+    import pandas as pd
+    seen=set()
+    current=child
+    while current in mapping and pd.notna(mapping[current]) and mapping[current] not in seen:
+        seen.add(current)
+        current = mapping[current]
+    return current
+
+def capitalize_if_all_upper(s):
+    if isinstance(s, str) and s.isupper():
+        return s.capitalize()
+    return s
+
+
+def clean_text(text: str) -> str:
+    import re
+    import unicodedata
+    """
+    Clean and normalize English text.
+    - Normalize unicode (NFC)
+    - Remove invisible / control characters
+    - Normalize all unicode spaces to ASCII space
+    - Strip extra whitespace
+    """
+
+    # 1. Normalize unicode
+    text = unicodedata.normalize("NFC", text)
+
+    # 2. Remove control characters (keep \n and \t)
+    text = "".join(
+        ch for ch in text
+        if unicodedata.category(ch) != "Cc"
+        or ch in ("\n", "\t")
+    )
+
+    # 3. Remove zero-width characters
+    text = re.sub(r"[\u200b-\u200f\u202a-\u202e\ufeff]", "", text)
+
+    # 3b. ← NEW: replace ALL unicode whitespace variants with a plain space
+    #     [^\S\n\t] = "whitespace that is NOT newline and NOT tab"
+    #     catches \xa0 (nbsp), \u202f (narrow nbsp), \u2009 (thin), etc.
+    text = re.sub(r"[^\S\n\t]", " ", text)
+
+    # 4. Normalize line endings
+    text = text.replace("\r\n", "\n").replace("\r", "\n")
+
+    # 5. Collapse multiple spaces / tabs on a line
+    text = re.sub(r"[ \t]+", " ", text)
+
+    # 6. Strip each line
+    lines = [line.strip() for line in text.splitlines()]
+
+    # 7. Collapse excess blank lines
+    text = re.sub(r"\n{3,}", "\n\n", "\n".join(lines))
+
+    return text.strip()
+
+def diagnose_column_int(df, col):
+    print(f"\n📊 Colonne '{col}' — dtype: {df[col].dtype}")
+    for i, v in df[col].items():
+        type_name = type(v).__name__
+        try:
+            int(v)
+            convertible = ""
+        except (ValueError, TypeError):
+            convertible = "❌"
+            print(f"  ligne {i}: {repr(v)} ({type_name}) {convertible}")
+
+
+def create_archive_zip(path_folder, archive_name=None, extension_file=".pkl"):
+    import os
+    import zipfile
+    from datetime import date
+
+    # Liste des fichiers .pkl à archiver
+    fichiers_pkl = [f for f in os.listdir(path_folder) if f.endswith(".pkl")]
+
+    if fichiers_pkl:
+        print(f"ATTENTION ! create_archive_zip() will archive all files with the extension '{extension_file}' in the folder '{path_folder}' and then delete them after archiving.")
+        # Nom de l'archive avec la date du jour
+        date_du_jour = date.today().strftime("%Y%m%d")
+        nom_archive = f"{archive_name}_{date_du_jour}.zip"
+        chemin_archive = os.path.join(path_folder, nom_archive)
+
+
+        # Création du zip contenant tous les fichiers .pkl du dossier
+        with zipfile.ZipFile(chemin_archive, "w", zipfile.ZIP_DEFLATED) as archive:
+            for fichier in fichiers_pkl:
+                chemin_fichier = os.path.join(path_folder, fichier)
+                archive.write(chemin_fichier, arcname=fichier)
+
+        # Suppression des fichiers .pkl une fois archivés
+        for fichier in fichiers_pkl:
+            os.remove(os.path.join(path_folder, fichier))
+
+        print(f"Archive created : {chemin_archive}")
+        print(f"{len(fichiers_pkl)} file(s) .pkl deleted.")
+    else:
+        print("No files with the extension '.pkl' found in the folder. No archive created.")

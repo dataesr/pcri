@@ -1,12 +1,21 @@
 
-from constant_vars import ZIPNAME, FRAMEWORK
+from constant_vars import FRAMEWORK
 from config_path import PATH_SOURCE
 import numpy as np, pandas as pd
 from functions_shared import bugs_excel
 
 def app_role_type (df, projects):
+    """
+    organize the role and partnerType variables in the applicants dataframe on the participants model, 
+    and create a new variable erc_role for ERC projects.
+    The function also checks for any inconsistencies in the role and partnerType variables,
+    and prints out any issues found. 
+    Finally, it returns the updated dataframe with the new variables.   
+    
+    """
     print("### applicants ROLE")
-    df.loc[:,'role'] = df.loc[:,'role'].str.lower() 
+    df.loc[:,'role'] = df.loc[:,'role'].str.lower()
+    df.loc[df['role']=='participant', 'role'] = 'partner'
   
     if df['role'].nunique()==5:  
         df = df.assign(partnerType='applicant')
@@ -14,16 +23,17 @@ def app_role_type (df, projects):
         df.loc[df.role=='host', 'partnerType'] = 'host'        
         df.loc[df['role'] != 'coordinator', 'role'] = 'partner'
     else:
-        print(f"- Attention ! il existe une modalité en plus dans la var ROLE dans les applicants {df['role'].unique()}")
+        print(f"- Attention ! check ROLE more than 5 modalities for applicants {df['role'].unique()}")
     
+    #ERC role -> pi (STG, COG, ADG, POC, SYG), other ; ROLE ->  pi, co-pi (SYG coordinator), other
     proj_erc = projects.loc[(projects.stage=='evaluated')&(projects.thema_code=='ERC'), ['project_id', 'destination_code']]
     temp = df.merge(proj_erc, how='left', on='project_id').drop_duplicates()
     temp.loc[~temp.destination_code.isnull(), 'erc_role'] = 'other'
     temp.loc[(temp.destination_code=='SyG')&((temp.partnerType=='host')|(temp.role=='coordinator')), 'erc_role'] = 'pi'
-    temp.loc[(~temp.destination_code.isnull())&(~temp.destination_code.isin(['SyG', 'ERC-OTHER']))&(temp.role=='coordinator'), 'erc_role'] = 'pi'
+    temp.loc[(~temp.destination_code.isnull())&(~temp.destination_code.isin(['SyG', 'ERC-OTHER', 'SJI']))&(temp.role=='coordinator'), 'erc_role'] = 'pi'
     temp.loc[(temp.destination_code=='SyG')&(temp.role=='coordinator'), 'role'] = 'co-pi'
     temp.loc[(temp.erc_role=='pi')&(temp.role!='co-pi'), 'role'] = 'pi'
-    temp.loc[temp.destination_code=='ERC-OTHER', 'erc_role'] = np.nan
+    temp.loc[temp.destination_code.isin(['ERC-OTHER', 'SJI']), 'erc_role'] = np.nan
 
     df = pd.concat([df.loc[~df.project_id.isin(temp.project_id.unique())], temp])
 
@@ -56,12 +66,18 @@ def part_miss_app(tmp, df):
         return df
     
 def check_multiA_by_proj(df):
-    print("\n### check unicité des applicants/projets")
+    """
+    check for duplicates in the applicants dataframe based on the combination of project_id, orderNumber, generalPic, participant_pic, role, and partnerType.
+    If duplicates are found, they are printed out and saved to an Excel file for further investigation
+    """
+    print("\n### check if applicants/projets unique by pic/orderNumber/role/partnerType")
     df = df.assign(n_app = 1)
     df['n_app'] = df.groupby(['project_id', 'orderNumber', 'generalPic', 'participant_pic', 'partnerType'], dropna = False).pipe(lambda x: x.n_app.transform('sum'))
     verif=pd.DataFrame(df[['project_id', 'orderNumber', 'generalPic', 'participant_pic', 'role', 'partnerType', 'name', 'requestedGrant', 'budget', 'countryCode']])[df['n_app']>1]
     bugs_excel(verif, PATH_SOURCE, 'double_app_prop+pic')
     if len(verif)>0:
-        print(f"- ATTENTION ! {len(verif)} lignes problématiques, voire fichier bugs_found")
+        print(f"- ATTENTION ! {len(verif)} records duplicated in excel bugs_found in path_source")
+    else:
+        print("- no double applicant by project/pic/orderNumber/role/partnerType")
     return df
 

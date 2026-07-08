@@ -1,5 +1,5 @@
 from config_path import PATH_SOURCE, PATH_REF
-from constant_vars import FRAMEWORK, ZIPNAME
+from constant_vars import FRAMEWORK
 from functions_shared import unzip_zip
 import pandas as pd, numpy as np
 
@@ -14,9 +14,9 @@ def nuts_clean(df, var):
         df.loc[(df['nutsCode'].isnull())&(df[var].str.len()<df['nutsCode'].str.len()), 'nuts_code'] = df['nutsCode']
         return df
 
-def nuts_department():
+def nuts_department(source):
         # bosser les nuts en amont pour récupérer le max d'infos sans attendre traitement departments
-        pp_app = unzip_zip(ZIPNAME, f"{PATH_SOURCE}{FRAMEWORK}/", 'proposals_applicants_departments.json', 'utf8')
+        pp_app = unzip_zip(source, 'proposals_applicants_departments.json', 'utf8')
         pp_app = pd.DataFrame(pp_app)
         pp_app = (pp_app.loc[~pp_app.nutsCode.isnull(), ['proposalNbr', 'generalPic', 'applicantPic', 'nutsCode']]
                 .rename(columns={'proposalNbr':'project_id', 'applicantPic':'applicant_participant_pic'})
@@ -26,7 +26,7 @@ def nuts_department():
         pp_app = pp_app.loc[pp_app.nutsCode!='-1']
         print(f"- size pp_app: {len(pp_app)}")
 
-        pp_part = unzip_zip(ZIPNAME, f"{PATH_SOURCE}{FRAMEWORK}/", 'projects_participants_departments.json', 'utf8')
+        pp_part = unzip_zip(source, 'projects_participants_departments.json', 'utf8')
         pp_part = pd.DataFrame(pp_part)
         pp_part = (pp_part.loc[~pp_part.nutsCode.isnull(),['projectNbr', 'generalPic', 'participantPic', 'nutsCode']]
                 .rename(columns={'projectNbr':'project_id', 'participantPic':'calculated_pic'})
@@ -36,10 +36,10 @@ def nuts_department():
         print(f"- size pp_part: {len(pp_part)}")
         return pp_app, pp_part
 
-def nuts_lien(app1, part, lien):
+def nuts_lien(source, app1, part, lien):
     # from step1_mainData.nuts import nuts_department
     print("\n### LOADING DEPARTMENT")
-    pp_app, pp_part = nuts_department()
+    pp_app, pp_part = nuts_department(source)
 
     print("\n### NUTS avec LIEN")
     nuts_a=(app1[['project_id', 'orderNumber', 'generalPic', 'participant_pic','nutsCode']]

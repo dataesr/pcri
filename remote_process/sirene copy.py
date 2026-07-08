@@ -1,6 +1,8 @@
-from step3_entities.ID_getSourceRef import sourcer_ID
+from remote_process.ID_getSourceRef import sourcer_ID
 from config_path import PATH_HARVEST, PATH_REF
+from config_url import sirene_url
 import time, requests, pandas as pd
+from ratelimit import limits, sleep_and_retry
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -10,7 +12,8 @@ def siren_liste(lid_source):
     print(f"- nombre d'identifiants paysage à extraire: {len(sl)}")
     return sl
 ###############################
-
+@sleep_and_retry
+@limits(calls=30, period=60)
 def get_siret_siege(lid_source):
     from config_api import sirene_headers
     print("### harvest siret siege from siren")
@@ -25,7 +28,7 @@ def get_siret_siege(lid_source):
         if n % 100 == 0: 
             print(f"{n}", end=',')
                 
-        url=f'https://api.insee.fr/entreprises/sirene/siret?q=siren:{i} AND etablissementSiege:true'  
+        url=f'{sirene_url}siret?q=siren:{i} AND etablissementSiege:true'  
         rinit = requests.get(url, headers=sirene_headers, verify=False)
         global rinit_status
         rinit_status = rinit.status_code
@@ -39,44 +42,54 @@ def get_siret_siege(lid_source):
     print(time.strftime("%H:%M:%S"))
 ####################################
 
+def get_last_info_siret(x):
+    tmp = [e for e in x if e.get('date_fin') is None]
+    tmp = sorted(tmp, key=lambda k: k['date_debut'], reverse=True)
+    if len(tmp)>0:
+        return tmp[0]
+    tmp = sorted(x, key=lambda k: k['date_fin'], reverse=True)
+    if len(tmp)>0:
+        return tmp[0]
+    return {}
+
+
+@sleep_and_retry
+@limits(calls=30, period=60)
+def make_limited_request(url, headers):
+    return requests.get(url, headers=headers, verify=False, timeout=10)
+
+
 def get_sirene(lid_source, sirene_old=None):
     from config_api import sirene_headers
     print("### SIRENE")
     print(time.strftime("%H:%M:%S"))
-    sirene_liste = [i['api_id'] for i in lid_source if i['source_id'] in ['siren', 'siret','identifiantAssociationUniteLegale']]
-
-    sirene_liste = sourcer_ID(list(set(sirene_liste)))  
+    # sirene_liste = [i['api_id'] for i in lid_source if i['source_id'] in ['siren', 'siret','identifiantAssociationUniteLegale']]
+    sirene_liste = (lid_source
+                            .loc[lid_source['source_id'].isin(['siren', 'siret','rna'])]
+                            .rename(columns={'rna':'identifiantAssociationUniteLegale'})
+                            .to_dict('records') 
+                    )
     print(f"- nombre d'identifiants de entities avec sirene {len(sirene_liste)}")
 
     result = []
     n=0
-
-    def get_last_info_siret(x):
-        tmp = [e for e in x if e.get('date_fin') is None]
-        tmp = sorted(tmp, key=lambda k: k['date_debut'], reverse=True)
-        if len(tmp)>0:
-            return tmp[0]
-        tmp = sorted(x, key=lambda k: k['date_fin'], reverse=True)
-        if len(tmp)>0:
-            return tmp[0]
-        return {}
-
     for i in sirene_liste:
         n=n+1
         if n % 100 == 0: 
             print(f"{n}", end=',')
         try:
             if i['source_id'] == 'siret':
-                url = 'https://api.insee.fr/entreprises/sirene/siret?q=siret:' + str(i['api_id'])
+                url = f"{sirene_url}siret?q=siret:{str(i['id'])}"
             else:
-                url='https://api.insee.fr/entreprises/sirene/siret?q=' + i['source_id'] + ':' + str(i['api_id']) + ' AND etablissementSiege:true'  
-            rinit = requests.get(url, headers=sirene_headers, verify=False)
-            
-            global rinit_status
-            rinit_status = rinit.status_code
-            if rinit_status == 200:
-        #         time.sleep(1.5)
-                now = time.strftime("%H:%M:%S")
+                url=f"{sirene_url}siret?q={i['source_id']}:{str(i['id'])} AND etablissementSiege:true"
+            # rinit = requests.get(url, headers=sirene_headers, verify=False)
+            rinit = make_limited_request(url, sirene_headers)
+            if rinit['code'] == 429:
+                # Si 429, attendre avant de continuer
+                time.sleep(5)
+                rinit = make_limited_request(url, sirene_headers)
+
+            else:
                 r2 = rinit.json()['etablissements'][0]
         #         print(r2)
                 response = {   

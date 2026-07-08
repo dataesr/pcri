@@ -1,5 +1,5 @@
-[
-    {"GE":	"Grandes entreprises"},
-    {"ETI":	"Entreprises de taille intermédiaire"},
-    {"PME":	"Petites & moyennes entreprises"}
-]
+{
+"od2su":  {"GE":	"Grandes entreprises"},
+"5xfts":  {"ETI":	"Entreprises de taille intermédiaire"},
+"fm54m":  {"PME":	"Petites & moyennes entreprises"}
+}

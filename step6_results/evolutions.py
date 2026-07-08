@@ -58,6 +58,7 @@ def evolution_FP(pc, countries):
             .assign(country_code='ALL', rank_evaluated=99, rank_successful=99)
             )
 
+    # without ejo
     _pc_ue=(pc
             .loc[(pc.is_ejo=='Sans')&(pc.country_group_association_code=='MEMBER-ASSOCIATED')]
             .groupby(['framework', 'call_year', 'stage', 'project_id', 'is_ejo', 'with_coord'], dropna=False)
@@ -87,8 +88,9 @@ def evolution_FP(pc, countries):
             )
     _pc =pd.concat([_pc, _pc1], ignore_index=True)
 
+
     country=[]
-    # rang des pays par framework
+    ### BY COUNTRIES rang des pays par framework
     for i in ['successful', 'evaluated']:
         temp = (_pc.loc[(_pc['stage']==i )]
             .groupby(['framework', 'country_code', 'is_ejo'], dropna=False)
@@ -104,51 +106,51 @@ def evolution_FP(pc, countries):
         country.extend(list(_pc[_pc[f'rank_{i}']<11]['country_code'].unique()))
 
 
-    for extract in ['member', '_topten']:
-        if extract=='member':
-            tmp=_pc.loc[_pc.is_ejo=='Avec'].merge(cc[cc.asso=='MEMBER-ASSOCIATED'], how='inner', on='country_code')
-            tmp = pd.concat([tmp, total, _pc1_ue], ignore_index=True)
-            tmp.loc[tmp.country_code=='UE', 'country_name_fr'] = 'Etats membres & associés'
-            tmp.loc[tmp.country_code=='ALL', 'country_name_fr'] = 'Tous pays'
+    # for extract in ['member', '_topten']:
+    #     if extract=='member':
+    ### for ODS
+    tmp=_pc.loc[_pc.is_ejo=='Avec'].merge(cc[cc.asso=='MEMBER-ASSOCIATED'], how='inner', on='country_code')
+    tmp = pd.concat([tmp, total, _pc1_ue], ignore_index=True)
+    tmp.loc[tmp.country_code=='UE', 'country_name_fr'] = 'Etats membres & associés'
+    tmp.loc[tmp.country_code=='ALL', 'country_name_fr'] = 'Tous pays'
 
-            tmp=(tmp.groupby(['call_year', 'framework','country_name_fr', 'country_code', 'stage'], dropna=False)
-            .agg({'project_id':'nunique', 'number_involved':'sum', 'coordination_number':'sum', 'funding':'sum', 'project_number':'sum'})
-            .reset_index())
-            tmp.loc[tmp.project_id>0, 'project_number'] = tmp.loc[tmp.project_id>0].project_id
+    tmp=(tmp.groupby(['call_year', 'framework','country_name_fr', 'country_code', 'stage'], dropna=False)
+    .agg({'project_id':'nunique', 'number_involved':'sum', 'coordination_number':'sum', 'funding':'sum', 'project_number':'sum'})
+    .reset_index())
+    tmp.loc[tmp.project_id>0, 'project_number'] = tmp.loc[tmp.project_id>0].project_id
 
 
-            all_data = tmp[tmp['country_code'] == 'ALL']
+    all_data = tmp[tmp['country_code'] == 'ALL']
 
-            all_values = {
-                'number_involved': dict(zip(zip(all_data['call_year'], all_data['stage']), all_data['number_involved'])),
-                'coordination_number': dict(zip(zip(all_data['call_year'], all_data['stage']), all_data['coordination_number'])),
-                'funding': dict(zip(zip(all_data['call_year'], all_data['stage']), all_data['funding'])),
-                'project_number': dict(zip(zip(all_data['call_year'], all_data['stage']), all_data['project_number']))
-            }
+    all_values = {
+        'number_involved': dict(zip(zip(all_data['call_year'], all_data['stage']), all_data['number_involved'])),
+        'coordination_number': dict(zip(zip(all_data['call_year'], all_data['stage']), all_data['coordination_number'])),
+        'funding': dict(zip(zip(all_data['call_year'], all_data['stage']), all_data['funding'])),
+        'project_number': dict(zip(zip(all_data['call_year'], all_data['stage']), all_data['project_number']))
+    }
 
-            # Calculer la part pour chaque colonne
-            for column in ['number_involved', 'coordination_number', 'funding', 'project_number']:
-                tmp[f'share_{column}'] = tmp.apply(
-                    lambda row: row[column] / all_values[column][(row['call_year'], row['stage'])], axis=1
-                )
+    # Calculer la part pour chaque colonne
+    for col_name in ['number_involved', 'coordination_number', 'funding', 'project_number']:
+        tmp[f'share_{col_name}'] = tmp.apply(
+            lambda row: row[col_name] / all_values[col_name][(row['call_year'], row['stage'])], axis=1
+        )
 
-            zipfile_ods(tmp.drop(columns='project_id').sort_values(['funding'], ascending=False), "fr-esr-countries-evolution-pcri")
+    zipfile_ods(tmp.drop(columns='project_id').sort_values(['funding'], ascending=False), "fr-esr-countries-evolution-pcri")
 
-        if extract=='_topten':
+        # if extract=='_topten':
+    # for tableau
+    country = list(set(country))
+    _pc = _pc[_pc['country_code'].isin(country)]
 
-            _pc = _pc.merge(cc.drop(columns='asso'), how='left', on='country_code')
-            _pc.loc[_pc.country_code=='UE', 'country_name_fr'] = 'Etats membres & associés'
+    _pc = pd.concat([_pc, total, _pc_ue, _pc1_ue], ignore_index=True)
+    _pc = _pc.merge(cc.drop(columns='asso'), how='left', on='country_code')
+    _pc.loc[_pc.country_code=='UE', 'country_name_fr'] = 'Etats membres & associés'
 
-            _pc = pd.concat([_pc, total, _pc_ue, _pc1_ue], ignore_index=True)
+    # creation de plusieurs niveaux de periode
+    _pc['mixte_periode_H']=np.where(_pc['framework'].isin(['FP6', 'FP7']), _pc['framework'], _pc['call_year'])
+    _pc['mixte_periode_HE']=np.where(_pc['framework'].isin(['FP6', 'FP7', 'Horizon 2020']), _pc['framework'], _pc['call_year'])
 
-            country = list(set(country))
-            _pc = _pc[_pc['country_code'].isin(country)]
-
-            # creation de plusieurs niveaux de periode
-            _pc['mixte_periode_H']=np.where(_pc['framework'].isin(['FP6', 'FP7']), _pc['framework'], _pc['call_year'])
-            _pc['mixte_periode_HE']=np.where(_pc['framework'].isin(['FP6', 'FP7', 'Horizon 2020']), _pc['framework'], _pc['call_year'])
-
-            _pc.to_csv(PATH_CONNECT+"all_FW_resume.csv", index=False, encoding="UTF-8", sep=";", na_rep='', decimal=".")
+    _pc.to_csv(PATH_CONNECT+"all_FW_resume.csv", index=False, encoding="UTF-8", sep=";", na_rep='', decimal=".")
 
 
 def evolution_type(FP6, FP7, h20, projects_current):

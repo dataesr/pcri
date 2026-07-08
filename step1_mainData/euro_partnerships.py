@@ -1,4 +1,12 @@
 def euro_partnerships(df):
+    """
+    identify the topics related to euro partnerships and tag them with the type of partnership (co-programmed, co-funded, JU-JTI, EIT KICs) 
+    and a flag (True/False) for whether they are part of a euro partnership or not. 
+    The information on the partnerships is based on the file "data_files/euro_ps.json" which contains the name of the partnership, 
+    the type of partnership, and a pattern to match in the topic name to identify if a topic is related to that partnership. 
+    The function also tags topics related to EOSC and JU-JTI based on their destination code and thema code respectively.   
+    """
+
     import pandas as pd, json, re, numpy as np
     ################################
     # topics coprogrammés

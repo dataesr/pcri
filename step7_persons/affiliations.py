@@ -18,7 +18,7 @@ def get_only_new_persons(df, PATH_PERSONS):
 
 def affiliations(df, PATH_PERSONS, CSV_DATE):
     import pandas as pd, pickle, re
-    from api_process.openalex import harvest_openalex
+    from remote_process.openalex import harvest_openalex
     from functions_shared import remove_file_by_pattern
 
     # remove files 'persons_authors_' suivi de chiffres

@@ -1,28 +1,50 @@
 import pandas as pd, numpy as np, os
-from functions_shared import unzip_zip, del_list_in_col, columns_comparison, gps_col, num_to_string, bugs_excel, clean_keyword
-from constant_vars import ZIPNAME, FRAMEWORK
-from config_path import PATH_SOURCE, PATH_CONNECT, PATH_CLEAN
+from functions_shared import unzip_zip, del_list_in_col, columns_comparison, gps_col, num_to_string, bugs_excel, clean_keyword, work_csv
+from constant_vars import FRAMEWORK
+from config_path import PATH_CONNECT, PATH_CLEAN
 
-def date_load():
-    # creation de extractDate avec la date d'extraction d'ecorda format -> '2022-12-11'
-    date = unzip_zip(ZIPNAME, f"{PATH_SOURCE}{FRAMEWORK}/", 'extractionDate.json', 'utf8')
+def date_load(source):
+    """
+    extract date of last update from extractionDate.json file in the source zip and save it in data_connect/extractionDate.json
+    create extractDate format -> '2022-12-11'
+    """
+    date = unzip_zip(source, 'extractionDate.json', 'utf8')
     extractDate = list(set([i['extraction_date'] for i in date if i['framework']==FRAMEWORK]))[0]
     print(f"### LAST DATE of EXTRACTED DATA\n{[i for i in date if i['framework']==FRAMEWORK]}\n") 
     pd.DataFrame([i for i in date if i['framework']==FRAMEWORK]).to_json(f"{PATH_CONNECT}extractionDate.json", orient='records')
+    with open("temp/extractDate.txt", "w", encoding="utf-8") as f:
+        f.write(extractDate)
     return extractDate
 
-def projects_load():
+def projects_load(source):
+
+    """
+    1. load projects data
+    2. check projec duplicates by projectNbr and keep only the last update by lastUpdateDate
+    3. check new columns -> data_files/projects_columns.json
+    4. rename columns
+    5. clean freeKeywords column 
+    6. convert list in columns into string with | separator
+    """
+
     print('### LOADING PROJECTS data')
-    proj = unzip_zip(ZIPNAME, f"{PATH_SOURCE}{FRAMEWORK}/", 'projects.json', 'utf8')
+    proj = unzip_zip(source, 'projects.json', 'utf8')
 
     if proj is not None:
         proj = pd.DataFrame(proj)
         proj['lastUpdateDate'] = pd.to_datetime(proj['lastUpdateDate'])
+
+        # check if projectNbr is null or duplicated and keep only the last update by projectNbr -> csv with projectNbr null in data_work/projects_with_null_projectNbr and remove them from projects df
+        if proj['projectNbr'].isnull().sum()>0:
+            print(f"WARNING ! in projects load, {proj['projectNbr'].isnull().sum()} projectNbr null -> into data_work 'projects_with_null_projectNbr' ")    
+            work_csv(proj[proj['projectNbr'].isnull()], 'projects_with_null_projectNbr')
+            proj = proj.dropna(subset=['projectNbr'])
+            
         tot_pid = proj.projectNbr.nunique()
 
         rep = [{'stage_process': '_loading', 'project_size': len(proj)}]
 
-        if len(proj.groupby('projectNbr').agg({'lastUpdateDate':'count'}).reset_index().query('lastUpdateDate>1'))>0:
+        if (len(proj.groupby('projectNbr').agg({'lastUpdateDate':'count'}).reset_index().query('lastUpdateDate>1'))>0) | (proj.projectNbr.isnull().sum()>0):
             proj=proj.sort_values(['projectNbr', 'lastUpdateDate'], ascending=[True, False]).drop_duplicates('projectNbr')
             print(f"ATTENTION ! proj load : {tot_pid}, after remove old records by lastUpdateDate {len(proj)}")
             print(f"new size : {len(proj)}")
@@ -32,8 +54,9 @@ def projects_load():
                 return print(f"ATTENTION ! project duplicated:\n{proj.groupby('projectNbr').size().reset_index(name='row_count').query('row_count>1')}")
                 
 
-        # new columns 
+        # check new columns -> data_files/projects_columns.json
         columns_comparison(proj, 'projects_columns')
+
 
         proj.rename(columns={"projectNbr": "project_id", "projectStatus":"status_code",'numberOfParticipants':'number_involved',
                             'totalCost':'total_cost', 'euContribution':'eu_reqrec_grant'}, inplace=True)
@@ -50,7 +73,10 @@ def projects_load():
         else:
             print(f"1- Attention ! vérifier les variables manquantes->{[col for col in proj.columns if proj[col].isnull().all()]}\n")
         
-        proj.drop(columns=['comL2LocalKey', 'linkedFpaProjectNbr', 'contractVersion', 'masterCallId', 'ecHiearchyResp', 'uniqueProgrammePart'], inplace=True)
+        cols_to_drop = ['comL2LocalKey', 'linkedFpaProjectNbr', 'contractVersion', 'masterCallId', 
+                        'ecHiearchyResp', 'uniqueProgrammePart']
+        proj.drop(columns=[col for col in cols_to_drop if col in proj.columns], inplace=True)
+        # proj.drop(columns=['comL2LocalKey', 'linkedFpaProjectNbr', 'contractVersion', 'masterCallId', 'ecHiearchyResp', 'uniqueProgrammePart'], inplace=True)
         
         proj['project_id'] = proj['project_id'].map(num_to_string)
 
@@ -63,9 +89,20 @@ def projects_load():
             return proj, rep
     
 
-def proposals_load():
+def proposals_load(source):
+    """
+    1. load proposals data
+    2. check proposal duplicated by proposalNbr and keep only the last update by lastUpdateDate
+    3. check new columns -> data_files/proposals_columns.json
+    4. rename columns
+    5. keep only evaluation variables and save them in data_clean/proposal_evaluation.json
+    6. clean freeKeywords column
+    7. convert list in columns into string with | separator
+    8. remove variables not usefull for the analysis and empty columns     
+    """
+
     print('\n### LOADING PROPOSALS data')
-    prop = unzip_zip(ZIPNAME, f"{PATH_SOURCE}{FRAMEWORK}/", 'proposals.json', 'utf8')
+    prop = unzip_zip(source, 'proposals.json', 'utf8')
 
     if prop is not None:
         prop = pd.json_normalize(prop)
@@ -90,18 +127,21 @@ def proposals_load():
         keep_eval = ['project_id','expertScore.total', 'expertScore.excellence', 'expertScore.impact', 'expertScore.quality', 'isEligibile', 'rank', 'stageExitStatus', 'isProject', 'isAboveTreshold']
         prop[prop.columns[prop.columns.isin(keep_eval)]].to_json(f"{PATH_CLEAN}proposal_evaluation.json", orient='records')
         prop = prop.assign(score=np.where(prop['expertScore.total'].isnull(), False, True))
-        prop = prop.drop(['expertScore.total','expertScore.excellence','expertScore.impact','expertScore.quality','rank','isProject','isEligibile'],  axis=1)
+
+        cols_to_drop = ['expertScore.total','expertScore.excellence','expertScore.impact','expertScore.quality','rank','isProject','isEligibile']
+        prop.drop(columns=[col for col in cols_to_drop if col in prop.columns], inplace=True)
         
         prop['freeKeywords'] = prop['freeKeywords'].apply(lambda lst: [clean_keyword(k) for k in lst])
         prop = del_list_in_col(prop, 'freeKeywords', 'freekw')
         prop = del_list_in_col(prop, 'eicPanels', 'eic_panels')
         prop.loc[:, "eic_panels"] = prop.loc[:, "eic_panels"].str.replace(' / ', '|')
         
-        prop.rename(columns={'scientificPanel':'panel_code', 'budget':'total_cost', 
+        prop.rename(columns={'scientificPanel':'panel_code', 'budget':'total_cost', 'proposalsStep':'erc_evaluation_step',
                             'requestedGrant':'eu_reqrec_grant', 'numberOfApplicants':'number_involved'}, inplace=True)
         
-        prop=prop.drop(columns=['isAboveTreshold','mgaTypeDescription','isSeoDuplicate','mgaTypeCode',
-                                'stage_call', 'ecHiearchyResp', 'masterCallId', 'uniqueProgrammePart', 'score'])
+        cols_to_drop = ['isAboveTreshold','mgaTypeDescription','isSeoDuplicate','mgaTypeCode',
+                        'ecHiearchyResp', 'masterCallId', 'uniqueProgrammePart', 'score']
+        prop.drop(columns=[col for col in cols_to_drop if col in prop.columns], inplace=True)
         
         empty_cols=['isSeo']
         
@@ -121,9 +161,19 @@ def proposals_load():
             rep.append({'stage_process': 'process1', 'proposal_size': len(prop)})
             return prop, rep
 
-def participants_load(proj):
+def participants_load(source):
+    """
+    1. load participants data
+    2. check duplicated records by projectNbr, orderNumber, generalPic, participantPic, partnerRole, partnerType and keep only the last update by lastUpdateDate
+    2. check new columns -> data_files/participants_columns.json
+    3. remove variables not usefull for the analysis and empty columns
+    4. rename columns
+    5. remove participants with partnerRemovalStatus not null -> check new modalities ?
+    6. convert numeric variables into string to avoid problem of merge with projects and proposals data (projectNbr, orderNumber, generalPic, participantPic, parentPic) and replace empty string by null value
+
+    """
     print("\n### LOADING PARTICIPANTS data")
-    part = unzip_zip(ZIPNAME, f"{PATH_SOURCE}{FRAMEWORK}/", "projects_participants.json", 'utf8')
+    part = unzip_zip(source, "projects_participants.json", 'utf8')
 
     if part:
         part = pd.DataFrame(part)
@@ -146,12 +196,13 @@ def participants_load(proj):
         # new columns 
         columns_comparison(part, 'participants_columns')    
 
-        empty_cols=['partnershipName', 'partnerSgaStatus']
-        if empty_cols==[col for col in part.columns if part[col].isnull().all()]:
+        #empty columns
+        empty_cols=[col for col in part.columns if part[col].isnull().all()]
+        if empty_cols:
             part.drop(empty_cols, axis=1, inplace=True)
-        else:
-            print(f"1- Attention ! vérifier les variables manquantes->{[col for col in part.columns if part[col].isnull().all()]}")
+            print(f"Empty cols dropped, check the list -> {empty_cols}")
        
+
         tot_pid = len(part[['projectNbr','orderNumber', 'generalPic', 'participantPic', 'partnerRole', 'partnerType']].drop_duplicates())
         part = part.rename(columns={"projectNbr": "project_id", "participantPic": "participant_pic", 
                                     'partnerRole': 'role', 'participantLegalName': 'name'})
@@ -173,19 +224,6 @@ def participants_load(proj):
         
         part = part.mask(part == '')
 
-        # controle des projets entre projects et participants
-        tmp=(part[['project_id']].drop_duplicates()
-            .merge(proj, how='outer', on='project_id', indicator=True))
-        if not tmp.query('_merge == "right_only"').empty:
-            print("3- projets dans projects sans participants") 
-            t=tmp.query('_merge == "right_only"').drop(columns='_merge')
-            bugs_excel(t, PATH_SOURCE, 'proj_without_part')
-            
-        elif not tmp.query('_merge == "left_only"').empty:
-            print("4- projets dans participants et pas dans projects")
-            t=tmp.query('_merge == "left_only"').drop(columns='_merge')
-            bugs_excel(t, PATH_SOURCE, 'part_without_info_proj')
-
         part = gps_col(part)
 
         cont_sum = '{:,.1f}'.format(part['euContribution'].sum())
@@ -197,9 +235,18 @@ def participants_load(proj):
         return part, rep
     
 
-def applicants_load(prop):
+def applicants_load(source):
+    """
+    1. load applicants data
+    2. check duplicated records by proposalNbr, orderNumber, generalPic, applicantPic, role and keep only the last update by lastUpdateDate
+    3. check new columns -> data_files/applicants_columns.json
+    4. remove variables not usefull for the analysis and empty columns
+    5. rename columns
+    6. convert numeric variables into string to avoid problem of merge with applicants and proposals data
+    
+    """
     print("\n### LOADING APPLICANTS data")
-    app = unzip_zip(ZIPNAME, f"{PATH_SOURCE}{FRAMEWORK}/", "proposals_applicants.json", 'utf8')
+    app = unzip_zip(source, "proposals_applicants.json", 'utf8')
 
     print(f"- size app au chargement: {len(app)}")
 
@@ -224,8 +271,9 @@ def applicants_load(prop):
         # new columns 
         columns_comparison(app, 'applicants_columns')  
 
-        if len([col for col in app.columns if app[col].isnull().all()])>0:
-            print(f"1- Attention colonnes vides dans applicants ; faire code: {[col for col in app.columns if app[col].isnull().all()]}")
+        empty_cols=[col for col in app.columns if app[col].isnull().all()]
+        if empty_cols:
+            print(f"Empty cols, check the list: {empty_cols}")
 
         tot_pid = len(app[['proposalNbr','orderNumber', 'generalPic', 'applicantPic', 'role']].drop_duplicates())
         app = app.rename(columns={"proposalNbr": "project_id", "applicantPic": "participant_pic", 
@@ -234,18 +282,7 @@ def applicants_load(prop):
         print(f"- var with null: {app.columns[app.isnull().any()].tolist()}")
         c = ['project_id', 'orderNumber', 'generalPic', 'participant_pic']
         app[c] = app[c].map(num_to_string)     
-        
-        # controle des projets entre projects et applicants
-        tmp = app[['project_id']].drop_duplicates().merge(prop, how='outer', on='project_id', indicator=True)
-        if not tmp.query('_merge == "right_only"').empty:
-            print("2- project_id dans proposals sans applicants")
-            t=tmp.query('_merge == "right_only"').drop(columns='_merge')
-            bugs_excel(t, PATH_SOURCE, 'prop_without_app')
-        elif not tmp.query('_merge == "left_only"').empty:
-            print(f"3- project_id uniques dans applicants et pas dans proposals")
-            t=tmp.query('_merge == "left_only"').drop(columns='_merge')
-            bugs_excel(t, PATH_SOURCE, 'app_without_info_prop')       
-                
+                      
         app = gps_col(app)
 
         app_sum = '{:,.1f}'.format(app['requestedGrant'].sum())
@@ -255,11 +292,11 @@ def applicants_load(prop):
         return app, rep
     
 
-    def cascading_projects():
+    def cascading_projects(source):
         print("\n### LOADING APPLICANTS data")
-        casc_pp = unzip_zip(ZIPNAME, f"{PATH_SOURCE}{FRAMEWORK}/", "proposals_cascadingProposals.json", 'utf8')
-        casc_app = unzip_zip(ZIPNAME, f"{PATH_SOURCE}{FRAMEWORK}/", "proposals_applicants_cascadingApplicants.json", 'utf8')
-        casc_p = unzip_zip(ZIPNAME, f"{PATH_SOURCE}{FRAMEWORK}/", "projects_cascadingProjects.json", 'utf8')
-        casc_part = unzip_zip(ZIPNAME, f"{PATH_SOURCE}{FRAMEWORK}/", "projects_participants_cascadingParticipants.json", 'utf8')
+        casc_pp = unzip_zip(source, "proposals_cascadingProposals.json", 'utf8')
+        casc_app = unzip_zip(source, "proposals_applicants_cascadingApplicants.json", 'utf8')
+        casc_p = unzip_zip(source, "projects_cascadingProjects.json", 'utf8')
+        casc_part = unzip_zip(source, "projects_participants_cascadingParticipants.json", 'utf8')
     
     

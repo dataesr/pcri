@@ -1,21 +1,141 @@
 # table topics'''
 
-from constant_vars import ZIPNAME, FRAMEWORK
-from config_path import PATH_SOURCE, PATH_CLEAN
-from functions_shared import unzip_zip
+from constant_vars import FRAMEWORK
+from config_path import PATH_SOURCE, PATH_CLEAN, PATH_WP
+from functions_shared import unzip_zip, clean_text
 import pandas as pd, numpy as np, json, re
 
-def topics_divisions(chemin):
-    print("### TOPICS")
-    data = unzip_zip(ZIPNAME, chemin, 'topics.json', 'utf8')
+
+def topics_portal_clean():
+    """
+    1. load topic_info_harvest from tenders portal API
+    2. filter on type 1 = direct calls
+    3.keep columns of interest + explode lists
+    4. filter actions
+    5. explode budgetYearMap
+    6. extract call_year from call_id and call_lib -> topics which year does not match with wp
+    7. topics_year.json fix missing year for some topics
+    8. save in data_clean/topic_call_info.pkl    
+    """
+    top = json.load(open(f"{PATH_WP}topic_info_harvest.json"))
+    top=pd.DataFrame(top)
+    
+    cols = ['identifier', 'title', 'type', 'call_id', 'call_lib', 'budgetOverview', 'startDate', 'deadlineDate']
+
+    # Explode each column (if lists)
+    df = top[cols]
+    for col in cols:
+        df = df.explode(col)
+        df[col] = df[col].str.strip()
+
+    df = df.loc[df['type']=='1']
+    print(f"- size tops type 1: {len(df)}\n- multi topics: {df['identifier'].value_counts()}")
+
+    def filter_and_extract(row):
+        """
+        Filtre les actions de budgetTopicActionMap dont le 1er élément
+        de 'action' (avant ' - ') correspond au topicCode.
+        Si aucune correspondance, conserve toutes les actions.
+        """
+        bo = row["budgetOverview"]
+        if isinstance(bo, str):
+            bo = json.loads(bo)
+        topic_action_map = bo.get("budgetTopicActionMap", {})
+        all_actions = [a for actions in topic_action_map.values() for a in actions]
+        matching = [a for a in all_actions if a.get("action", "").split(" - ")[0] == row["identifier"]]
+        return matching if matching else all_actions
+    
+    # Filtrage + explosion : une ligne par action
+    df["_rows"] = df.apply(filter_and_extract, axis=1)
+    df = df.drop(columns=["budgetOverview"])
+    df = df.explode("_rows").reset_index(drop=True)
+    
+    # Assigner chaque clé du dict directement en colonne (pas de concat ni df_exp)
+    for key in ["action", "expectedGrants", "minContribution", "maxContribution",
+                "budgetYearMap", "deadlineModel"]:
+        df[key] = df["_rows"].apply(lambda x, k=key: x.get(k) if isinstance(x, dict) else None)
+    
+    df = df.drop(columns=["_rows", "budgetTopicActionMap"], errors="ignore")
+    df = df.rename(columns={"deadlineModel": "deadline_model"})
+    
+    # topicCode = 1er élément avant ' - ' dans action ; action supprimée
+    df = df.drop(columns=["action"])
+    
+    # Explosion de budgetYearMap : gère str ET dict
+    def parse_budget_year_map(x):
+        if isinstance(x, str):
+            x = json.loads(x)
+        if isinstance(x, dict):
+            return [{"budget_year_map_year": k, "budget_year_map_budget": v} for k, v in x.items()]
+        return [{}]
+    
+    df["budgetYearMap"] = df["budgetYearMap"].apply(parse_budget_year_map)
+    df = df.explode("budgetYearMap").reset_index(drop=True)
+    
+    df["budget_year_map_year"]   = df["budgetYearMap"].apply(lambda x: x.get("budget_year_map_year")   if isinstance(x, dict) else None)
+    df["budget_year_map_budget"] = df["budgetYearMap"].apply(lambda x: x.get("budget_year_map_budget") if isinstance(x, dict) else None)
+    
+    df = df.drop(columns=["budgetYearMap"])
+
+    df['call_year'] = df['call_id'].str.extract('(\\d{4})')
+    df['call_year_wp'] = df['call_lib'].str.extract(r"\(WP (\d{4})\)")
+   
+    if any(df['call_year'].isnull()):
+        fix_year = json.load(open('data_files/topics_year.json'))
+        df.loc[df['identifier'].isin(fix_year.keys()), 'call_year'] = df.loc[df['identifier'].isin(fix_year.keys()), 'identifier'].map(fix_year)
+        if any(df['call_year'].isnull()):
+            print(f"- ATTENTION ! missing call_year for {list(df[df['call_year'].isnull()].call_id)}")
+
+
+    df['call_open_date'] = pd.to_datetime(df['startDate'])
+    df['call_deadline'] = pd.to_datetime(df['deadlineDate'])
+    df['end_date'] = df['call_deadline'].dt.strftime('%Y-%m')
+    # for i in ['call_open_date', 'call_deadline']:
+    #     df[i] = df[i].dt.strftime('%Y-%m-%d')
+
+
+    df = (df.rename(columns={'identifier':'topicCode'})
+          .drop(columns=['title', 'type'])
+          .drop_duplicates()
+    )
+
+    cols = [c for c in df.columns if c != 'budget_year_map_budget']
+    df = df.groupby(cols, dropna=False)['budget_year_map_budget'].sum().reset_index()
+
+    print(f"- size tops type 1: {len(df)}\n- multi topics: {df['topicCode'].value_counts(dropna=False)}")
+    if len(df.groupby('topicCode')['call_year'].nunique().reset_index(name='nb').query('nb>1'))>1:
+        print(f"- number of year by topicCode if multi it's a prob: {df.groupby('topicCode')['call_year'].nunique().reset_index(name='nb').query('nb>1')}")
+    
+    df.to_pickle(f"{PATH_CLEAN}topic_call_info.pkl")
+    return df
+
+
+def top_div_load(source):
+    data = unzip_zip(source, 'topics.json', 'utf8')
     print(f'1 - topics -> {len(data)}')
     topics = pd.DataFrame(data)[["topicCode","topicDescription"]].drop_duplicates() 
 
     # DIVISIONS 
-    data = unzip_zip(ZIPNAME, chemin, 'topicLbDivisions.json', 'utf8')
-    print(f'2 - divisions -> {len(data)}')
+    top_div = unzip_zip(source, 'topicLbDivisions.json', 'utf8')
+    print(f'2 - divisions -> {len(top_div)}')
 
-    df = pd.DataFrame(data).drop(['lastUpdateDate'], axis=1)
+    return topics, top_div
+
+
+def topics_divisions(topics, top_div):
+    """
+    create nomenclature thema/destination from topic/division
+     - filter on isPrincipal = True to keep only main topic/division link (some topics are linked to several divisions but only 1 is principal)
+    each step detailed in the code with print to check the results and identify potential issues 
+
+    data to use for the nomenclature thema/destination: destination.json, thema.json, programme_fr.json
+    if new useful destination_code or thema_code are identified:
+        - add pattern in dictionary in the code to assign them to the right thema/destination
+        - add them in the source json and in the data_files json (destination.json, thema.json) with the corresponding lib to be able to merge with the topic/division data and create the final nomenclature
+    """
+    print("### TOPICS")
+
+    df = pd.DataFrame(top_div).drop(['lastUpdateDate'], axis=1)
     df['tmp'] = np.where(df.isPrincipal == True, 1 , 0)
     table = pd.pivot_table(df,index=['topicCode'],columns=['divisionAbbreviation'],values=['tmp'],aggfunc=pd.Series.nunique,margins=True,dropna=True)
     if [table['tmp']['All']>1]==True:
@@ -34,6 +154,8 @@ def topics_divisions(chemin):
                .rename(columns={"lvl2Code": "pilier_code", "lvl2Description": "pilier_name_en", "lvl3Code": "programme_code", 
                                 "lvl3Description": "programme_name_en",'topicDescription': 'topic_name'})
               .drop(columns=['lvl4Code','lvl4Description', 'divisionAbbreviation', 'divisionDescription', 'framework'])) 
+
+    horizon['topic_name'] = horizon['topic_name'].apply(clean_text)
 
     destination = pd.read_json(open('data_files/destination.json', 'r+', encoding='utf-8'))
     destination = pd.DataFrame(destination)
@@ -233,6 +355,7 @@ def topics_divisions(chemin):
     'HUMANITARIAN':'HUMANITARIAN',
     'ICAPITAL':'ICAPITAL'
     }
+    
     for k,v in spec.items():
         HOR3.loc[(HOR3.thema_code=='PRIZE')&(HOR3.topicCode.str.upper().str.contains(k)), 'destination_code'] = v
         HOR3.loc[(HOR3.destination_code.isnull())&(HOR3.topicCode.str.upper().str.contains(k)), 'destination_code'] = v
@@ -316,8 +439,19 @@ def topics_divisions(chemin):
             pass
     return tab
 
-def merged_topics(df):
-    topics = topics_divisions(f"{PATH_SOURCE}{FRAMEWORK}/")
+def merged_topics(source, df):
+
+    """
+    1. load topics and divisions from source json
+    2. apply function topics_divisions to create nomenclature thema/destination
+    3. filter on topicCode in df   
+    4. merge with MERGED (df) on topicCode
+    5. save data_clean/topics_current.csv"
+    """
+
+
+    topics, top_div = top_div_load(source)
+    topics = topics_divisions(topics, top_div)
 
     top_code = list(set(df.topicCode))
     top_code = [item for item in top_code if not(pd.isnull(item)) == True]
