@@ -1,8 +1,8 @@
-import requests, math, re, pandas as pd
+import requests, math, re, pandas as pd, time
 from dotenv import load_dotenv
 load_dotenv()
 
-def rnsr_load():
+def rnsr_dump_load():
     
     ### Prog extraction données rnsr par API selon le nb de pages ; RNSR COMPLET
     def rnsr_extract(max_results):
@@ -139,9 +139,9 @@ def rnsr_load():
         
     return rnsr
 
-def get_rnsr():
+def get_rnsr_dump():
     # traitement RNSR
-    df = rnsr_load()
+    df = rnsr_dump_load()
     rnsr = pd.json_normalize(df)
 
     rnsr.loc[~rnsr.date_end.isnull(), 'date_end'] = rnsr.loc[~rnsr.date_end.isnull()].date_end.astype(int)
@@ -166,3 +166,19 @@ def get_rnsr():
 
     rnsr.mask(rnsr=='', inplace=True)
     return rnsr
+
+def get_rnsr_by_id(liste_id: list):
+    from config_api import scanr_headers
+    print(f"### api call rnsr on 185 start -> {time.strftime('%H:%M:%S')}")
+    print(f"- rnsr size: {len(liste_id)}")
+    result = []
+    for i in liste_id:
+        url = f"http://185.161.45.213/fetchers/rnsr/structures/{i}/views/opendata-actives"
+        r = requests.get(url, headers=scanr_headers, verify=False)
+        if r.status_code==200:
+            r = r.json()
+            result.append(r)
+        else:
+            print(f"- {i} -> without response")
+    print(f"### api call rnsr on 185 end -> {time.strftime('%H:%M:%S')}")
+    return result

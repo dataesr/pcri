@@ -1,11 +1,14 @@
 def H2020_process():
     import pandas as pd, numpy as np, json
-    from step3_entities.references import ref_source_load, ref_source_2d_select
-    from step3_entities.merge_referentiels import merge_paysage, merge_ror, merge_sirene
-    from step3_entities.categories import category_agreg, category_paysage,category_woven, cordis_type, mires, naf_etab_sirene
-    from step3_entities.ID_getSourceRef import get_source_ID
-    from step4_calculations.collaborations import collab_base, collab_cross
-    from config_path import PATH_SOURCE, PATH_CLEAN, PATH_REF, PATH_CONNECT, PATH_HARVEST
+    from step2_participations.entities import entities_single_create
+    from step3_entities.entities_repository import entities_repository_select_maj, paysage_repository, maj_ref_by_pic, merge_repositories, entities_categories, entities_groupe, entities_finalize
+    from step3_entities.entities_cleaning import entities_clean_name, entities_clean_address, entities_info_add
+    from step3_entities.entities_select import entities_tmp_create, entities_for_merge
+
+    from step3_entities.merge_referentiels import merge_id_to_ref, merge_pic
+    from remote_process.ID_getSourceRef import get_source_ID, source_ID_new_and_check
+    # from step4_calculations.collaborations import collab_base, collab_cross
+    from config_path import PATH_SOURCE, PATH_CLEAN, PATH_REF, PATH_CONNECT
     from functions_shared import unzip_zip, my_country_code
 
     def h20_nom_load():
@@ -294,209 +297,316 @@ def H2020_process():
         return proj
 
 
-    def entities_cleaning(df, country_h20, p):
-        print("## ENTITIES cleaning")
-        from functions_shared import gps_col, num_to_string
-        df = pd.DataFrame(df)
-        df = gps_col(df)
-        df = df.loc[~df.generalPic.isnull()]
+    # def entities_cleaning(df, country_h20, p):
+    #     print("## ENTITIES cleaning")
+    #     from functions_shared import gps_col, num_to_string
+    #     df = pd.DataFrame(df)
+    #     df = gps_col(df)
+    #     df = df.loc[~df.generalPic.isnull()]
         
-        df = (df.merge(country_h20[['iso2', 'iso3', 'parent_iso3']], how='left', left_on='countryCode', right_on='iso2')
-            .drop(columns='iso2')
-            .rename(columns={'parent_iso3':'country_code', 'iso3': 'country_code_mapping'}))
-        print(f"parent_iso missing : {df[df.country_code.isnull()].countryCode.unique()}")
-        df.loc[df.country_code.isnull(), 'country_code'] = df.loc[df.country_code.isnull()].country_code_mapping 
+    #     df = (df.merge(country_h20[['iso2', 'iso3', 'parent_iso3']], how='left', left_on='countryCode', right_on='iso2')
+    #         .drop(columns='iso2')
+    #         .rename(columns={'parent_iso3':'country_code', 'iso3': 'country_code_mapping'}))
+    #     print(f"parent_iso missing : {df[df.country_code.isnull()].countryCode.unique()}")
+    #     df.loc[df.country_code.isnull(), 'country_code'] = df.loc[df.country_code.isnull()].country_code_mapping 
 
-        c = ['pic', 'generalPic']
-        df[c] = df[c].map(num_to_string)
-        print(f"- size entities {len(df)}")
+    #     c = ['pic', 'generalPic']
+    #     df[c] = df[c].map(num_to_string)
+    #     print(f"- size entities {len(df)}")
 
-        if len(df[df.generalState.isnull()])>0:
-            print("- entities source generalState -> new state (processing into entities_single)")
-        else:
-            print("- ok entities source generalState not null")
+    #     if len(df[df.generalState.isnull()])>0:
+    #         print("- entities source generalState -> new state (processing into entities_single)")
+    #     else:
+    #         print("- ok entities source generalState not null")
 
-        lien_genCalcPic = p[['generalPic_old', 'pic']].drop_duplicates()
-        print(f"size part without country: {len(p[['generalPic_old', 'pic']].drop_duplicates())}\nsize part with country: {len(p[['generalPic_old', 'pic', 'countryCode']].drop_duplicates())}")
-        df = lien_genCalcPic.merge(df, how='inner', left_on=['generalPic_old','pic'], right_on=['generalPic','pic']).drop_duplicates()
-        return df
+    #     lien_genCalcPic = p[['generalPic_old', 'pic']].drop_duplicates()
+    #     print(f"size part without country: {len(p[['generalPic_old', 'pic']].drop_duplicates())}\nsize part with country: {len(p[['generalPic_old', 'pic', 'countryCode']].drop_duplicates())}")
+    #     df = lien_genCalcPic.merge(df, how='inner', left_on=['generalPic_old','pic'], right_on=['generalPic','pic']).drop_duplicates()
+    #     return df
 
     proj = h20_topics(_proj, act, actions, destination, pilier_fr, thema)
     proj = euro_partnerships(proj)
     proj = cPPP_destination_name(proj)
     proj = proj_cleaning(proj)
-    entities = entities_cleaning(entities, country_h20, part_init)
+    # entities = entities_cleaning(entities, country_h20, part_init)
 
-    def ref_select(FP):
-        ref_source = ref_source_load('ref')
-        # traitement ref select le FP, id non null ou/et ZONAGE non null
-        ref, genPic_to_new = ref_source_2d_select(ref_source, FP)
-        ror = pd.read_pickle(f"{PATH_REF}ror_df.pkl")
-        paysage = pd.read_pickle(f"{PATH_REF}paysage_df.pkl")
-        sirene = pd.read_pickle(f"{PATH_REF}sirene_df.pkl")
-        ### si besoin de charger groupe
-        groupe = pd.read_pickle(f"{PATH_REF}H20_groupe.pkl")
-        return ref, genPic_to_new, ror, paysage, sirene, groupe
-    ref, genPic_to_new, ror, paysage, sirene, groupe = ref_select('H20')
 
-    print(f"- si ++id pour un generalPic: {ref[ref.id.str.contains(';', na=False)]}")
-    # ref = (ref.merge(country_h20[['iso3', 'parent_iso3']], how='left', left_on='country_code_mapping', right_on='iso3')
-    #     .drop(columns='iso3')
-    #     .rename(columns={'parent_iso3':'country_code'}))
-    print(f"parent_iso missing : {ref[ref.country_code.isnull()].country_code_mapping.unique()}")
-    ref.loc[ref.country_code.isnull(), 'country_code'] = ref.loc[ref.country_code.isnull()].country_code_mapping 
+##########################################################################################################
+
+    def entities_info_create(part_init, entities, country_h20, single_create=False):
+
+        cols = ['generalPic', 'country_code_mapping', 'country_code']
+        p = part_init[cols].drop_duplicates()
+        print(f"size initiale de p: {len(p)}")
+
+        if single_create==True:
+            from functions_shared import gps_col, num_to_string
+            entities = pd.DataFrame(entities)
+            entities = gps_col(entities)
+            entities = entities.loc[entities['generalPic'].notnull()]
+            entities = (entities.merge(country_h20[['iso2', 'iso3', 'parent_iso3']], how='left', left_on='countryCode', right_on='iso2')
+            .drop(columns='iso2')
+            .rename(columns={'parent_iso3':'country_code', 'iso3': 'country_code_mapping'}))
+            print(f"parent_iso missing : {entities[entities.country_code.isnull()].countryCode.unique()}")
+            entities.loc[entities.country_code.isnull(), 'country_code'] = entities.loc[entities.country_code.isnull()].country_code_mapping 
+            c = ['pic', 'generalPic']
+            entities[c] = entities[c].map(num_to_string)
+            print(f"- size entities {len(entities)}")
+            entities_single = entities_single_create(entities, p, 'H20')
+        else:
+            entities_single = pd.read_pickle(f"{PATH_CLEAN}H20_entities_single.pkl")
+            print(f"size entities_single: {len(entities_single)}")
+
+        p = (pd.merge(part_init, entities_single[cols], on=cols, how='left', indicator=True)
+                .query('_merge == "left_only"')
+                .drop(columns='_merge')
+                )
+        p = (p[p.columns.intersection(entities_single.columns)]
+             .drop(columns='pic')
+             .drop_duplicates()
+             .sort_values(by=cols))
+        print(f"size rest of p: {len(p)}")
+
+
+        p['missing_score'] = p.isna().sum(axis=1)
+        # penalize legalName with special characters (keep letters, numbers, spaces)
+        p['legalname_penalty'] = p['legalName'].str.contains(
+            r'[^A-Za-z0-9 ]',
+            regex=True,
+            na=True
+            ).astype(int)
+        p = (p.sort_values(
+            by=cols + ['missing_score', 'legalname_penalty', 'legalName'],
+            ascending=[True, True, True, True, True, True]
+            )
+            .drop_duplicates(subset=cols, keep='first').drop(columns=['missing_score', 'legalname_penalty'])     
+        )
+        print(f"size rest of p: {len(p)}")
+
+        df_concat = pd.concat([p, 
+                               entities_single.drop(columns='pic').drop_duplicates()], 
+                               ignore_index=True).drop_duplicates()
+
+        entities_info = entities_clean_name(df_concat)
+        entities_info = entities_clean_address(entities_info)
+
+        return entities_info.drop_duplicates()
+    
+    entities_info = entities_info_create(part_init, entities, country_h20, single_create=False)
+     
+
+
+    ############################################################
+    # REF_SOURCE
+    ###########################################################
+
+    frameworks = ['H20', 'HE']
+    ref_id, genPic_to_new = entities_repository_select_maj(frameworks, countries, UPDATE_PAYSAGE=False)
+    paysage_cj, cat, cat_filter = paysage_repository(PAYSAGE_GET_INFO=False)
+
+    ###########
+
+
+    # pic = get_pic(p, genPic_to_new, countries)
+    pic = maj_ref_by_pic(entities_info, countries, genPic_to_new, ref_id)
+
+    ref_with_paysage = merge_id_to_ref(ref_id, 'from_id_to_ref')
+
+
+    ###  CREATE ENTITIES_TMP
+    entities_tmp, rep = entities_tmp_create(entities_info, ref_with_paysage)
+    entities_tmp = entities_for_merge(entities_tmp)
+    # new source_id and check bugs between siren and ror if need to fix -> fix_bug=True
+    entities_tmp = source_ID_new_and_check(entities_tmp, 'id_extend', fix_bug=True)
+
+    entities_tmp = merge_repositories(entities_tmp, paysage_cj, cat, cat_filter)
+
+
+    entities_tmp = entities_info_add(entities_tmp, entities_info)
+
+    # PIC
+    entities_tmp = merge_pic(entities_tmp, pic, cat, paysage_cj)
+
+    entities_tmp = entities_groupe(entities_tmp, framework='H20')
+    entities_tmp = entities_categories(entities_tmp)
+
+    entities_info = entities_finalize(entities_tmp, countries, framework=None)
+
+    # provisoire
+    x = entities_tmp.value_counts(['generalPic', 'country_code_mapping', 'country_code', 'entities_id'], dropna=False).reset_index(name='nb')
+    
+    
+    
+    # def ref_select(FP):
+    #     ref_source = ref_source_load('ref')
+    #     # traitement ref select le FP, id non null ou/et ZONAGE non null
+    #     ref, genPic_to_new = ref_source_2d_select(ref_source, FP)
+    #     ror = pd.read_pickle(f"{PATH_REF}ror_df.pkl")
+    #     paysage = pd.read_pickle(f"{PATH_REF}paysage_df.pkl")
+    #     sirene = pd.read_pickle(f"{PATH_REF}sirene_df.pkl")
+    #     ### si besoin de charger groupe
+    #     groupe = pd.read_pickle(f"{PATH_REF}H20_groupe.pkl")
+    #     return ref, genPic_to_new, ror, paysage, sirene, groupe
+    # ref, genPic_to_new, ror, paysage, sirene, groupe = ref_select('H20')
+
+    # print(f"- si ++id pour un generalPic: {ref[ref.id.str.contains(';', na=False)]}")
+    # # ref = (ref.merge(country_h20[['iso3', 'parent_iso3']], how='left', left_on='country_code_mapping', right_on='iso3')
+    # #     .drop(columns='iso3')
+    # #     .rename(columns={'parent_iso3':'country_code'}))
+    # print(f"parent_iso missing : {ref[ref.country_code.isnull()].country_code_mapping.unique()}")
+    # ref.loc[ref.country_code.isnull(), 'country_code'] = ref.loc[ref.country_code.isnull()].country_code_mapping 
 
 
     ########################################################################
-    p=part_init[['generalPic', 'country_code_mapping', 'country_code']].drop_duplicates()
-    print(f"size de p: {len(p)}")
-    p = p.merge(ref, how='left', on=['generalPic', 'country_code_mapping', 'country_code'], indicator=True).drop_duplicates()
-    print(f"cols de p: {p.columns}") #168 978
+    # p=part_init[['generalPic', 'country_code_mapping', 'country_code']].drop_duplicates()
+    # print(f"size de p: {len(p)}")
+    # p = p.merge(ref, how='left', on=['generalPic', 'country_code_mapping', 'country_code'], indicator=True).drop_duplicates()
+    # print(f"cols de p: {p.columns}") #168 978
 
-    # p1 pic+ccm commun
-    p1 = p.loc[p['_merge']=='both'].drop(columns=['_merge'])
-    print(f"size p1 pic+cc: {len(p1)}")# 62 928
-
-
-    p2 = (p.loc[p['_merge']=='left_only'].drop(columns=['_merge', 'id', 'ZONAGE', 'id_secondaire'])
-        .merge(ref.drop(columns=['country_code_mapping']), 
-                how='inner', left_on=['generalPic', 'country_code'], right_on=['generalPic', 'country_code']).drop_duplicates()
-        )
-    print(f"size p2 pic cc_parent: {len(p2)}")
+    # # p1 pic+ccm commun
+    # p1 = p.loc[p['_merge']=='both'].drop(columns=['_merge'])
+    # print(f"size p1 pic+cc: {len(p1)}")# 62 928
 
 
-    # acteurs sans identifiant dont le pic à plusieurs pays ou le pic certaines participations ont un identifiant et pas d'autres 
-    p3 = (p.loc[p['_merge']=='left_only'].drop(columns=['_merge', 'country_code_mapping', 'id', 'ZONAGE'])
-        .merge(ref, how='inner', on=['generalPic']).drop_duplicates())
-    if not p3.empty:
-        print(f"A faire si possible, vérifier pourquoi des participations avec pic identiques ont un id ou pas nb pic: {len(p3.generalPic.unique())}")
-
-    p = pd.concat([p1,p2], ignore_index=True).drop_duplicates()
-    print(f"size de new p: {len(p)}, cols: {p.columns}")
-
-    part1 = part_init.merge(p, how='left', on=['generalPic', 'country_code_mapping', 'country_code'])
-    print(f"size part1: {len(part1)}, part: {len(part_init)}")
-
-    # gestion code nuts
-    part1.loc[(part1.nutsCode.str.len()>2), 'nuts_code'] = part1.nutsCode
-    part1 = (part1.merge(nuts, how='left', on='nuts_code')
-                .drop_duplicates()
-                .rename(columns={'nuts_code':'participation_nuts'}))
-    print(f"size participation after add nuts: {len(part1)}, sans nuts name: {len(part1.loc[(~part1.participation_nuts.isnull())&(part1.region_1_name.isnull())])}")
+    # p2 = (p.loc[p['_merge']=='left_only'].drop(columns=['_merge', 'id', 'ZONAGE', 'id_secondaire'])
+    #     .merge(ref.drop(columns=['country_code_mapping']), 
+    #             how='inner', left_on=['generalPic', 'country_code'], right_on=['generalPic', 'country_code']).drop_duplicates()
+    #     )
+    # print(f"size p2 pic cc_parent: {len(p2)}")
 
 
-    ### entities
-    entities_tmp = part1.loc[~part1.id.isnull(), ['generalPic','id','country_code_mapping']].drop_duplicates()
-    # entities_tmp = part1.loc[~part1.id.isnull(), ['generalPic','legalName', 'id', 'id_secondaire', 'ZONAGE', 'country_code_mapping', 'country_code']].drop_duplicates()
-    print(f"- size entities {len(entities_tmp)}")
-    if any(entities_tmp.id.str.contains(';')):
-        entities_tmp = entities_tmp.assign(id_extend=entities_tmp.id.str.split(';')).explode('id_extend')
-        ent_size_to_keep = len(entities_tmp)
-        print(f"1- size ent si multi id -> ent_size_to_keep = {ent_size_to_keep}\n{entities_tmp.columns}")
+    # # acteurs sans identifiant dont le pic à plusieurs pays ou le pic certaines participations ont un identifiant et pas d'autres 
+    # p3 = (p.loc[p['_merge']=='left_only'].drop(columns=['_merge', 'country_code_mapping', 'id', 'ZONAGE'])
+    #     .merge(ref, how='inner', on=['generalPic']).drop_duplicates())
+    # if not p3.empty:
+    #     print(f"A faire si possible, vérifier pourquoi des participations avec pic identiques ont un id ou pas nb pic: {len(p3.generalPic.unique())}")
 
-    entities_tmp = merge_ror(entities_tmp, ror)
-    print(f"size entities_tmp after add ror_info: {len(entities_tmp)}, entities_size_to_keep: {ent_size_to_keep}")
+    # p = pd.concat([p1,p2], ignore_index=True).drop_duplicates()
+    # print(f"size de new p: {len(p)}, cols: {p.columns}")
 
-    # PAYSAGE
-    ### si besoin de charger paysage pickle
-    paysage_category = pd.read_pickle(f"{PATH_HARVEST}paysage_category.pkl")
-    cat_filter = category_paysage(paysage_category)
-    entities_tmp = merge_paysage(entities_tmp, paysage, cat_filter)
+    # part1 = part_init.merge(p, how='left', on=['generalPic', 'country_code_mapping', 'country_code'])
+    # print(f"size part1: {len(part1)}, part: {len(part_init)}")
 
-    # SIRENE
-    ### si besoin de charger paysage pickle
-    sirene = naf_etab_sirene(sirene)
-    entities_tmp = merge_sirene(entities_tmp, sirene)
-    entities_tmp['nb']=entities_tmp.groupby(['generalPic', 'id_extend', 'country_code_mapping'])['entities_id'].transform('count')
-    if any(entities_tmp['nb']>1):
-        print(f"doublons: {entities_tmp.loc[entities_tmp['nb']>1, ['generalPic', 'id_extend', 'country_code_mapping', 'entities_id', 'nb']]}")
-        entities_tmp=entities_tmp.loc[~entities_tmp.entities_id.isin(['889664413', '808994164'])]
+    # # gestion code nuts
+    # part1.loc[(part1.nutsCode.str.len()>2), 'nuts_code'] = part1.nutsCode
+    # part1 = (part1.merge(nuts, how='left', on='nuts_code')
+    #             .drop_duplicates()
+    #             .rename(columns={'nuts_code':'participation_nuts'}))
+    # print(f"size participation after add nuts: {len(part1)}, sans nuts name: {len(part1.loc[(~part1.participation_nuts.isnull())&(part1.region_1_name.isnull())])}")
 
-    entities_tmp.loc[(~entities_tmp.id.isnull())&(entities_tmp.entities_id.isnull()), 'entities_id'] = entities_tmp.id
-    entities_tmp['siren']=entities_tmp.loc[entities_tmp.entities_id.str.contains('^[0-9]{9}$|^[0-9]{14}$', na=False)].entities_id.str[:9]
-    entities_tmp.loc[entities_tmp.siren.isnull(), 'siren']=entities_tmp.paysage_siren
 
-    #groupe entreprises
-    # recuperation tous les siren pour lien avec groupe -> creation var SIREN 
-    entities_tmp.loc[~entities_tmp.siren.isnull(), "siren"] = entities_tmp.loc[~entities_tmp.siren.isnull(), "siren"].str.split().apply(set).str.join(";")
+    # ### entities
+    # entities_tmp = part1.loc[~part1.id.isnull(), ['generalPic','id','country_code_mapping']].drop_duplicates()
+    # # entities_tmp = part1.loc[~part1.id.isnull(), ['generalPic','legalName', 'id', 'id_secondaire', 'ZONAGE', 'country_code_mapping', 'country_code']].drop_duplicates()
+    # print(f"- size entities {len(entities_tmp)}")
+    # if any(entities_tmp.id.str.contains(';')):
+    #     entities_tmp = entities_tmp.assign(id_extend=entities_tmp.id.str.split(';')).explode('id_extend')
+    #     ent_size_to_keep = len(entities_tmp)
+    #     print(f"1- size ent si multi id -> ent_size_to_keep = {ent_size_to_keep}\n{entities_tmp.columns}")
 
-    if any(entities_tmp.siren.str.contains(';', na=False)):
-        print(f"ATTENTION faire code pour traiter deux siren différents -> ce qui serait bizarre qu'il y ait 2 siren\n{entities_tmp[entities_tmp.siren.str.contains(';', na=False)]}")
-    # else:
-    print(f"taille de entities_tmp avant groupe:{len(entities_tmp)}")
-    entities_tmp=entities_tmp.merge(groupe, how='left', on='siren')
+    # entities_tmp = merge_ror(entities_tmp, ror)
+    # print(f"size entities_tmp after add ror_info: {len(entities_tmp)}, entities_size_to_keep: {ent_size_to_keep}")
 
-    print(f"taille de entities_tmp après groupe {len(entities_tmp)}")
-    entities_tmp = entities_tmp.merge(get_source_ID(entities_tmp, 'entities_id'), how='left', on='entities_id')
+    # # PAYSAGE
+    # ### si besoin de charger paysage pickle
+    # paysage_category = pd.read_pickle(f"{PATH_HARVEST}paysage_category.pkl")
+    # cat_filter = category_paysage(paysage_category)
+    # entities_tmp = merge_paysage(entities_tmp, paysage, cat_filter)
 
-    # traitement catégorie
-    entities_tmp = category_woven(entities_tmp, sirene)
-    entities_tmp = category_agreg(entities_tmp)
-    entities_tmp = mires(entities_tmp)
+    # # SIRENE
+    # ### si besoin de charger paysage pickle
+    # sirene = naf_etab_sirene(sirene)
+    # entities_tmp = merge_sirene(entities_tmp, sirene)
+    # entities_tmp['nb']=entities_tmp.groupby(['generalPic', 'id_extend', 'country_code_mapping'])['entities_id'].transform('count')
+    # if any(entities_tmp['nb']>1):
+    #     print(f"doublons: {entities_tmp.loc[entities_tmp['nb']>1, ['generalPic', 'id_extend', 'country_code_mapping', 'entities_id', 'nb']]}")
+    #     entities_tmp=entities_tmp.loc[~entities_tmp.entities_id.isin(['889664413', '808994164'])]
 
-    print(f"size part1 avant: {len(part1)}")
-    part_tmp = part1.merge(genPic_to_new, how='left', on=['generalPic', 'country_code_mapping'])
-    part_tmp = part_tmp.rename(columns={'generalPic':'pic_old', 'pic_new':'generalPic'})
-    part_tmp.loc[part_tmp.generalPic.isnull(), 'generalPic'] = part_tmp.loc[part_tmp.generalPic.isnull(), 'pic_old']
-    part_tmp = part_tmp.merge(entities_tmp.drop(columns='id'), how='left', on=['generalPic', 'country_code_mapping'])
-    print(f"size part1 -> part_tmp: {len(part_tmp)}\n{part_tmp.columns}")
+    # entities_tmp.loc[(~entities_tmp.id.isnull())&(entities_tmp.entities_id.isnull()), 'entities_id'] = entities_tmp.id
+    # entities_tmp['siren']=entities_tmp.loc[entities_tmp.entities_id.str.contains('^[0-9]{9}$|^[0-9]{14}$', na=False)].entities_id.str[:9]
+    # entities_tmp.loc[entities_tmp.siren.isnull(), 'siren']=entities_tmp.paysage_siren
 
-    print(len(part_tmp[(part_tmp.entities_name.isnull())]))
-    part2=part_tmp.loc[(part_tmp.entities_name.isnull()), ['generalPic','entities_id', 'country_code_mapping', 'source_id']]
-    part2.loc[part2.entities_id.str.contains('-', na=False), 'pic_d'] = part2.loc[part2.entities_id.str.contains('-', na=False)].entities_id.str.split('-').str[0]
-    part2.loc[part2.pic_d.isnull(), 'pic_d'] = part2.loc[part2.pic_d.isnull()].generalPic
+    # #groupe entreprises
+    # # recuperation tous les siren pour lien avec groupe -> creation var SIREN 
+    # entities_tmp.loc[~entities_tmp.siren.isnull(), "siren"] = entities_tmp.loc[~entities_tmp.siren.isnull(), "siren"].str.split().apply(set).str.join(";")
 
-    part2 = part2.drop_duplicates()
-    print(f"size part2: {len(part2)}, nb unique pic_d: {part2.pic_d.nunique()}")
-    part2 = (part2.merge(entities, how='inner', left_on='pic_d', right_on='generalPic')[
-                ['pic_d','entities_id','legalName', 'businessName', 'legalEntityTypeCode', 'generalState']]
-            .rename(columns={'businessName':'shortName'})
-            .drop_duplicates()
-            )
+    # if any(entities_tmp.siren.str.contains(';', na=False)):
+    #     print(f"ATTENTION faire code pour traiter deux siren différents -> ce qui serait bizarre qu'il y ait 2 siren\n{entities_tmp[entities_tmp.siren.str.contains(';', na=False)]}")
+    # # else:
+    # print(f"taille de entities_tmp avant groupe:{len(entities_tmp)}")
+    # entities_tmp=entities_tmp.merge(groupe, how='left', on='siren')
 
-    gen_state=['VALIDATED', 'DECLARED', 'DEPRECATED', 'SLEEPING', 'SUSPENDED', 'BLOCKED']
-    part2=part2.groupby(['pic_d']).apply(lambda x: x.sort_values('generalState', key=lambda col: pd.Categorical(col, categories=gen_state, ordered=True)), include_groups=True).reset_index(drop=True)
-    part2=part2.groupby(['pic_d']).head(1).drop(columns='generalState')
-    print(f"size part2: {len(part2)}, nb unique pic_d: {part2.pic_d.nunique()}")
+    # print(f"taille de entities_tmp après groupe {len(entities_tmp)}")
+    # entities_tmp = entities_tmp.merge(get_source_ID(entities_tmp, 'entities_id'), how='left', on='entities_id')
 
-    part3=(part_tmp.loc[(~part_tmp.generalPic.isin(part2.pic_d.unique()))&(part_tmp.entities_name.isnull())]
-        .sort_values(['generalPic','legalName', 'shortName'], ascending=False))
-    print(part3.generalPic.nunique())
+    # # traitement catégorie
+    # entities_tmp = category_woven(entities_tmp, sirene)
+    # entities_tmp = category_agreg(entities_tmp)
+    # entities_tmp = mires(entities_tmp)
 
-    part3=(part3.groupby(['generalPic', 'country_code_mapping'])
-        .first().reset_index()[['generalPic', 'country_code_mapping', 'legalName', 'shortName', 'legalEntityTypeCode']]
-        .reset_index(drop=True)
-        .drop_duplicates()
-        )
-    print(part3.generalPic.nunique())
+    # print(f"size part1 avant: {len(part1)}")
+    # part_tmp = part1.merge(genPic_to_new, how='left', on=['generalPic', 'country_code_mapping'])
+    # part_tmp = part_tmp.rename(columns={'generalPic':'pic_old', 'pic_new':'generalPic'})
+    # part_tmp.loc[part_tmp.generalPic.isnull(), 'generalPic'] = part_tmp.loc[part_tmp.generalPic.isnull(), 'pic_old']
+    # part_tmp = part_tmp.merge(entities_tmp.drop(columns='id'), how='left', on=['generalPic', 'country_code_mapping'])
+    # print(f"size part1 -> part_tmp: {len(part_tmp)}\n{part_tmp.columns}")
 
-    part_tmp = part_tmp.merge(part2, how='left', left_on='generalPic', right_on='pic_d', suffixes=['', '_x'])
-    part_tmp.loc[~part_tmp.legalName_x.isnull(), 'legalName'] = part_tmp.legalName_x
-    part_tmp.loc[~part_tmp.shortName_x.isnull(), 'shortName'] = part_tmp.shortName_x
-    part_tmp.loc[~part_tmp.legalEntityTypeCode_x.isnull(), 'legalEntityTypeCode'] = part_tmp.legalEntityTypeCode_x
-    print(f"size part_tmp after merge part2: {len(part_tmp)}")
+    # print(len(part_tmp[(part_tmp.entities_name.isnull())]))
+    # part2=part_tmp.loc[(part_tmp.entities_name.isnull()), ['generalPic','entities_id', 'country_code_mapping', 'source_id']]
+    # part2.loc[part2.entities_id.str.contains('-', na=False), 'pic_d'] = part2.loc[part2.entities_id.str.contains('-', na=False)].entities_id.str.split('-').str[0]
+    # part2.loc[part2.pic_d.isnull(), 'pic_d'] = part2.loc[part2.pic_d.isnull()].generalPic
 
-    part_tmp = part_tmp.merge(part3, how='left', on=['generalPic', 'country_code_mapping'], suffixes=['', '_y'])
-    part_tmp.loc[~part_tmp.legalName_y.isnull(), 'legalName'] = part_tmp.legalName_y
-    part_tmp.loc[~part_tmp.shortName_y.isnull(), 'shortName'] = part_tmp.shortName_y
-    part_tmp.loc[~part_tmp.legalEntityTypeCode_y.isnull(), 'legalEntityTypeCode'] = part_tmp.legalEntityTypeCode_y
-    part_tmp.drop(part_tmp.columns[part_tmp.columns.str.endswith(('_x','_y'))], axis=1, inplace=True)
-    print(f"size part_tmp after merge part2: {len(part_tmp)}")
+    # part2 = part2.drop_duplicates()
+    # print(f"size part2: {len(part2)}, nb unique pic_d: {part2.pic_d.nunique()}")
+    # part2 = (part2.merge(entities, how='inner', left_on='pic_d', right_on='generalPic')[
+    #             ['pic_d','entities_id','legalName', 'businessName', 'legalEntityTypeCode', 'generalState']]
+    #         .rename(columns={'businessName':'shortName'})
+    #         .drop_duplicates()
+    #         )
 
-    liste=['legalName', 'shortName']
-    for i in liste:
-        part_tmp[i] = part_tmp[i].apply(lambda x: x.capitalize().strip() if isinstance(x, str) else x)
+    # gen_state=['VALIDATED', 'DECLARED', 'DEPRECATED', 'SLEEPING', 'SUSPENDED', 'BLOCKED']
+    # part2=part2.groupby(['pic_d']).apply(lambda x: x.sort_values('generalState', key=lambda col: pd.Categorical(col, categories=gen_state, ordered=True)), include_groups=True).reset_index(drop=True)
+    # part2=part2.groupby(['pic_d']).head(1).drop(columns='generalState')
+    # print(f"size part2: {len(part2)}, nb unique pic_d: {part2.pic_d.nunique()}")
 
-    part_tmp.loc[part_tmp.entities_name.isnull(), 'entities_name'] = part_tmp.legalName
-    part_tmp.loc[part_tmp.entities_acronym.isnull(), 'entities_acronym'] = part_tmp.shortName
-    part_tmp.loc[part_tmp.entities_id.isnull(), 'entities_id'] = "pic"+part_tmp.generalPic.map(str)
+    # part3=(part_tmp.loc[(~part_tmp.generalPic.isin(part2.pic_d.unique()))&(part_tmp.entities_name.isnull())]
+    #     .sort_values(['generalPic','legalName', 'shortName'], ascending=False))
+    # print(part3.generalPic.nunique())
 
-    part_tmp.rename(columns={'legalName':'entities_name_source',
-                            'shortName':'entities_acronym_source'}, inplace=True)
+    # part3=(part3.groupby(['generalPic', 'country_code_mapping'])
+    #     .first().reset_index()[['generalPic', 'country_code_mapping', 'legalName', 'shortName', 'legalEntityTypeCode']]
+    #     .reset_index(drop=True)
+    #     .drop_duplicates()
+    #     )
+    # print(part3.generalPic.nunique())
 
-    for i in ['entities_acronym', 'entities_name','entities_acronym_source', 'entities_name_source']:
-        part_tmp[i] = part_tmp[i].str.replace('\\n|\\t|\\r|\\s+', ' ', regex=True).str.strip()
-    print(f"size part_tmp after clean string: {len(part_tmp)}")
+    # part_tmp = part_tmp.merge(part2, how='left', left_on='generalPic', right_on='pic_d', suffixes=['', '_x'])
+    # part_tmp.loc[~part_tmp.legalName_x.isnull(), 'legalName'] = part_tmp.legalName_x
+    # part_tmp.loc[~part_tmp.shortName_x.isnull(), 'shortName'] = part_tmp.shortName_x
+    # part_tmp.loc[~part_tmp.legalEntityTypeCode_x.isnull(), 'legalEntityTypeCode'] = part_tmp.legalEntityTypeCode_x
+    # print(f"size part_tmp after merge part2: {len(part_tmp)}")
+
+    # part_tmp = part_tmp.merge(part3, how='left', on=['generalPic', 'country_code_mapping'], suffixes=['', '_y'])
+    # part_tmp.loc[~part_tmp.legalName_y.isnull(), 'legalName'] = part_tmp.legalName_y
+    # part_tmp.loc[~part_tmp.shortName_y.isnull(), 'shortName'] = part_tmp.shortName_y
+    # part_tmp.loc[~part_tmp.legalEntityTypeCode_y.isnull(), 'legalEntityTypeCode'] = part_tmp.legalEntityTypeCode_y
+    # part_tmp.drop(part_tmp.columns[part_tmp.columns.str.endswith(('_x','_y'))], axis=1, inplace=True)
+    # print(f"size part_tmp after merge part2: {len(part_tmp)}")
+
+    # liste=['legalName', 'shortName']
+    # for i in liste:
+    #     part_tmp[i] = part_tmp[i].apply(lambda x: x.capitalize().strip() if isinstance(x, str) else x)
+
+    # part_tmp.loc[part_tmp.entities_name.isnull(), 'entities_name'] = part_tmp.legalName
+    # part_tmp.loc[part_tmp.entities_acronym.isnull(), 'entities_acronym'] = part_tmp.shortName
+    # part_tmp.loc[part_tmp.entities_id.isnull(), 'entities_id'] = "pic"+part_tmp.generalPic.map(str)
+
+    # part_tmp.rename(columns={'legalName':'entities_name_source',
+    #                         'shortName':'entities_acronym_source'}, inplace=True)
+
+    # for i in ['entities_acronym', 'entities_name','entities_acronym_source', 'entities_name_source']:
+    #     part_tmp[i] = part_tmp[i].str.replace('\\n|\\t|\\r|\\s+', ' ', regex=True).str.strip()
+    # print(f"size part_tmp after clean string: {len(part_tmp)}")
 
     ##########################################################
 
@@ -610,7 +720,7 @@ def H2020_process():
         'article1','article2', 'entities_name', 'entities_acronym', 'entities_id', 'generalPic',
         'entities_name_source', 'entities_acronym_source','paysage_category_priority',
         'ror_category', 'paysage_category', 'paysage_category_id', 'category_agregation',
-        'insee_cat_code', 'insee_cat_name', 'groupe_sector', 'source_id', 'entreprise_flag',
+        'cat_entreprise_code', 'cat_entreprise_name', 'groupe_sector', 'source_id', 'entreprise_flag',
         'category_woven', 'operateur_lib', 'operateur_name', 'operateur_num',
         'groupe_name','groupe_acronym', 'groupe_id']]
 

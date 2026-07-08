@@ -1,7 +1,7 @@
 import numpy as np, pandas as pd
 from config_path import PATH_ODS
 from functions_shared import cols_order, zipfile_ods, select_cols_FP, rename_cols_FP, df_order_cols_FP
-from step3_entities.ID_getSourceRef import *
+from remote_process.ID_getSourceRef import *
 
 def msca_ods(msca_erc):
     print("### MSCA ods")
@@ -21,7 +21,7 @@ def msca_ods(msca_erc):
         .rename(columns={
             'panel_code':'panel_id',
             'role':'role_participant', 
-            'calculated_fund':'fund_€',
+            'calculated_fund':'fund_eur',
             'country_group_association_code':'country_association_code',
             'country_group_association_name_en':'country_association_name_en',
             'country_group_association_name_fr':'country_association_name_fr',
@@ -51,7 +51,7 @@ def msca_evol_ods(msca_resume):
         
         .rename(columns={
             'panel_code':'panel_id',
-            'funding_part':'fund_€',
+            'funding_part':'fund_eur',
             'country_group_association_code':'country_association_code',
             'country_group_association_name_en':'country_association_name_en',
             'country_group_association_name_fr':'country_association_name_fr',
@@ -59,19 +59,19 @@ def msca_evol_ods(msca_resume):
             'is_ejo':'flag_organization'
             }))
 
-    tmp.loc[(tmp.framework=='FP7')&(tmp.stage=='evaluated'), 'fund_€']= 0
+    tmp.loc[(tmp.framework=='FP7')&(tmp.stage=='evaluated'), 'fund_eur']= 0
     tmp.loc[(tmp.country_code=='ALL'), 'country_name_en'] = 'All countries'
     tmp.loc[(tmp.country_code=='ALL'), 'country_name_fr'] = 'Tous pays'
 
 
-    for i in ['coordination_number', 'number_involved', 'fund_€']:
+    for i in ['coordination_number', 'number_involved', 'fund_eur']:
         tmp.loc[(tmp.country_code=='ALL'), f'{i}_all'] = tmp[i]
         tmp.loc[(tmp.country_code=='ALL'), i] = np.nan
 
     tmp = tmp.reindex(sorted(tmp.columns), axis=1)
     # attention si changement de nom de vars -> la modifier aussi dans pcri_info_columns_order
     tmp = cols_order(tmp, 'msca_evol')
-    zipfile_ods(tmp.sort_values(['fund_€_all'], ascending=False), "fr-esr-msca-evolution-pcri")
+    zipfile_ods(tmp.sort_values(['fund_eur_all'], ascending=False), "fr-esr-msca-evolution-pcri")
     # tmp.sort_values(['fund_€_all'], ascending=False).to_csv(f"{PATH_ODS}fr-esr-msca-evolution-pcri.csv", sep=';', encoding='UTF-8', index=False, na_rep='', decimal=".")
 
 

@@ -1,66 +1,86 @@
 [
     {
         "stage_process": "_loading",
-        "project_size": 21186
+        "project_size": 23595
     },
     {
         "stage_process": "process1",
-        "project_size": 21186
+        "project_size": 23595
     },
     {
         "stage_process": "_loading",
-        "proposal_size": 121375
+        "proposal_size": 137136
     },
     {
         "stage_process": "process1",
-        "proposal_size": 121375
+        "proposal_size": 137136
+    },
+    {
+        "stage_process": "_loading",
+        "participant_size": 140788
     },
     {
         "stage_process": "process2_status",
-        "proposal_size": 115146
+        "participant_size": 137407
+    },
+    {
+        "stage_process": "process1",
+        "participant_size": 137407
+    },
+    {
+        "stage_process": "_loading",
+        "applicant_size": 694906
+    },
+    {
+        "stage_process": "process1",
+        "applicant_size": 694906
+    },
+    {
+        "stage_process": "process2_status",
+        "proposal_size": 130322
     },
     {
         "stage_process": "process3_add_miss_proj",
-        "proposal_size": 115839
+        "proposal_size": 131093
     },
     {
         "stage_process": "process2_status",
-        "project_size": 19480
+        "project_size": 21855
     },
     {
         "stage_process": "process4_merge",
-        "merded_size": 135319
+        "merded_size": 152948
     },
     {
         "stage_process": "process5_date_clean",
-        "merged_size": 135319
+        "merged_size": 152948
     },
     {
         "stage_process": "process6_panels",
-        "merged_size": 135319
+        "merged_size": 152948
     },
     {
         "stage_process": "process7_topics",
-        "merged_size": 135319
+        "merged_size": 152948
     },
     {
         "stage_process": "process8_actions",
-        "merged_size": 135319
+        "merged_size": 152948
     },
     {
         "stage_process": "process9_europs",
-        "merged_size": 135319
+        "merged_size": 152948
     },
     {
         "stage_process": "process10_projects_all",
-        "merged_size": 135319
+        "merged_size": 152948
     },
     {
         "stage_process": "process10_projects_all",
-        "project_size": 19480
+        "project_size": 21855
     },
     {
         "stage_process": "process10_projects_all",
-        "proposal_size": 115839
+        "proposal_size": 131093
     }
 ]

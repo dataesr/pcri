@@ -6,7 +6,7 @@ from functions_shared import chunkify, work_csv
 from step7_persons.prep_persons import persons_preparation
 from step7_persons.affiliations import affiliations, persons_files_import, persons_api_simplify, persons_results_clean, get_only_new_persons
 PATH_PERSONS=f"{PATH_HARVEST}persons/"
-CSV_DATE='20250715'
+CSV_DATE='20260616'
 
 #######
 persons_preparation(CSV_DATE)

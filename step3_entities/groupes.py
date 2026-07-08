@@ -1,10 +1,13 @@
+from config_path import PATH_REF
+
 
 def groupe_treatment(df, output):
     import pandas as pd, numpy as np, openpyxl, warnings, copy
     warnings.simplefilter("ignore")
-    PATH_REF = "C:/Users/zfriant/Documents/OneDrive/PCRI/eCorda_datas/datas_reference/"
+    # PATH_REF = "C:/Users/zfriant/Documents/OneDrive/PCRI/eCorda_datas/datas_reference/"
 
-    liste = pd.read_excel(f"{PATH_REF}_groupes_liste.xlsx", dtype=object, keep_default_na=False, sheet_name = "liste")
+    liste_groupe = pd.read_excel(f"{PATH_REF}_groupes_liste.xlsx", dtype=object, keep_default_na=False, sheet_name = "liste")
+    liste_groupe = liste_groupe[liste_groupe['HE_keep']!='False']
     ge = openpyxl.load_workbook(f"{PATH_REF}{df}.xlsm").sheetnames[1:]
 #     ge = liste_pcri
     
@@ -12,35 +15,38 @@ def groupe_treatment(df, output):
     verif = pd.DataFrame()
 
     for i in ge:
-        x = pd.read_excel(f"{PATH_REF}{df}.xlsm", sheet_name=i, dtype=str)
-        
-        if len(x)>0:
-            x.dropna(axis = 0, how = 'all', inplace = True)
+        if i in list(liste_groupe['GROUPE']):
+            x = pd.read_excel(f"{PATH_REF}{df}.xlsm", sheet_name=i, dtype=str)
             
-            if 'Identifiant unité légale' in x.columns:
-                x = x.rename(columns={'Identifiant unité légale':'siren'})
-            elif 'Unité légale' in x.columns:
-                x = x.rename(columns={'Unité légale':'siren'})
+            if len(x)>0:
+                x.dropna(axis = 0, how = 'all', inplace = True)
                 
-            if 'Unité légale étrangère ?' in x.columns:  
-                x = x.loc[x['Unité légale étrangère ?']=="Non"]  
-            else:
-                pass
- 
-            if 'Taux détention' in x.columns:
-                x = x.assign(detention = x['Taux détention'].str.replace(',', '.').astype(float))
-            elif 'Taux integration' in x.columns:
-                x = x.assign(detention = x['Taux integration'].str.replace(',', '.').astype(float))
-                
-            x = x.loc[~(x['detention'] < 50.)]
-                      
-            print(i, end=",")
-            verif = pd.concat([verif, x], ignore_index=True)
-        
+                if 'Identifiant unité légale' in x.columns:
+                    x = x.rename(columns={'Identifiant unité légale':'siren'})
+                elif 'Unité légale' in x.columns:
+                    x = x.rename(columns={'Unité légale':'siren'})
+                    
+                if 'Unité légale étrangère ?' in x.columns:  
+                    x = x.loc[x['Unité légale étrangère ?']=="Non"]  
+                else:
+                    pass
+    
+                if 'Taux détention' in x.columns:
+                    x = x.assign(detention = x['Taux détention'].str.replace(',', '.').astype(float))
+                elif 'Taux integration' in x.columns:
+                    x = x.assign(detention = x['Taux integration'].str.replace(',', '.').astype(float))
+                    
+                x = x.loc[~(x['detention'] < 50.)]
+                        
+                print(i, end=",")
+                verif = pd.concat([verif, x], ignore_index=True)
+            
 
-            x['GROUPE'] = i
-            x = x.merge(liste, how='inner', on="GROUPE")
-            gr = pd.concat([gr, x], ignore_index=True)
+                x['GROUPE'] = i
+                x = x.merge(liste_groupe, how='inner', on="GROUPE")
+                gr = pd.concat([gr, x], ignore_index=True)
+        else:
+            pass
 
     print(f"\n1 - Nb de groupes dans gr: {gr.ordre.nunique()}\nGroupes non traités (n'existent plus): {set(ge)-set(gr.GROUPE.unique())}")
     
@@ -65,7 +71,7 @@ def groupe_treatment(df, output):
         print(f"3 - autre pb avec le siren {gr[gr.siren.str.len()!=9][['siren', 'GROUPE', 'long']]}")
 
 
-    groupe = copy.deepcopy(gr)[['siren', 'Etat', 'Date de fin', 'GROUPE', 'ordre', 'ex_groupe', 'groupe_name', 'groupe_acronym', 'groupe_sector']]
+    groupe = copy.deepcopy(gr)[['siren', 'Etat', 'Date de fin', 'GROUPE', 'ordre', 'ex_groupe', 'groupe_name', 'groupe_acronym', 'groupe_sector']].drop_duplicates()
     print(f"4 - size groupe {len(groupe)}")
 
     groupe['n'] = groupe.groupby('siren', dropna=False)['siren'].transform('count')
@@ -92,19 +98,28 @@ def groupe_treatment(df, output):
 
 def merge_groupe(entities_tmp, groupe):
     print("\n### merge avec GROUPE")
-    entities_tmp=entities_tmp.merge(groupe, how='left', on='siren')
+    import pandas as pd
 
-    if any(entities_tmp.siren.str.contains(';', na=False)):
-        print("ATTENTION faire code pour traiter deux siren différents -> ce qui serait bizarre qu'il y ait 2 siren")
-    # else:
-    #     entities_tmp.loc[~entities_tmp.groupe_id.isnull(), 'entities_name_source']= entities_tmp.entities_name
-    #     entities_tmp.loc[~entities_tmp.groupe_id.isnull(), 'entities_acronym_source']= entities_tmp.entities_acronym
-    #     # entities_tmp.loc[~entities_tmp.groupe_id.isnull(), 'entities_id']= entities_tmp.groupe_id
-    #     # entities_tmp.loc[~entities_tmp.groupe_id.isnull(), 'entities_acronym'] = entities_tmp.groupe_acronym
-    #     # entities_tmp.loc[~entities_tmp.groupe_id.isnull(), 'entities_name'] = entities_tmp.groupe_name
+    tmp = (entities_tmp
+        .loc[entities_tmp['siren_all'].notnull(), ['siren_main', 'siren_all']])
+    tmp['siren'] = tmp['siren_all'].str.split(';')
+    tmp = tmp.explode('siren').drop_duplicates()
 
-    #     # entities_tmp.loc[entities_tmp.groupe_id.str.contains('gent', na=False), 'siren_cj'] = 'GE_ENT'
 
-        # entities_tmp = entities_tmp.drop(['groupe_name','groupe_acronym'], axis=1).drop_duplicates()
-    print(f"taille de entities_tmp après groupe {len(entities_tmp)}")
+    tmp = pd.merge(tmp, groupe, how='left', on='siren')
+    tmp = tmp.loc[tmp['groupe_id'].notnull()]
+
+    tmp = tmp.groupby(['siren_main', 'siren_all'], as_index=False).agg({
+        'groupe_name': lambda x: ';'.join(x.unique()),
+        'groupe_acronym': lambda x: ';'.join(x.unique()),
+        'groupe_sector': lambda x: ';'.join(x.unique()),
+        'groupe_id': lambda x: ';'.join(x.unique())
+    })
+
+    if any(tmp['groupe_id'].str.contains(';', na=False)):
+        print("ATTENTION siren dans plusieurs groupes -> à vérifier date de fin \n", tmp.loc[tmp['groupe_id'].str.contains(';', na=False)])
+
+    print(f"size entities_tmp befor merge groupe {len(entities_tmp)}")
+    entities_tmp = entities_tmp.merge(tmp, how='left', on=['siren_main', 'siren_all'])
+    print(f"size entities_tmp after merge groupe {len(entities_tmp)}")
     return entities_tmp

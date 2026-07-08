@@ -1,11 +1,11 @@
-def entities_preparation():
+def entities_preparation(zipname):
     import pandas as pd, time, re, numpy as np
     pd.options.mode.copy_on_write = True
     from IPython.display import HTML
     from functions_shared import stop_word, unzip_zip, prep_str_col, work_csv, adr_tag
-    from constant_vars import ZIPNAME, FRAMEWORK
+    from constant_vars import FRAMEWORK
     from config_path import PATH_MATCH, PATH_SOURCE, PATH_CLEAN, PATH_ORG, PATH_WORK
-    from api_process.matcher import matcher
+    from remote_process.matcher import matcher
 
     print(f"### IMPORT datasets")
     participation = pd.read_pickle(f"{PATH_CLEAN}participation_current.pkl") 
@@ -19,13 +19,13 @@ def entities_preparation():
     lien = pd.read_pickle(f"{PATH_CLEAN}lien.pkl")
     perso = pd.read_pickle(f"{PATH_CLEAN}persons_current.pkl")
 
-    pp_app = unzip_zip(ZIPNAME, f"{PATH_SOURCE}{FRAMEWORK}/", 'proposals_applicants_departments.json', 'utf8')
+    pp_app = unzip_zip(zipname, f"{PATH_SOURCE}{FRAMEWORK}/", 'proposals_applicants_departments.json', 'utf8')
     pp_app = pd.DataFrame(pp_app)
     pp_app = pp_app.rename(columns={'proposalNbr':'project_id', 'applicantPic':'pic','departmentApplicantName':'department'}).astype(str)
     pp_app = pp_app.replace({'None': np.nan})
     print(f"- size pp_app: {len(pp_app)}")
 
-    pp_part = unzip_zip(ZIPNAME, f"{PATH_SOURCE}{FRAMEWORK}/", 'projects_participants_departments.json', 'utf8')
+    pp_part = unzip_zip(zipname, f"{PATH_SOURCE}{FRAMEWORK}/", 'projects_participants_departments.json', 'utf8')
     pp_part = pd.DataFrame(pp_part)
     pp_part = pp_part.rename(columns={'projectNbr':'project_id', 'participantPic':'pic','departmentParticipantName':'department'}).astype(str)
     pp_part = pp_part.replace({'None': np.nan})

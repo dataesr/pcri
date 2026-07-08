@@ -107,7 +107,7 @@ def from_ods_to_185_participant(data):
     return clean_json(res)
 
 def get_id_from_paysage(identifier):
-    headers = {'X-Api-Key': os.environ.get('X-API-KEY')}
+    headers = {'X-Api-Key': os.environ.get('PAYSAGE_KEY')}
     r = requests.get(f"https://api.paysage.dataesr.ovh/structures/{identifier}/identifiers", headers=headers)
     data = r.json().get('data', [])
     ids = [e for e in data if data and len(data) > 0 and e.get('type') in ['siret', 'rnsr', 'grid']]

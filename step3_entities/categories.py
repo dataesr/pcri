@@ -1,24 +1,130 @@
 import pandas as pd, json, numpy as np
-from config_path import PATH_REF, PATH_WORK
-from constant_vars import FRAMEWORK
+from config_url import grist_url
+from config_path import PATH_WORK, PATH_HARVEST
+from remote_process.paysage import get_paysageObj
+from remote_process.grist import add_records_to_grist, update_doc_grist, categoriesG
 
-def category_paysage(df):
+
+def legal_category():
+    """
+    load lelgal categories for each ids from paysage
+    """
+    r = get_paysageObj('legal-categories')
+    return pd.json_normalize(r)[['id', 'inseeCode', 'longNameFr']]
+ 
+
+def category_paysage_ref():
+    """
+    load all categories and select those to keep 
+    update grist data cat_paysage
+    
+    """
     print("### CATEGORY paysage")
-    df['category_priority'] = df.category_priority.astype(str).str.replace('.0','', regex=False)
-    pc = (pd.read_csv("data_files/cat_paysage.csv", sep=';', encoding='utf-8')
-          .rename(columns={'usualNameFr':'paysage_category', 'id':'paysage_category_id'}))
-    miss_x = df.loc[~df.category_id.isin(pc.paysage_category_id.unique())]
+
+    res = get_paysageObj('categories')
+
+    cat = [{'category_id':i.get('id'), 
+            'category_name':i.get('usualNameFr')} 
+            for i in res]
+    cat = pd.DataFrame.from_dict(cat, 'columns')
+
+    pc = categoriesG['Cat_paysage']
+    miss_x = cat.loc[~cat.category_id.isin(pc.category_id.unique())]
     if len(miss_x)>0:
-        print(f"1- nouvelles catégories à intégrer à la liste de categories dans data_files (PATH_WORK new_cat.csv)")
-        miss_x[['category_id', 'category_name']].drop_duplicates().to_csv(f"{PATH_WORK}new_cat.csv", sep=';', encoding='utf-8', index=False)
-        exit()
-    else:
-        return (df.loc[df.category_id.isin(pc.loc[pc.non!='n'].paysage_category_id.unique())]
-                .groupby('id_clean').agg(lambda x: ';'.join(x)).reset_index()
-                .rename(columns={
-                    'category_name':'paysage_category', 
-                    'category_id':'paysage_category_id',
-                    'category_priority':'paysage_category_priority'}))
+        print(f" ATTENTION - new category into cat_paysage -> check if you keep it or not\n{miss_x} in temp/new_cat")
+        add_records_to_grist(miss_x, grist_url, 'pcri', 'categories', 'cat_paysage')
+        update_doc_grist(categoriesG, 'categories')
+
+    cat = pd.merge(cat, pc.loc[pc['keep']==True, ['category_id', 'category_priority']], how='inner', on='category_id')
+    
+    cat['category_name'] = cat['category_name'].str.replace(r"(\(.*\))", '', regex=True).str.strip()
+    return (cat.rename(columns={'category_priority':'paysage_category_priority'})).sort_values('paysage_category_priority')
+        
+
+
+def category_paysage_by_struct(df, paysage_mires, cat):
+    df = pd.DataFrame(df)
+    df = pd.merge(df.drop_duplicates(), cat, how='inner', on='category_id')
+    df = df.merge(paysage_mires[['category_id','operateur_name','operateur_num','operateur_lib']], how='left', on='category_id')
+
+    ce = ['fm54m', '5xfts', 'od2su']
+    tmp = df.loc[df['category_id'].isin(ce)]
+
+    df = df[~df.isin(tmp.to_dict(orient='list')).all(axis=1)]
+
+    tmp['cat'] = tmp['category_id'] 
+    for i in ['category_id', 'category_name', 'paysage_category_priority']:
+        tmp[i] = ''
+
+    df = pd.concat([df, tmp], ignore_index=True)
+    df = df.mask(df=='')
+
+    def aggregate_group(df):
+        # Trie le DataFrame du groupe selon 'paysage_category_priority'
+        df_sorted = df.sort_values('paysage_category_priority')
+
+        # Retourne une Series avec les colonnes souhaitées
+        return pd.Series({
+            'paysage_category_id': ';'.join(df_sorted['category_id'].dropna().astype(str)),
+            'paysage_category_priority': ';'.join(df_sorted['paysage_category_priority'].dropna().astype(str)),
+            'category_name': ';'.join(df_sorted['category_name'].dropna().astype(str)),
+            'operateur_name': ';'.join(df_sorted['operateur_name'].dropna().astype(str).unique()),
+            'operateur_num': ';'.join(df_sorted['operateur_num'].dropna().astype(str).unique()),
+            'operateur_lib': ';'.join(df_sorted['operateur_lib'].dropna().astype(str).unique()),
+            'cat': ';'.join(df_sorted['cat'].dropna().astype(str).unique())
+        })
+
+    p = (
+        df
+        .groupby('pid')
+        .apply(aggregate_group)
+        .reset_index()
+    )
+
+    p = p.mask(p=='')
+    return p
+
+
+
+def cat_entreprise(df):
+  
+    print("### CATEGORY cat entreprise")
+
+    """
+    process on category for entreprise GE, PME, ETI
+
+    """
+    #list des IDs paysage des catégories d'entreprises
+    ce = ['fm54m', '5xfts', 'od2su']
+    entreprise=json.load(open("data_files/cat_entreprise_lib.json", encoding='utf-8'))
+    mapping = {k: list(v.keys())[0] for k, v in entreprise.items()}
+
+    # convert id_cat_paysage to cat insee
+    df.loc[df['cat'].notna(), 'cat_entreprise'] = (
+    df.loc[df['cat'].notna(), 'cat'].map(mapping)
+    )
+
+    df = df.mask(df=='')
+
+    #if source_id not paysage and paysage_category_id not s79DJ
+    df.loc[(~df['paysage_category_id'].str.contains('s79DJ', na=False)), 'cat_entreprise'] = np.nan
+
+
+    if any(df.loc[(df['source_id']=='paysage') & (~df['paysage_category_id'].str.contains('s79DJ', na=False)) & (df['paysage_category_id'].isin(ce))]):
+        print(f"- check entities paysage with only cat_entreprise in category paysage\n{df.loc[(df['source_id']=='paysage') & (~df['paysage_category_id'].str.contains('s79DJ', na=False)) & (df['paysage_category_id'].isin(ce))]}")
+        for i in['category_name', 'paysage_category_priority', 'paysage_category_id']:
+            df.loc[df['paysage_category_id'].isin(ce), i] = np.nan
+
+
+    df['cat_entreprise_name'] = df['cat_entreprise'].map(
+    {list(v.keys())[0]: list(v.values())[0] for v in entreprise.values()}
+    )
+
+    df = df.rename(columns={'cat_entreprise':'cat_entreprise_code'}).drop(columns=['cat'])
+
+    df.mask(df=='', inplace=True)
+    print(f"- size entities_tmp after add cat_entreprise: {len(df)}")
+    return df
 
 
 
@@ -36,73 +142,6 @@ def naf_etab_sirene(df):
     return df
 
 
-
-def category_woven(df, sirene):
-    print("\n## category woven")
-    # CAT1 : categorisation FR
-
-    temp=sirene[['siren', 'cat', 'cat_an', 'cj']].drop_duplicates()
-
-    df.loc[(df.siren.isnull())&(~df.paysage_siren.isnull()), 'siren'] = df.paysage_siren
-    df=df.merge(temp, how='left', on='siren')
-    df.loc[~df.cj.isnull(), 'cj_code'] = df.cj
-
-    cj_lib=json.load(open("data_files/cat_cj_code_to_lib.json"))
-    for i in cj_lib:
-        for k,v in i.items():
-            df.loc[df.cj_code==k, 'siren_cj']=v
-    
-    df.loc[~df.siren_cj.isnull(), 'category_tmp'] = df.siren_cj
-    #traitement des catégories assoc si identifiants commencent par W
-    df.loc[df.entities_id.str.match('^[W|w]([A-Z0-9]{8})[0-9]{1}$', na=False), 'category_tmp'] = 'ISBL'
-    df.loc[(df.source_id=='rnsr')|(df.paysage_category_id.str.split(';').str[0]=='z367d'), 'category_tmp'] = 'STRUCT'
-    df.loc[~df.paysage_category_id.isnull(), 'category_tmp'] = df.loc[~df.paysage_category_id.isnull()].paysage_category_id.str.split(';').str[0]
-    df.loc[~df.paysage_category_id.isnull(), 'category_woven'] = df.loc[~df.paysage_category_id.isnull()].paysage_category.str.split(';').str[0]
-
-    cj_lib=json.load(open("data_files/cat_cj_lib.json", encoding='utf-8'))
-    for i in cj_lib:
-        for k,v in i.items():
-            df.loc[df.category_tmp==k, 'category_woven']=v
-
-    print(f"- categorization missing\n{df.loc[(df.source_id.isin(['paysage','siren','siret','rnsr']))&(df.category_woven.isnull()), ['source_id', 'entities_name', 'entities_id', 'siren_cj', 'paysage_category']]}")
-
-    print(f"- taille de df après cat: {len(df)}")
-    return df
-
-
-def category_agreg(df):
-
-    agreg=json.load(open("data_files/cat_to_agreg.json"))
-    for i in agreg:
-        for k,v in i.items():
-            df.loc[df.category_tmp==k, 'category_agregation']=v
- 
-    df.loc[df.category_agregation.isnull(), 'category_agregation'] = df.siren_cj
-
-    agreg=json.load(open("data_files/cat_agreg_lib.json", encoding='utf-8'))
-    for i in agreg:
-        for k,v in i.items():
-            df.loc[df.category_agregation==k, 'category_agregation']=v
-
-
-    # entreprise
-    entreprise=json.load(open("data_files/cat_entreprise_lib.json", encoding='utf-8'))
-    for i in entreprise:
-        for k,v in i.items():
-            df.loc[df.cat==k, 'insee_cat_name']=v
-    df.rename(columns={'cat':'insee_cat_code'}, inplace=True)
-
-    df.mask(df=='', inplace=True)
-
-    df.loc[(df.siren_cj.isin(['ENT', 'ENT_ETR']))|(df.ror_category=='Company'), 'entreprise_flag'] = True
-    df.loc[(df.category_agregation=='Entreprise'), 'entreprise_flag'] = True
-    df.loc[df.entreprise_flag.isnull(), 'entreprise_flag'] = False
-
-    l=['insee_cat_code', 'insee_cat_name']
-    df.loc[df.entreprise_flag==False, l] = np.nan
-    return df
-
-
 def cordis_type(df):
     print("### CORDIS type")
     type_entity = json.load(open('data_files/legalEntityType.json', 'r', encoding='UTF-8'))
@@ -114,15 +153,74 @@ def cordis_type(df):
     for i in l:
         if i in df.columns:
             df.drop(columns=i, inplace=True)
+
+
     print(f"- size entities_info: {len(df)}")
     return df
 
-def mires(df):
-    print("\n### MIRES")
-    if 'paysage_mires' not in globals() or 'paysage_mires' not in locals():
-        paysage_mires = pd.read_pickle(f"{PATH_REF}operateurs_mires.pkl")
+
+def cj_to_cat(filename, df, vkey, vval, cond):
+    f=json.load(open(f"data_files/{filename}.json", encoding='utf-8'))
+    for i in f:
+        for k,v in i.items():
+            df.loc[cond & (df[vkey]==k), vval]=v
+    return df
+
+
+def category_woven(df):
+    print("\n## category woven") 
     
-    df = df.merge(paysage_mires[['entities_id','operateur_name','operateur_num','operateur_lib']], how='left', on='entities_id')
-    df = df.mask(df=='')
-    df = df.reindex(sorted(df.columns), axis=1)
+    mask = (df['paysage_category_id'].isnull())
+    if any(mask):
+        print(f"ATTENTION : entities without paysage_category_id: try to fix it with cj_code")
+        mapping=json.load(open(f"data_files/cj_code_to_paysage.json", encoding='utf-8'))
+        df.loc[mask, 'paysage_category_id'] = df.loc[mask, 'cj_code'].map(mapping)
+    
+    # df['paysage_category_id'] = df['paysage_category_id'].fillna('')
+    # df.loc[df['paysage_category_id'].notnull(), 'category_name'] = df.loc[df['paysage_category_id'].notnull(), 'paysage_category_id'].str.split(';').str[0]
+    df.loc[df['paysage_category_id'].notnull(), 'category_woven'] = df.loc[df['paysage_category_id'].notnull(), 'category_name'].str.split(';').str[0]
+    df.loc[df['category_woven'].isnull(), 'category_woven'] = df.loc[df['category_woven'].isnull(), 'category_name']
+
+
+    mask = (df['category_woven'].isnull())
+    if any(mask):
+        print(f"ATTENTION : entities without category_woven: try to fix it with cj_code")
+        df = cj_to_cat('cj_code_to_lib', df, 'cj_code', 'category_name', mask)
+        df = cj_to_cat('cat_cj_lib', df, 'category_name', 'category_woven', mask)
+        mask = (df['category_woven'].isnull())
+        if any(mask):
+            print(f"- missing category_woven at the end: {df.loc[mask].value_counts(['source_id', 'cj_code'], dropna=True)}")
+        else:
+            print(f"- missing only category_woven at the end for nan source and cj: {df.loc[mask].value_counts(['source_id', 'cj_code'], dropna=False)}")
+    
+    print(f"- taille de df après cat: {len(df)}")
+    return df
+
+
+def category_agreg(df):
+
+    mask = (df['category_woven'].notnull())
+    df.loc[df['paysage_category_id'].notna(), 'category_id'] = df.loc[df['paysage_category_id'].notna(), 'paysage_category_id'].str.split(';').str[0]
+    df = cj_to_cat('cat_to_agreg', df, 'category_id', 'category_agregation', mask)
+    df.loc[df['category_agregation'].isnull(), 'category_agregation'] = df.loc[df['category_agregation'].isnull(), 'category_name'] 
+
+    if any(df['category_agregation'].isnull()):
+        print("- add category to aggreg on the list cat_to_agreg")
+        print(df[df['category_agregation'].isnull()].value_counts(['category_id', 'category_woven', 'category_agregation'], dropna=False).reset_index(name='freq'))
+
+    if any(df['category_agregation'].isnull()):
+        print(f"- without category_agregation: {df[df['category_agregation'].isnull()].value_counts(['source_id'], dropna=False)}")
+
+    agreg=json.load(open("data_files/cat_agreg_lib.json", encoding='utf-8'))
+    for i in agreg:
+        for k,v in i.items():
+            df.loc[df['category_agregation']==k, 'category_agregation']=v
+
+    # entreprise
+    df.loc[(df['category_agregation']=='Entreprise'), 'entreprise_flag'] = True
+    df.loc[df['entreprise_flag'].isnull(), 'entreprise_flag'] = False
+
+    l=['cat_entreprise_code', 'cat_entreprise_name']
+    df.loc[df['entreprise_flag']==False, l] = np.nan
+    
     return df

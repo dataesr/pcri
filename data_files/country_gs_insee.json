@@ -1,0 +1,1598 @@
+[
+    {
+        "LIBCOG": "France",
+        "CODEISO2": "FR",
+        "CODEISO3": "FRA",
+        "COG": "99100"
+    },
+    {
+        "LIBCOG": "Danemark",
+        "CODEISO2": "DK",
+        "CODEISO3": "DNK",
+        "COG": "99101"
+    },
+    {
+        "LIBCOG": "Islande",
+        "CODEISO2": "IS",
+        "CODEISO3": "ISL",
+        "COG": "99102"
+    },
+    {
+        "LIBCOG": "Norvège",
+        "CODEISO2": "NO",
+        "CODEISO3": "NOR",
+        "COG": "99103"
+    },
+    {
+        "LIBCOG": "Suède",
+        "CODEISO2": "SE",
+        "CODEISO3": "SWE",
+        "COG": "99104"
+    },
+    {
+        "LIBCOG": "Finlande",
+        "CODEISO2": "FI",
+        "CODEISO3": "FIN",
+        "COG": "99105"
+    },
+    {
+        "LIBCOG": "Estonie",
+        "CODEISO2": "EE",
+        "CODEISO3": "EST",
+        "COG": "99106"
+    },
+    {
+        "LIBCOG": "Lettonie",
+        "CODEISO2": "LV",
+        "CODEISO3": "LVA",
+        "COG": "99107"
+    },
+    {
+        "LIBCOG": "Lituanie",
+        "CODEISO2": "LT",
+        "CODEISO3": "LTU",
+        "COG": "99108"
+    },
+    {
+        "LIBCOG": "Allemagne",
+        "CODEISO2": "DE",
+        "CODEISO3": "DEU",
+        "COG": "99109"
+    },
+    {
+        "LIBCOG": "Autriche",
+        "CODEISO2": "AT",
+        "CODEISO3": "AUT",
+        "COG": "99110"
+    },
+    {
+        "LIBCOG": "Bulgarie",
+        "CODEISO2": "BG",
+        "CODEISO3": "BGR",
+        "COG": "99111"
+    },
+    {
+        "LIBCOG": "Hongrie",
+        "CODEISO2": "HU",
+        "CODEISO3": "HUN",
+        "COG": "99112"
+    },
+    {
+        "LIBCOG": "Liechtenstein",
+        "CODEISO2": "LI",
+        "CODEISO3": "LIE",
+        "COG": "99113"
+    },
+    {
+        "LIBCOG": "Roumanie",
+        "CODEISO2": "RO",
+        "CODEISO3": "ROU",
+        "COG": "99114"
+    },
+    {
+        "LIBCOG": "Tchécoslovaquie",
+        "CODEISO2": "CS",
+        "CODEISO3": "CSK",
+        "COG": "99115"
+    },
+    {
+        "LIBCOG": "Tchéquie",
+        "CODEISO2": "CZ",
+        "CODEISO3": "CZE",
+        "COG": "99116"
+    },
+    {
+        "LIBCOG": "Slovaquie",
+        "CODEISO2": "SK",
+        "CODEISO3": "SVK",
+        "COG": "99117"
+    },
+    {
+        "LIBCOG": "Bosnie-Herzégovine",
+        "CODEISO2": "BA",
+        "CODEISO3": "BIH",
+        "COG": "99118"
+    },
+    {
+        "LIBCOG": "Croatie",
+        "CODEISO2": "HR",
+        "CODEISO3": "HRV",
+        "COG": "99119"
+    },
+    {
+        "LIBCOG": "Monténégro",
+        "CODEISO2": "ME",
+        "CODEISO3": "MNE",
+        "COG": "99120"
+    },
+    {
+        "LIBCOG": "Serbie",
+        "CODEISO2": "RS",
+        "CODEISO3": "SRB",
+        "COG": "99121"
+    },
+    {
+        "LIBCOG": "Pologne",
+        "CODEISO2": "PL",
+        "CODEISO3": "POL",
+        "COG": "99122"
+    },
+    {
+        "LIBCOG": "Russie",
+        "CODEISO2": "RU",
+        "CODEISO3": "RUS",
+        "COG": "99123"
+    },
+    {
+        "LIBCOG": "Turquie d'Europe",
+        "CODEISO2": "",
+        "CODEISO3": "",
+        "COG": "99124"
+    },
+    {
+        "LIBCOG": "Albanie",
+        "CODEISO2": "AL",
+        "CODEISO3": "ALB",
+        "COG": "99125"
+    },
+    {
+        "LIBCOG": "Grèce",
+        "CODEISO2": "GR",
+        "CODEISO3": "GRC",
+        "COG": "99126"
+    },
+    {
+        "LIBCOG": "Italie",
+        "CODEISO2": "IT",
+        "CODEISO3": "ITA",
+        "COG": "99127"
+    },
+    {
+        "LIBCOG": "Saint-Marin",
+        "CODEISO2": "SM",
+        "CODEISO3": "SMR",
+        "COG": "99128"
+    },
+    {
+        "LIBCOG": "Vatican",
+        "CODEISO2": "VA",
+        "CODEISO3": "VAT",
+        "COG": "99129"
+    },
+    {
+        "LIBCOG": "Andorre",
+        "CODEISO2": "AD",
+        "CODEISO3": "AND",
+        "COG": "99130"
+    },
+    {
+        "LIBCOG": "Belgique",
+        "CODEISO2": "BE",
+        "CODEISO3": "BEL",
+        "COG": "99131"
+    },
+    {
+        "LIBCOG": "Royaume-Uni",
+        "CODEISO2": "GB",
+        "CODEISO3": "GBR",
+        "COG": "99132"
+    },
+    {
+        "LIBCOG": "Territoires britanniques en Méditerranée",
+        "CODEISO2": "GI",
+        "CODEISO3": "GIB",
+        "COG": "99133"
+    },
+    {
+        "LIBCOG": "Espagne",
+        "CODEISO2": "ES",
+        "CODEISO3": "ESP",
+        "COG": "99134"
+    },
+    {
+        "LIBCOG": "Pays-Bas",
+        "CODEISO2": "NL",
+        "CODEISO3": "NLD",
+        "COG": "99135"
+    },
+    {
+        "LIBCOG": "Irlande",
+        "CODEISO2": "IE",
+        "CODEISO3": "IRL",
+        "COG": "99136"
+    },
+    {
+        "LIBCOG": "Luxembourg",
+        "CODEISO2": "LU",
+        "CODEISO3": "LUX",
+        "COG": "99137"
+    },
+    {
+        "LIBCOG": "Monaco",
+        "CODEISO2": "MC",
+        "CODEISO3": "MCO",
+        "COG": "99138"
+    },
+    {
+        "LIBCOG": "Portugal",
+        "CODEISO2": "PT",
+        "CODEISO3": "PRT",
+        "COG": "99139"
+    },
+    {
+        "LIBCOG": "Suisse",
+        "CODEISO2": "CH",
+        "CODEISO3": "CHE",
+        "COG": "99140"
+    },
+    {
+        "LIBCOG": "Allemagne (RDA)",
+        "CODEISO2": "DD",
+        "CODEISO3": "DDR",
+        "COG": "99141"
+    },
+    {
+        "LIBCOG": "Allemagne (RFA)",
+        "CODEISO2": "",
+        "CODEISO3": "",
+        "COG": "99142"
+    },
+    {
+        "LIBCOG": "Chypre",
+        "CODEISO2": "",
+        "CODEISO3": "",
+        "COG": "99143"
+    },
+    {
+        "LIBCOG": "Malte",
+        "CODEISO2": "MT",
+        "CODEISO3": "MLT",
+        "COG": "99144"
+    },
+    {
+        "LIBCOG": "Slovénie",
+        "CODEISO2": "SI",
+        "CODEISO3": "SVN",
+        "COG": "99145"
+    },
+    {
+        "LIBCOG": "Arménie",
+        "CODEISO2": "",
+        "CODEISO3": "",
+        "COG": "99146"
+    },
+    {
+        "LIBCOG": "Azerbaidjan",
+        "CODEISO2": "",
+        "CODEISO3": "",
+        "COG": "99147"
+    },
+    {
+        "LIBCOG": "Biélorussie",
+        "CODEISO2": "BY",
+        "CODEISO3": "BLR",
+        "COG": "99148"
+    },
+    {
+        "LIBCOG": "Kazakhstan",
+        "CODEISO2": "",
+        "CODEISO3": "",
+        "COG": "99149"
+    },
+    {
+        "LIBCOG": "Kirghizistan",
+        "CODEISO2": "",
+        "CODEISO3": "",
+        "COG": "99150"
+    },
+    {
+        "LIBCOG": "Moldavie",
+        "CODEISO2": "MD",
+        "CODEISO3": "MDA",
+        "COG": "99151"
+    },
+    {
+        "LIBCOG": "Ouzbekistan",
+        "CODEISO2": "",
+        "CODEISO3": "",
+        "COG": "99152"
+    },
+    {
+        "LIBCOG": "Tadjikistan",
+        "CODEISO2": "",
+        "CODEISO3": "",
+        "COG": "99153"
+    },
+    {
+        "LIBCOG": "Turkmenistan",
+        "CODEISO2": "",
+        "CODEISO3": "",
+        "COG": "99154"
+    },
+    {
+        "LIBCOG": "Ukraine",
+        "CODEISO2": "UA",
+        "CODEISO3": "UKR",
+        "COG": "99155"
+    },
+    {
+        "LIBCOG": "Macédoine du Nord",
+        "CODEISO2": "MK",
+        "CODEISO3": "MKD",
+        "COG": "99156"
+    },
+    {
+        "LIBCOG": "Kosovo",
+        "CODEISO2": "",
+        "CODEISO3": "",
+        "COG": "99157"
+    },
+    {
+        "LIBCOG": "Européen de l'UE",
+        "CODEISO2": "",
+        "CODEISO3": "",
+        "COG": ""
+    },
+    {
+        "LIBCOG": "Européen hors UE  ",
+        "CODEISO2": "",
+        "CODEISO3": "",
+        "COG": ""
+    },
+    {
+        "LIBCOG": "Arabie saoudite",
+        "CODEISO2": "SA",
+        "CODEISO3": "SAU",
+        "COG": "99201"
+    },
+    {
+        "LIBCOG": "Yémen (République arabe)",
+        "CODEISO2": "",
+        "CODEISO3": "",
+        "COG": "99202"
+    },
+    {
+        "LIBCOG": "Irak",
+        "CODEISO2": "IQ",
+        "CODEISO3": "IRQ",
+        "COG": "99203"
+    },
+    {
+        "LIBCOG": "Iran",
+        "CODEISO2": "IR",
+        "CODEISO3": "IRN",
+        "COG": "99204"
+    },
+    {
+        "LIBCOG": "Liban",
+        "CODEISO2": "LB",
+        "CODEISO3": "LBN",
+        "COG": "99205"
+    },
+    {
+        "LIBCOG": "Syrie",
+        "CODEISO2": "SY",
+        "CODEISO3": "SYR",
+        "COG": "99206"
+    },
+    {
+        "LIBCOG": "Israël",
+        "CODEISO2": "IL",
+        "CODEISO3": "ISR",
+        "COG": "99207"
+    },
+    {
+        "LIBCOG": "Turquie",
+        "CODEISO2": "TR",
+        "CODEISO3": "TUR",
+        "COG": "99208"
+    },
+    {
+        "LIBCOG": "Sibérie",
+        "CODEISO2": "",
+        "CODEISO3": "",
+        "COG": "99209"
+    },
+    {
+        "LIBCOG": "Turkestan Russe",
+        "CODEISO2": "",
+        "CODEISO3": "",
+        "COG": "99210"
+    },
+    {
+        "LIBCOG": "Kamtchatka",
+        "CODEISO2": "",
+        "CODEISO3": "",
+        "COG": "99211"
+    },
+    {
+        "LIBCOG": "Afghanistan",
+        "CODEISO2": "AF",
+        "CODEISO3": "AFG",
+        "COG": "99212"
+    },
+    {
+        "LIBCOG": "Pakistan",
+        "CODEISO2": "PK",
+        "CODEISO3": "PAK",
+        "COG": "99213"
+    },
+    {
+        "LIBCOG": "Bhoutan",
+        "CODEISO2": "BT",
+        "CODEISO3": "BTN",
+        "COG": "99214"
+    },
+    {
+        "LIBCOG": "Népal",
+        "CODEISO2": "NP",
+        "CODEISO3": "NPL",
+        "COG": "99215"
+    },
+    {
+        "LIBCOG": "Chine",
+        "CODEISO2": "CN",
+        "CODEISO3": "CHN",
+        "COG": "99216"
+    },
+    {
+        "LIBCOG": "Japon",
+        "CODEISO2": "JP",
+        "CODEISO3": "JPN",
+        "COG": "99217"
+    },
+    {
+        "LIBCOG": "Mandchourie",
+        "CODEISO2": "",
+        "CODEISO3": "",
+        "COG": "99218"
+    },
+    {
+        "LIBCOG": "Thaïlande",
+        "CODEISO2": "TH",
+        "CODEISO3": "THA",
+        "COG": "99219"
+    },
+    {
+        "LIBCOG": "Philippines",
+        "CODEISO2": "PH",
+        "CODEISO3": "PHL",
+        "COG": "99220"
+    },
+    {
+        "LIBCOG": "Possessions Britanniques Au Proche-Orient",
+        "CODEISO2": "",
+        "CODEISO3": "",
+        "COG": "99221"
+    },
+    {
+        "LIBCOG": "Jordanie",
+        "CODEISO2": "JO",
+        "CODEISO3": "JOR",
+        "COG": "99222"
+    },
+    {
+        "LIBCOG": "Inde",
+        "CODEISO2": "IN",
+        "CODEISO3": "IND",
+        "COG": "99223"
+    },
+    {
+        "LIBCOG": "Birmanie",
+        "CODEISO2": "MM",
+        "CODEISO3": "MMR",
+        "COG": "99224"
+    },
+    {
+        "LIBCOG": "Brunei",
+        "CODEISO2": "BN",
+        "CODEISO3": "BRN",
+        "COG": "99225"
+    },
+    {
+        "LIBCOG": "Singapour",
+        "CODEISO2": "SG",
+        "CODEISO3": "SGP",
+        "COG": "99226"
+    },
+    {
+        "LIBCOG": "Malaisie",
+        "CODEISO2": "MY",
+        "CODEISO3": "MYS",
+        "COG": "99227"
+    },
+    {
+        "LIBCOG": "Etats Malais Non Fédérés",
+        "CODEISO2": "",
+        "CODEISO3": "",
+        "COG": "99228"
+    },
+    {
+        "LIBCOG": "Maldives",
+        "CODEISO2": "MV",
+        "CODEISO3": "MDV",
+        "COG": "99229"
+    },
+    {
+        "LIBCOG": "Hong Kong",
+        "CODEISO2": "HK",
+        "CODEISO3": "HKG",
+        "COG": "99230"
+    },
+    {
+        "LIBCOG": "Indonésie",
+        "CODEISO2": "ID",
+        "CODEISO3": "IDN",
+        "COG": "99231"
+    },
+    {
+        "LIBCOG": "Macao",
+        "CODEISO2": "MO",
+        "CODEISO3": "MAC",
+        "COG": "99232"
+    },
+    {
+        "LIBCOG": "Yémen Démocratique",
+        "CODEISO2": "",
+        "CODEISO3": "",
+        "COG": "99233"
+    },
+    {
+        "LIBCOG": "Cambodge",
+        "CODEISO2": "KH",
+        "CODEISO3": "KHM",
+        "COG": "99234"
+    },
+    {
+        "LIBCOG": "Sri Lanka",
+        "CODEISO2": "LK",
+        "CODEISO3": "LKA",
+        "COG": "99235"
+    },
+    {
+        "LIBCOG": "Taïwan",
+        "CODEISO2": "TW",
+        "CODEISO3": "TWN",
+        "COG": "99236"
+    },
+    {
+        "LIBCOG": "Corée",
+        "CODEISO2": "",
+        "CODEISO3": "",
+        "COG": "99237"
+    },
+    {
+        "LIBCOG": "Corée du Nord",
+        "CODEISO2": "KP",
+        "CODEISO3": "PRK",
+        "COG": "99238"
+    },
+    {
+        "LIBCOG": "Corée du Sud",
+        "CODEISO2": "KR",
+        "CODEISO3": "KOR",
+        "COG": "99239"
+    },
+    {
+        "LIBCOG": "Koweït",
+        "CODEISO2": "KW",
+        "CODEISO3": "KWT",
+        "COG": "99240"
+    },
+    {
+        "LIBCOG": "Laos",
+        "CODEISO2": "LA",
+        "CODEISO3": "LAO",
+        "COG": "99241"
+    },
+    {
+        "LIBCOG": "Mongolie",
+        "CODEISO2": "MN",
+        "CODEISO3": "MNG",
+        "COG": "99242"
+    },
+    {
+        "LIBCOG": "Vietnam",
+        "CODEISO2": "VN",
+        "CODEISO3": "VNM",
+        "COG": "99243"
+    },
+    {
+        "LIBCOG": "Viet Nam du Nord",
+        "CODEISO2": "",
+        "CODEISO3": "",
+        "COG": "99244"
+    },
+    {
+        "LIBCOG": "Viet Nam du Sud",
+        "CODEISO2": "",
+        "CODEISO3": "",
+        "COG": "99245"
+    },
+    {
+        "LIBCOG": "Bangladesh",
+        "CODEISO2": "BD",
+        "CODEISO3": "BGD",
+        "COG": "99246"
+    },
+    {
+        "LIBCOG": "Émirats arabes unis",
+        "CODEISO2": "AE",
+        "CODEISO3": "ARE",
+        "COG": "99247"
+    },
+    {
+        "LIBCOG": "Qatar",
+        "CODEISO2": "QA",
+        "CODEISO3": "QAT",
+        "COG": "99248"
+    },
+    {
+        "LIBCOG": "Bahreïn",
+        "CODEISO2": "BH",
+        "CODEISO3": "BHR",
+        "COG": "99249"
+    },
+    {
+        "LIBCOG": "Oman",
+        "CODEISO2": "OM",
+        "CODEISO3": "OMN",
+        "COG": "99250"
+    },
+    {
+        "LIBCOG": "Yémen",
+        "CODEISO2": "YE",
+        "CODEISO3": "YEM",
+        "COG": "99251"
+    },
+    {
+        "LIBCOG": "Arménie",
+        "CODEISO2": "AM",
+        "CODEISO3": "ARM",
+        "COG": "99252"
+    },
+    {
+        "LIBCOG": "Azerbaïdjan",
+        "CODEISO2": "AZ",
+        "CODEISO3": "AZE",
+        "COG": "99253"
+    },
+    {
+        "LIBCOG": "Chypre",
+        "CODEISO2": "CY",
+        "CODEISO3": "CYP",
+        "COG": "99254"
+    },
+    {
+        "LIBCOG": "Géorgie",
+        "CODEISO2": "GE",
+        "CODEISO3": "GEO",
+        "COG": "99255"
+    },
+    {
+        "LIBCOG": "Kazakhstan",
+        "CODEISO2": "KZ",
+        "CODEISO3": "KAZ",
+        "COG": "99256"
+    },
+    {
+        "LIBCOG": "Kirghizstan",
+        "CODEISO2": "KG",
+        "CODEISO3": "KGZ",
+        "COG": "99257"
+    },
+    {
+        "LIBCOG": "Ouzbékistan",
+        "CODEISO2": "UZ",
+        "CODEISO3": "UZB",
+        "COG": "99258"
+    },
+    {
+        "LIBCOG": "Tadjikistan",
+        "CODEISO2": "TJ",
+        "CODEISO3": "TJK",
+        "COG": "99259"
+    },
+    {
+        "LIBCOG": "Turkménistan",
+        "CODEISO2": "TM",
+        "CODEISO3": "TKM",
+        "COG": "99260"
+    },
+    {
+        "LIBCOG": "Palestine",
+        "CODEISO2": "PS",
+        "CODEISO3": "PSE",
+        "COG": "99261"
+    },
+    {
+        "LIBCOG": "Timor oriental",
+        "CODEISO2": "TL",
+        "CODEISO3": "TLS",
+        "COG": "99262"
+    },
+    {
+        "LIBCOG": "Égypte",
+        "CODEISO2": "EG",
+        "CODEISO3": "EGY",
+        "COG": "99301"
+    },
+    {
+        "LIBCOG": "Libéria",
+        "CODEISO2": "LR",
+        "CODEISO3": "LBR",
+        "COG": "99302"
+    },
+    {
+        "LIBCOG": "Afrique du Sud",
+        "CODEISO2": "ZA",
+        "CODEISO3": "ZAF",
+        "COG": "99303"
+    },
+    {
+        "LIBCOG": "Gambie",
+        "CODEISO2": "GM",
+        "CODEISO3": "GMB",
+        "COG": "99304"
+    },
+    {
+        "LIBCOG": "Cameroun et Togo",
+        "CODEISO2": "",
+        "CODEISO3": "",
+        "COG": "99305"
+    },
+    {
+        "LIBCOG": "Territoires britanniques de l’océan Atlantique",
+        "CODEISO2": "SH",
+        "CODEISO3": "SHN",
+        "COG": "99306"
+    },
+    {
+        "LIBCOG": "Soudans anglo-égyptien",
+        "CODEISO2": "",
+        "CODEISO3": "",
+        "COG": "99307"
+    },
+    {
+        "LIBCOG": "Territoire britannique de l’océan Indien",
+        "CODEISO2": "IO",
+        "CODEISO3": "IOT",
+        "COG": "99308"
+    },
+    {
+        "LIBCOG": "Tanzanie",
+        "CODEISO2": "TZ",
+        "CODEISO3": "TZA",
+        "COG": "99309"
+    },
+    {
+        "LIBCOG": "Zimbabwe",
+        "CODEISO2": "ZW",
+        "CODEISO3": "ZWE",
+        "COG": "99310"
+    },
+    {
+        "LIBCOG": "Namibie",
+        "CODEISO2": "NA",
+        "CODEISO3": "NAM",
+        "COG": "99311"
+    },
+    {
+        "LIBCOG": "République démocratique du Congo",
+        "CODEISO2": "CD",
+        "CODEISO3": "COD",
+        "COG": "99312"
+    },
+    {
+        "LIBCOG": "Territoires espagnols en Afrique du Nord",
+        "CODEISO2": "ES",
+        "CODEISO3": "ESP",
+        "COG": "99313"
+    },
+    {
+        "LIBCOG": "Guinée équatoriale",
+        "CODEISO2": "GQ",
+        "CODEISO3": "GNQ",
+        "COG": "99314"
+    },
+    {
+        "LIBCOG": "Éthiopie",
+        "CODEISO2": "ET",
+        "CODEISO3": "ETH",
+        "COG": "99315"
+    },
+    {
+        "LIBCOG": "Libye",
+        "CODEISO2": "LY",
+        "CODEISO3": "LBY",
+        "COG": "99316"
+    },
+    {
+        "LIBCOG": "Érythrée",
+        "CODEISO2": "ER",
+        "CODEISO3": "ERI",
+        "COG": "99317"
+    },
+    {
+        "LIBCOG": "Somalie",
+        "CODEISO2": "SO",
+        "CODEISO3": "SOM",
+        "COG": "99318"
+    },
+    {
+        "LIBCOG": "Territoires portugais de l’océan Atlantique",
+        "CODEISO2": "PT",
+        "CODEISO3": "PRT",
+        "COG": "99319"
+    },
+    {
+        "LIBCOG": "Iles portugaises de l'Océan indien",
+        "CODEISO2": "",
+        "CODEISO3": "",
+        "COG": "99320"
+    },
+    {
+        "LIBCOG": "Burundi",
+        "CODEISO2": "BI",
+        "CODEISO3": "BDI",
+        "COG": "99321"
+    },
+    {
+        "LIBCOG": "Cameroun",
+        "CODEISO2": "CM",
+        "CODEISO3": "CMR",
+        "COG": "99322"
+    },
+    {
+        "LIBCOG": "Centrafrique",
+        "CODEISO2": "CF",
+        "CODEISO3": "CAF",
+        "COG": "99323"
+    },
+    {
+        "LIBCOG": "Congo",
+        "CODEISO2": "CG",
+        "CODEISO3": "COG",
+        "COG": "99324"
+    },
+    {
+        "LIBCOG": "Tanger",
+        "CODEISO2": "",
+        "CODEISO3": "",
+        "COG": "99325"
+    },
+    {
+        "LIBCOG": "Côte d’Ivoire",
+        "CODEISO2": "CI",
+        "CODEISO3": "CIV",
+        "COG": "99326"
+    },
+    {
+        "LIBCOG": "Bénin",
+        "CODEISO2": "BJ",
+        "CODEISO3": "BEN",
+        "COG": "99327"
+    },
+    {
+        "LIBCOG": "Gabon",
+        "CODEISO2": "GA",
+        "CODEISO3": "GAB",
+        "COG": "99328"
+    },
+    {
+        "LIBCOG": "Ghana",
+        "CODEISO2": "GH",
+        "CODEISO3": "GHA",
+        "COG": "99329"
+    },
+    {
+        "LIBCOG": "Guinée",
+        "CODEISO2": "GN",
+        "CODEISO3": "GIN",
+        "COG": "99330"
+    },
+    {
+        "LIBCOG": "Burkina",
+        "CODEISO2": "BF",
+        "CODEISO3": "BFA",
+        "COG": "99331"
+    },
+    {
+        "LIBCOG": "Kenya",
+        "CODEISO2": "KE",
+        "CODEISO3": "KEN",
+        "COG": "99332"
+    },
+    {
+        "LIBCOG": "Madagascar",
+        "CODEISO2": "MG",
+        "CODEISO3": "MDG",
+        "COG": "99333"
+    },
+    {
+        "LIBCOG": "Malawi",
+        "CODEISO2": "MW",
+        "CODEISO3": "MWI",
+        "COG": "99334"
+    },
+    {
+        "LIBCOG": "Mali",
+        "CODEISO2": "ML",
+        "CODEISO3": "MLI",
+        "COG": "99335"
+    },
+    {
+        "LIBCOG": "Mauritanie",
+        "CODEISO2": "MR",
+        "CODEISO3": "MRT",
+        "COG": "99336"
+    },
+    {
+        "LIBCOG": "Niger",
+        "CODEISO2": "NE",
+        "CODEISO3": "NER",
+        "COG": "99337"
+    },
+    {
+        "LIBCOG": "Nigéria",
+        "CODEISO2": "NG",
+        "CODEISO3": "NGA",
+        "COG": "99338"
+    },
+    {
+        "LIBCOG": "Ouganda",
+        "CODEISO2": "UG",
+        "CODEISO3": "UGA",
+        "COG": "99339"
+    },
+    {
+        "LIBCOG": "Rwanda",
+        "CODEISO2": "RW",
+        "CODEISO3": "RWA",
+        "COG": "99340"
+    },
+    {
+        "LIBCOG": "Sénégal",
+        "CODEISO2": "SN",
+        "CODEISO3": "SEN",
+        "COG": "99341"
+    },
+    {
+        "LIBCOG": "Sierra Leone",
+        "CODEISO2": "SL",
+        "CODEISO3": "SLE",
+        "COG": "99342"
+    },
+    {
+        "LIBCOG": "Soudan",
+        "CODEISO2": "SD",
+        "CODEISO3": "SDN",
+        "COG": "99343"
+    },
+    {
+        "LIBCOG": "Tchad",
+        "CODEISO2": "TD",
+        "CODEISO3": "TCD",
+        "COG": "99344"
+    },
+    {
+        "LIBCOG": "Togo",
+        "CODEISO2": "TG",
+        "CODEISO3": "TGO",
+        "COG": "99345"
+    },
+    {
+        "LIBCOG": "Zambie",
+        "CODEISO2": "ZM",
+        "CODEISO3": "ZMB",
+        "COG": "99346"
+    },
+    {
+        "LIBCOG": "Botswana",
+        "CODEISO2": "BW",
+        "CODEISO3": "BWA",
+        "COG": "99347"
+    },
+    {
+        "LIBCOG": "Lesotho",
+        "CODEISO2": "LS",
+        "CODEISO3": "LSO",
+        "COG": "99348"
+    },
+    {
+        "LIBCOG": "Maroc",
+        "CODEISO2": "MA",
+        "CODEISO3": "MAR",
+        "COG": "99350"
+    },
+    {
+        "LIBCOG": "Tunisie",
+        "CODEISO2": "TN",
+        "CODEISO3": "TUN",
+        "COG": "99351"
+    },
+    {
+        "LIBCOG": "Algérie",
+        "CODEISO2": "DZ",
+        "CODEISO3": "DZA",
+        "COG": "99352"
+    },
+    {
+        "LIBCOG": "Sahara occidental",
+        "CODEISO2": "EH",
+        "CODEISO3": "ESH",
+        "COG": "99353"
+    },
+    {
+        "LIBCOG": "Sahara occidental",
+        "CODEISO2": "EH",
+        "CODEISO3": "ESH",
+        "COG": "99389"
+    },
+    {
+        "LIBCOG": "Maurice",
+        "CODEISO2": "MU",
+        "CODEISO3": "MUS",
+        "COG": "99390"
+    },
+    {
+        "LIBCOG": "Swaziland",
+        "CODEISO2": "SZ",
+        "CODEISO3": "SWZ",
+        "COG": "99391"
+    },
+    {
+        "LIBCOG": "Guinée-Bissao",
+        "CODEISO2": "GW",
+        "CODEISO3": "GNB",
+        "COG": "99392"
+    },
+    {
+        "LIBCOG": "Mozambique",
+        "CODEISO2": "MZ",
+        "CODEISO3": "MOZ",
+        "COG": "99393"
+    },
+    {
+        "LIBCOG": "Sao Tomé-et-Principe",
+        "CODEISO2": "ST",
+        "CODEISO3": "STP",
+        "COG": "99394"
+    },
+    {
+        "LIBCOG": "Angola",
+        "CODEISO2": "AO",
+        "CODEISO3": "AGO",
+        "COG": "99395"
+    },
+    {
+        "LIBCOG": "Cap-Vert",
+        "CODEISO2": "CV",
+        "CODEISO3": "CPV",
+        "COG": "99396"
+    },
+    {
+        "LIBCOG": "Comores",
+        "CODEISO2": "KM",
+        "CODEISO3": "COM",
+        "COG": "99397"
+    },
+    {
+        "LIBCOG": "Seychelles",
+        "CODEISO2": "SC",
+        "CODEISO3": "SYC",
+        "COG": "99398"
+    },
+    {
+        "LIBCOG": "Djibouti",
+        "CODEISO2": "DJ",
+        "CODEISO3": "DJI",
+        "COG": "99399"
+    },
+    {
+        "LIBCOG": "Canada",
+        "CODEISO2": "CA",
+        "CODEISO3": "CAN",
+        "COG": "99401"
+    },
+    {
+        "LIBCOG": "Terre-Neuve",
+        "CODEISO2": "",
+        "CODEISO3": "",
+        "COG": "99402"
+    },
+    {
+        "LIBCOG": "Labrador",
+        "CODEISO2": "",
+        "CODEISO3": "",
+        "COG": "99403"
+    },
+    {
+        "LIBCOG": "États-Unis",
+        "CODEISO2": "US",
+        "CODEISO3": "USA",
+        "COG": "99404"
+    },
+    {
+        "LIBCOG": "Mexique",
+        "CODEISO2": "MX",
+        "CODEISO3": "MEX",
+        "COG": "99405"
+    },
+    {
+        "LIBCOG": "Costa Rica",
+        "CODEISO2": "CR",
+        "CODEISO3": "CRI",
+        "COG": "99406"
+    },
+    {
+        "LIBCOG": "Cuba",
+        "CODEISO2": "CU",
+        "CODEISO3": "CUB",
+        "COG": "99407"
+    },
+    {
+        "LIBCOG": "République dominicaine",
+        "CODEISO2": "DO",
+        "CODEISO3": "DOM",
+        "COG": "99408"
+    },
+    {
+        "LIBCOG": "Guatémala",
+        "CODEISO2": "GT",
+        "CODEISO3": "GTM",
+        "COG": "99409"
+    },
+    {
+        "LIBCOG": "Haïti",
+        "CODEISO2": "HT",
+        "CODEISO3": "HTI",
+        "COG": "99410"
+    },
+    {
+        "LIBCOG": "Honduras",
+        "CODEISO2": "HN",
+        "CODEISO3": "HND",
+        "COG": "99411"
+    },
+    {
+        "LIBCOG": "Nicaragua",
+        "CODEISO2": "NI",
+        "CODEISO3": "NIC",
+        "COG": "99412"
+    },
+    {
+        "LIBCOG": "Panama",
+        "CODEISO2": "PA",
+        "CODEISO3": "PAN",
+        "COG": "99413"
+    },
+    {
+        "LIBCOG": "Salvador",
+        "CODEISO2": "SV",
+        "CODEISO3": "SLV",
+        "COG": "99414"
+    },
+    {
+        "LIBCOG": "Argentine",
+        "CODEISO2": "AR",
+        "CODEISO3": "ARG",
+        "COG": "99415"
+    },
+    {
+        "LIBCOG": "Brésil",
+        "CODEISO2": "BR",
+        "CODEISO3": "BRA",
+        "COG": "99416"
+    },
+    {
+        "LIBCOG": "Chili",
+        "CODEISO2": "CL",
+        "CODEISO3": "CHL",
+        "COG": "99417"
+    },
+    {
+        "LIBCOG": "Bolivie",
+        "CODEISO2": "BO",
+        "CODEISO3": "BOL",
+        "COG": "99418"
+    },
+    {
+        "LIBCOG": "Colombie",
+        "CODEISO2": "CO",
+        "CODEISO3": "COL",
+        "COG": "99419"
+    },
+    {
+        "LIBCOG": "Équateur",
+        "CODEISO2": "EC",
+        "CODEISO3": "ECU",
+        "COG": "99420"
+    },
+    {
+        "LIBCOG": "Paraguay",
+        "CODEISO2": "PY",
+        "CODEISO3": "PRY",
+        "COG": "99421"
+    },
+    {
+        "LIBCOG": "Pérou",
+        "CODEISO2": "PE",
+        "CODEISO3": "PER",
+        "COG": "99422"
+    },
+    {
+        "LIBCOG": "Uruguay",
+        "CODEISO2": "UY",
+        "CODEISO3": "URY",
+        "COG": "99423"
+    },
+    {
+        "LIBCOG": "Vénézuéla",
+        "CODEISO2": "VE",
+        "CODEISO3": "VEN",
+        "COG": "99424"
+    },
+    {
+        "LIBCOG": "Territoires britanniques dans les Antilles et Bermudes",
+        "CODEISO2": "",
+        "CODEISO3": "",
+        "COG": "99425"
+    },
+    {
+        "LIBCOG": "Jamaïque",
+        "CODEISO2": "JM",
+        "CODEISO3": "JAM",
+        "COG": "99426"
+    },
+    {
+        "LIBCOG": "Territoires britanniques dans l’océan Atlantique Sud",
+        "CODEISO2": "",
+        "CODEISO3": "",
+        "COG": "99427"
+    },
+    {
+        "LIBCOG": "Guyana",
+        "CODEISO2": "GY",
+        "CODEISO3": "GUY",
+        "COG": "99428"
+    },
+    {
+        "LIBCOG": "Bélize",
+        "CODEISO2": "BZ",
+        "CODEISO3": "BLZ",
+        "COG": "99429"
+    },
+    {
+        "LIBCOG": "Groenland",
+        "CODEISO2": "GL",
+        "CODEISO3": "GRL",
+        "COG": "99430"
+    },
+    {
+        "LIBCOG": "Aruba",
+        "CODEISO2": "AW",
+        "CODEISO3": "ABW",
+        "COG": "99431"
+    },
+    {
+        "LIBCOG": "Territoires des États-Unis en Amérique",
+        "CODEISO2": "",
+        "CODEISO3": "",
+        "COG": "99432"
+    },
+    {
+        "LIBCOG": "Trinité-et-Tobago",
+        "CODEISO2": "TT",
+        "CODEISO3": "TTO",
+        "COG": "99433"
+    },
+    {
+        "LIBCOG": "Barbade",
+        "CODEISO2": "BB",
+        "CODEISO3": "BRB",
+        "COG": "99434"
+    },
+    {
+        "LIBCOG": "Grenade",
+        "CODEISO2": "GD",
+        "CODEISO3": "GRD",
+        "COG": "99435"
+    },
+    {
+        "LIBCOG": "Bahamas",
+        "CODEISO2": "BS",
+        "CODEISO3": "BHS",
+        "COG": "99436"
+    },
+    {
+        "LIBCOG": "Suriname",
+        "CODEISO2": "SR",
+        "CODEISO3": "SUR",
+        "COG": "99437"
+    },
+    {
+        "LIBCOG": "Dominique",
+        "CODEISO2": "DM",
+        "CODEISO3": "DMA",
+        "COG": "99438"
+    },
+    {
+        "LIBCOG": "Sainte-Lucie",
+        "CODEISO2": "LC",
+        "CODEISO3": "LCA",
+        "COG": "99439"
+    },
+    {
+        "LIBCOG": "Saint-Vincent-et-les-Grenadines",
+        "CODEISO2": "VC",
+        "CODEISO3": "VCT",
+        "COG": "99440"
+    },
+    {
+        "LIBCOG": "Antigua-et-Barbuda",
+        "CODEISO2": "AG",
+        "CODEISO3": "ATG",
+        "COG": "99441"
+    },
+    {
+        "LIBCOG": "Saint-Christophe-et-Niévès",
+        "CODEISO2": "KN",
+        "CODEISO3": "KNA",
+        "COG": "99442"
+    },
+    {
+        "LIBCOG": "Bonaire, Saint-Eustache, Saba",
+        "CODEISO2": "BQ",
+        "CODEISO3": "BES",
+        "COG": "99443"
+    },
+    {
+        "LIBCOG": "Australie",
+        "CODEISO2": "AU",
+        "CODEISO3": "AUS",
+        "COG": "99501"
+    },
+    {
+        "LIBCOG": "Nouvelle-Zélande",
+        "CODEISO2": "NZ",
+        "CODEISO3": "NZL",
+        "COG": "99502"
+    },
+    {
+        "LIBCOG": "Pitcairn",
+        "CODEISO2": "PN",
+        "CODEISO3": "PCN",
+        "COG": "99503"
+    },
+    {
+        "LIBCOG": "Hawai",
+        "CODEISO2": "",
+        "CODEISO3": "",
+        "COG": "99504"
+    },
+    {
+        "LIBCOG": "Territoires des États-Unis en Océanie",
+        "CODEISO2": "",
+        "CODEISO3": "",
+        "COG": "99505"
+    },
+    {
+        "LIBCOG": "Samoa",
+        "CODEISO2": "WS",
+        "CODEISO3": "WSM",
+        "COG": "99506"
+    },
+    {
+        "LIBCOG": "Nauru",
+        "CODEISO2": "NR",
+        "CODEISO3": "NRU",
+        "COG": "99507"
+    },
+    {
+        "LIBCOG": "Fidji",
+        "CODEISO2": "FJ",
+        "CODEISO3": "FJI",
+        "COG": "99508"
+    },
+    {
+        "LIBCOG": "Tonga",
+        "CODEISO2": "TO",
+        "CODEISO3": "TON",
+        "COG": "99509"
+    },
+    {
+        "LIBCOG": "Papouasie-Nouvelle-Guinée",
+        "CODEISO2": "PG",
+        "CODEISO3": "PNG",
+        "COG": "99510"
+    },
+    {
+        "LIBCOG": "Tuvalu",
+        "CODEISO2": "TV",
+        "CODEISO3": "TUV",
+        "COG": "99511"
+    },
+    {
+        "LIBCOG": "Salomon",
+        "CODEISO2": "SB",
+        "CODEISO3": "SLB",
+        "COG": "99512"
+    },
+    {
+        "LIBCOG": "Kiribati",
+        "CODEISO2": "KI",
+        "CODEISO3": "KIR",
+        "COG": "99513"
+    },
+    {
+        "LIBCOG": "Vanuatu",
+        "CODEISO2": "VU",
+        "CODEISO3": "VUT",
+        "COG": "99514"
+    },
+    {
+        "LIBCOG": "Marshall",
+        "CODEISO2": "MH",
+        "CODEISO3": "MHL",
+        "COG": "99515"
+    },
+    {
+        "LIBCOG": "Micronésie",
+        "CODEISO2": "FM",
+        "CODEISO3": "FSM",
+        "COG": "99516"
+    },
+    {
+        "LIBCOG": "Palaos",
+        "CODEISO2": "PW",
+        "CODEISO3": "PLW",
+        "COG": "99517"
+    },
+    {
+        "LIBCOG": "",
+        "CODEISO2": "",
+        "CODEISO3": "",
+        "COG": ""
+    },
+    {
+        "LIBCOG": "",
+        "CODEISO2": "",
+        "CODEISO3": "",
+        "COG": ""
+    },
+    {
+        "LIBCOG": "",
+        "CODEISO2": "",
+        "CODEISO3": "",
+        "COG": "99975"
+    },
+    {
+        "LIBCOG": "",
+        "CODEISO2": "",
+        "CODEISO3": "",
+        "COG": "99985"
+    },
+    {
+        "LIBCOG": "",
+        "CODEISO2": "",
+        "CODEISO3": "",
+        "COG": "99986"
+    },
+    {
+        "LIBCOG": "",
+        "CODEISO2": "",
+        "CODEISO3": "",
+        "COG": "99987"
+    },
+    {
+        "LIBCOG": "",
+        "CODEISO2": "",
+        "CODEISO3": "",
+        "COG": "99988"
+    },
+    {
+        "LIBCOG": "Autres pays",
+        "CODEISO2": "",
+        "CODEISO3": "",
+        "COG": ""
+    },
+    {
+        "LIBCOG": "Sans nationalité",
+        "CODEISO2": "",
+        "CODEISO3": "",
+        "COG": ""
+    },
+    {
+        "LIBCOG": "Autres pays, étranger sans autre indication",
+        "CODEISO2": "",
+        "CODEISO3": "",
+        "COG": "99999"
+    },
+    {
+        "LIBCOG": "Curaçao",
+        "CODEISO2": "CW",
+        "CODEISO3": "CUW",
+        "COG": "99444"
+    },
+    {
+        "LIBCOG": "",
+        "CODEISO2": "",
+        "CODEISO3": "",
+        "COG": ""
+    },
+    {
+        "LIBCOG": "",
+        "CODEISO2": "",
+        "CODEISO3": "",
+        "COG": ""
+    },
+    {
+        "LIBCOG": "",
+        "CODEISO2": "",
+        "CODEISO3": "",
+        "COG": ""
+    },
+    {
+        "LIBCOG": "",
+        "CODEISO2": "",
+        "CODEISO3": "",
+        "COG": ""
+    },
+    {
+        "LIBCOG": "",
+        "CODEISO2": "",
+        "CODEISO3": "",
+        "COG": ""
+    },
+    {
+        "LIBCOG": "",
+        "CODEISO2": "",
+        "CODEISO3": "",
+        "COG": ""
+    },
+    {
+        "LIBCOG": "",
+        "CODEISO2": "",
+        "CODEISO3": "",
+        "COG": ""
+    },
+    {
+        "LIBCOG": "Saint-Martin (Néerlandaise)",
+        "CODEISO2": "SX",
+        "CODEISO3": "SXM",
+        "COG": "99445"
+    },
+    {
+        "LIBCOG": "Soudan du Sud",
+        "CODEISO2": "SS",
+        "CODEISO3": "SSD",
+        "COG": "99349"
+    },
+    {
+        "LIBCOG": "",
+        "CODEISO2": "",
+        "CODEISO3": "",
+        "COG": ""
+    }
+]

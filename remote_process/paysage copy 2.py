@@ -1,50 +1,9 @@
 import time, requests, pandas as pd, copy, numpy as np
-from config_path import PATH_HARVEST
+from config_path import PATH_HARVEST, PATH_REF
 from retry import retry
 from dotenv import load_dotenv
 load_dotenv()
 @retry(delay=100, tries=3)
-
-
-# def get_IDpaysage(paysage_liste):
-#     import time, requests
-#     from config_api import paysage_headers
-#     from dotenv import load_dotenv
-#     load_dotenv()
-
-#     print(time.strftime("%H:%M:%S"))
-#     paysage_id = []
-#     n=0
-#     for i in paysage_liste:
-#         n=n+1
-#         if n % 100 == 0: 
-#             print(f"{n}", end=',')
-
-#         time.sleep(0.2)
-#         try:
-#             url1 = f'https://api.paysage.dataesr.ovh/identifiers?filters[value]={str(i)}'
-#             rinit = requests.get(url1, headers=paysage_headers, verify=False)
-#             r = rinit.json()['data']
-#             if r:
-#                 for item in r:
-#                     response={'id_source':i, 'id_paysage':item.get('resourceId'), 'status':item.get('active'), 'end':item.get('endDate')}
-#                     paysage_id.append(response)
-#             else:
-#                 response={'id_source':i, 'status':'non'}
-#                 paysage_id.append(response)
-
-#         except requests.exceptions.HTTPError as http_err:
-#             print(f"\n{i} -> HTTP error occurred: {http_err}")
-#             paysage_liste.append(str(i))
-#         except requests.exceptions.RequestException as err:
-#             print(f"\n{i} -> Error occurred: {err}")
-#             paysage_liste.append(str(i))
-#         except Exception as e:
-#             print(f"\n{i} -> An unexpected error occurred: {e}")
-                        
-#     print(f"1 - resultat id entities paysagés {len(paysage_id)}")
-#     print(time.strftime("%H:%M:%S"))
-#     return paysage_id
 
 
 def get_paysageODS(dataset):
@@ -59,7 +18,7 @@ def get_paysageODS(dataset):
 def ID_to_IDpaysage(lid_source, siren_siret=[]):
     import pandas as pd
     from config_path import PATH_HARVEST
-    from api_process.paysage import get_paysageODS
+    from remote_process.paysage import get_paysageODS
 
     print("## harvest IDpaysage from ID")
     paysage_liste = list(set([i['api_id'] for i in lid_source if not i['source_id'] in ['ror', 'siren', 'paysage']]))
@@ -142,16 +101,15 @@ def IDpaysage_status(paysage_id):
         return paysage_id, pd.DataFrame()
 ###############################
 
-def IDpaysage_successor(paysage_id):
+def IDpaysage_successor(df):
     import time, requests, pandas as pd, copy
     from config_api import paysage_headers
     from dotenv import load_dotenv
     load_dotenv()
 
-
     # traitement des successeurs
     print("## IDpaysage successors")
-    paysage_relat = paysage_id['id_paysage'].dropna().unique().astype(str).tolist()
+    paysage_relat = df.loc[df['source_id']=='paysage', 'id_extend'].dropna().unique().astype(str).tolist()
     print(f"2 - size de paysage relat à vérifier {len(paysage_relat)}")
 
     # #successor
@@ -193,9 +151,9 @@ def IDpaysage_successor(paysage_id):
             print(f"\n- ++successeurs pour id_paysage:\n{paysage_successor[paysage_successor['nb']>1]}")            
             paysage_successor['nb_date'] = paysage_successor.groupby('id_paysage')['start_date'].transform('nunique')
             paysage_successor = paysage_successor.loc[~((paysage_successor.nb>1)&(~paysage_successor.end_date.isnull()))]
-            paysage_successor = paysage_successor.loc[~((paysage_successor.nb>1)&(paysage_successor.nb_date==1))]
+            paysage_successor = paysage_successor.loc[~((paysage_successor.nb>1)&(paysage_successor.nb_date==1))].drop(columns='nb_date')
 
-        paysage_successor = paysage_successor.groupby('id_paysage').first().reset_index().drop(columns=['end_date','start_date','active','nb','nb_date'])
+        paysage_successor = paysage_successor.groupby('id_paysage').first().reset_index().drop(columns=['end_date','start_date','active','nb'])
 
         i=0
         paysage_tmp = copy.deepcopy(paysage_successor.rename(columns={'id_s0':'id_s', 'id_paysage':'id_tmp'})) 
@@ -213,14 +171,14 @@ def IDpaysage_successor(paysage_id):
         paysage_successor.rename(columns={f'id_s{i}':'id_clean'}, inplace=True)
 
     if len(paysage_successor)>0:    
-        paysage = paysage_id.loc[~paysage_id.id_paysage.isnull()].merge(paysage_successor[['id_paysage', 'id_clean']].drop_duplicates(), how='left', on='id_paysage')
-        paysage.loc[paysage.id_clean.isnull(), 'id_clean'] = paysage['id_paysage']
-        paysage=paysage.rename(columns={'id_paysage':'id_paysage_1'})
+        paysage = df.loc[df['source_id']=='paysage'].merge(paysage_successor[['id_paysage', 'id_clean']].drop_duplicates(), how='left', left_on='id_extend', right_on='id_paysage')
+        paysage.loc[paysage['id_clean'].isnull(), 'id_clean'] = paysage['id_extend']
+        # paysage=paysage.rename(columns={'id_paysage':'id_paysage_1'})
     else:
-        paysage = paysage_id.assign(id_clean=paysage_id.id_paysage)
+        paysage = df.loc[df['source_id']=='paysage'].assign(id_clean=df['id_extend']).drop(columns='source_id')
         
-    if any(paysage.groupby('id_source')['id_clean'].transform('count')>1):
-            print(f"\ndoublons:\n{paysage[paysage.groupby('id_source')['id_clean'].transform('count')>1][['id_source','id_clean']]}")
+    if any(paysage.groupby('id_extend')['id_clean'].transform('count')>1):
+            print(f"\ndoublons:\n{paysage[paysage.groupby('id_extend')['id_clean'].transform('count')>1][['id_extend','id_clean']]}")
     return paysage
 ###############################
 
@@ -244,7 +202,7 @@ def IDpaysage_parent(paysage):
             rinit = requests.get(url2, headers=paysage_headers, verify=False)
             r = rinit.json()['data']
             if r:
-                response={'id_paysage':r[0].get('relatedObject').get('id'), 'id_p0':r[0].get('resourceId'), 'end':r[0].get('endDate')}
+                response={'id_source':r[0].get('relatedObject').get('id'), 'id_p0':r[0].get('resourceId'), 'end':r[0].get('endDate')}
                 paysage_relation.append(response)
                 if r[0].get('resourceId') not in paysage_relat:
                     paysage_relat.append(r[0].get('resourceId'))      
@@ -268,14 +226,14 @@ def IDpaysage_parent(paysage):
         paysage_relation=paysage_relation[paysage_relation.end.isnull()]
         print(f"\n- size de resultat paysage relation {len(paysage_relation)}")
         paysage_relation = pd.DataFrame(paysage_relation).drop_duplicates()
-        paysage_relation['nb'] = paysage_relation.groupby('id_paysage')['id_p0'].transform('count')
+        paysage_relation['nb'] = paysage_relation.groupby('id_source')['id_p0'].transform('count')
         if any(paysage_relation['nb']>1):
             print(paysage_relation[paysage_relation['nb']>1])            
 
         liste_no_parent = ['Py0K5', 'dUyiC', 'H1TgQ', 'S0Jbc']
-        paysage_relation = paysage_relation.loc[~(paysage_relation.id_p0.isin(liste_no_parent))]
+        paysage_relation = paysage_relation.loc[~(paysage_relation['id_p0'].isin(liste_no_parent))]
         i=0
-        paysage_tmp = copy.deepcopy(pd.DataFrame(paysage_relation).rename(columns={'id_p0':'id_p', 'id_paysage':'id_tmp'}).drop(columns='nb'))
+        paysage_tmp = copy.deepcopy(pd.DataFrame(paysage_relation).rename(columns={'id_p0':'id_p', 'id_source':'id_tmp'}).drop(columns='nb'))
         if f'id_p{i}'in paysage_relation.columns:   
             paysage_relation=(paysage_relation.merge(paysage_tmp, how='left', left_on=f'id_p{i}', right_on='id_tmp')
             .rename(columns={'id_p':f"id_p{str(i+1)}"})
@@ -293,80 +251,21 @@ def IDpaysage_parent(paysage):
             print(f"revoir un peu le code pour traiter ce prob ->\n{paysage_relation.loc[(paysage_relation.id_p.isin(liste_no_parent))]}")
 
     if len(paysage_relation)>0:
-        paysage = paysage.merge(paysage_relation[['id_paysage', 'id_p']].drop_duplicates(), how='left', left_on='id_clean', right_on='id_paysage')
+        paysage = paysage.merge(paysage_relation[['id_source', 'id_p']].drop_duplicates(), how='left', left_on='id_clean', right_on='id_source')
         paysage.loc[~paysage.id_p.isnull(), 'id_clean'] = paysage.id_p
-        paysage = paysage[['id_source', 'id_clean']].drop_duplicates()
+        paysage = paysage[['id_extend', 'id_clean']].drop_duplicates()
 
-        if any(paysage.groupby('id_source')['id_clean'].transform('count')>1):
-            print(f"\ndoublons:\n{paysage[paysage.groupby('id_source')['id_clean'].transform('count')>1][['id_source','id_clean']]}")
+        if any(paysage.groupby('id_extend')['id_clean'].transform('count')>1):
+            print(f"\ndoublons:\n{paysage[paysage.groupby('id_extend')['id_clean'].transform('count')>1][['id_extend','id_clean']]}")
     return paysage
 ###############################################
 
-def IDpaysage_cj(paysage):
-    from config_api import paysage_headers
-    print("## IDpaysage CJ")
-    paysage_liste=paysage['id_clean'].dropna().astype(str).unique().tolist()
-    paysage_cj=pd.DataFrame()
-    n=0
-    len(paysage_liste)
-
-    print(f"- size paysage id à CJ:{len(paysage_liste)}")
-
-    for i in paysage_liste:
-        time.sleep(0.2)
-        n=n+1
-        if n % 100 == 0: 
-            print(f"{n}", end=',')    
-        
-        try:
-            url2=f'https://api.paysage.dataesr.ovh/relations?filters[resourceId]={str(i)}&filters[relationTag]=structure-categorie-juridique&limit=500'
-            rinit = requests.get(url2, headers=paysage_headers, verify=False)
-            r = rinit.json()['data']
-            if r:
-                temp = pd.json_normalize(r)
-                temp = (temp[['resourceId','relatedObject.inseeCode','relatedObject.displayName', 'relatedObject.sector']]
-                        .rename(columns={'resourceId':'id_clean','relatedObject.inseeCode':'cj_code','relatedObject.displayName':'cj_name', 'relatedObject.sector':'sector'}))
-                paysage_cj=pd.concat([paysage_cj, temp], ignore_index=True)
-
-        except requests.exceptions.HTTPError as http_err:
-            print(f"{i} -> HTTP error occurred: {http_err}")
-            response = pd.json_normalize({'id_clean': i, 'status': 'http_error'})
-            paysage_cj=pd.concat([paysage_cj, response], ignore_index=True)
-            paysage_liste.append(str(i))
-        except requests.exceptions.RequestException as err:
-            print(f"{i} -> Error occurred: {err}")
-            response = pd.json_normalize({'id_clean': i, 'status': 'request_error'})
-            paysage_cj=pd.concat([paysage_cj, response], ignore_index=True)
-            paysage_liste.append(str(i))
-        except Exception as e:
-            print(f"{i} -> An unexpected error occurred: {e}")
-            response = pd.json_normalize({'id_clean': i, 'status': 'unexpected_error'})
-            paysage_cj=pd.concat([paysage_cj, response], ignore_index=True)
-
-    if len(paysage_cj)>0:   
-        if 'status' in paysage_cj:
-            err=paysage_cj.loc[~paysage_cj.status.isnull()].id_clean.unique()
-            print(err)
-            print(f"{paysage_cj.loc[paysage_cj.id_clean.isin(err), ['id_clean', 'cj_code']]}")
-
-        print(f"\n- size resultat paysage_cj:{len(paysage_cj)}") 
-
-    if len(paysage_cj)>0: 
-        if 'status' in paysage_cj:
-            paysage_cj = paysage_cj.loc[paysage_cj.status.isnull()]
-        paysage_cj = paysage_cj.sort_values(['id_clean','cj_code']).drop_duplicates().groupby('id_clean', as_index=False).agg(lambda x: ';'.join(x.dropna().astype(str))).drop_duplicates()
-        paysage = paysage.merge(paysage_cj, how='left',on='id_clean').drop_duplicates()  
-    if len(paysage.loc[paysage.cj_code.isnull()])>0:
-        print(f"\nSANS CJ -> à compléter dans paysage\n{paysage.loc[paysage.cj_code.isnull()].id_clean.unique()}")
-    return paysage
-################################################
-
-def IDpaysage_name(paysage):
+def IDpaysage_name_cj(paysage):
     from config_api import paysage_headers
     print("## IDpaysage name")
     paysage_liste=paysage['id_clean'].dropna().astype(str).unique().tolist()
     print(f"- size paysage id à nommer:{len(paysage_liste)}")
-    paysage_name=[]
+    paysage_infos=[]
     n=0
 
     for i in paysage_liste:
@@ -384,58 +283,69 @@ def IDpaysage_name(paysage):
                 'name':r.get('currentName').get('usualName'),
                 'shortName':r.get('currentName').get('shortName'),
                 'acronymFr':r.get('currentName').get('acronymFr'),
-                'otherNames':r.get('currentName').get('otherNames')}
-            paysage_name.append(response)
+                'acronymEn':r.get('currentName').get('acronymEn'),
+                'acronymLocal':r.get('currentName').get('acronymLocal'),
+                'otherNames':r.get('currentName').get('otherNames'),
+                'cj_code':r.get('legalcategory').get('inseeCode'),
+                'cj_name':r.get('legalcategory').get('longNameFr'),
+                'sector':r.get('legalcategory').get('sector')}
+            paysage_infos.append(response)
 
         except requests.exceptions.HTTPError as http_err:
             print(f"{i} -> HTTP error occurred: {http_err}")
             response = {'id_parent': i, 'status': 'http_error'}
-            paysage_name.append(response)
+            paysage_infos.append(response)
             paysage_liste.append(str(i))
         except requests.exceptions.RequestException as err:
             print(f"{i} -> Error occurred: {err}")
             response = {'id_parent': i, 'status': 'request_error'}
-            paysage_name.append(response)
+            paysage_infos.append(response)
             paysage_liste.append(str(i))
         except Exception as e:
             print(f"{i} -> An unexpected error occurred: {e}")
             response = {'id_parent': i, 'status': 'unexpected_error'}
-            paysage_name.append(response)     
-            
-    print(f"\n- resultat paysage name:{len(paysage_name)}")
+            paysage_infos.append(response)
 
-    print(f"\nliste des exceptions d'extraction\n{[i for i in paysage_name if i.get('status')]}")
-    verif2 = [i.get('id_parent') for i in paysage_name if i.get('status')]
-    print(f"\nErreurs lévées automatiquement, vérifier la liste\n{[i for i in paysage_name if i.get('id_parent') in verif2]}")
+    print(f"\n- resultat paysage name:{len(paysage_infos)}")
 
-    file_name = f"{PATH_HARVEST}paysage_name.pkl"
+    print(f"\nliste des exceptions d'extraction\n{[i for i in paysage_infos if i.get('status')]}")
+    verif2 = [i.get('id_parent') for i in paysage_infos if i.get('status')]
+    print(f"\nErreurs lévées automatiquement, vérifier la liste\n{[i for i in paysage_infos if i.get('id_parent') in verif2]}")
+
+    file_name = f"{PATH_HARVEST}paysage_infos.pkl"
     with open(file_name, 'wb') as file:
-        pd.to_pickle(paysage_name, file)
+        pd.to_pickle(paysage_infos, file)
         
-    paysage_name = pd.DataFrame(paysage_name)
+    paysage_infos = pd.DataFrame(paysage_infos)
 
-    if 'status' in paysage_name.columns:
-        paysage_name = paysage_name.loc[paysage_name.status.isnull()].drop(columns='status')
+    if 'status' in paysage_infos.columns:
+        paysage_infos = paysage_infos.loc[paysage_infos.status.isnull()].drop(columns='status')
 
-    paysage_name['acronym'] = np.where(~paysage_name.shortName.isnull(), paysage_name.shortName, paysage_name.acronymFr)
-    paysage_name['acro_tmp'] = paysage_name['otherNames'].apply(lambda x: min(x, key=len) if x is not None and len(x)!=0 else '')
+    paysage_infos['acronym'] = np.where(~paysage_infos.shortName.isnull(), paysage_infos.shortName, paysage_infos.acronymFr)
+    for i in ['acronymEn', 'acronymLocal']:
+        paysage_infos['acronym'] = np.where(paysage_infos.acronym.isnull(), paysage_infos[i], paysage_infos.acronym)
+    paysage_infos['acro_tmp'] = paysage_infos['otherNames'].apply(lambda x: min(x, key=len) if x is not None and len(x)!=0 else '')
 
-    paysage_name = paysage_name.drop(columns=['otherNames', 'shortName', 'acronymFr']).drop_duplicates()
+    paysage_infos = paysage_infos.drop(columns=['otherNames', 'shortName', 'acronymFr']).drop_duplicates()
 
-    paysage_name['nb'] = paysage_name.groupby('id_parent')['name'].transform('count')
-    if any(paysage_name['nb']>1):
-        print(f"\n- ATTENTION doublon de id_clean\n{paysage_name[paysage_name['nb']>1]}")
+    paysage_infos['nb'] = paysage_infos.groupby('id_parent')['name'].transform('count')
+    if any(paysage_infos['nb']>1):
+        print(f"\n- ATTENTION doublon de id_clean\n{paysage_infos[paysage_infos['nb']>1]}")
 
-    paysage = (paysage.merge(paysage_name, how='left',left_on='id_clean',right_on='id_parent')
+    paysage = (paysage.merge(paysage_infos, how='left',left_on='id_clean',right_on='id_parent')
             .drop(['id_parent', 'nb'], axis=1)
-            .rename(columns={'id_source':'id','name':'name_clean','acronym':'acronym_clean'})
+            .rename(columns={'name':'name_clean','acronym':'acronym_clean'})
             .drop_duplicates())
+    
+    if len(paysage.loc[paysage.cj_code.isnull()])>0:
+        print(f"\nSANS CJ -> à compléter dans paysage\n{paysage.loc[paysage.cj_code.isnull()].id_clean.unique()}")
+
 
     if any(paysage.name_clean.isnull()):
         print(paysage[paysage.name_clean.isnull()])
         
-    if any(paysage.groupby('id')['id_clean'].transform('count')>1):
-        print(f"\n- doublon {paysage[paysage.groupby('id')['id_clean'].transform('count')>1]}") 
+    if any(paysage.groupby('id_extend')['id_clean'].transform('count')>1):
+        print(f"\n- doublon {paysage[paysage.groupby('id_extend')['id_clean'].transform('count')>1]}") 
     return paysage
 ################################################
 
@@ -473,44 +383,45 @@ def IDpaysage_siret(paysage):
             print(f"An unexpected error occurred: {e}")
             response = pd.json_normalize({'id_source': i, 'status': 'unexpected_error'})
             paysage_siret=pd.concat([paysage_siret, response], ignore_index=True)
-            
+
     if len(paysage_siret)>0:
-        paysage_siret=paysage_siret[['resourceId','value', 'endDate', 'active']].rename(columns={'resourceId':'id_clean','value':'siret', 'endDate':'siren_end_date'})
-        paysage_siret['nb'] = paysage_siret.groupby('id_clean', dropna=False)['siret'].transform('count')
-        paysage_siret=paysage_siret.loc[~((paysage_siret.nb>1)&((paysage_siret.active==False)|(~paysage_siret.siren_end_date.isnull())))].drop_duplicates()
+        paysage_siret = paysage_siret[['resourceId','value', 'endDate', 'active']].rename(columns={'resourceId':'id_clean','value':'siret', 'endDate':'siren_end_date'})
+        # paysage_siret['nb'] = paysage_siret.groupby('id_clean', dropna=False)['siret'].transform('count')
+        # paysage_siret=paysage_siret.loc[~((paysage_siret.nb>1)&((paysage_siret.active==False)|(~paysage_siret.siren_end_date.isnull())))].drop_duplicates()
         paysage_siret['siren']=paysage_siret.siret.str[:9]
-        paysage_siret['nb'] = paysage_siret.groupby('id_clean', dropna=False).siren.transform('count')
-        if any(paysage_siret['nb']>1):
-            print(f"\n- doublons siren:\n{paysage_siret[paysage_siret['nb']>1]}")
-            paysage_siret=paysage_siret[~((paysage_siret.nb>1)&(paysage_siret.siren.isin(siren_to_remove)))]
-            paysage_siret['nb'] = paysage_siret.groupby('id_clean', dropna=False).siren.transform('count')
-            if any(paysage_siret['nb']>1):
-                print(f"- encore des doublons après suppresion de certains:\n{paysage_siret[paysage_siret['nb']>1]}")
-            else:
-                print(f"\n- doublons réglés")
+        # paysage_siret['nb'] = paysage_siret.groupby('id_clean', dropna=False).siren.transform('count')
+        # if any(paysage_siret['nb']>1):
+        #     print(f"\n- doublons siren:\n{paysage_siret[paysage_siret['nb']>1]}")
+        #     paysage_siret=paysage_siret[~((paysage_siret.nb>1)&(paysage_siret.siren.isin(siren_to_remove)))]
+        #     paysage_siret['nb'] = paysage_siret.groupby('id_clean', dropna=False).siren.transform('count')
+        #     if any(paysage_siret['nb']>1):
+        #         print(f"- encore des doublons après suppresion de certains:\n{paysage_siret[paysage_siret['nb']>1]}")
+        #     else:
+        #         print(f"\n- doublons réglés")
         
-        paysage_siret=paysage_siret.drop(columns=['siret', 'active', 'nb']).drop_duplicates()
-        paysage_siret['nb'] = paysage_siret.groupby('id_clean', dropna=False)['siren'].transform('count')
+        paysage_siret=paysage_siret.drop(columns=['siret', 'active', 'siren_end_date']).drop_duplicates()
+        paysage_siret['nb'] = paysage_siret.groupby('id_clean', dropna=False)['siren'].transform('nunique')
         if any(paysage_siret['nb']>1):
             print(f"\n- s'il reste encore des doublons de siren : {paysage_siret[paysage_siret['nb']>1]}")
             paysage_siret=paysage_siret.groupby('id_clean', as_index=False).agg(lambda x: ';'.join(x.dropna().astype(str))).drop_duplicates()
 
-        paysage=paysage.merge(paysage_siret.drop(columns='nb'), how='left', on='id_clean')
+        paysage=pd.merge(paysage, paysage_siret.drop(columns='nb'), how='left', on='id_clean')
         print(f"\n- size paysage : {len(paysage)}")
 
-        paysage['nb']=paysage.groupby('id')['id_clean'].transform('count')
+        paysage['nb']=paysage.groupby('id_extend')['id_clean'].transform('count')
         if len(paysage[paysage.nb>1])>0:
-            print(f"\ndoublons dans paysage à régler à la source -> {paysage[paysage.nb>1][['id', 'id_clean', 'name_clean']]}")
-        return paysage
+            print(f"\ndoublons dans paysage à régler à la source -> {paysage[paysage.nb>1][['id_extend', 'id_clean', 'name_clean']]}")
+    return paysage
+
 ################################################
 
 def check_var_null(paysage):
-    for i in ['cj_code', 'cj_name', 'sector', 'name_clean', 'acronym_clean']:
+    for i in [ 'cj_code', 'cj_name', 'sector', 'name_clean', 'acronym_clean']:
         print(f" {i}-> {paysage.loc[paysage[i].isnull()].id_clean.unique()}")
 
 ################################################
 
-def IDpaysage_category(paysage):
+def IDpaysage_category(paysage, df_old=False):
     from config_api import paysage_headers
     print("## IDpaysage category")
     paysage_liste=paysage['id_clean'].dropna().astype(str).unique().tolist()
@@ -570,10 +481,17 @@ def IDpaysage_category(paysage):
         paysage_category = (paysage_category[['id_clean', 'category_id', 'category_name', 'category_priority']]
                             .sort_values(['id_clean', 'category_priority', 'category_id'])
                             .drop_duplicates())
-        
         file_name = f"{PATH_HARVEST}paysage_category.pkl"
-        with open(file_name, 'wb') as file:
-            pd.to_pickle(paysage_category, file)
+        if df_old==True:
+            paysage_old=pd.read_pickle(f"{PATH_HARVEST}paysage_category.pkl")
+            paysage_category=pd.concat([paysage_category, paysage_old], ignore_index=True).drop_duplicates()
+            print(f"1 - paysage_old + paysage_category -> new size :{len(paysage_category)}")
+            
+            with open(file_name, 'wb') as file:
+                pd.to_pickle(paysage_category, file) 
+        else:
+            with open(file_name, 'wb') as file:
+                pd.to_pickle(paysage_category, file)
         return paysage_category
 
 ################################################

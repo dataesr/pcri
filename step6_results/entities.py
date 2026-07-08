@@ -1,6 +1,5 @@
 import pandas as pd, numpy as np
-from functions_shared import zipfile_ods, entreprise_group_cleaning, select_cols_FP, rename_cols_FP, df_order_cols_FP, FP_suivi
-from step3_entities.ID_getSourceRef import get_source_ID
+from functions_shared import zipfile_ods, select_cols_FP, rename_cols_FP, df_order_cols_FP, FP_suivi
 from config_path import PATH_CONNECT
 
 
@@ -71,9 +70,9 @@ def entities_ods(FP, entities_participation):
  
     tmp1 = tmp.loc[(tmp.stage=='evaluated')].rename(columns={ 'number_involved':'numberofapplicants'})
 
-    l=['country_name_mapping', 'country_association_name_en', 'country_name_en', 
-            'country_code_mapping',
-            'operateur_num','operateur_lib', 'ror_category', 'paysage_category', 'country_association_name_en',
+    l=['country_name_source', 'country_association_name_en', 'country_name_en', 
+            'country_code_source', 
+            'operateur_num','operateur_lib', 'ror_category', 'category_name', 'country_association_name_en',
             'country_association_name_fr', 'thema_name_fr', 'destination_lib',
             'programme_name_fr', 'action_group_code', 'action_group_name', 
             'cordis_type_entity_name_en', 'cordis_type_entity_acro','cordis_type_entity_name_fr']
@@ -91,6 +90,47 @@ def entities_ods(FP, entities_participation):
         df_subset = x.iloc[start:start+chunk_size]
         i=i+1
         zipfile_ods(df_subset, f"fr-esr-{FP}-projects-entities-evaluated{i}")
+
+
+
+def entities_operateur(df):
+    
+    ope = df[['framework', 'stage', 'project_id', 'with_coord', 'call_year',
+            'operateur_name', 'operateur_num', 'operateur_lib',
+            'calculated_fund', 'number_involved', 'coordination_number']]
+
+
+    ope_tot = (df.loc[df['operateur_num'].notnull()]
+               .groupby(['framework', 'stage', 'project_id', 'with_coord', 'call_year'])
+                           .agg({'calculated_fund':'sum', 'number_involved':'sum', 
+                  'coordination_number':'sum'})
+                  .reset_index()
+                  .assign(operateur_name='operateurs_mires', operateur_num='tot', operateur_lib='operateurs_mires'))
+
+
+    operateur_cols = [c for c in ope.columns if c.startswith('operateur')]
+    ope[operateur_cols] = ope[operateur_cols].fillna('HMIRES')
+    # create *_extend columns with split values
+    for col in operateur_cols:
+        ope[f"{col}_extend"] = ope[col].str.split(';')
+
+    # explode all *_extend columns together
+    ope = ope.explode([f"{col}_extend" for col in operateur_cols])
+
+    # optional: strip whitespace after split
+    for col in operateur_cols:
+        ope[f"{col}_extend"] = ope[f"{col}_extend"].str.strip()
+
+    ope = (ope.groupby(['framework', 'stage', 'project_id', 'with_coord', 'call_year',
+            'operateur_name', 'operateur_num', 'operateur_lib',
+            'operateur_name_extend', 'operateur_num_extend', 'operateur_lib_extend'])
+            .agg({'calculated_fund':'sum', 'number_involved':'sum', 
+                  'coordination_number':'sum'})
+                  .reset_index())
+    
+    ope = pd.concat([ope, ope_tot], ignore_index=True)
+    (ope.to_csv(f"{PATH_CONNECT}entities_operateurs_current.csv", sep=";", 
+            index=False, encoding='UTF-8', na_rep='', decimal='.'))
 
 
 def entities_collab(entities_participation, tab=True):

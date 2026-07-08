@@ -1,12 +1,16 @@
 import numpy as np, pandas as pd
 from functions_shared import unzip_zip
 from config_path import PATH_SOURCE
-from constant_vars import ZIPNAME, FRAMEWORK
+from constant_vars import FRAMEWORK
 
 def legal_id_clean(entities_tmp):
+    """
+    For France only, clean legalRegNumber and VAT to try to extract SIREN number, 
+    and create a list of ID to check in source API
+    """
     print('### clean REGNUMBER/VAT')
     # nettoyage id
-    test= entities_tmp[entities_tmp['countryCode_parent']=='FR'][['generalPic', 'legalName', 'vat', 'legalRegNumber']].drop_duplicates()
+    test= entities_tmp.loc[entities_tmp['country_code']=='FRA', ['generalPic', 'legalName', 'vat', 'legalRegNumber']].drop_duplicates()
     test['reg']=np.where(test['legalRegNumber'].str.contains('^\\D+$'), None, test['legalRegNumber'])
     test['reg']=test['reg'].str.strip().replace('RNA','')
     test['id_a_verif']=test['reg'].str.replace('\\s+','',regex=True)
@@ -34,20 +38,27 @@ def legal_id_clean(entities_tmp):
     print(f"Size identification:{len(identification)}, size entities_tmp:{len(entities_tmp)}")
     return identification
 
-def entities_link(entities_tmp):
+def entities_link(source, entities_tmp):
+    """
+    For other countries, 
+    use the legalEntitiesLinks which many ID from source API (scanR, ror, grid...)
+    
+    """
     print("### clean LINKS entities")
-    entitiesLinks = unzip_zip(ZIPNAME, f"{PATH_SOURCE}{FRAMEWORK}/", 'legalEntitiesLinks.json', 'utf8')
+    entitiesLinks = unzip_zip(source, 'legalEntitiesLinks.json', 'utf8')
 
     entitiesLinks=pd.DataFrame(entitiesLinks).astype(str)
     entitiesLinks=entitiesLinks.merge(entities_tmp[['generalPic']].drop_duplicates(), how='inner', on='generalPic')
-    links=entitiesLinks[entitiesLinks['dataset'].isin(['GRID', 'ROR', 'CNRS research group', 'French national research structure repertory', 'SIREN','SIRET', 'Repertoire national des associations'])]
+
+    repositories = ['GRID', 'ROR', 'CNRS research group', 'French national research structure repertory', 'SIREN','SIRET', 'Repertoire national des associations']
+    links=entitiesLinks[entitiesLinks['dataset'].isin(repositories)]
 
     links=links.sort_values(['generalPic', 'dataset'], ascending=[True, True])
     links['freq'] = links.groupby('generalPic')['dataset'].transform('count')
     links=links.loc[~((links['freq']>1)&(links['dataset']=='GRID')), ['generalPic', 'freq', 'dataset', 'linkId']]
 
     links['freq'] = links.groupby('generalPic')['dataset'].transform('count')
-    links.loc[links['dataset']=='ROR', 'linkId']='R'+links['linkId']
+    # links.loc[links['dataset']=='ROR', 'linkId']='R'+links['linkId']
     links.loc[links['dataset']=='SIRET', 'linkId']=links['linkId'].str[0:9]
     links.loc[links['dataset']=='SIRET', 'dataset']='SIREN'
     links = links[['generalPic', 'linkId']].drop_duplicates()
@@ -57,10 +68,10 @@ def entities_link(entities_tmp):
 
 def list_to_check(identificaton):
     print("### create liste ID pour référentiel")
-    check_id_liste = pd.concat([identificaton[['generalPic','countryCode','country_code_mapping', 'countryCode_parent', 'id']].rename(columns={'id':'check_id'}).assign(stock_id='ref'), 
-                        identificaton[['generalPic','countryCode','country_code_mapping', 'countryCode_parent', 'id_a_verif']].rename(columns={'id_a_verif':'check_id'}).assign(stock_id='vat'), 
-                        identificaton[['generalPic','countryCode','country_code_mapping', 'countryCode_parent', 'id_a_verif_2']].rename(columns={'id_a_verif_2':'check_id'}).assign(stock_id='vat'), 
-                        identificaton[['generalPic','countryCode','country_code_mapping', 'countryCode_parent', 'linkId']].rename(columns={'linkId':'check_id'}).assign(stock_id='link')], 
+    check_id_liste = pd.concat([identificaton[['generalPic','countryCode','country_code_source', 'country_code', 'id']].rename(columns={'id':'check_id'}).assign(stock_id='ref'), 
+                        identificaton[['generalPic','countryCode','country_code_source', 'country_code', 'id_a_verif']].rename(columns={'id_a_verif':'check_id'}).assign(stock_id='vat'), 
+                        identificaton[['generalPic','countryCode','country_code_source', 'country_code', 'id_a_verif_2']].rename(columns={'id_a_verif_2':'check_id'}).assign(stock_id='vat'), 
+                        identificaton[['generalPic','countryCode','country_code_source', 'country_code', 'linkId']].rename(columns={'linkId':'check_id'}).assign(stock_id='link')], 
                                                                                      ignore_index=True)
     check_id_liste = check_id_liste[~check_id_liste.check_id.isnull()].drop_duplicates()
     check_id_liste.loc[check_id_liste.check_id.str.contains(';'), 'check_id'] = check_id_liste['check_id'].str.split(';')

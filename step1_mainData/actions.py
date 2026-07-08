@@ -1,16 +1,15 @@
-from constant_vars import ZIPNAME, FRAMEWORK
-from config_path import PATH_SOURCE
 from functions_shared import unzip_zip
 import pandas as pd, re, requests
 
 
-def action(chemin, act_list:list):
+def action(data, act_list:list):
+    """
+    1. simply action_code
+    2. MSCA destination_code and name are actions in  msca_actions.json  
+    """
+
     requests.packages.urllib3.disable_warnings(requests.packages.urllib3.exceptions.InsecureRequestWarning)
-
-    data = unzip_zip(ZIPNAME, chemin, "typeOfActions.json", 'utf8')
-    data = pd.DataFrame(data)  
     
-
     data = (data[data.typeOfActionSimplifiedCode.isin(act_list)][['typeOfActionSimplifiedCode', 'typeOfActionSimplifiedDescription']]
             .drop_duplicates()
             .rename(columns={'typeOfActionSimplifiedCode':'typeOfActionCode'}))
@@ -68,7 +67,14 @@ def action(chemin, act_list:list):
 
 
 
-def merged_actions(df):
+def merged_actions(source, df):
+    """
+    1. check action_code null and fix it
+    2. load nomenclature of actions
+    3. clean action code and name with function action() and merge with main df
+    4. load data_files/actions_name.json and merge to get action_name
+    
+    """
     print("\n### ACTIONS")
     # création de la liste des TOA présents dans propasals et projects
 
@@ -82,7 +88,8 @@ def merged_actions(df):
     act_code = list(df.typeOfActionCode.unique())
     act_code = [item for item in act_code if not(pd.isnull(item)) == True]
 
-    actions = action(f"{PATH_SOURCE}{FRAMEWORK}/", act_code)
+    data = unzip_zip(source, "typeOfActions.json", 'utf8')
+    actions = action(pd.DataFrame(data), act_code)
 
     # liste seules les TOA dans les bases proposals et projects + ajout table nomenclature
     actions = (actions[actions['typeOfActionCode'].isin(act_code)][

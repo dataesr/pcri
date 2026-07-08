@@ -1,14 +1,21 @@
 
-from constant_vars import ZIPNAME, FRAMEWORK
-from config_path import PATH_SOURCE, PATH_CONNECT
+from constant_vars import FRAMEWORK
+from config_path import PATH_SOURCE, PATH_CONNECT, PATH_WP
 from functions_shared import unzip_zip
 import requests, pandas as pd, numpy as np
 
-def call(chemin):
+
+def call(source):
+    """   
+    create table on calls with call_id, call_deadline, call_budget, expectedNbrProposals, workProgrammeCode, call_year, callId_new, workProg_new
+    simplify name of call and work programme to match with topic portal and project data, and extract year of call from callId
+  
+    """
+
     print("\n### CALLS")
     requests.packages.urllib3.disable_warnings(requests.packages.urllib3.exceptions.InsecureRequestWarning)
 
-    data = unzip_zip(ZIPNAME, chemin, "calls.json", 'utf8')
+    data = unzip_zip(source, "calls.json", 'utf8')
     data=pd.DataFrame(data)
 
     calls = data.drop(columns={'masterCallId', 'lastUpdateDate'}).drop_duplicates() 
@@ -33,6 +40,10 @@ def call(chemin):
 
 
 def calls_to_check(calls, call_id):
+    """
+    1. check if call_id in MERGED match with call in calls -> call_id and call_deadline
+    2. save in data_connect/calls.csv for tableau    
+    """
     print("\n### CALLS to CHECK")
     
     calls = (calls
