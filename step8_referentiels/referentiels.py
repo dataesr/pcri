@@ -2,7 +2,7 @@ def referentiels_load(snaf, ror_load=False, rnsr_load=False, sirene_load=False, 
     from step8_referentiels.ror import ror_import
     from step8_referentiels.sirene import sirene_import, sirene_concat
     from step8_referentiels.rnsr import rnsr_import
-    from config_path import PATH, PATH_MATCH
+    from paths import PATH, PATH_MATCH
     DUMP_PATH=f'{PATH}referentiel/'
 
     if ror_load==True:
@@ -25,7 +25,7 @@ def ref_externe_preparation(snaf, rnsr_adr_corr=False ):
 
     # from IPython.display import HTML
     # from pathlib import Path
-    from config_path import PATH, PATH_MATCH
+    from paths import PATH, PATH_MATCH
 
     # from step7_referentiels.countries import ref_countries
     from functions_shared import work_csv, prep_str_col, stop_word, my_country_code, com_iso3, timing

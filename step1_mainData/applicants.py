@@ -1,6 +1,6 @@
 
 from constant_vars import FRAMEWORK
-from config_path import PATH_SOURCE
+from paths import PATH_SOURCE
 import numpy as np, pandas as pd
 from functions_shared import bugs_excel
 

@@ -118,7 +118,7 @@ def persons_results_clean(df):
         )
 
     from step8_referentiels.paysage import paysage_prep
-    from config_path import PATH
+    from paths import PATH
     DUMP_PATH=f'{PATH}referentiel/'
     paysage = paysage_prep(DUMP_PATH)
     df=(df.merge(paysage[['nom_long', 'numero_ror', 'numero_paysage', 'country_code_map', 'num_nat_struct']].drop_duplicates(), 

@@ -1,4 +1,4 @@
-from config_path import PATH_SOURCE
+from paths import PATH_SOURCE
 from functions_shared import bugs_excel
 import pandas as pd, numpy as np
 

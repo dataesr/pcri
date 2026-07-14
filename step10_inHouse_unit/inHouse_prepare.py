@@ -1,4 +1,4 @@
-from config_path import PATH_DATA, PATH_REF, PATH_HARVEST
+from paths import PATH_DATA, PATH_REF, PATH_HARVEST
 from functions_shared import extract_json_from_file
 from config_api import ods_headers
 from remote_process.rnsr import get_rnsr_by_id

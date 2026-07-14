@@ -1,5 +1,5 @@
 from functions_shared import zipfile_ods, cols_order
-from config_path import PATH_CONNECT, PATH_CLEAN
+from paths import PATH_CONNECT, PATH_CLEAN
 import numpy as np, pandas as pd
 
 def collab_signed_ods(collab):

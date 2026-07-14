@@ -1,7 +1,7 @@
 
 import pandas as pd
 import functions_shared as bugs_excel
-from config_path import PATH_WORK
+from paths import PATH_WORK
 
 def data_analysis(prop, app, proj, part):
     """

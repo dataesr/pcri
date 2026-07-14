@@ -1,4 +1,4 @@
-from config_path import PATH_WORK
+from paths import PATH_WORK
 from functions_shared import work_csv
 import pandas as pd, numpy as np
 

@@ -1,5 +1,5 @@
 import pandas as pd, numpy as np
-from config_path import PATH_CONNECT
+from paths import PATH_CONNECT
 from functions_shared import cols_order, zipfile_ods
 
 

@@ -2,7 +2,7 @@ import requests, json, pandas as pd, ast, os
 import shutil
 from tempfile import mkdtemp
 from zipfile import ZipFile
-from config_path import PATH_REF, PATH
+from paths import PATH_REF, PATH
 from functions_shared import work_csv
 from dotenv import load_dotenv
 load_dotenv()

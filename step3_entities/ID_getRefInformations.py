@@ -1,5 +1,5 @@
 import pandas as pd
-from config_path import PATH_HARVEST
+from paths import PATH_HARVEST
 from remote_process.paysage import IDpaysage_info,IDpaysage_parent,IDpaysage_siret,IDpaysage_successor,check_var_null
 from dotenv import load_dotenv
 load_dotenv()
@@ -56,7 +56,7 @@ def paysage_getRefInfo():
     return paysage, paysage_siret
 
 def ID_getRefInfo(lid_source):
-    from config_path import PATH_REF
+    from paths import PATH_REF
     from remote_process.ror import get_ror, ror_cleaning
     from remote_process.sirene import get_sirene, get_siret_siege
 

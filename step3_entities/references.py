@@ -1,5 +1,5 @@
 import pandas as pd, numpy as np, requests, time
-from config_path import PATH_REF
+from paths import PATH_REF
 from config_api import paysage_headers
 
 def ref_source_load(sheet_load: str):

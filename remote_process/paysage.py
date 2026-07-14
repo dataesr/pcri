@@ -1,5 +1,5 @@
 import time, requests, pandas as pd, copy, numpy as np, re
-from config_path import PATH_HARVEST
+from paths import PATH_HARVEST
 from remote_process.grist import categoriesG
 from functions_shared import trace_chain
 from retry import retry
@@ -582,7 +582,7 @@ def IDpaysage_category():
 def get_mires():
     import requests, pandas as pd
     from config_api import paysage_headers
-    from config_path import PATH_REF
+    from paths import PATH_REF
     from dotenv import load_dotenv
     load_dotenv()
 

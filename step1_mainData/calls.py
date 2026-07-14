@@ -1,6 +1,6 @@
 
 from constant_vars import FRAMEWORK
-from config_path import PATH_SOURCE, PATH_CONNECT, PATH_WP
+from paths import PATH_SOURCE, PATH_CONNECT, PATH_WP
 from functions_shared import unzip_zip
 import requests, pandas as pd, numpy as np
 

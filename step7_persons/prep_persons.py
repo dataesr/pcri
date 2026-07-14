@@ -4,9 +4,10 @@ def persons_preparation(csv_date):
     warnings.filterwarnings("ignore", "This pattern is interpreted as a regular expression, and has match groups")
     pd.options.mode.copy_on_write = True
     from constant_vars import FRAMEWORK
-    from config_path import PATH_SOURCE, PATH_CLEAN
+    from paths import PATH_SOURCE, PATH_CLEAN
+    from config_url import grist_url
     from functions_shared import unzip_zip, my_country_code, country_iso_shift, prop_string
-    
+    from remote_process.grist import personsG, add_records_to_grist
 
     ###############################
     participation = pd.read_pickle(f"{PATH_CLEAN}participation_current.pkl")
@@ -71,8 +72,8 @@ def persons_preparation(csv_date):
         return s
 
     cols = ['first_name', 'last_name']
-    perso_part[f'{cols}_clean']=perso_part[f'{cols}_clean'].apply(fix_string)
-
+    for c in cols:
+        perso_part[c]=perso_part[c].apply(fix_string)
 
 
     ####################################
@@ -106,7 +107,6 @@ def persons_preparation(csv_date):
     def empty_pic(df, participation, stage):
         if any(df.generalPic.isnull()):
             print(f"1 - size rows with generelPic null for {stage}: {len(df[df.generalPic.isnull()])}")
-            df.loc[df.generalPic.isnull(), 'generalPic'] = df.loc[df.generalPic.isnull(), 'pic']
 
             # gestion empty generalPic for principal investigator
             x=df.loc[(df.generalPic.isnull())&(df.role=='principal investigator')].project_id.unique()
@@ -323,74 +323,97 @@ def persons_preparation(csv_date):
     # fill missing value with other df part/app
     print(f"\n### GENDER/TITLE missing")
     def gender_title_missing(part, app):
-        import json
-        from remote_process.gender_determine import gender_by_first_name
-        from functions_shared import work_csv
-
-        cl=['gender', 'title_clean']
-        for i in cl:
-            tab=(part.loc[~part[i].isnull(), ['project_id', 'contact', i]].drop_duplicates()
-            .merge(app.loc[~app[i].isnull(), ['project_id', 'contact', i]].drop_duplicates(),
-                    how='inner', on=['project_id', 'contact'], suffixes=('_x','_y'))
-                    .drop_duplicates())
-
-            if any(tab.loc[(tab[f"{i}_x"].isnull())&(~tab[f"{i}_y"].isnull())]):
-                tab.loc[(tab[f"{i}_x"].isnull())&(~tab[f"{i}_y"].isnull()), f"{i}_x"] = tab[f"{i}_y"]
-            if any(tab.loc[(~tab[f"{i}_x"].isnull())&(tab[f"{i}_y"].isnull())]):
-                tab.loc[(~tab[f"{i}_x"].isnull())&(tab[f"{i}_y"].isnull()), f"{i}_y"] = tab[f"{i}_x"]
-
-            part = part.merge(tab[['project_id', 'contact', f"{i}_x"]].drop_duplicates(), how='left', on=['project_id', 'contact'])
-            part.loc[part[i].isnull(), i] = part.loc[part[i].isnull(), f"{i}_x"]
-            part.drop(columns=f"{i}_x", inplace=True)
-            app = app.merge(tab[['project_id', 'contact', f"{i}_y"]].drop_duplicates(), how='left', on=['project_id', 'contact'])
-            app.loc[app[i].isnull(), i] = app.loc[app[i].isnull(), f"{i}_y"]
-            app.drop(columns=f"{i}_y", inplace=True)
+        from step7_persons.gender_name import gender_by_first_name
+        # from remote_process.gender_determine import gender_by_first_name
+        # from functions_shared import work_csv
 
 
-        gender_f=json.load(open('data_files/gender_fixed.json'))
-        mapping = {
-            item['first_name']: item['gender']
-            for item in gender_f
-        }
+        combined = pd.concat([part[['project_id', 'contact', 'gender', 'title_clean']].drop_duplicates(), 
+                              app[['project_id', 'contact', 'gender', 'title_clean']].drop_duplicates()])  # perso_part est concaténé EN PREMIER
+        
+        ref = (combined
+                .groupby(['project_id', 'contact'])[['gender', 'title_clean']]
+                .first()  # prend la 1ère valeur NON-NULLE rencontrée dans l'ordre du df
+                .reset_index()
+            )
+        
+        print(f"- size part before: {len(part)}")
+        part = (part.drop(columns=['gender', 'title_clean']).drop_duplicates()
+                .merge(ref, how='left', on=['project_id', 'contact'])
+        )
+        print(f"- size part after merge gender clean: {len(part)}")
 
-        def update_gender(row):
-            first_name = row['first_name']
-            current_gender = row['gender']
+        print(f"- size app before: {len(app)}")
+        app = (app.drop(columns=['gender', 'title_clean']).drop_duplicates()
+                .merge(ref, how='left', on=['project_id', 'contact'])
+        )
+        print(f"- size app after merge gender clean: {len(app)}")        
+        # cl=['gender', 'title_clean']
+        # for i in cl:
+        #     tab=(part.loc[~part[i].isnull(), ['project_id', 'contact', i]].drop_duplicates()
+        #     .merge(app.loc[~app[i].isnull(), ['project_id', 'contact', i]].drop_duplicates(),
+        #             how='inner', on=['project_id', 'contact'], suffixes=('_x','_y'))
+        #             .drop_duplicates())
 
-            # Vérifie si le prénom existe dans le mapping et si le genre actuel est invalide
-            if pd.notna(first_name) and first_name.lower() in mapping:
-                if pd.isna(current_gender):
-                    return mapping[first_name.lower()]
-            return current_gender
+        #     if any(tab.loc[(tab[f"{i}_x"].isnull())&(~tab[f"{i}_y"].isnull())]):
+        #         tab.loc[(tab[f"{i}_x"].isnull())&(~tab[f"{i}_y"].isnull()), f"{i}_x"] = tab[f"{i}_y"]
+        #     if any(tab.loc[(~tab[f"{i}_x"].isnull())&(tab[f"{i}_y"].isnull())]):
+        #         tab.loc[(~tab[f"{i}_x"].isnull())&(tab[f"{i}_y"].isnull()), f"{i}_y"] = tab[f"{i}_x"]
 
-            # Applique la fonction au DataFrame
-        part['gender'] = part.apply(update_gender, axis=1)
-        app['gender'] = app.apply(update_gender, axis=1)
+        #     part = part.merge(tab[['project_id', 'contact', f"{i}_x"]].drop_duplicates(), how='left', on=['project_id', 'contact'])
+        #     part.loc[part[i].isnull(), i] = part.loc[part[i].isnull(), f"{i}_x"]
+        #     part.drop(columns=f"{i}_x", inplace=True)
+        #     app = app.merge(tab[['project_id', 'contact', f"{i}_y"]].drop_duplicates(), how='left', on=['project_id', 'contact'])
+        #     app.loc[app[i].isnull(), i] = app.loc[app[i].isnull(), f"{i}_y"]
+        #     app.drop(columns=f"{i}_y", inplace=True)
+        
+        p = personsG['Gender_by_first_name'][['first_name', 'gender', 'drop_name']].drop_duplicates()
+        
+        def update_gender(df):
+            df = pd.merge(df, p, how='left', on='first_name', suffixes=('', '_y'))
+            df['gender'] = df['gender'].fillna(df['gender_y'])
+            df.drop(columns='gender_y', inplace=True)
+            return df
+        
+        # Applique la fonction au DataFrame
+        part = update_gender(part)
+        app = update_gender(app)
 
-        l=list(set(list(part.loc[(part.country_code=='FRA')&(part.gender.isnull())].first_name.unique())+list(app.loc[(app.country_code=='FRA')&(app.gender.isnull())].first_name.unique())))
+        l=list(set(list(part.loc[(part.gender.isnull())&(part.drop_name.isnull())].first_name.unique())+list(app.loc[(app.gender.isnull())&(app.drop_name.isnull())].first_name.unique())))
         # l=part.loc[(part.country_code=='FRA')&(part.gender.isnull())].first_name.unique()
         print(f"- size first_name list: {len(l)}")
         res=gender_by_first_name(l)
-        work_csv(pd.DataFrame(res), 'gender_part')
+
+        if res:
+            res = pd.DataFrame(res)[['first_name', 'gender', 'probability']].assign(drop_name=False, be_checked=1).drop_duplicates()
+            print(f"- ATTENTION ! check {len(res)} first names in gender_part dataset in grist -> reload personsG and execute again persons script" )
+            add_records_to_grist(res, grist_url, 'pcri', 'persons', 'gender_by_first_name')
+            
         return part, app
 
     perso_part, perso_app = gender_title_missing(perso_part, perso_app)
 
 
+    def researchers_keeped(df):
+        df['is_pi_or_fellow'] = df['role'].isin(['principal investigator', 'fellow'])
+        result = df.groupby('project_id')['is_pi_or_fellow'].any().reset_index()
+
+        tmp=perso_part.loc[perso_part.project_id.isin(result.loc[result.is_pi_or_fellow==True])&(perso_part.role!='main_contact')]
+
+
+
+
     print(f"\n### EXPORT final datasets")
-    (perso_part[['project_id', 'generalPic', 'role', 'first_name', 'last_name',
-        'title_clean', 'gender', 'email', 'tel_clean', 'domaine_email', 'orcid_id', 'birth_country_code',
-        'nationality_country_code', 'host_country_code', 'sending_country_code', 'country_code2',
-        'stage', 'contact', 'country_code', 'institution_shift', 'call_year', 'thema_code', 'action_code', 'destination_code', 'panel_code', 'panel_regroupement_code',
-        'entities_id', 'entities_name', 'operateur_num', 'operateur_name', 'numero_national_de_structure', 'country_code_source']]
+    cols=['project_id', 'generalPic', 'role', 'first_name', 'last_name', 'contact', 'nationality_country_code',
+          'title_clean', 'gender', 'tel_clean', 'email', 'domaine_email', 'orcid_id',
+          'stage', 'country_code2', 'country_code', 
+          'institution_shift', 'entities_id', 'entities_name', 'operateur_num', 'operateur_name', 'numero_national_de_structure', 'country_code_source']
+
+    (perso_part[cols + ['birth_country_code', 'host_country_code', 'sending_country_code']]
         .drop_duplicates()
         .to_pickle(f"{PATH_CLEAN}persons_participants.pkl"))
 
-    (perso_app[['project_id', 'generalPic', 'role', 'first_name', 'last_name', 'nationality_country_code',
-        'title_clean', 'gender', 'tel_clean', 'email', 'domaine_email', 'researcher_id', 'orcid_id',
-        'google_scholar_id', 'scopus_author_id', 'stage', 'country_code2',
-        'contact', 'country_code', 'institution_shift', 'call_year', 'thema_code', 'action_code', 'destination_code', 'panel_code', 'panel_regroupement_code',
-        'entities_id', 'entities_name', 'operateur_num', 'operateur_name', 'numero_national_de_structure', 'country_code_source']]
+    (perso_app[cols + ['researcher_id', 'google_scholar_id', 'scopus_author_id']]
         .drop_duplicates()
         .to_pickle(f"{PATH_CLEAN}persons_applicants.pkl"))
 

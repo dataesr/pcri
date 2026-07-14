@@ -1,5 +1,5 @@
 import numpy as np, pandas as pd
-from config_path import PATH_ODS
+from paths import PATH_ODS
 from functions_shared import cols_order, zipfile_ods, select_cols_FP, rename_cols_FP, df_order_cols_FP
 from remote_process.ID_getSourceRef import *
 

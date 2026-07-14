@@ -1,5 +1,5 @@
 import pandas as pd, os
-from config_path import PATH_SOURCE, PATH_WORK, PATH_HARVEST
+from paths import PATH_SOURCE, PATH_WORK, PATH_HARVEST
 from functions_shared import zipfile_ods, cols_order, load_last_file_csv, cols_select
 
 def projects_ods(projects, participation, calls, countries, h20_p, FP6_p, FP7_p):

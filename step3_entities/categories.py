@@ -1,6 +1,6 @@
 import pandas as pd, json, numpy as np
 from config_url import grist_url
-from config_path import PATH_WORK, PATH_HARVEST
+from paths import PATH_WORK, PATH_HARVEST
 from remote_process.paysage import get_paysageObj
 from remote_process.grist import add_records_to_grist, update_doc_grist, categoriesG
 
@@ -129,7 +129,7 @@ def cat_entreprise(df):
 
 
 def naf_etab_sirene(df):
-    from config_path import PATH
+    from paths import PATH
     import pandas as pd
     naf = pd.read_csv(f"{PATH}nomenclatures/naf/naf_nomenclature.csv", sep=';', encoding='ANSI')
     df = (df.merge(naf, how='left', left_on='naf_et', right_on='naf')

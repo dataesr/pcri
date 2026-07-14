@@ -1,6 +1,6 @@
 import pandas as pd, numpy as np
 from functions_shared import zipfile_ods, select_cols_FP, rename_cols_FP, df_order_cols_FP, FP_suivi
-from config_path import PATH_CONNECT
+from paths import PATH_CONNECT
 
 
 def entities_preparation(entities_part, h20):

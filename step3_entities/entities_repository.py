@@ -1,5 +1,5 @@
 
-from config_path import PATH_CLEAN
+from paths import PATH_CLEAN
 from config_url import grist_url
 from remote_process.grist import load_to_grist
 from remote_process.sirene import get_sirene

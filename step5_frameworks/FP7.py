@@ -1,5 +1,5 @@
 import requests, pandas as pd
-from config_path import PATH_SOURCE, PATH_CLEAN, PATH
+from paths import PATH_SOURCE, PATH_CLEAN, PATH
 from step3_entities.references import *
 from step3_entities.merge_referentiels import *
 from step3_entities.categories import *

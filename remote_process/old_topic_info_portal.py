@@ -2,7 +2,7 @@ import re, pandas as pd
 import time
 import math
 from bs4 import BeautifulSoup
-from config_path import PATH_WP
+from paths import PATH_WP
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait

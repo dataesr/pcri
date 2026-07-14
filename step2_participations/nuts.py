@@ -1,4 +1,4 @@
-from config_path import PATH_SOURCE, PATH_REF
+from paths import PATH_SOURCE, PATH_REF
 from constant_vars import FRAMEWORK
 from functions_shared import unzip_zip
 import pandas as pd, numpy as np

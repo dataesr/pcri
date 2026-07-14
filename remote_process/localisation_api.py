@@ -1,5 +1,5 @@
 def geonames_api(df,cc):
-    from config_path import PATH_HARVEST
+    from paths import PATH_HARVEST
     import requests, pandas as pd
     import time
     from datetime import datetime

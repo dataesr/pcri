@@ -1,6 +1,6 @@
 import numpy as np, pandas as pd
 from functions_shared import unzip_zip
-from config_path import PATH_SOURCE
+from paths import PATH_SOURCE
 from constant_vars import FRAMEWORK
 
 def legal_id_clean(entities_tmp):

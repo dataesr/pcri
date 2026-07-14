@@ -1,7 +1,7 @@
 
 def ref_countries(zipname):
     from constant_vars import FRAMEWORK
-    from config_path import PATH_SOURCE
+    from paths import PATH_SOURCE
     from functions_shared import unzip_zip
     from config_api import ODS_API
     import pandas as pd, requests, pycountry

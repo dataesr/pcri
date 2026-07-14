@@ -8,7 +8,7 @@ def H2020_process():
     from step3_entities.merge_referentiels import merge_id_to_ref, merge_pic
     from remote_process.ID_getSourceRef import get_source_ID, source_ID_new_and_check
     # from step4_calculations.collaborations import collab_base, collab_cross
-    from config_path import PATH_SOURCE, PATH_CLEAN, PATH_REF, PATH_CONNECT
+    from paths import PATH_SOURCE, PATH_CLEAN, PATH_REF, PATH_CONNECT
     from functions_shared import unzip_zip, my_country_code
 
     def h20_nom_load():
@@ -762,7 +762,7 @@ def H2020_process():
     pd.DataFrame(cordis_type_null).to_csv(f"{PATH_CONNECT}cordis_type_null.csv", sep=';')
 
     def h20_proj_success(proj, participation):
-        from config_path import PATH_CLEAN
+        from paths import PATH_CLEAN
 
         
         participation[['participation_nuts', 'region_1_name', 'region_2_name', 'regional_unit_name']] = participation[['participation_nuts', 'region_1_name', 'region_2_name', 'regional_unit_name']].fillna('')

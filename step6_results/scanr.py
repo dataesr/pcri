@@ -212,7 +212,7 @@ def scanr_update(entities_participation):
     # pour ajour labo intégrer la notion de co-participant dans participates_as
     participants = [from_ods_to_185_participant(element) for element in data_participants]
 
-    from config_path import PATH_REF
+    from paths import PATH_REF
     ror2grid = pd.read_csv(f'{PATH_REF}grid_ror.csv').to_dict("records")
     def get_grid_from_ror(identifier):
         res = next(iter([e.get('grid') for e in ror2grid if e.get('ror') == identifier]), identifier)

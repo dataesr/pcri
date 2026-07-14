@@ -1,5 +1,5 @@
 import requests, math, json, pandas as pd
-from config_path import PATH_WP
+from paths import PATH_WP
 
 
 def fetch_page(url, headers, files, page_number: int, page_size: int = 50):

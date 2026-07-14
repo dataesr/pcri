@@ -1,4 +1,4 @@
-from config_path import PATH_CONNECT, PATH_CLEAN
+from paths import PATH_CONNECT, PATH_CLEAN
 from constant_vars import FRAMEWORK
 import requests, pandas as pd, numpy as np, datetime as dt
 

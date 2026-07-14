@@ -1,4 +1,4 @@
-from config_path import PATH_CLEAN, PATH_SOURCE, PATH_WP
+from paths import PATH_CLEAN, PATH_SOURCE, PATH_WP
 from constant_vars import FRAMEWORK
 from functions_shared import work_csv
 import pandas as pd, numpy as np, json

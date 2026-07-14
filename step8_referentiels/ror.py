@@ -8,7 +8,7 @@ def ror_zipname():
 
 def ror_import(DUMP_PATH):
     
-    from config_path import PATH
+    from paths import PATH
     import requests
     site = requests.get('https://zenodo.org/api/records/8436953/files')
     r = site.json()
