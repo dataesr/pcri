@@ -1,5 +1,5 @@
 import numpy as np, pandas as pd
-from config_path import PATH_CLEAN, PATH_REF
+from paths import PATH_CLEAN, PATH_REF
 from functions_shared import capitalize_if_all_upper
 # from step2_participations.nuts import *
 

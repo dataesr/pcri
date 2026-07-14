@@ -1,4 +1,4 @@
-from config_path import PATH_REF, PATH_HARVEST
+from paths import PATH_REF, PATH_HARVEST
 from config_url import sirene_url
 from config_api import sirene_headers
 from step3_entities.categories import legal_category

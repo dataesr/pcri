@@ -1,7 +1,7 @@
 
 import math, requests, time, pickle
 from retry import retry
-from config_path import PATH_HARVEST
+from paths import PATH_HARVEST
 
 @retry(delay=100, tries=3)
 def get_all_from_openalex(url):

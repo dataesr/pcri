@@ -377,11 +377,12 @@ categoriesG = {}
 communesG = {}
 countryG = {}
 idsG = {}
+personsG = {}
 
 _initialized = False
 
 def init_data_grist():
-    global geoG, categoriesG, communesG, countryG, idsG, _initialized
+    global geoG, categoriesG, communesG, countryG, idsG, personsG, _initialized
 
     if _initialized:
         return
@@ -393,6 +394,7 @@ def init_data_grist():
     communesG.update(load_grist_tables(docs_dict['communes']))
     countryG.update(load_grist_tables(docs_dict['pays']))
     idsG.update(load_grist_tables(docs_dict['identification']))
+    personsG.update(load_grist_tables(docs_dict['persons']))
 
     _initialized = True
 

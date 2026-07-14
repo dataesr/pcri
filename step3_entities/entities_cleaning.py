@@ -1,5 +1,5 @@
 import pandas as pd, numpy as np, re, json
-from config_path import PATH_HARVEST
+from paths import PATH_HARVEST
 from unidecode import unidecode
 from functions_shared import clean_invisible_chars, work_csv, check_if_only_charact_special, clean_quotation_marks, create_archive_zip
 from remote_process.localisation_api import geonames_api

@@ -1,5 +1,5 @@
 import time, requests, pandas as pd, copy, numpy as np
-from config_path import PATH_HARVEST, PATH_REF
+from paths import PATH_HARVEST, PATH_REF
 from retry import retry
 from dotenv import load_dotenv
 load_dotenv()
@@ -17,7 +17,7 @@ def get_paysageODS(dataset):
 #############################################################################################
 def ID_to_IDpaysage(lid_source, siren_siret=[]):
     import pandas as pd
-    from config_path import PATH_HARVEST
+    from paths import PATH_HARVEST
     from remote_process.paysage import get_paysageODS
 
     print("## harvest IDpaysage from ID")
@@ -499,7 +499,7 @@ def IDpaysage_category(paysage, df_old=False):
 def get_mires():
     import requests, pandas as pd
     from config_api import paysage_headers
-    from config_path import PATH_REF
+    from paths import PATH_REF
     from dotenv import load_dotenv
     load_dotenv()
 

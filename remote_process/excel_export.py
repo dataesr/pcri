@@ -1,4 +1,4 @@
-from config_path import PATH_HARVEST
+from paths import PATH_HARVEST
 import pandas as pd
 from datetime import datetime
 from openpyxl import load_workbook

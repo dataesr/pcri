@@ -1,5 +1,5 @@
 import json, pandas as pd
-from config_path import PATH_WORK, PATH_HARVEST
+from paths import PATH_WORK, PATH_HARVEST
 
 
 def panel_lib_update():
@@ -10,7 +10,7 @@ def panel_lib_update():
      - update: if panel_code exist in base, update with erc info
 
     """
-    from config_path import PATH
+    from paths import PATH
     import PyPDF2, re, json
 
     base = json.load(open('data_files/panels.json', 'r', encoding='UTF-8'))
@@ -91,7 +91,7 @@ def merged_panels(df):
 
 # def parse_and_fill_text_to_dataframe():
 #     import numpy as np, pandas as pd
-#     from config_path import PATH_SOURCE
+#     from paths import PATH_SOURCE
 #     from constant_vars import FRAMEWORK
     
 #     test=f"{PATH_SOURCE}{FRAMEWORK}/msca_Keywords.txt"

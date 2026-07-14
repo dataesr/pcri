@@ -1,7 +1,7 @@
 from functions_shared import get_gs, work_csv, unzip_zip
 from remote_process.localisation_api import geonames_api
 from reference_data import geoG
-from config_path import PATH_HARVEST, PATH_REF
+from paths import PATH_HARVEST, PATH_REF
 import string, json, pandas as pd, requests, ast, unicodedata, re, numpy as np
 
 

@@ -1,5 +1,5 @@
 .vscode
-config_path.py
+config_local.py
 config_url.py
 test.py
 TEST2.py

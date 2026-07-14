@@ -3,7 +3,7 @@ pd.options.mode.copy_on_write = True
 from IPython.display import HTML
 
 # from api_requests.matcher import matcher
-from config_path import PATH, PATH_REF, PATH_MATCH, PATH_CLEAN
+from paths import PATH, PATH_REF, PATH_MATCH, PATH_CLEAN
 from step8_referentiels.referentiels import referentiels_load, ref_externe_preparation
 from step9_affiliations.prep_entities import entities_preparation
 from functions_shared import work_csv
@@ -36,7 +36,7 @@ S_PKL = (pd.concat([S_PKL.mask(S_PKL=='')[['siren', 'naf_et']].rename(columns={'
 # struct_et = pd.read_pickle(f'{PATH_MATCH}struct_et.pkl')
 
 def data_import():
-    from config_path import PATH_MATCH,  PATH_CLEAN
+    from paths import PATH_MATCH,  PATH_CLEAN
     proj = pd.read_pickle(f"{PATH_CLEAN}projects_current.pkl")
     entities_all = pd.read_pickle(f'{PATH_MATCH}entities_all.pkl')
     print(f"size entities_all init: {len(entities_all)}")
@@ -199,7 +199,7 @@ print(f"size entities complete: {len(tmp)}")
 ############################################
 # columns rename
 def cols_select_and_rename(df, table_out):
-    from config_path import PATH_MATCH
+    from paths import PATH_MATCH
     xl_path = f"{PATH_MATCH}vars_rename.xlsx"
     tt = pd.read_excel(xl_path, sheet_name=table_out)
     d = dict(zip(tt['col_in'], tt['col_out']))

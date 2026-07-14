@@ -7,7 +7,7 @@ def sirene_import(DUMP_PATH, naf_list):
     import requests, pandas as pd
     requests.packages.urllib3.disable_warnings(requests.packages.urllib3.exceptions.InsecureRequestWarning)  
     from config_api import sirene_headers
-    from config_path import PATH_REF
+    from paths import PATH_REF
     from retry import retry
     @retry(delay=100, tries=3)
 

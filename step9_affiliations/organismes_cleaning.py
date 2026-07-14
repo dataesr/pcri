@@ -1,6 +1,6 @@
 def organismes_back(year):
     import pandas as pd, numpy as np, requests
-    from config_path import PATH_ORG
+    from paths import PATH_ORG
     from functions_shared import prep_str_col
     requests.packages.urllib3.disable_warnings(requests.packages.urllib3.exceptions.InsecureRequestWarning)
 

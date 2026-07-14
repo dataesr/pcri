@@ -5,7 +5,7 @@ def country_load(source, liste_country):
     add country name in fr, add article in fr, add ZOE and ZOI for orga europeennes et internationales
     return a dataframe with countryCode, countryCode_iso3, country_name_en, countryCode_parent, country_code, country_association_code_2020, country_association_name_2020_en, country_group_association_code_2020, country_group_association_name_2020_en, country_association_code, country_association_name_en, country_group_association_code, country_group_association_name_en, country_name_fr, article_fr
     """
-    from config_path import PATH_SOURCE, PATH_CONNECT, PATH_CLEAN
+    from paths import PATH_SOURCE, PATH_CONNECT, PATH_CLEAN
     from functions_shared import unzip_zip, my_country_code
     import json, pandas as pd, numpy as np
 

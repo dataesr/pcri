@@ -1,5 +1,5 @@
 import pandas as pd, numpy as np, json
-from config_path import PATH_CONNECT
+from paths import PATH_CONNECT
 from functions_shared import zipfile_ods
 
 def evol_preparation(FP6, FP7, h20, projects_current):

@@ -1,5 +1,5 @@
 import pandas as pd, numpy as np, json
-from config_path import PATH_CLEAN, PATH_SOURCE, PATH
+from paths import PATH_CLEAN, PATH_SOURCE, PATH
 from step5_frameworks.functions_shared import *
 
 

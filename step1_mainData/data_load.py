@@ -1,7 +1,7 @@
 import pandas as pd, numpy as np, os
 from functions_shared import unzip_zip, del_list_in_col, columns_comparison, gps_col, num_to_string, bugs_excel, clean_keyword, work_csv
 from constant_vars import FRAMEWORK
-from config_path import PATH_CONNECT, PATH_CLEAN
+from paths import PATH_CONNECT, PATH_CLEAN
 
 def date_load(source):
     """

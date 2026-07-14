@@ -4,7 +4,7 @@ def entities_preparation(zipname):
     from IPython.display import HTML
     from functions_shared import stop_word, unzip_zip, prep_str_col, work_csv, adr_tag
     from constant_vars import FRAMEWORK
-    from config_path import PATH_MATCH, PATH_SOURCE, PATH_CLEAN, PATH_ORG, PATH_WORK
+    from paths import PATH_MATCH, PATH_SOURCE, PATH_CLEAN, PATH_ORG, PATH_WORK
     from remote_process.matcher import matcher
 
     print(f"### IMPORT datasets")

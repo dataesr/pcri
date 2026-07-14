@@ -16,7 +16,7 @@ UPDATE_FP=False # True -> to update FP6, FP7, H2020 data, False -> to load last 
 ZIPNAME = last_data_zip(PATH_SOURCE, FRAMEWORK, 'json')
 SOURCE_JSON = f"{PATH_SOURCE}{FRAMEWORK}/{ZIPNAME}"
 extractDate = date_load(SOURCE_JSON)
-
+CSV_PERSONS='20260616'
 
 #################################
 if FETCH_WEB_DATA==True:
@@ -375,7 +375,7 @@ file_name = f"{PATH_CLEAN}entities_info_current2.pkl"
 with open(file_name, 'wb') as file:
     pd.to_pickle(entities_info, file)
 
-# entities_info = pd.read_pickle(f"{PATH_CLEAN}entities_info_current2.pkl")
+entities_info = pd.read_pickle(f"{PATH_CLEAN}entities_info_current2.pkl")
 
 # STEP4 - INDICATEURS
 proj_erc = (projects.loc[projects['action_code']=='ERC', ['project_id', 'destination_code']]
@@ -384,7 +384,13 @@ part_step = participations_calc(lien, proj_erc, entities_info)
 proj_no_coord = proj_no_coord(projects)
 
 
-#### Finalisation de participation 
+"""
+Finalisation de participation 
+- add RNSR
+- add landscape 
+
+"""
+ 
 #### add rnsr
 ## si besoin actualisation lancer entities_in_house.py
 
@@ -392,9 +398,13 @@ participation = participations_finalize(part_step, proj_no_coord)
 del part_step
 
 
-# persons
-CSV_DATE='20260616'
-persons_preparation(CSV_DATE)
+
+
+
+"""
+persons script 
+"""
+persons_preparation(CSV_PERSONS)
 
 
 perso_part = pd.read_pickle(f"{PATH_CLEAN}persons_participants.pkl")

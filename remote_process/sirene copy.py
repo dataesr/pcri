@@ -1,5 +1,5 @@
 from remote_process.ID_getSourceRef import sourcer_ID
-from config_path import PATH_HARVEST, PATH_REF
+from paths import PATH_HARVEST, PATH_REF
 from config_url import sirene_url
 import time, requests, pandas as pd
 from ratelimit import limits, sleep_and_retry

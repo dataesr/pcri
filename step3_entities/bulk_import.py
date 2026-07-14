@@ -1,4 +1,4 @@
-from config_path import PATH_WORK
+from paths import PATH_WORK
 from functions_shared import convert_lambert_to_gps, chunkify, upper_word_in_text
 from remote_process.grist import communesG, countryG
 import pandas as pd, numpy as np, json, datetime

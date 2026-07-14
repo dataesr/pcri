@@ -1,7 +1,7 @@
 # table topics'''
 
 from constant_vars import FRAMEWORK
-from config_path import PATH_SOURCE, PATH_CLEAN, PATH_WP
+from paths import PATH_SOURCE, PATH_CLEAN, PATH_WP
 from functions_shared import unzip_zip, clean_text
 import pandas as pd, numpy as np, json, re
 

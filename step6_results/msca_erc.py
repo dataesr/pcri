@@ -1,5 +1,5 @@
 import pandas as pd, numpy as np, json
-from config_path import PATH_CONNECT
+from paths import PATH_CONNECT
 from functions_shared import entreprise_group_cleaning, FP_suivi
 
 

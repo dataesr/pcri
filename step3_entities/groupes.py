@@ -1,4 +1,4 @@
-from config_path import PATH_REF
+from paths import PATH_REF
 
 
 def groupe_treatment(df, output):

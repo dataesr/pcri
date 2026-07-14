@@ -5,7 +5,7 @@ from functions_shared import work_csv
 from remote_process.localisation_api import fr_geocode
 from remote_process.grist import geoG, communesG, add_records_to_grist, update_doc_grist
 from config_url import grist_url
-from config_path import PATH_HARVEST
+from paths import PATH_HARVEST
 # ============================================================
 # INITIALISATION UNE SEULE FOIS (hors fonction)
 # ============================================================

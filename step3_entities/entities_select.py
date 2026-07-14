@@ -1,5 +1,5 @@
 import pandas as pd, numpy as np
-from config_path import PATH_WORK
+from paths import PATH_WORK
 from remote_process.ID_getSourceRef import *
 
 

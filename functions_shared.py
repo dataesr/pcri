@@ -41,7 +41,7 @@ def del_list_in_col(df, var_old:str, var_new:str):
     return df.drop(var_old, axis=1)
 
 def work_csv(df, file_csv_name):
-    from config_path import PATH_WORK
+    from paths import PATH_WORK
     name = file_csv_name
     return df.to_csv(f"{PATH_WORK}{name}.csv", sep=';', na_rep='', encoding='utf-8', index=False)
 
@@ -112,14 +112,14 @@ def bugs_excel(df, chemin, name_sheet):
 
 def cols_select(FP, xl_sheetname):
     import pandas as pd
-    from config_path import PATH_ODS
+    from paths import PATH_ODS
     xl_path = f"{PATH_ODS}colonnes_ordres_par_jeux_ods.xlsx"
     df = pd.read_excel(xl_path, sheet_name=xl_sheetname, dtype={'order':int})
     return df[['vars', FP, 'order']]
 
 def cols_order(df, xl_sheetname):
     import pandas as pd
-    from config_path import PATH_ODS
+    from paths import PATH_ODS
     xl_path = f"{PATH_ODS}colonnes_ordres_par_jeux_ods.xlsx"
     colorder = pd.read_excel(xl_path, sheet_name=xl_sheetname, dtype={'order':int})
     colorder=colorder.sort_values('order')
@@ -148,7 +148,7 @@ def df_order_cols_FP(FP, file_ods, df):
 
 def zipfile_ods(df, file_export):
     import zipfile
-    from config_path import PATH_ODS
+    from paths import PATH_ODS
     with zipfile.ZipFile(f'{PATH_ODS}{file_export}.zip', 'w', compression=zipfile.ZIP_DEFLATED) as z:
         with z.open(f'{file_export}.csv', 'w', force_zip64=True) as f:
             df.to_csv(f, sep=';', encoding='utf-8', index=False, na_rep='', decimal=".")

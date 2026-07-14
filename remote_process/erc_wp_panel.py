@@ -1,5 +1,5 @@
 
-from config_path import PATH_HARVEST, PATH_WP
+from paths import PATH_HARVEST, PATH_WP
 import time, pandas as pd, requests, fitz, re, os, json, pdfplumber
 # from bs4 import BeautifulSoup
 # from selenium import webdriver

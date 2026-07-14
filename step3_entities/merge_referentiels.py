@@ -1,5 +1,5 @@
 import pandas as pd, numpy as np, json
-from config_path import PATH_WORK
+from paths import PATH_WORK
 from step3_entities.references import paysage_id_extract, paysage_id_extract_prepare
 from remote_process.ID_checkingRefExist import check_id_in_paysage
 

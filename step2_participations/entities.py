@@ -1,5 +1,5 @@
 from functions_shared import unzip_zip, gps_col, num_to_string
-from config_path import PATH_CLEAN
+from paths import PATH_CLEAN
 import pandas as pd
 
 
