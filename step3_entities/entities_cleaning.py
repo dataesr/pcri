@@ -1,9 +1,10 @@
-import pandas as pd, numpy as np, re, json
+import pandas as pd, numpy as np, re, json, os, threading
+from datetime import datetime
 from paths import PATH_HARVEST
 from unidecode import unidecode
-from functions_shared import clean_invisible_chars, work_csv, check_if_only_charact_special, clean_quotation_marks, create_archive_zip
+from functions_shared import clean_invisible_chars, work_csv, check_if_only_charact_special, clean_quotation_marks, create_archive_zip, trace_chain
 from remote_process.localisation_api import geonames_api
-from step3_entities.entities_clean_localisation import normalize_city, geoloc_init_clean_by_country, french_localisation, geoloc_foreign_back, geo_subdivision
+from step3_entities.entities_localisation_clean import normalize_city, geoloc_init_clean_by_country, french_localisation, geoloc_foreign_back, geo_subdivision
 from remote_process.grist import geoG, communesG, update_doc_grist
 
 def entities_clean_name(df):
@@ -54,6 +55,21 @@ def entities_clean_name(df):
         print(f"- End size df: {len(df)}")
     return df
 
+def maj_load_and_clean():
+        """
+        clean maj loaded
+        - invisible character, special charater
+        - add 'ND' for replace nan value and do link with entities_info
+        """
+        maj = geoG['From_pcity_to_geo'].drop_duplicates()
+        mask = maj['geo_admin_new'].apply(lambda x: check_if_only_charact_special(x))
+        maj.loc[mask, 'geo_admin_new'] = ''
+        maj['geo_admin_new'] = maj['geo_admin_new'].apply(lambda x: clean_invisible_chars(x))
+        
+        for c in ['postalCode', 'city_clean_lower']:
+            maj.loc[(maj[c].isnull())|(maj[c]==''), c] = 'ND'
+        maj = maj.mask(maj=='')
+        return maj.drop_duplicates()
 
 
 def entities_clean_address(df):
@@ -66,7 +82,7 @@ def entities_clean_address(df):
         df[i] = df[i].fillna('').str.lower().str.replace(r'\s+', ' ', regex=True).str.strip()
         
 
-    df['postalCode_source'] = df['postalCode']
+    # df['postalCode_source'] = df['postalCode']
 
     NA_VALUES = ["", "\"", "\'", "NA", "N/A", "NULL", "null", "None", "none", "non", "nan", "NaN", "#N/A", "-", "n/a", "na",  "n a", "NAN", "Null", "NULL", "None", "none", "NaN", "not applicable", "no postal code", "not available", "not used", "xxxxx", "yemen has no postal"]
     df.loc[df['postalCode'].str.lower().isin(NA_VALUES), 'postalCode'] = ""
@@ -132,16 +148,32 @@ def entities_clean_address(df):
     tmp['city_clean_lower'] = tmp['city_clean'].str.strip().str.casefold()
     tmp['city_clean_lower'] = tmp['city_clean_lower'].apply(lambda x: re.sub(r"\s{2,}", " ", unidecode(x)).strip() if isinstance(x, str) else x)
 
+    # france com_code
+    tmpfr = tmp.loc[tmp['country_code']=='FRA']
+    french_localisation(tmpfr)
+    update_doc_grist(geoG, 'geo')
 
-
-    tmpfr = french_localisation(tmp.loc[tmp['country_code']=='FRA'])
+    fix_fr = geoG['Fr_loc_to_comcode']
+    tmpfr = (pd.merge(tmpfr, 
+                    fix_fr.drop(columns=['score', 'drop_loc', 'match_step']).drop_duplicates(),
+                    how='left', on='cp_ville')
+                     )
     print(f"- size entities_tmp after merge with com_code: {len(tmpfr)}")
 
+    # foreign
+    maj = maj_load_and_clean()
 
-    maj = (geoG['From_pcity_to_geo'].drop_duplicates())
-    maj = maj.mask(maj=='')
+    check = maj.drop(columns='loc_adminName1').drop_duplicates().groupby(['postalCode', 'ISO_3166_2', 'city_clean_lower'], dropna=False).size().loc[lambda x: x > 1]
+    if any(check):
+        print(f"- ⚠️ ! duplicated rows in from_pcity_to_geo ; to bef fixed in grist:\n{check}")
+    else:
+        print('- ok no duplicated foreign rows')
 
+    
+    for c in ['postalCode', 'city_clean_lower']:
+        tmp.loc[(tmp[c].isnull())|(tmp[c]==''), c] = 'ND'
     tmp = tmp.mask(tmp=='')
+    
     tmp = (pd.merge(tmp, maj, 
                     how='left', 
                     on=['postalCode', 'city_clean_lower', 'ISO_3166_2'],
@@ -155,26 +187,59 @@ def entities_clean_address(df):
                    .drop_duplicates()
                    .copy()
     )
+
+    # delete rows with postalCode+city == null
+    tmp1 = tmp1.loc[~((tmp1['postalCode']=='ND')&(tmp1['city_clean_lower']=='ND'))]
     print(f"- size tmp1 foreigns to check {len(tmp1)}")
     print(tmp1)
-    
-       # IF need to get admin_reg for foreign cities req = True
-    if not tmp1.empty:
-        create_archive_zip(f'{PATH_HARVEST}geoloc/by_countries', 'geoloc_foreign', '.pkl')
 
-        print("- ATTENTION : request geonames api for foreign cities")
-        # selection = list(filter(lambda e: 'A' <= e[0].upper() <= 'C', tmp1.countryCode.unique()))
+
+    def run_geonames_background(tmp1):
+        
+        start_time = datetime.now()
+        print(f"- début des requêtes geonames en arrière-plan : {start_time.strftime('%Y-%m-%d %H:%M:%S')}")
+
         for cc in tmp1['ISO_3166_2'].unique():
-            tmp_cc = tmp1.loc[tmp1['ISO_3166_2']==cc]
+            tmp_cc = tmp1.loc[tmp1['ISO_3166_2'] == cc]
             print(f"-- country {cc} with {len(tmp_cc)} rows to request")
             geonames_api(tmp_cc, cc)
+        print("- background geonames requests terminées")
+
+        end_time = datetime.now()
+        duration = end_time - start_time
+        print(f"- fin des requêtes geonames en arrière-plan : {end_time.strftime('%Y-%m-%d %H:%M:%S')}")
+        print(f"- durée totale : {duration}")
 
 
-        # return geonames_api results for foreign cities
-        geoloc_foreign_back()
-        update_doc_grist(geoG, 'geo')
-        maj = (geoG['From_pcity_to_geo'].drop_duplicates())
-    
+    # IF need to get admin_reg for foreign cities req = True
+    if not tmp1.empty:
+        geo_dir = f'{PATH_HARVEST}geoloc/by_countries'
+        create_archive_zip(geo_dir, 'geoloc_foreign', '.pkl')
+        print("- ⚠️ : lancement des requêtes geonames api en arrière-plan (thread)")
+
+
+        # récap du nombre de lignes à matcher par pays
+        counts = tmp1['ISO_3166_2'].value_counts()
+        print(f"- {len(counts)} pays à traiter, {len(tmp1)} lignes au total:")
+        for cc, n in counts.items():
+            print(f"  · {cc}: {n} lignes")
+
+        thread = threading.Thread(target=run_geonames_background, args=(tmp1,))
+        thread.start()
+        # pas de .join() ici -> le script continue tout de suite
+
+        # Vérifie si des résultats geonames existent déjà (run précédent terminé)
+        pkl_files = [f for f in os.listdir(geo_dir) if f.startswith('geo_foreign_') and f.endswith('.pkl')]
+
+        if pkl_files:
+            print(f"- {len(pkl_files)} fichiers pkl trouvés, exécution de geoloc_foreign_back")
+            geoloc_foreign_back()
+            update_doc_grist(geoG, 'geo')
+            maj = maj_load_and_clean()
+        else:
+            print("- pas de fichiers pkl disponibles pour le moment, geoloc_foreign_back sera exécuté au prochain run")
+
+    ######################################
     # merged french cities with com_code
     df = (pd.merge(df, 
                    tmpfr[['country_code', 'city', 'postalCode_source', 'com_code']].drop_duplicates(), 
@@ -182,40 +247,76 @@ def entities_clean_address(df):
         )
     print(f"- size entities_tmp after merge with com_code: {len(df)}")
 
-
-    maj = maj.loc[maj['drop_loc']!=True, ['postalCode', 'city_clean_lower', 'ISO_3166_2', 'geo_admin_new']].drop_duplicates()
+    # merge foreign
+    maj = maj[['postalCode', 'city_clean_lower', 'ISO_3166_2', 'geo_admin_new', 'drop_loc']].drop_duplicates()
     tmp = (pd.merge(tmp[['postalCode_source', 'ISO_3166_2', 'postalCode', 'city', 'city_clean', 'city_clean_lower']].drop_duplicates(), 
                     maj, how='left', on=['postalCode', 'city_clean_lower', 'ISO_3166_2'])
         )
     print(f"- size tmp after merge with geocode: {len(tmp)}")
 
+    for t in [tmp, df]:
+        for c in ['postalCode', 'city']:
+            t.loc[(t[c].isnull())|(t[c]==''), c] = 'ND'
+        t = t.mask(t=='')
+
     df = pd.merge(df, 
-                  tmp[['ISO_3166_2', 'city', 'postalCode_source', 'city_clean', 'geo_admin_new']].drop_duplicates(), 
-                  how='left', on=['ISO_3166_2', 'city', 'postalCode_source'])
+                  tmp[['ISO_3166_2', 'city', 'postalCode', 'city_clean', 'geo_admin_new', 'drop_loc']].drop_duplicates(), 
+                  how='left', on=['ISO_3166_2', 'city', 'postalCode'])
 
     print(f"- size entities_tmp after merge with geocode: {len(df)}")
 
+    ########################################
+    # merge ref for info
     com = communesG['Commune']
     com.columns = com.columns.str.casefold()
-    com = (com[['com_code', 'dep_code', 'dep_nom', 'reg_code', 'reg_nom', 'geoname_code']]
-           .rename(columns={'geoname_code':'geo_global_code'})
+    com = (com[['com_code', 'com_nom', 'dep_code', 'reg_code', 'geoname_code']]
+           .rename(columns={'geoname_code':'geo_unit_code'})
            .drop_duplicates()
            )
     df = pd.merge(df, com, how='left', on='com_code')
-    df.loc[df['geo_global_code'].isnull(), 'geo_global_code'] = df.loc[df['geo_global_code'].isnull(), 'geo_admin_new']
-    
-    sub_div = geo_subdivision()  
+    df.loc[df['geo_unit_code'].isnull(), 'geo_unit_code'] = df.loc[df['geo_unit_code'].isnull(), 'geo_admin_new']
+    df.loc[df['com_nom'].notna(), 'city_clean'] = df.loc[df['com_nom'].notna(), 'com_nom']
+
+    ########
+    # ajout des noms des subdivisions
+    sub_div = geo_subdivision()
+    sub_div['latlng'] = sub_div['latLng'].apply(lambda x: ','.join(f"{v:.4f}" for v in x))
+
 
     df = (pd.merge(df, 
-                   sub_div[['subdivCode', 'name', 'parentCode']], 
-                   how='left', left_on='geo_global_code', right_on='subdivCode') 
+                   sub_div[['subdivCode', 'name', 'latlng', 'parentCode']], 
+                   how='left', left_on='geo_unit_code', right_on='subdivCode') 
     )
-    df = df.rename(columns={'name':'geo_global_name', 'parentCode':'geo_global_parent'})
+    df = (df.rename(columns={'name':'geo_unit_name', 'latlng':'geo_unit_latlng', 'parentCode':'geo_2_code'})
+            .drop(columns='subdivCode')
+            )
+    
+    df.loc[df['geo_2_code'].isnull(), 'geo_2_code'] = df.loc[df['geo_2_code'].isnull(), 'geo_unit_code']
+    df.loc[df['geo_2_code'].isnull(), 'geo_2_code'] = df.loc[df['geo_2_code'].isnull(), 'ISO_3166_2']
 
+
+    df = pd.merge(df, 
+                  sub_div[['subdivCode', 'name', 'latlng']]
+                  .rename(columns={'subdivCode':'geo_2_code', 'name':'geo_2_name', 'latlng':'geo_2_latlng'}), 
+                   how='left', on='geo_2_code') 
+
+
+    p=dict(zip(sub_div['subdivCode'], sub_div['parentCode']))
+    sub_div['geo_3_code'] = sub_div['subdivCode'].apply(lambda x: trace_chain(x, p))
+
+    df = pd.merge(df, 
+                sub_div[['subdivCode', 'geo_3_code']]
+                .rename(columns={'subdivCode':'geo_unit_code'}), 
+                how='left', on='geo_unit_code') 
+    
+    df = pd.merge(df, 
+                  sub_div[['subdivCode', 'name', 'latlng']]
+                  .rename(columns={'subdivCode':'geo_3_code', 'name':'geo_3_name', 'latlng':'geo_3_latlng'}), 
+                   how='left', on='geo_3_code') 
 
     print(f"- ended size entities_info : {len(df)}")
 
-    return df 
+    return df.drop(columns=['drop_loc', 'geo_admin_new', 'ISO_3166_2', 'com_nom'])
 
 
 def entities_add_country(df, countries):
@@ -265,22 +366,42 @@ def entities_info_add(entities_tmp, entities_info):
     return entities_info
 
 
-def add_countries_info(df, countries):
+def add_countries_info(df, countries, framework=None):
     print("\n### entities_info + countries")
     #ajout des infos country à participants_info
     
-    # correction des ecoles françaises à l'etranger
-    l=['951736453','996825642','994591926','996825642','953002303', '998384626', '879924055']
-    df.loc[df.generalPic.isin(l), 'country_code'] = 'FRA'
-    cc = (countries.drop(columns=['countryCode', 'countryCode_parent', 'country_code'])
-          .rename(columns={'countryCode_iso3':'country_code'})
-          .drop_duplicates())
-    df = (df.drop(columns='country_name_fr')
-          .merge(cc, how='left', on='country_code')
-          .rename(columns={'ZONAGE':'extra_joint_organization'})
-          .drop_duplicates())
+    if framework==None:
+        # correction des ecoles françaises à l'etranger
+        l=['951736453','996825642','994591926','996825642','953002303', '998384626', '879924055']
+        df.loc[df.generalPic.isin(l), 'country_code'] = 'FRA'
+        cc = (countries.drop(columns=['countryCode', 'countryCode_parent', 'country_code'])
+            .rename(columns={'countryCode_iso3':'country_code'})
+            .drop_duplicates())
+        df = (df.drop(columns='country_name_fr')
+            .merge(cc, how='left', on='country_code')
+            .rename(columns={'ZONAGE':'extra_joint_organization'})
+            .drop_duplicates())
 
-    df.drop(columns=df.columns[df.columns.str.contains('2020')], inplace=True)
+        df.drop(columns=df.columns[df.columns.str.contains('2020')], inplace=True)
+
+    elif framework=='H20':
+        cc=(countries[['countryCode_iso3', 'country_name_en',
+        'country_association_code_2020', 'country_association_name_2020_en', 'country_group_association_code_2020',
+        'country_group_association_name_2020_en', 'country_group_association_name_2020_fr', 'country_name_fr', 'article1',
+        'article2']]
+        .drop_duplicates()
+        .rename(columns={'countryCode_iso3': 'country_code',
+                            'country_association_code_2020':'country_association_code',
+                            'country_association_name_2020_en':'country_association_name_en', 
+                            'country_group_association_code_2020':'country_group_association_code',
+                            'country_group_association_name_2020_en':'country_group_association_name_en',
+                            'country_group_association_name_2020_fr':'country_group_association_name_fr'}))
+
+        undef=pd.DataFrame(json.load(open('data_files/countries_undef.json', 'r+', encoding='UTF-8'))).drop(columns=['country_code_source', 'country_name_source'])
+        cc=pd.concat([cc, undef], ignore_index=True)
+
+        df = df.merge(cc, how='left', on='country_code')
+
 
     print(f"- longueur entities_info après ajout calculated_country : {len(df)}\n{df.columns}\n- columns with Nan\n {df.columns[df.isnull().any()]}")
     return df
