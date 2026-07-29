@@ -1,8 +1,9 @@
-def H2020_process():
+def H2020_process(source_HE):
     import pandas as pd, numpy as np, json
+    from remote_process.grist import idsG
     from step2_participations.entities import entities_single_create
-    from step3_entities.entities_repository import entities_repository_select_maj, paysage_repository, maj_ref_by_pic, merge_repositories, entities_categories, entities_groupe, entities_finalize
-    from step3_entities.entities_cleaning import entities_clean_name, entities_clean_address, entities_info_add
+    from step3_entities.entities_repository import paysage_repository, maj_ref_by_pic, merge_repositories, entities_categories, entities_groupe, entities_finalize
+    from step3_entities.entities_cleaning import entities_clean_name, entities_clean_address, entities_info_add, entities_add_country
     from step3_entities.entities_select import entities_tmp_create, entities_for_merge
 
     from step3_entities.merge_referentiels import merge_id_to_ref, merge_pic
@@ -11,11 +12,15 @@ def H2020_process():
     from paths import PATH_SOURCE, PATH_CLEAN, PATH_REF, PATH_CONNECT
     from functions_shared import unzip_zip, my_country_code
 
+    FRAMEWORK = 'H2020'
+    ZIPNAME = 'H2020_2022-12-05.json.zip'
+    SOURCE_H20 = f"{PATH_SOURCE}{FRAMEWORK}/{ZIPNAME}"
+
     def h20_nom_load():
         destination = pd.read_json(open("data_files/destination.json", 'r', encoding='utf-8'))
         thema = pd.read_json(open("data_files/thema.json", 'r', encoding='utf-8'))
         act = pd.read_json(open("data_files/actions_name.json", 'r', encoding='utf-8'))
-        topics = unzip_zip('H2020_2022-12-05.json.zip', f"{PATH_SOURCE}H2020/", 'topics.json', encode='utf-8')
+        topics = unzip_zip(SOURCE_H20, 'topics.json', encode='utf-8')
         pilier_fr = pd.read_json(open("data_files/H20_pilier.json", 'r', encoding='utf-8'))
         # countries = pd.read_csv(f"{PATH_SOURCE}H2020/country_current.csv", sep=';')
         countries = pd.read_pickle(f"{PATH_CLEAN}country_current.pkl")
@@ -34,7 +39,7 @@ def H2020_process():
         part=pd.DataFrame(part)
         part=part.replace('#', np.nan)
         print(f"- size part: {len(part)}")
-        entities = unzip_zip('H2020_2022-12-05.json.zip', f"{PATH_SOURCE}H2020/", "legalEntities.json", encode='utf-8')
+        entities = unzip_zip(SOURCE_H20, "legalEntities.json", encode='utf-8')
         status = pd.read_csv(f"{PATH_SOURCE}H2020/redressement_status_code.csv", sep=';', usecols=['project_id','stat_code'], dtype='str')
         return _proj, part, entities, status
     _proj, part, entities, status = h20_load()
@@ -56,11 +61,11 @@ def H2020_process():
 
 
     part_init=(part_init.merge(country_h20[['iso2', 'iso3', 'parent_iso3']], how='left', left_on='countryCode', right_on='iso2')
-    .rename(columns={'iso3':'country_code_mapping', 'parent_iso3':'country_code'})
+    .rename(columns={'iso3':'country_code_source', 'country_name_en':'country_name_source', 'parent_iso3':'country_code'})
     .drop(columns='iso2'))
 
-    if any(part_init[part_init.country_code_mapping.isnull()].countryCode.unique()):
-        print(part_init[part_init.country_code_mapping.isnull()].countryCode.unique())
+    if any(part_init[part_init.country_code_source.isnull()].countryCode.unique()):
+        print(part_init[part_init.country_code_source.isnull()].countryCode.unique())
 
     ##status
     _proj = _proj.merge(status, how='inner', on='project_id')
@@ -333,26 +338,65 @@ def H2020_process():
 
 ##########################################################################################################
 
-    def entities_info_create(part_init, entities, country_h20, single_create=False):
+    def entities_info_create(part_init, entities, genPic_to_new, country_h20, single_create=False):
 
-        cols = ['generalPic', 'country_code_mapping', 'country_code']
+        cols = ['generalPic', 'country_code_source', 'country_code']
         p = part_init[cols].drop_duplicates()
         print(f"size initiale de p: {len(p)}")
+
+        genh20 = genPic_to_new[genPic_to_new['generalPic'].isin(p['generalPic'].unique())]
+        print(f"size genpicnew after merge with p: {len(genh20)}")    
+
 
         if single_create==True:
             from functions_shared import gps_col, num_to_string
             entities = pd.DataFrame(entities)
             entities = gps_col(entities)
-            entities = entities.loc[entities['generalPic'].notnull()]
-            entities = (entities.merge(country_h20[['iso2', 'iso3', 'parent_iso3']], how='left', left_on='countryCode', right_on='iso2')
-            .drop(columns='iso2')
-            .rename(columns={'parent_iso3':'country_code', 'iso3': 'country_code_mapping'}))
-            print(f"parent_iso missing : {entities[entities.country_code.isnull()].countryCode.unique()}")
-            entities.loc[entities.country_code.isnull(), 'country_code'] = entities.loc[entities.country_code.isnull()].country_code_mapping 
             c = ['pic', 'generalPic']
             entities[c] = entities[c].map(num_to_string)
-            print(f"- size entities {len(entities)}")
-            entities_single = entities_single_create(entities, p, 'H20')
+            entities = entities.loc[entities['generalPic'].notnull()]
+
+            # select entities in p
+            ent1 = entities[entities['generalPic'].isin(p['generalPic'].unique())]
+            print(f"size ent1 after merge entities with p: {len(ent1)}")
+
+            rest = p[~p['generalPic'].isin(ent1['generalPic'].unique())]
+            print(f"size p rest : {len(rest)}")
+
+            if any(rest):
+                ent = unzip_zip(source_HE, "legalEntities.json", encode='utf-8')
+                ent = pd.DataFrame(ent)
+                ent = gps_col(ent)
+                c = ['pic', 'generalPic']
+                ent[c] = ent[c].map(num_to_string)
+                ent2 = ent.loc[ent['generalPic'].isin(rest['generalPic'].unique())]
+                print(f"- size add ent to entities with pic_new: {len(ent2)}")
+
+                ent1 = pd.concat([ent1, ent2], ignore_index=True).drop_duplicates()
+
+            # select pic_new in entities
+            ent2 = entities[entities['generalPic'].isin(genh20['pic_new'].unique())]
+            print(f"size ent2 after merge entities with new_pic_h20: {len(ent2)}")
+
+            ent1 = pd.concat([ent1, ent2], ignore_index=True).drop_duplicates()
+
+            if any(~genh20['pic_new'].isin(ent1['generalPic'].unique())):
+                rest = genh20[~genh20['pic_new'].isin(ent1['generalPic'].unique())]
+                print(f"- {len(rest)} generalPic new missing in entities")
+                ent2 = ent.loc[ent['generalPic'].isin(rest['pic_new'].unique())]
+                print(f"- size add ent to entities with pic_new: {len(ent2)}")
+
+                ent1 = pd.concat([ent1, ent2], ignore_index=True).drop_duplicates()
+                print(f"size ent1 after merge entities with p: {len(ent1)}")
+
+            ent1 = (ent1.merge(country_h20[['iso2', 'country_name_en', 'iso3', 'parent_iso3']], how='left', left_on='countryCode', right_on='iso2')
+            .drop(columns='iso2')
+            .rename(columns={'parent_iso3':'country_code', 'iso3': 'country_code_source', 'country_name_en':'country_name_source'}))
+            print(f"parent_iso missing : {ent1[ent1.country_code.isnull()].countryCode.unique()}")
+            ent1.loc[ent1.country_code.isnull(), 'country_code'] = ent1.loc[ent1.country_code.isnull()].country_code_source 
+
+            print(f"- size entities {len(ent1)}")
+            entities_single = entities_single_create(ent1, p, 'H20')
         else:
             entities_single = pd.read_pickle(f"{PATH_CLEAN}H20_entities_single.pkl")
             print(f"size entities_single: {len(entities_single)}")
@@ -388,11 +432,11 @@ def H2020_process():
                                ignore_index=True).drop_duplicates()
 
         entities_info = entities_clean_name(df_concat)
-        entities_info = entities_clean_address(entities_info)
+        # entities_info = entities_clean_address(entities_info)
 
         return entities_info.drop_duplicates()
     
-    entities_info = entities_info_create(part_init, entities, country_h20, single_create=False)
+    
      
 
 
@@ -401,14 +445,17 @@ def H2020_process():
     ###########################################################
 
     frameworks = ['H20', 'HE']
-    ref_id, genPic_to_new = entities_repository_select_maj(frameworks, countries, UPDATE_PAYSAGE=False)
+    ref_id = idsG['From_pic_to_id']
+    genPic_to_new = idsG['From_oldpic_to_new']
+    # ref_id, genPic_to_new = entities_repository_select_maj(frameworks, countries, UPDATE_PAYSAGE=False)
+    
+    entities_info = entities_info_create(part_init, entities, genPic_to_new, country_h20, single_create=True)
+
+
+    pic = maj_ref_by_pic(entities_info, countries, genPic_to_new, ref_id)
+    
     paysage_cj, cat, cat_filter = paysage_repository(PAYSAGE_GET_INFO=False)
 
-    ###########
-
-
-    # pic = get_pic(p, genPic_to_new, countries)
-    pic = maj_ref_by_pic(entities_info, countries, genPic_to_new, ref_id)
 
     ref_with_paysage = merge_id_to_ref(ref_id, 'from_id_to_ref')
 
@@ -421,19 +468,20 @@ def H2020_process():
 
     entities_tmp = merge_repositories(entities_tmp, paysage_cj, cat, cat_filter)
 
-
     entities_tmp = entities_info_add(entities_tmp, entities_info)
 
     # PIC
     entities_tmp = merge_pic(entities_tmp, pic, cat, paysage_cj)
 
     entities_tmp = entities_groupe(entities_tmp, framework='H20')
+
     entities_tmp = entities_categories(entities_tmp)
 
-    entities_info = entities_finalize(entities_tmp, countries, framework=None)
+
+    entities_info = entities_finalize(entities_tmp, countries, framework='H20')
 
     # provisoire
-    x = entities_tmp.value_counts(['generalPic', 'country_code_mapping', 'country_code', 'entities_id'], dropna=False).reset_index(name='nb')
+    x = entities_tmp.value_counts(['generalPic', 'country_code_source', 'country_code', 'entities_id'], dropna=False).reset_index(name='nb')
     
     
     
@@ -610,10 +658,17 @@ def H2020_process():
 
     ##########################################################
 
+    # # create calculated_fund and coordination_number
+    # part_tmp = (part_tmp
+    #             .assign(calculated_fund=np.where(part_tmp.stage=='successful', part_tmp['subv_net'], part_tmp['requestedGrant']), 
+    #                     coordination_number=np.where(part_tmp.role.str.lower()=='coordinator', 1, 0)))
+
+
+
     # create calculated_fund and coordination_number
-    part_tmp = (part_tmp
-                .assign(calculated_fund=np.where(part_tmp.stage=='successful', part_tmp['subv_net'], part_tmp['requestedGrant']), 
-                        coordination_number=np.where(part_tmp.role.str.lower()=='coordinator', 1, 0)))
+    part_tmp = (part_init
+                .assign(calculated_fund=np.where(part_init.stage=='successful', part_init['subv_net'], part_init['requestedGrant']), 
+                        coordination_number=np.where(part_init.role.str.lower()=='coordinator', 1, 0)))
 
     #############################################################
     ### ERC
@@ -667,43 +722,43 @@ def H2020_process():
 
     part_tmp = part_tmp.assign(is_ejo=np.where(part_tmp.extra_joint_organization.isnull(), 'Sans', 'Avec'))
 
-    # merge cordis type
-    part_tmp.loc[part_tmp.legalEntityTypeCode.isnull(), 'legalEntityTypeCode'] = np.nan
-    part_tmp = cordis_type(part_tmp)
-    print(f"size part_tmp after clean codis legal type: {len(part_tmp)}")
+    # # merge cordis type
+    # part_tmp.loc[part_tmp.legalEntityTypeCode.isnull(), 'legalEntityTypeCode'] = np.nan
+    # part_tmp = cordis_type(part_tmp)
+    # print(f"size part_tmp after clean codis legal type: {len(part_tmp)}")
 
-    # merge countries 
-    if (any(part_tmp.country_code_mapping.isnull())):
-        print(f"ATTENTION ! country_code_mapping null: {part_tmp[part_tmp.country_code_mapping.isnull()].countryCode.unique()}")
-    else:
-        part_tmp = (part_tmp
-                    .merge(countries[['countryCode_iso3', 'country_name_en']]
-                           .rename(columns={'countryCode_iso3':'country_code_mapping', 'country_name_en': 'country_name_mapping'}), 
-                           how='left', on='country_code_mapping')
-                    .drop_duplicates())
-        print(f"size part_tmp avant: {len(part_tmp)}")
+    # # merge countries 
+    # if (any(part_tmp.country_code_source.isnull())):
+    #     print(f"ATTENTION ! country_code_source null: {part_tmp[part_tmp.country_code_source.isnull()].countryCode.unique()}")
+    # else:
+    #     part_tmp = (part_tmp
+    #                 .merge(countries[['countryCode_iso3', 'country_name_en']]
+    #                        .rename(columns={'countryCode_iso3':'country_code_source', 'country_name_en': 'country_name_source'}), 
+    #                        how='left', on='country_code_source')
+    #                 .drop_duplicates())
+    #     print(f"size part_tmp avant: {len(part_tmp)}")
 
-    if any(part_tmp.country_code.isnull()):
-        print(f"ATTENTION ! country_code null: {part_tmp[part_tmp.country_code.isnull()].country_code_mapping.unique()}")
-    else:
-        cc=(countries[['countryCode_iso3', 'country_name_en',
-        'country_association_code_2020', 'country_association_name_2020_en', 'country_group_association_code_2020',
-        'country_group_association_name_2020_en', 'country_group_association_name_2020_fr', 'country_name_fr', 'article1',
-        'article2']]
-        .drop_duplicates()
-        .rename(columns={'countryCode_iso3': 'country_code',
-                            'country_association_code_2020':'country_association_code',
-                            'country_association_name_2020_en':'country_association_name_en', 
-                            'country_group_association_code_2020':'country_group_association_code',
-                            'country_group_association_name_2020_en':'country_group_association_name_en',
-                            'country_group_association_name_2020_fr':'country_group_association_name_fr'}))
+    # if any(part_tmp.country_code.isnull()):
+    #     print(f"ATTENTION ! country_code null: {part_tmp[part_tmp.country_code.isnull()].country_code_source.unique()}")
+    # else:
+    #     cc=(countries[['countryCode_iso3', 'country_name_en',
+    #     'country_association_code_2020', 'country_association_name_2020_en', 'country_group_association_code_2020',
+    #     'country_group_association_name_2020_en', 'country_group_association_name_2020_fr', 'country_name_fr', 'article1',
+    #     'article2']]
+    #     .drop_duplicates()
+    #     .rename(columns={'countryCode_iso3': 'country_code',
+    #                         'country_association_code_2020':'country_association_code',
+    #                         'country_association_name_2020_en':'country_association_name_en', 
+    #                         'country_group_association_code_2020':'country_group_association_code',
+    #                         'country_group_association_name_2020_en':'country_group_association_name_en',
+    #                         'country_group_association_name_2020_fr':'country_group_association_name_fr'}))
         
-        undef=pd.DataFrame(json.load(open('data_files/countries_undef.json', 'r+', encoding='UTF-8'))).drop(columns=['country_code_mapping', 'country_name_mapping'])
-        cc=pd.concat([cc, undef], ignore_index=True)
+    #     undef=pd.DataFrame(json.load(open('data_files/countries_undef.json', 'r+', encoding='UTF-8'))).drop(columns=['country_code_source', 'country_name_mapping'])
+    #     cc=pd.concat([cc, undef], ignore_index=True)
 
-        part_tmp = part_tmp.merge(cc, how='left', on='country_code')
+    #     part_tmp = part_tmp.merge(cc, how='left', on='country_code')
         
-    print(f"size part_tmp after merge countries: {len(part_tmp)}")
+    # print(f"size part_tmp after merge countries: {len(part_tmp)}")
 
     # agregation des participants
     participation=part_tmp[
@@ -713,7 +768,7 @@ def H2020_process():
         'cordis_type_entity_code','cordis_type_entity_name_fr', 'cordis_type_entity_acro',
         'cordis_type_entity_name_en', 'participation_nuts', 'region_1_name', 'region_2_name', 
         'regional_unit_name',
-        'country_code_mapping', 'country_name_mapping', 'country_code', 'country_name_en', 
+        'country_code_source', 'country_name_mapping', 'country_code', 'country_name_en', 
         'extra_joint_organization',
         'country_association_code','country_association_name_en', 'country_group_association_code',
         'country_group_association_name_en', 'country_group_association_name_fr', 'country_name_fr', 
@@ -768,7 +823,7 @@ def H2020_process():
         participation[['participation_nuts', 'region_1_name', 'region_2_name', 'regional_unit_name']] = participation[['participation_nuts', 'region_1_name', 'region_2_name', 'regional_unit_name']].fillna('')
 
         country=(participation
-                .loc[participation.stage=='successful',['project_id','country_code','country_name_fr','country_code_mapping','country_name_mapping', 'participation_nuts', 'region_1_name', 'region_2_name', 'regional_unit_name']]
+                .loc[participation.stage=='successful',['project_id','country_code','country_name_fr','country_code_source','country_name_source', 'participation_nuts', 'region_1_name', 'region_2_name', 'regional_unit_name']]
                 .drop_duplicates()
                 .groupby(['project_id'], as_index = False).agg(lambda x: ';'.join(map(str, filter(None, x))))
                 .drop_duplicates())
