@@ -1,4 +1,4 @@
-from functions_shared import unzip_zip, gps_col, num_to_string
+from functions_shared import unzip_zip, gps_col, num_to_string, entities_choose_status
 from paths import PATH_CLEAN
 import pandas as pd
 
@@ -8,14 +8,15 @@ def entities_missing_country(df):
     add missing countryCode in entities from countryCode of lien, if generalPic is the same and countryCode is not null in lien    
     """
     if any(df['countryCode'].isnull()):
-        print(f"2 - ATTENTION missing {len(df['countryCode'].isnull())} countryCode")
+        print(f"2 - ⚠️ missing {len(df['countryCode'].isnull())} countryCode")
         df.loc[df['countryCode'].isnull(), 'countryCode'] = df.loc[df['countryCode'].isnull(), 'countryCode_y']
         df.drop(columns='countryCode_y', inplace=True)
     if len(df.loc[df.countryCode.isnull()])>0:
-        print(f"3 - ATTENTION ! missing again countryCode {df.loc[df.countryCode.isnull(), ['generalPic']].drop_duplicates()}")
+        print(f"3 - ⚠️ ! missing again countryCode {df.loc[df.countryCode.isnull(), ['generalPic']].drop_duplicates()}")
     else:
         print(f'4 - SOLVED -> without country\n- size entities with cc: {len(df)}')
     return df
+
 
 def entities_load(source):
     """
@@ -44,6 +45,7 @@ def entities_load(source):
         print("- ok entities source generalState not null")
     return df, rep
 
+
 def entities_merge_partApp(df, app1, part):
     """
     link between app1/part and entities to add cc and select generalPic+pic of entities, 
@@ -71,7 +73,7 @@ def entities_merge_partApp(df, app1, part):
     rep.append({'stage_process':'process4_mergeEntities', 'entities_size':len(tmp)})
 
     if len(tmp[['generalPic', 'countryCode']].drop_duplicates())!=len(entities[['generalPic', 'countryCode']].drop_duplicates()):
-        print(f"1 - ATTENTION missing generalPic into entities\ntmp={len(tmp[['generalPic', 'countryCode']].drop_duplicates())}, entities={len(entities[['generalPic', 'countryCode']].drop_duplicates())}")
+        print(f"1 - ⚠️ missing generalPic into entities\ntmp={len(tmp[['generalPic', 'countryCode']].drop_duplicates())}, entities={len(entities[['generalPic', 'countryCode']].drop_duplicates())}")
 
     # process for missing cc in entities
     entities = entities_missing_country(entities)
@@ -98,20 +100,22 @@ def entities_single_create(df, lien, framework=None):
     n_state=PicState.groupby(['generalPic',  'country_code_source']).filter(lambda x: x['generalState'].count() > 1.)
     df['n_state'] = df.groupby(['generalPic',  'country_code_source'])['generalState'].transform('count')
 
-    if any(df['n_state']>1):
-        print(f"1 - ++state pour un pic/country; régler ci-dessous {len(n_state)}")
-        gen_state=['VALIDATED', 'DECLARED', 'SLEEPING', 'SUSPENDED', 'BLOCKED', 'DEPRECATED', 'Undefined']
+    df = entities_choose_status(df, ['generalPic', 'country_code_source'])
 
-        if len(df.generalState.dropna().unique()) > len(gen_state):
-            print(f"2 - Attention ! un generalState nouveau dans entities -> {set(df.generalState.unique())-set(gen_state)}")
-        else:
-            tmp= df[df['n_state']>1]
-            tmp = tmp.groupby(['generalPic', 'country_code_source']).apply(lambda x: x.sort_values('generalState', key=lambda col: pd.Categorical(col, categories=gen_state, ordered=True)), include_groups=True).reset_index(drop=True)
-            tmp = tmp.groupby(['generalPic', 'country_code_source']).head(1)
-            print(f"3 - size entities after cleaning: {len(df)}")
+    # if any(df['n_state']>1):
+    #     print(f"1 - ++state pour un pic/country; régler ci-dessous {len(n_state)}")
+    #     gen_state=['VALIDATED', 'DECLARED', 'SLEEPING', 'SUSPENDED', 'BLOCKED', 'DEPRECATED', 'Undefined']
+
+    #     if len(df.generalState.dropna().unique()) > len(gen_state):
+    #         print(f"2 - ⚠️ ! un generalState nouveau dans entities -> {set(df.generalState.unique())-set(gen_state)}")
+    #     else:
+    #         tmp= df[df['n_state']>1]
+    #         tmp = tmp.groupby(['generalPic', 'country_code_source']).apply(lambda x: x.sort_values('generalState', key=lambda col: pd.Categorical(col, categories=gen_state, ordered=True)), include_groups=True).reset_index(drop=True)
+    #         tmp = tmp.groupby(['generalPic', 'country_code_source']).head(1)
+    #         print(f"3 - size entities after cleaning: {len(df)}")
         
-    df = pd.concat([df[df['n_state']==1], tmp], ignore_index=True).drop(columns='n_state')
-    print(f"- size entities_single: {len(df)}")
+    # df = pd.concat([df[df['n_state']==1], tmp], ignore_index=True).drop(columns='n_state')
+    # print(f"- size entities_single: {len(df)}")
 
     print(f"\n- {df.generalState.value_counts()}")
     if (df.generalPic.nunique())==(lien.generalPic.nunique()):
@@ -130,7 +134,7 @@ def entities_single_create(df, lien, framework=None):
 
     tmp=df.groupby(['generalPic', 'country_code_source']).filter(lambda x: x['generalPic'].count() > 1.)
     if not tmp.empty:
-        print(f"1 - ATTENTION doublon generalPic revoir code ci-dessous si besoin")
+        print(f"1 - ⚠️ doublon generalPic revoir code ci-dessous si besoin")
            
     print(f"- size entities_single:{len(df)}")
     return df
@@ -148,7 +152,7 @@ def entities_info_create(entities_single, lien):
                      )
 
     if len(entities_info[['generalPic', 'country_code_source']].drop_duplicates())!=len(lien[['generalPic', 'country_code_source']].drop_duplicates()):
-        print(f"1- ATTENTION ! size genPic+cc -> entities_info : {len(entities_info[['generalPic', 'country_code_source']].drop_duplicates())},  lien:{len(lien[['generalPic', 'country_code_source']].drop_duplicates())}")
+        print(f"1- ⚠️ ! size genPic+cc -> entities_info : {len(entities_info[['generalPic', 'country_code_source']].drop_duplicates())},  lien:{len(lien[['generalPic', 'country_code_source']].drop_duplicates())}")
         print(f"2- check if genPic+cc in lien not in entities_info: {set(lien[['generalPic', 'country_code_source']].drop_duplicates().apply(tuple, axis=1)) - set(entities_info[['generalPic', 'country_code_source']].drop_duplicates().apply(tuple, axis=1))}")
     else:
         pass
