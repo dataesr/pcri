@@ -1,5 +1,5 @@
 import pandas as pd, numpy as np, os
-from functions_shared import unzip_zip, del_list_in_col, columns_comparison, gps_col, num_to_string, bugs_excel, clean_keyword, work_csv
+from functions_shared import unzip_zip, del_list_in_col, columns_comparison, gps_col, num_to_string, check_missing, clean_keyword, work_csv
 from constant_vars import FRAMEWORK
 from paths import PATH_CONNECT, PATH_CLEAN
 
@@ -46,12 +46,12 @@ def projects_load(source):
 
         if (len(proj.groupby('projectNbr').agg({'lastUpdateDate':'count'}).reset_index().query('lastUpdateDate>1'))>0) | (proj.projectNbr.isnull().sum()>0):
             proj=proj.sort_values(['projectNbr', 'lastUpdateDate'], ascending=[True, False]).drop_duplicates('projectNbr')
-            print(f"ATTENTION ! proj load : {tot_pid}, after remove old records by lastUpdateDate {len(proj)}")
+            print(f"- ⚠️ ! proj load : {tot_pid}, after remove old records by lastUpdateDate {len(proj)}")
             print(f"new size : {len(proj)}")
             rep.append({'stage_process': '_without_old_data', 'project_size': len(proj)})
             tot_pid = proj.projectNbr.nunique()
             if len(proj.groupby('projectNbr').size().reset_index(name='row_count').query('row_count>1')>0):
-                return print(f"ATTENTION ! project duplicated:\n{proj.groupby('projectNbr').size().reset_index(name='row_count').query('row_count>1')}")
+                return print(f"- ⚠️ ! project duplicated:\n{proj.groupby('projectNbr').size().reset_index(name='row_count').query('row_count>1')}")
                 
 
         # check new columns -> data_files/projects_columns.json
@@ -71,7 +71,7 @@ def projects_load(source):
         if empty_cols==[col for col in proj.columns if proj[col].isnull().all()]:
             proj.drop(empty_cols, axis=1, inplace=True)
         else:
-            print(f"1- Attention ! vérifier les variables manquantes->{[col for col in proj.columns if proj[col].isnull().all()]}\n")
+            print(f"1- ⚠️ ! vérifier les variables manquantes->{[col for col in proj.columns if proj[col].isnull().all()]}\n")
         
         cols_to_drop = ['comL2LocalKey', 'linkedFpaProjectNbr', 'contractVersion', 'masterCallId', 
                         'ecHiearchyResp', 'uniqueProgrammePart']
@@ -81,7 +81,7 @@ def projects_load(source):
         proj['project_id'] = proj['project_id'].map(num_to_string)
 
         if tot_pid != len(proj):
-            print("ATTENTION ! projects losted between load and first treatment")
+            print("- ⚠️ ! projects losted between load and first treatment")
             return
         else:
             print(f'- result -> dowloaded projects:{tot_pid}, retained projects:{len(proj)}, pb:{tot_pid-len(proj)}\n- liste des colonnes conservées:\n{proj.columns}')
@@ -112,12 +112,12 @@ def proposals_load(source):
 
         if len(prop.groupby('proposalNbr').agg({'lastUpdateDate':'count'}).reset_index().query('lastUpdateDate>1'))>0:
             prop = prop.sort_values(['proposalNbr', 'lastUpdateDate'], ascending=[True, False]).drop_duplicates('proposalNbr')
-            print(f"ATTENTION ! prop load : {tot_ppid}, after remove old records by lastUpdateDate {len(prop)}")
+            print(f"- ⚠️ ! prop load : {tot_ppid}, after remove old records by lastUpdateDate {len(prop)}")
             print(f"new size : {len(prop)}")
             rep.append({'stage_process': '_without_old_data', 'proposal_size': len(prop)})
             tot_ppid = prop.proposalNbr.nunique()
             if len(prop.groupby('proposalNbr').size().reset_index(name='row_count').query('row_count>1')>0):
-                return print(f"ATTENTION ! proposals duplicated:\n{prop.groupby('proposalNbr').size().reset_index(name='row_count').query('row_count>1')}")
+                return print(f"- ⚠️ ! proposals duplicated:\n{prop.groupby('proposalNbr').size().reset_index(name='row_count').query('row_count>1')}")
                 
 
         # new columns 
@@ -148,13 +148,13 @@ def proposals_load(source):
         if empty_cols==[col for col in prop.columns if prop[col].isnull().all()]:
             prop.drop(empty_cols, axis=1, inplace=True)
         elif empty_cols!=[col for col in prop.columns if prop[col].isnull().all()]:
-            print(f"1- empty cols -> Attention ! vérifier les variables manquantes->{[col for col in prop.columns if prop[col].isnull().all()]}")
+            print(f"1- empty cols -> ⚠️ ! vérifier les variables manquantes->{[col for col in prop.columns if prop[col].isnull().all()]}")
         
         prop['project_id'] = prop['project_id'].map(num_to_string)
         prop = prop.drop_duplicates()
 
         if tot_ppid != len(prop):
-            print("ATTENTION ! proposals losted between load and first treatment")
+            print("- ⚠️ ! proposals losted between load and first treatment")
             return
         else:
             print(f'- result -> dowloaded proposals:{tot_ppid}, retained proposals:{len(prop)}, pb:{tot_ppid-len(prop)}')
@@ -181,19 +181,20 @@ def participants_load(source):
         tot_pid = len(part)
         rep = [{'stage_process': '_loading', 'participant_size': len(part)}]
 
-        if len(part.groupby(['projectNbr','orderNumber', 'generalPic', 'participantPic', 'partnerRole', 'partnerType']).agg({'lastUpdateDate':'count'}).reset_index().query('lastUpdateDate>1'))>0:
+
+        if len(part.groupby(['projectNbr','orderNumber', 'generalPic', 'participantPic', 'partnerRole', 'partnerType'], dropna=False).agg({'lastUpdateDate':'count'}).reset_index().query('lastUpdateDate>1'))>0:
             part = (part.sort_values(['projectNbr','orderNumber', 'generalPic', 'participantPic', 'partnerRole', 'partnerType', 'lastUpdateDate'], 
                                      ascending=[True,True,True,True,True,True,False])
                                      .drop_duplicates(['projectNbr','orderNumber', 'generalPic', 'participantPic', 'partnerRole', 'partnerType']))
-            print(f"ATTENTION ! proj load : {tot_pid}, after remove old records by lastUpdateDate {len(part)}")
+            print(f"- ⚠️ ! proj load : {tot_pid}, after remove old records by lastUpdateDate {len(part)}")
             print(f"new size : {len(part)}")
             rep.append({'stage_process': '_without_old_data', 'participant_size': len(part)})
             tot_pid = len(part[['projectNbr','orderNumber', 'generalPic', 'participantPic', 'partnerRole', 'partnerType']].drop_duplicates())
-            if len(part.groupby(['projectNbr','orderNumber', 'generalPic', 'participantPic', 'partnerRole', 'partnerType']).size().reset_index(name='row_count').query('row_count>1')>0):
-                return print(f"ATTENTION ! participant duplicated:\n{part.groupby(['projectNbr','orderNumber', 'generalPic', 'participantPic', 'partnerRole', 'partnerType']).size().reset_index(name='row_count').query('row_count>1')}")
+            if len(part.groupby(['projectNbr','orderNumber', 'generalPic', 'participantPic', 'partnerRole', 'partnerType'], dropna=False).size().reset_index(name='row_count').query('row_count>1')>0):
+                return print(f"- ⚠️ ! participant duplicated:\n{part.groupby(['projectNbr','orderNumber', 'generalPic', 'participantPic', 'partnerRole', 'partnerType']).size().reset_index(name='row_count').query('row_count>1')}")
                 
 
-        # new columns 
+        # new columns
         columns_comparison(part, 'participants_columns')    
 
         #empty columns
@@ -221,8 +222,10 @@ def participants_load(source):
 
         c = ['project_id', 'orderNumber', 'generalPic', 'participant_pic', 'parentPic']
         part[c] = part[c].fillna('').map(num_to_string)
-        
         part = part.mask(part == '')
+
+        c = ['project_id', 'orderNumber', 'generalPic']
+        check_missing(part, c)
 
         part = gps_col(part)
 
@@ -260,12 +263,12 @@ def applicants_load(source):
             app = (app.sort_values(['proposalNbr','orderNumber', 'generalPic', 'applicantPic', 'role', 'lastUpdateDate'], 
                                      ascending=[True,True,True,True,True,False])
                                      .drop_duplicates(['proposalNbr','orderNumber', 'generalPic', 'applicantPic', 'role']))
-            print(f"ATTENTION ! proj load : {tot_pid}, after remove old records by lastUpdateDate {len(app)}")
+            print(f"- ⚠️ ! proj load : {tot_pid}, after remove old records by lastUpdateDate {len(app)}")
             print(f"new size : {len(app)}")
             rep.append({'stage_process': '_without_old_data', 'applicant_size': len(app)})
             tot_pid = len(app[['proposalNbr','orderNumber', 'generalPic', 'applicantPic', 'role']].drop_duplicates())
             if len(app.groupby(['proposalNbr','orderNumber', 'generalPic', 'applicantPic', 'role']).size().reset_index(name='row_count').query('row_count>1')>0):
-                return print(f"ATTENTION ! participant duplicated:\n{app.groupby(['proposalNbr','orderNumber', 'generalPic', 'applicantPic', 'role']).size().reset_index(name='row_count').query('row_count>1')}")
+                return print(f"- ⚠️ ! participant duplicated:\n{app.groupby(['proposalNbr','orderNumber', 'generalPic', 'applicantPic', 'role']).size().reset_index(name='row_count').query('row_count>1')}")
                 
 
         # new columns 
