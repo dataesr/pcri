@@ -53,7 +53,7 @@
         "country_code":"Code iso3 du pays {rechercher le code ISO}",
         "country_name_fr":"Nom du pays en français {rechercher le libellé}",
         "localisation":"Localisation [A1 = France métropolitaine et les DOM, A2 = Collectivités d'outre-mer, A3 = Hors de France]",
-        "gps_loc":"Coordonnées GPS [-12.34,5.6789]",
+        "gps_source":"Coordonnées GPS [-12.34,5.6789]",
         "cj":"Code du statut juridique {rechercher le code}",
         "paysageCat":"Code de la/des catégories {rechercher le code, séparation ;}"
 }
