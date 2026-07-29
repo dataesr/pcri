@@ -43,8 +43,8 @@ from paths import PATH_HARVEST
 # Configuration
 # ---------------------------------------------------------------------
 USERNAME = "zoefri"                 # ton compte GeoNames
-OUTPUT_DIR = Path("output")
-CACHE_FILE = Path("subdivision_cache.csv")
+OUTPUT_DIR = Path(f"{PATH_HARVEST}geoloc/by_countries")
+CACHE_FILE = Path(f"{PATH_HARVEST}geoloc/by_countries/subdivision_cache.csv")
 SLEEP_BETWEEN_API_CALLS = 1.0       # secondes, à ajuster selon ton quota
 ROUND_DECIMALS = 3                  # arrondi lat/lng pour le cache (~100 m)
 HOURLY_CREDIT_LIMIT = 950           # marge de sécurité sous la limite officielle (1000/h, compte gratuit)
