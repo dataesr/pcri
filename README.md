@@ -16,7 +16,7 @@ Voire [Répertoire eCorda-data](https://github.com/dataesr/eCorda-data)
 
 
 # Installation du projet
---------------------
+
 
 Les données (`eCorda_data/`) sont volumineuses et **ne sont pas incluses dans le dépôt git**.
 Chaque utilisateur doit donc :

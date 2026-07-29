@@ -166,7 +166,7 @@ def entities_groupe(df, framework:str=None):
 
     tmp = paysage_siret[paysage_siret.groupby('id_clean')['siren_main'].transform('nunique') > 1]
     if len(tmp)>0:
-        print("-3 ATTENTION ! several siren per id_clean check endyear and activity")
+        print("-3 ⚠️ ! several siren per id_clean check endyear and activity")
         paysage_siret = paysage_siret.groupby('id_clean', as_index=False).agg(lambda x: ';'.join(x.dropna().unique().astype(str))).drop_duplicates()
     
     
@@ -211,7 +211,7 @@ def entities_categories(df):
 def entities_finalize(df, countries,  framework:str=None):
     print("### entities finalize")
     # # add countries infos and rename and remove useless columns
-    entities_info = add_countries_info(df, countries)
+    entities_info = add_countries_info(df, countries, framework)
 
 
     entities_info = (entities_info.drop(columns=[

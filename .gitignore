@@ -6,6 +6,10 @@ TEST2.py
 test3.py
 demandes.py
 tok/
+temp/
+.log
+.pid
+remote_process/output/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

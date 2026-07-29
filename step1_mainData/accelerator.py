@@ -25,7 +25,7 @@ def prop_accelerator_process(source_json, app1, projects, limit_min, limit_max):
     print(f"- check thema_code={p.thema_code.unique()}/n- size projects accelerator: {len(p)}")
 
     if len(p)>len(acc_folio):
-        print("- ATTENTION ! more accelerator projects in the main dataset than in the accelerator dataset, check project_id and thema_code")
+        print("- ⚠️ ! more accelerator projects in the main dataset than in the accelerator dataset, check project_id and thema_code")
 
     # compare the two datasets and check the grant requested for the coordinator        
     acc = app1.loc[app1['project_id'].isin(acc_folio['project_id'].unique())].merge(acc_folio[['project_id','grantRequested']], how='inner', on='project_id')
@@ -79,7 +79,7 @@ def prop_accelerator_process(source_json, app1, projects, limit_min, limit_max):
     # grants fixed
     # fix = pd.read_json('data_files/EIC_acc_fix.json', orient='records', dtype={'project_id': str})
     if any(acc['grant_fix_by_ce']== 25000000.00):
-        print(f"- ATTENTION ! some grant_fix_by_ce are 25M and are going to be fixed to 2.5M, check project_id and grantRequested values {acc.loc[acc['grant_fix_by_ce']== 25000000.00].project_id.unique()}")
+        print(f"- ⚠️ ! some grant_fix_by_ce are 25M and are going to be fixed to 2.5M, check project_id and grantRequested values {acc.loc[acc['grant_fix_by_ce']== 25000000.00].project_id.unique()}")
         acc.loc[acc['grant_fix_by_ce']== 25000000.00, 'grant_fix_by_ce'] = 2500000.0
 
     # check difference between requestedGrant and grant_fix_by_ce, if difference > 1.0, print project_id, role, requestedGrant, grant_fix_by_ce and diff

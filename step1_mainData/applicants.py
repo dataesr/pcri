@@ -23,7 +23,7 @@ def app_role_type (df, projects):
         df.loc[df.role=='host', 'partnerType'] = 'host'        
         df.loc[df['role'] != 'coordinator', 'role'] = 'partner'
     else:
-        print(f"- Attention ! check ROLE more than 5 modalities for applicants {df['role'].unique()}")
+        print(f"- ⚠️ ! check ROLE more than 5 modalities for applicants {df['role'].unique()}")
     
     #ERC role -> pi (STG, COG, ADG, POC, SYG), other ; ROLE ->  pi, co-pi (SYG coordinator), other
     proj_erc = projects.loc[(projects.stage=='evaluated')&(projects.thema_code=='ERC'), ['project_id', 'destination_code']]
@@ -42,7 +42,7 @@ def app_role_type (df, projects):
 def part_miss_app(tmp, df):
     if len(tmp)>0:
         print(("\n### add to APPLICANT from PARTICIPANT"))
-        print(f"1- ATTENTION ! vont être ajoutés les participants absents de proposals applicants {len(tmp)}")
+        print(f"1- ⚠️ ! vont être ajoutés les participants absents de proposals applicants {len(tmp)}")
         
         selector_d=[
             'project_id',
@@ -53,7 +53,7 @@ def part_miss_app(tmp, df):
             'role',
             'countryCode',
             'nutsCode',
-            'gps_loc',
+            'gps_source',
             'legalEntityTypeCode',
             'isSme',
             'totalCosts',
@@ -76,7 +76,7 @@ def check_multiA_by_proj(df):
     verif=pd.DataFrame(df[['project_id', 'orderNumber', 'generalPic', 'participant_pic', 'role', 'partnerType', 'name', 'requestedGrant', 'budget', 'countryCode']])[df['n_app']>1]
     bugs_excel(verif, PATH_SOURCE, 'double_app_prop+pic')
     if len(verif)>0:
-        print(f"- ATTENTION ! {len(verif)} records duplicated in excel bugs_found in path_source")
+        print(f"- ⚠️ ! {len(verif)} records duplicated in excel bugs_found in path_source")
     else:
         print("- no double applicant by project/pic/orderNumber/role/partnerType")
     return df

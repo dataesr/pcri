@@ -36,14 +36,14 @@ def applicants_calcul(part_step, app1, proj):
     subv_p.drop(['projNlien','orderNumber', '_merge'], axis=1, inplace=True)
 
     if len(subv_p)!=len(app1):
-        print(f"1- ATTENTION ! {len(subv_p)-len(app1)} participations perdues entre app1 et subv_p")
+        print(f"1- ⚠️ ! {len(subv_p)-len(app1)} participations perdues entre app1 et subv_p")
 
     app_sum = '{:,.1f}'.format(app1['requestedGrant'].sum())
     
     if '{:,.1f}'.format(subv_p['requestedGrant'].sum()) == app_sum:
         print("2- requests grants = subventions proposals OK")
     else:
-        print(f"3- ATTENTION ! Ecart subventions proposals -> subv_orig:{app_sum}, après fusion:{'{:,.1f}'.format(subv_p['requestedGrant'].sum())}")
+        print(f"3- ⚠️ ! Ecart subventions proposals -> subv_orig:{app_sum}, après fusion:{'{:,.1f}'.format(subv_p['requestedGrant'].sum())}")
         
     part_prop = (part_step.loc[part_step.inProposal==True].merge(subv_p, how='inner')[
                 ['project_id',  'generalPic', 'proposal_orderNumber', 
@@ -58,7 +58,7 @@ def applicants_calcul(part_step, app1, proj):
     if '{:,.1f}'.format(part_prop['calculated_fund'].sum())==app_sum:
         print("4- Etape part_prop/subv_p -> calculated_proposal_subv OK")
     else:
-        print(f"5- ATTENTION ! bien vérifier le volume de calculated_proposal_subv dans PARTICIPATION FINALE :{'{:,.1f}'.format(part_prop['calculated_fund'].sum())}, subv_orig:{app_sum}")
+        print(f"5- ⚠️ ! bien vérifier le volume de calculated_proposal_subv dans PARTICIPATION FINALE :{'{:,.1f}'.format(part_prop['calculated_fund'].sum())}, subv_orig:{app_sum}")
 
     print(f"- size part_prop: {len(part_prop)}")
     return part_prop
