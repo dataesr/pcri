@@ -73,7 +73,7 @@ def geonames_api(df,cc):
                 df.to_pickle(file_out)  # save before stopping
                 break
         else:
-            print(f"{cp}, {cc} -> ok")
+            print(f"{i}-{cc}", end=',')
             df.at[i, 'location'] = res
 
         hourly_count += 1
@@ -119,14 +119,11 @@ import time
 import difflib
 import requests
 import pandas as pd
- 
 session = requests.Session()
-BASE_URL = "https://data.geopf.fr/geocodage/search/"
-GEO_COMMUNES_URL = "https://geo.api.gouv.fr/communes"
- 
  
 def geocode_query(params, retries=3, pause=0.02):
     """Appelle l'API et retourne la liste des features (avec retry léger)."""
+    BASE_URL = "https://data.geopf.fr/geocodage/search/"
     for attempt in range(retries):
         try:
             r = session.get(BASE_URL, params=params, timeout=5)
@@ -170,6 +167,8 @@ def geocode_by_city_department(city, postcode, retries=3):
     Recherche une commune par nom + département via l'API Découpage administratif.
     Retourne (com_code, score) ou (None, None) si rien de probant.
     """
+    GEO_COMMUNES_URL = "https://geo.api.gouv.fr/communes"
+
     dept = department_from_postcode(postcode)
     params = {
         "nom": city,
