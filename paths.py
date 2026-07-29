@@ -60,7 +60,7 @@ def check_data_present():
     """Avertit si un dossier attendu est vide ou absent (donnees pas encore copiees)."""
     missing = [p for p in _ALL_PATHS if not Path(p).exists() or not any(Path(p).iterdir())]
     if missing:
-        print("[ATTENTION] Les dossiers suivants sont vides ou absents :")
+        print("⚠️ Les dossiers suivants sont vides ou absents :")
         for m in missing:
             print(f"   - {m}")
         print("Verifie que les donnees ont bien ete copiees/synchronisees a cet emplacement.")
