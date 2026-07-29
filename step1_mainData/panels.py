@@ -68,7 +68,7 @@ def merged_panels(df):
     liste_panels=[elem['panel_code'] for elem in panels]
 
     if any(list(set(p).difference(set(liste_panels)))):
-        return print(f"- ATTENTION UPDATE ! add panel_code to data_files/panels.json {list(set(p).difference(set(liste_panels)))}")
+        return print(f"- ⚠️ UPDATE ! add panel_code to data_files/panels.json {list(set(p).difference(set(liste_panels)))}")
          
     panels_proj=list(filter(None, df['panel_code'].unique()))
     no_panel=[x for x in panels_proj if x not in liste_panels] 

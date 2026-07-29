@@ -6,16 +6,10 @@ from functions_shared import chunkify, work_csv
 from step7_persons.prep_persons import persons_preparation
 from step7_persons.affiliations import affiliations, persons_files_import, persons_api_simplify, persons_results_clean, get_only_new_persons
 PATH_PERSONS=f"{PATH_HARVEST}persons/"
-CSV_DATE='20260616'
 
-#######
-persons_preparation(CSV_DATE)
-
-
-
-
-#######
-
+participation = pd.read_pickle(f"{PATH_CLEAN}participation_current.pkl")
+entities = pd.read_pickle(f"{PATH_CLEAN}entities_info_current2.pkl")
+project = pd.read_pickle(f"{PATH_CLEAN}projects_current.pkl")
 
 perso_part = pd.read_pickle(f"{PATH_CLEAN}persons_participants.pkl")
 perso_app = pd.read_pickle(f"{PATH_CLEAN}persons_applicants.pkl")
@@ -23,10 +17,11 @@ perso_app = pd.read_pickle(f"{PATH_CLEAN}persons_applicants.pkl")
 pp = pd.concat([perso_part.drop_duplicates(), perso_app.drop_duplicates()], ignore_index=True)
 pp['contact2']=pp.contact.str.replace('-', ' ')
 pp = pp.rename(columns={'country_code2':'iso2'})
+pp = pd.merge(pp, project[['project_id', 'destination_code', 'thema_code']], how='left', on=['project_id'])
 ####################################################################
 # requests openalex
 #PREPRATION data for request openalex
-lvar=['contact2','orcid_id','country_code', 'iso2', 'destination_code','thema_code','nationality_country_code']
+lvar=['contact2','orcid_id','country_code', 'iso2', 'destination_code', 'operateur_num', 'nationality_country_code']
 # toutes les structures participants françaises, contact français, tous projets individuels
 mask=((pp.country_code=='FRA')|(pp.nationality_country_code=='FRA')|(pp.destination_code.isin(['COG', 'PF', 'STG', 'ADG', 'POC','SyG', 'PERA', 'SJI'])))&~((pp.contact2.isnull())&(pp.orcid_id.isnull()))
 df=pp.loc[mask, lvar].sort_values(['country_code','orcid_id'], ascending=False).drop_duplicates()
@@ -35,7 +30,7 @@ print(f"size pp: {len(df)}, info sur pp with orcid: {len(df.loc[df.orcid_id.isnu
 #############
 df=get_only_new_persons(df, PATH_PERSONS)
 # request OPENALEX
-affiliations(df, PATH_PERSONS, CSV_DATE)
+affiliations(df, PATH_PERSONS, CSV_PERSONS)
 
 #prob limite requete
 oth=persons_files_import('other', PATH_PERSONS)

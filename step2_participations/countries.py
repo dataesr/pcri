@@ -20,7 +20,7 @@ def country_load(source, liste_country):
 
     # if some countryCode in clist not in my_country, print them to check if we can find them in my_country with old code or if we need to add them in country list
     countryCode_error=list(set(clist)-set(df.iso2.to_list()))
-    print(f"- ATTENTION countryCode missing in countryBase {countryCode_error}")
+    print(f"- ⚠️ countryCode missing in countryBase {countryCode_error}")
 
     df.rename(columns={'iso2':'countryCode',
                     'iso3':'countryCode_iso3',
@@ -30,7 +30,7 @@ def country_load(source, liste_country):
 
 
     if any(df.country_name_en.isnull()):
-        print(f'Attention ! country_name_en for countryCode not exist {df[df.country_name_en.isnull()].countryCode.unique()}')
+        print(f'- ⚠️ ! country_name_en for countryCode not exist {df[df.country_name_en.isnull()].countryCode.unique()}')
 
 
     gr=(data.loc[(data.framework=='H2020')&(data.isoCountryCode.isin(df.countryCode_iso3.unique())), 
@@ -64,7 +64,7 @@ def country_load(source, liste_country):
         if diff>0:
             print(f"1- check status countries ->\n{len(gr['country_association_code'].unique())-statut_len} new status")
         else:
-            print(f"2 - info status countries ->\n{gr['country_association_code'].nunique()-statut_len} status in data {gr['country_association_code'].unique()}")
+            print(f"2 - info status countries ->\n{gr['country_association_code'].nunique()-statut_len} status en + dans countries.json {gr['country_association_code'].unique()}")
 
     countries = df.merge(gr, how='left', left_on='countryCode_iso3', right_on='isoCountryCode').drop(columns='isoCountryCode')
 

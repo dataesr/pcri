@@ -15,7 +15,7 @@ def action(data, act_list:list):
             .rename(columns={'typeOfActionSimplifiedCode':'typeOfActionCode'}))
 
     if len(act_list)!=len(data):
-        print(f"2- ATTENTION ! nbre actions dans bases:{len(act_list)}, nbre actions dans nomenclature:{len(data)}")
+        print(f"2- ⚠️ ! nbre actions dans bases:{len(act_list)}, nbre actions dans nomenclature:{len(data)}")
 
     # # actions MSCA
     act = (data.loc[data.typeOfActionCode.str.contains('MSCA'), ['typeOfActionCode', 'typeOfActionSimplifiedDescription']]
@@ -102,7 +102,7 @@ def merged_actions(source, df):
     print(f"- size merged after add actions: {len(df)}\n")
 
     if len(df[df['typeOfActionCode'].isnull()])>0:
-        print(f"3- ATTENTION ! il reste des calls sans actions: {df.loc[df['typeOfActionCode'].isnull(), ['stage','call_id']].drop_duplicates()}\n")
+        print(f"3- ⚠️ ! il reste des calls sans actions: {df.loc[df['typeOfActionCode'].isnull(), ['stage','call_id']].drop_duplicates()}\n")
 
     # actions.to_csv(f"{PATH_CLEAN}actions_current.csv", index=False, encoding="UTF-8", sep=";", na_rep='')
 
@@ -110,6 +110,6 @@ def merged_actions(source, df):
 
     df = df.drop(columns='action_name').merge(act, how='left', on='action_code')
     if any(df.action_name.isnull()):
-        print(f"4- attention manque un libellé dans action_name.json -> {df[df.action_name.isnull()].action_code.unique()}\n")
+        print(f"4- ⚠️ manque un libellé dans action_name.json -> {df[df.action_name.isnull()].action_code.unique()}\n")
     return df
     

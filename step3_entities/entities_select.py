@@ -56,8 +56,9 @@ def entities_tmp_create(df, ref):
     # tmp.loc[~tmp['resourceId'].isnull(), 'id_extend'] = tmp.loc[~tmp['resourceId'].isnull(), 'resourceId']
 
     if (len(tmp))!=(len(df)):
-        print(f"1 - ATTENTION!!! size result {len(tmp)} diff size entities_info {len(df)}")
-    print(f"- End size entities_tmp {len(tmp)}")
+        print(f"1 - ⚠️ !!! size result {len(tmp)} diff size entities_info {len(df)}")
+    else:
+        print(f"- End size entities_tmp {len(tmp)}")
     rep.append({'stage_process':'entities_tmp', 'entities_size':len(tmp)})
     return tmp, rep
 

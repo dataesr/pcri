@@ -1,8 +1,10 @@
 from main_library import *
+from remote_process.grist import *
 import copy
 pd.options.mode.copy_on_write = True
 
 # if new update change constant_vars.py
+FETCH_GEO_DATA=False
 FETCH_WEB_DATA=False # True -> to fetch data from tenders portal and save in data_wp
 LOAD_DATA=False # True -> to load data from json, False -> to fetch data from json and save in json
 UPDATE_PROJECT=False # True -> to update projects and proposals, False -> to load last version of projects and proposals
@@ -11,6 +13,7 @@ UPDATE_ENTITIES=False # True -> to update entities, False -> to load last versio
 CHECK_ID_BY_API=False 
 UPDATE_REF_AND_PAYSAGE=False #-> after finding new ids and fixing some, load new ror, sirene and update paysage app
 UPDATE_GR=False
+UPDATE_PERSONS=True
 UPDATE_FP=False # True -> to update FP6, FP7, H2020 data, False -> to load last version of FP6, FP7, H2020 data
 
 ZIPNAME = last_data_zip(PATH_SOURCE, FRAMEWORK, 'json')
@@ -19,6 +22,16 @@ extractDate = date_load(SOURCE_JSON)
 CSV_PERSONS='20260616'
 
 #################################
+if FETCH_GEO_DATA==True:
+    """
+    -> Lancé en arrière-plan
+    charge les fichiers zip de geoname par pays
+    prépare un dataset complet avec tous les niveaux de geoloc
+
+    """
+    start()
+
+
 if FETCH_WEB_DATA==True:
     wp_year='2026'
     get_topic_from_eu_portal() #==> extract all topics closed/open/upcoming from eu poratl and save in data_wp/topic_info_harvest.json
@@ -51,7 +64,8 @@ if LOAD_DATA==True:
     app, rep = applicants_load(SOURCE_JSON)
     reporting.extend(rep)
 
- 
+    entities, rep = entities_load(SOURCE_JSON)
+    reporting.extend(rep)
     ##################################
 
 if UPDATE_PROJECT==True:
@@ -130,7 +144,7 @@ if UPDATE_PROJECT==True:
     print("\n### CALLS+MERGED")
     # check if call_id in MERGED match with call in calls
     if len(merged.loc[merged['call_id'].isnull()])>0:
-            print(f"1 - ATTENTION : manque des call_id: {merged.loc[merged['call_id'].isnull(), 'project_id']}")
+            print(f"1 - ⚠️ : manque des call_id: {merged.loc[merged['call_id'].isnull(), 'project_id']}")
     else:
         call_id = merged[['call_id', 'call_deadline']].drop_duplicates()
         print(f"2 - CALL_ID de merged -> nb call+deadline: {len(call_id)}, nb call unique: {call_id['call_id'].nunique()} ")
@@ -176,6 +190,10 @@ if UPDATE_PARTICIPATION == True:
     app1 = app_role_type(app1, projects)
     reporting.append({'stage_process':'process5_role_erc', 'applicant_size':len(app1)})
 
+    # part with generalPic null
+    if any(part[part['generalPic'].isnull()]):
+        part = part_pic_null(part, entities)
+
     # Role, partnerType, erc_role
     part = part_role_type(part, projects)
     reporting.append({'stage_process':'process5_role_erc', 'participant_size':len(part)})
@@ -190,8 +208,6 @@ if UPDATE_PARTICIPATION == True:
     ########################################
     ### STEP2
     # ENTITIES
-    entities, rep = entities_load(SOURCE_JSON)
-    reporting.extend(rep)
     entities, rep = entities_merge_partApp(entities, app1, part)
     reporting.extend(rep)
 
@@ -208,7 +224,7 @@ if UPDATE_PARTICIPATION == True:
 
     # if countryCode missing in country list, add to function my_country_code and reload
     if any(countryCode_err):
-        print(f"Attention fix country_code missing {countryCode_err}")
+        print(f"- ⚠️ fix country_code missing {countryCode_err}")
 
     cc_code = countries[['countryCode', 'countryCode_iso3']].drop_duplicates().rename(columns={'countryCode_iso3':'country_code_source'})
     app1 = app1.merge(cc_code, how='left', on='countryCode', indicator=True)
@@ -229,8 +245,9 @@ if UPDATE_PARTICIPATION == True:
     """
     merge app1 + part -> lien
     add nuts code to lien
-    """
+        """
     lien = merged_partApp(app1, part)
+    ambigus = lien[lien.base_only == 'AMBIGU_a_verifier']
     reporting.append({'stage_process':'process2_PicAppPart', 'lien_size':len(lien)})
     lien = nuts_lien(SOURCE_JSON, app1, part, lien)
     reporting.append({'stage_process':'process2_wthNuts', 'lien_size':len(lien)})
@@ -332,7 +349,6 @@ ref_with_paysage = merge_id_to_ref(ref_id, 'from_id_to_ref')
 
 ###  CREATE ENTITIES_TMP
 entities_tmp, rep = entities_tmp_create(entities_info, ref_with_paysage)
-print(f"size entities_tmp: {len(entities_tmp)}")
 entities_tmp = entities_for_merge(entities_tmp)
 
 # new source_id and check bugs between siren and ror if need to fix -> fix_bug=True
@@ -398,17 +414,21 @@ participation = participations_finalize(part_step, proj_no_coord)
 del part_step
 
 
-
-
+# controle des variables - null non null, valeur dupliquée
+cols=["stage", "generalPic", "country_code"]
+pcheck, pdup = check_dataframe(participation, required_columns=cols)
 
 """
 persons script 
 """
-persons_preparation(CSV_PERSONS)
+if UPDATE_PERSONS==True:
+    persons_preparation(CSV_PERSONS)
+    perso_part = pd.read_pickle(f"{PATH_CLEAN}persons_participants.pkl")
+    perso_app = pd.read_pickle(f"{PATH_CLEAN}persons_all.pkl")
+else:
+    perso_part = pd.read_pickle(f"{PATH_CLEAN}persons_participants.pkl")
+    perso_app = pd.read_pickle(f"{PATH_CLEAN}persons_applicants.pkl")
 
-
-perso_part = pd.read_pickle(f"{PATH_CLEAN}persons_participants.pkl")
-perso_app = pd.read_pickle(f"{PATH_CLEAN}persons_applicants.pkl")
 pp = pd.concat([perso_part.drop_duplicates(), perso_app.drop_duplicates()], ignore_index=True)
 
 erc_perso = pp.loc[pp['thema_code']=='ERC']

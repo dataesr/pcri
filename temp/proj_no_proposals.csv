@@ -1,7 +1,6 @@
 callId;tot_proposals;tot_project;inProposal;tx_calcul
-ERC-2025-COG;;146;False;False
-ERC-2025-POC;489.0;2;True;True
-ERC-2025-SyG;;25;False;False
-HORIZON-EIC-2024-ACCELERATOR-01;299.0;692;True;True
-HORIZON-EIC-2025-ACCELERATOR-01;577.0;77;True;True
-HORIZON-EIC-2025-PATHFINDEROPEN;;39;False;False
+EIT-KICS-2021;;8;False;False
+ERC-2025-EPMC-IBA;;1;False;False
+ERC-2025-POC;489.0;130;True;True
+ERC-2025-SyG;;64;False;False
+ERC-2025-VICECHAIRS-IBA;;1;False;False

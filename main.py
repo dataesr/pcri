@@ -7,7 +7,7 @@ from main_library import *
 # 1 - si nouvelle actualisation utiliser MAIN_FIRST_PROCESS
 #################
 
-NEW_UPDATE=False
+NEW_UPDATE=True
 
 #################################
 # si traitement déjà effectués
@@ -54,23 +54,31 @@ msca_collab(collaboration)
 
 # provisoire
 h20 = h20.rename(columns={'insee_cat_code':'cat_entreprise_code', 'insee_cat_name':'cat_entreprise_name' })
-
+'country_name_mapping'
 entities_participation = entities_preparation(entities_part, h20)
+entities_participation.drop(columns=[ 'city_clean', 'com_code', 'countryCode', 'geo_global_code', 
+                'geo_global_latlng', 'geo_global_name', 'dep_code', 'postalCode_source',
+                'geo_global_parent', 'geo_parent_latlng', 'geo_parent_name', 'entities_num',
+                'in_project','merge_entitiesLien', 'n_state'], inplace=True)
+
+
 entities_participation.to_pickle(f"{PATH_CLEAN}entities_participation_current.pkl")
 
-mongo_bulk_insert_df(entities_participation[entities_participation['framework']=='Horizon Europe'], batch_size=10_000)
+# mongo_bulk_insert_df(entities_participation[entities_participation['framework']=='Horizon Europe'], batch_size=10_000)
 
 print(f"size entities_participation: {len(entities_participation)}")
 entities_ods('h20', entities_participation)
 entities_ods('horizon', entities_participation)
 
 # entities_participation = entreprise_group_cleaning(entities_participation)
-(entities_participation.drop(columns=['ecorda_date','action_code2','action_name2', 
+(entities_participation.drop(columns=['ecorda_date','action_code2','action_name2', 'status_evaluation',
                 'free_keywords', 'abstract', 'acronym', 'call_deadline', 'topic_name','topic_code',
-                'category_id', 'entities_name_source', 'entities_acronym_source', 
+                'category_id', 'entities_name_source', 'entities_acronym_source',  'generalPic',
                 'numero_national_de_structure', 'nutsCode', 'participation_nuts', 'participation_linked',
                 'paysage_category', 'paysage_category_id', 'ror_category', 'siren_all',
-                'source_id', 'numero_national_de_structure', 'structure_name'])
+                'source_id', 'numero_national_de_structure', 'structure_name', 'erc_evaluation_step',
+                'regional_unit_name', 'region_2_name', 'region_1_name',
+                'stage_call'])
     .to_csv(f"{PATH_CONNECT}entities_participation_current.csv", sep=";", 
             index=False, encoding='UTF-8', na_rep='', decimal='.'))
 

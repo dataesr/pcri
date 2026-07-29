@@ -112,23 +112,23 @@ def participations_calc(lien, proj, entities_info):
     
     x=part_step[part_step.stage=='successful']
     if len(part) != len(x):
-        print(f"2- ATTENTION ! pas le même nbre de lignes-> part_step: {len(x)}, first_part_step: {len(part)}")    
+        print(f"2- ⚠️ ! pas le même nbre de lignes-> part_step: {len(x)}, first_part_step: {len(part)}")    
 
     if '{:,.1f}'.format(x['beneficiary_fund'].sum())=='{:,.1f}'.format(part['beneficiary_fund'].sum()):
         print("3- Etape part_step/part1 -> beneficiary_fund OK")
     else:
-        print(f"4- ATTENTION ! Revoir le calcul de beneficiary_fund:{'{:,.1f}'.format(x['beneficiary_fund'].sum())}, euContribution:{'{:,.1f}'.format(part['beneficiary_fund'].sum())}")
+        print(f"4- ⚠️ ! Revoir le calcul de beneficiary_fund:{'{:,.1f}'.format(x['beneficiary_fund'].sum())}, euContribution:{'{:,.1f}'.format(part['beneficiary_fund'].sum())}")
         
     if '{:,.1f}'.format(x['calculated_fund'].sum())=='{:,.1f}'.format(part['part_fund'].sum()):
         print("5- Etape part_step/part1 -> calculated_fund OK")
     else:
-        print(f"-- ATTENTION ! Revoir le calcul de calculated_other_subv:{'{:,.1f}'.format(x['calculated_fund'].sum())}, netEuContribution:{'{:,.1f}'.format(part['part_fund'].sum())}")
+        print(f"-- ⚠️ ! Revoir le calcul de calculated_other_subv:{'{:,.1f}'.format(x['calculated_fund'].sum())}, netEuContribution:{'{:,.1f}'.format(part['part_fund'].sum())}")
 
     x=part_step[part_step.stage=='evaluated']
     if '{:,.1f}'.format(app['app_fund'].sum()) == '{:,.1f}'.format(x['calculated_fund'].sum()):
         print("2- requests grants = subventions proposals OK")
     else:
-        print(f"3- ATTENTION ! Ecart subventions proposals -> subv_orig:{'{:,.1f}'.format(app['app_fund'].sum())}, après fusion:{'{:,.1f}'.format(x['calculated_fund'].sum())}")
+        print(f"3- ⚠️ ! Ecart subventions proposals -> subv_orig:{'{:,.1f}'.format(app['app_fund'].sum())}, après fusion:{'{:,.1f}'.format(x['calculated_fund'].sum())}")
 
     return part_step
 
@@ -183,6 +183,10 @@ def participations_finalize(part_step, proj_no_coord):
 def ent(participation, entities_info, projects):
     import  pandas as pd
     print("### ENTITIES preparation")
+
+    pe = '{:,.1f}'.format(participation.loc[participation.stage=='evaluated', 'calculated_fund'].sum())
+    ps = '{:,.1f}'.format(participation.loc[participation.stage=='successful', 'calculated_fund'].sum())
+
     part=(participation[
         ['stage', 'project_id','generalPic', 'role', 'participates_as', 'erc_role', 
         'with_coord', 'is_ejo', 'country_code', 'participation_nuts', 'country_code_mapping',
@@ -201,17 +205,18 @@ def ent(participation, entities_info, projects):
         
         print(f"- subv {stage_value}={'{:,.1f}'.format(df.loc[(df.country_code=='FRA')&(df.stage==stage_value), 'calculated_fund'].sum())}")
 
-        if any(df.id.str.contains(';', na=False)):
-            print(f"- Attention multi id pour une participation, calculs sur les chiffres\n {df.loc[df.id.str.contains(';', na=False), 'id'].drop_duplicates()}")
-            df['entities_num'] = np.where(df.id.str.contains(';', na=False), df.id.str.split(';').str.len(), 1)
+        if any(df['id_first'].str.contains(' |;', na=False)):
+            print(f"- ⚠️ multi id_first pour une participation, calculs sur les chiffres\n {df.loc[df['id_first'].str.contains(' |;', na=False), 'id_first'].drop_duplicates()}")
+            df['entities_num'] = np.where(df['id_first'].str.contains(' |;', na=False), df['id_first'].str.split(' |;').str.len(), 1)
             for i in ['coordination_number', 'calculated_fund', 'beneficiary_fund', 'fund_ent_erc', 'number_involved']:
                 df[i] = df[i]/df['entities_num']
         return df
-    
+        
     entities_eval = ent_stage(part, 'evaluated')
     print(f"2 - subv={'{:,.1f}'.format(entities_eval.loc[(entities_eval.country_code=='FRA')&(entities_eval.stage=='evaluated'), 'calculated_fund'].sum())}")
     entities_signed = ent_stage(part, 'successful')
     print(f"3 - subv={'{:,.1f}'.format(entities_signed.loc[(entities_signed.country_code=='FRA')&(entities_signed.stage=='successful'), 'calculated_fund'].sum())}")
+
     entities_part = pd.concat([entities_eval, entities_signed], ignore_index=True)
 
     mask = (
@@ -230,24 +235,29 @@ def ent(participation, entities_info, projects):
 
     entities_part=(entities_part
                 .drop(columns=
-                ['generalState', 'street', 'postalCode','postalBox', 'cj_code', 'cj_name', 
-                'webPage','naceCode','gps_loc', 'city', 'isNonProfit', 'id', 'id_secondaire',
+                ['generalState', 'street', 'postalCode', 'postalCode_source', 'postalBox', 'cj_code', 'cj_name', 
+                'webPage','naceCode','gps_source', 'city', 'isNonProfit', 'id_first', 'id_secondaire',
                 'isPublicBody', 'isInternationalOrganisation', 'isResearchOrganisation', 
-                'isHigherEducation','legalType', 'naceCode', 'gps_loc'])
+                'isHigherEducation','legalType', 'naceCode', 'gps_source', 'entities_num', 'n_state'])
                 )
     print(f"4 - entities_part subv drop columns={'{:,.1f}'.format(entities_part.loc[(entities_part.country_code=='FRA')&(entities_part.stage=='successful'), 'calculated_fund'].sum())}")
 
-    entities_part=(entities_part
-        .groupby(list(entities_part.columns.difference(['coordination_number', 'number_involved', 'calculated_fund', 'beneficiary_fund', 'fund_ent_erc'])), dropna=False, as_index=False).sum()
-        .drop_duplicates()
+    cols_group = list(entities_part.columns.difference(['coordination_number', 'number_involved', 'calculated_fund', 'beneficiary_fund', 'fund_ent_erc']))
+    enti = pd.DataFrame()
+    for s in entities_part['stage'].unique():
+        e = (entities_part[entities_part['stage']==s]
+            .groupby(cols_group, dropna=False, as_index=False, observed=True).sum()
+            .drop_duplicates()
         )
+        enti = pd.concat([enti, e], ignore_index=True)
 
+    entities_part = enti.copy()
     print(f"5 - entities_part subv groupby and sum={'{:,.1f}'.format(entities_part.loc[(entities_part.country_code=='FRA')&(entities_part.stage=='successful'), 'calculated_fund'].sum())}")
 
     entities_part = entities_part.map(lambda x: x.strip() if isinstance(x, str) else x)
 
-    print(f"6 - part={'{:,.1f}'.format(entities_part.loc[entities_part.stage=='evaluated', 'calculated_fund'].sum())},participation={'{:,.1f}'.format(participation.loc[participation.stage=='evaluated', 'calculated_fund'].sum())}")
-    print(f"7 - part={'{:,.1f}'.format(entities_part.loc[entities_part.stage=='successful', 'calculated_fund'].sum())},participation={'{:,.1f}'.format(participation.loc[participation.stage=='successful', 'calculated_fund'].sum())}")
+    print(f"6 - part={'{:,.1f}'.format(entities_part.loc[entities_part.stage=='evaluated', 'calculated_fund'].sum())},participation={pe}")
+    print(f"7 - part={'{:,.1f}'.format(entities_part.loc[entities_part.stage=='successful', 'calculated_fund'].sum())},participation={ps}")
     print(f"8 - comparaison nb couple genpic + country (doit être égal) {len(entities_part[['generalPic','country_code']].drop_duplicates())},{len(entities_info[['generalPic','country_code']].drop_duplicates())}")
 
     proj=(projects
@@ -260,11 +270,11 @@ def ent(participation, entities_info, projects):
         .drop_duplicates()
         )
 
-    # merge inner ; ATTENTION perte de participations baisse des subv
+    # merge inner ; ⚠️ perte de participations baisse des subv
     temp = (entities_part
             .merge(proj, how='inner', on=['project_id', 'stage'])
             .sort_values(['destination_name_en'], ascending=True))
         
     temp = temp.reindex(sorted(temp.columns), axis=1)
-    print(f"-size de entities_participation : {len(temp)}\n- {temp.loc[(temp.country_code=='FRA')&(temp.stage=='successful'), 'calculated_fund'].sum()}")
+    print(f"-size de entities_participation : {len(temp)}\n- merge inner ; ⚠️ perte de participations baisse des subv: {temp.loc[(temp.country_code=='FRA')&(temp.stage=='successful'), 'calculated_fund'].sum()}")
     return temp

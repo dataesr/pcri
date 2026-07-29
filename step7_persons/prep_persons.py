@@ -7,7 +7,7 @@ def persons_preparation(csv_date):
     from paths import PATH_SOURCE, PATH_CLEAN
     from config_url import grist_url
     from functions_shared import unzip_zip, my_country_code, country_iso_shift, prop_string
-    from remote_process.grist import personsG, add_records_to_grist
+    from remote_process.grist import personsG
 
     ###############################
     participation = pd.read_pickle(f"{PATH_CLEAN}participation_current.pkl")
@@ -21,7 +21,7 @@ def persons_preparation(csv_date):
     perso_part = unzip_zip(f'{PATH_SOURCE}{FRAMEWORK}/he_grants_ecorda_pd_{csv_date}.zip', "participant_persons.csv", 'utf-8')
     perso_part = (perso_part.loc[perso_part.FRAMEWORK=='HORIZON',
             ['PROJECT_NBR', 'GENERAL_PIC', 'PARTICIPANT_PIC', 'ROLE', 'FIRST_NAME',
-            'LAST_NAME', 'TITLE', 'GENDER', 'PHONE', 'EMAIL',
+            'LAST_NAME','GENDER', 'PHONE', 'EMAIL',
             'BIRTH_COUNTRY_CODE', 'NATIONALITY_COUNTRY_CODE', 'HOST_COUNTRY_CODE', 'SENDING_COUNTRY_CODE']]
                 .rename(columns=str.lower)
                 .rename(columns={'project_nbr':'project_id', 'general_pic':'generalPic', 'participant_pic':'pic'})
@@ -33,7 +33,7 @@ def persons_preparation(csv_date):
 
     perso_app = (perso_app.loc[perso_app.FRAMEWORK=='HORIZON',
         ['PROPOSAL_NBR', 'GENERAL_PIC', 'APPLICANT_PIC', 'ROLE', 'FIRST_NAME',
-        'FAMILY_NAME', 'TITLE', 'GENDER', 'PHONE', 'EMAIL',
+        'FAMILY_NAME', 'GENDER', 'PHONE', 'EMAIL',
         'RESEARCHER_ID', 'ORCID_ID', 'GOOGLE_SCHOLAR_ID','SCOPUS_AUTHOR_ID']]
                 .rename(columns=str.lower)
                 .rename(columns={'proposal_nbr':'project_id', 'general_pic':'generalPic', 'applicant_pic':'pic', 'family_name':'last_name'})
@@ -46,15 +46,27 @@ def persons_preparation(csv_date):
         perso_part = country_iso_shift(perso_part, el, iso2_to3=True)
 
     ####################################
-    print(f"\n### TITLE cleaning")
-    def title_clean(df):
-        df.loc[~df['title'].isnull(), 'title_clean'] = df.loc[~df['title'].isnull(), 'title'].str.replace(r"[^\w\s]+", " ", regex=True)
-        df.loc[~df['title_clean'].isnull(), 'title_clean'] = df.loc[~df['title_clean'].isnull(), 'title_clean'].str.replace(r"\s+", " ", regex=True).str.strip()
-        df.mask(df == '', inplace=True)
-        return df
+    # print(f"\n### TITLE cleaning")
+    # def title_clean(df):
+    #     df.loc[~df['title'].isnull(), 'title_clean'] = df.loc[~df['title'].isnull(), 'title'].str.replace(r"[^\w\s]+", " ", regex=True)
+    #     df.loc[~df['title_clean'].isnull(), 'title_clean'] = df.loc[~df['title_clean'].isnull(), 'title_clean'].str.replace(r"\s+", " ", regex=True).str.strip()
+    #     df['title_clean'] = df['title_clean'].str.lower()
 
-    perso_part = title_clean(perso_part)
-    perso_app = title_clean(perso_app)
+    #     titles = ['mrs', 'miss', 'mr', 'ms', 'ma', 'm', 'not appli']
+    #     titles_sorted = sorted(titles, key=len, reverse=True)
+    #     pattern = r'\b(?:' + '|'.join(titles_sorted) + r')\b'
+    #     mask = df['col'].str.contains(pattern, regex=True, case=False, na=False)
+    #     df.loc[mask, 'col'] = np.nan
+
+    #     map = {"doctor": "dr", "professor": "prof", "prf": "prof", "pr": "prof"}
+    #     df['col'] = df['col'].replace(map)
+
+
+    #     df.mask(df == '', inplace=True)
+    #     return df
+
+    # perso_part = title_clean(perso_part)
+    # perso_app = title_clean(perso_app)
 
     ###############################
     print(f"\n### NAME fix encoding issues")
@@ -78,7 +90,7 @@ def persons_preparation(csv_date):
 
     ####################################
     print(f"\n### STRING cleaning")
-    cols = ['role', 'first_name', 'last_name','title_clean', 'gender']
+    cols = ['role', 'first_name', 'last_name', 'gender']
     perso_part = prop_string(perso_part, cols)
     perso_app = prop_string(perso_app, cols)
 
@@ -163,7 +175,7 @@ def persons_preparation(csv_date):
             x=df.loc[i]
             print(f"3 - size x before remove: {len(x)}")
             x=x.groupby(['project_id','generalPic', 'last_name']).apply(lambda i: i.sort_values('role', key=lambda col: pd.Categorical(col, categories=keep_order, ordered=True)), include_groups=True).reset_index(drop=True)
-            for v in ['title', 'gender','phone','email','birth_country_code','nationality_country_code','host_country_code','sending_country_code']:
+            for v in ['gender','phone','email','birth_country_code','nationality_country_code','host_country_code','sending_country_code']:
                 if v in x.columns:
                     x[v]=x.groupby(['project_id', 'generalPic', 'last_name'])[v].bfill()
             x=x.groupby(['project_id', 'generalPic', 'last_name']).head(1)
@@ -183,6 +195,7 @@ def persons_preparation(csv_date):
 
     perso_part = name_duplicated_remove(perso_part)
     perso_app = name_duplicated_remove(perso_app)
+
     # ####################################
     perso_part = perso_measure(perso_part)
     perso_app = perso_measure(perso_app)
@@ -194,7 +207,7 @@ def persons_preparation(csv_date):
             mask=(df.nb_pic_by_contact_unique>1)&(df.role=='principal investigator')
             pi=df.loc[mask, ['project_id', 'contact']].drop_duplicates().merge(df, how='inner')
             pi['role'] = 'principal investigator'
-            for v in ['title', 'gender','birth_country_code','nationality_country_code','sending_country_code']:
+            for v in ['gender','birth_country_code','nationality_country_code','sending_country_code']:
                 if v in df.columns:
                     pi=pi.sort_values(v)
                     pi[v]=pi.groupby(['project_id', 'contact'])[v].ffill()
@@ -212,7 +225,7 @@ def persons_preparation(csv_date):
         
         df=df.loc[df.project_id.isin(participation[participation.stage==stage].project_id.unique())]
         df=df.merge(participation.loc[participation.stage==stage, ['project_id', 'generalPic', 'country_code', 'numero_national_de_structure']], how='outer', on=['project_id', 'generalPic'], indicator=True).query('_merge!="right_only"')
-        df.loc[df._merge=='left_only', 'institution_shift'] = 'past'
+        df.loc[df._merge=='left_only', 'institution_shift'] = 'ended'
 
         if stage=='successful':
             df.loc[(df._merge=='both')&(df.host_country_code.isnull()), 'host_country_code'] = df.loc[(df._merge=='both')&(df.host_country_code.isnull()), 'country_code']
@@ -293,18 +306,7 @@ def persons_preparation(csv_date):
         return df
     
     perso_part = nationality_clean(perso_part)
-    #################
 
-    def orcid_id_fill(df):
-        print("### orcid fillna")
-        temp=df.groupby(['generalPic', 'contact'], dropna=False)['orcid_id'].nunique(dropna=False).reset_index()
-        print(temp[temp.orcid_id>2])
-        temp=temp[temp.orcid_id>1].drop(columns='orcid_id')
-        df=df.merge(temp, how='left', on=['generalPic', 'contact'], indicator=True)
-        df.loc[df._merge=='both', 'orcid_id'] = df.loc[df._merge=='both'].sort_values(['generalPic', 'contact', 'orcid_id']).groupby(['generalPic', 'contact'], group_keys=True)['orcid_id'].ffill()
-        return df.drop(columns='_merge')
-    
-    perso_app = orcid_id_fill(perso_app)
     #################
 
     def vars_missing(perso_part, perso_app):
@@ -320,66 +322,57 @@ def persons_preparation(csv_date):
     perso_part, perso_app = vars_missing(perso_part, perso_app)
     ##################
     
+    pp = pd.concat([perso_part.drop_duplicates(), perso_app.drop_duplicates()], ignore_index=True)
+    # pp = pd.merge(pp, project[['project_id', 'destination_code', 'thema_code']], how='left', on=['project_id'])
+
+
+    def gender_clean(df):
+        replacements = {
+            r'non[\s\-]?bin\w+': 'non binary',
+            r'missing|andy': 'unknown'
+        }
+
+        df['gender'] = df['gender'].replace(replacements, regex=True)
+        return df
+
+    pp = gender_clean(pp)
+
+
     # fill missing value with other df part/app
-    print(f"\n### GENDER/TITLE missing")
-    def gender_title_missing(part, app):
+    print(f"\n### GENDER missing")
+    def gender_missing(pp):
         from step7_persons.gender_name import gender_by_first_name
+        from remote_process.grist import add_records_to_grist
         # from remote_process.gender_determine import gender_by_first_name
         # from functions_shared import work_csv
 
 
-        combined = pd.concat([part[['project_id', 'contact', 'gender', 'title_clean']].drop_duplicates(), 
-                              app[['project_id', 'contact', 'gender', 'title_clean']].drop_duplicates()])  # perso_part est concaténé EN PREMIER
+        combined = pp[['project_id', 'contact', 'gender']].drop_duplicates()
         
         ref = (combined
-                .groupby(['project_id', 'contact'])[['gender', 'title_clean']]
+                .groupby(['project_id', 'contact'])[['gender']]
                 .first()  # prend la 1ère valeur NON-NULLE rencontrée dans l'ordre du df
                 .reset_index()
             )
         
-        print(f"- size part before: {len(part)}")
-        part = (part.drop(columns=['gender', 'title_clean']).drop_duplicates()
+        print(f"- size pp before: {len(pp)}")
+        pp = (pp.drop(columns=['gender']).drop_duplicates()
                 .merge(ref, how='left', on=['project_id', 'contact'])
         )
-        print(f"- size part after merge gender clean: {len(part)}")
+        print(f"- size pp after merge gender clean: {len(pp)}")
 
-        print(f"- size app before: {len(app)}")
-        app = (app.drop(columns=['gender', 'title_clean']).drop_duplicates()
-                .merge(ref, how='left', on=['project_id', 'contact'])
-        )
-        print(f"- size app after merge gender clean: {len(app)}")        
-        # cl=['gender', 'title_clean']
-        # for i in cl:
-        #     tab=(part.loc[~part[i].isnull(), ['project_id', 'contact', i]].drop_duplicates()
-        #     .merge(app.loc[~app[i].isnull(), ['project_id', 'contact', i]].drop_duplicates(),
-        #             how='inner', on=['project_id', 'contact'], suffixes=('_x','_y'))
-        #             .drop_duplicates())
-
-        #     if any(tab.loc[(tab[f"{i}_x"].isnull())&(~tab[f"{i}_y"].isnull())]):
-        #         tab.loc[(tab[f"{i}_x"].isnull())&(~tab[f"{i}_y"].isnull()), f"{i}_x"] = tab[f"{i}_y"]
-        #     if any(tab.loc[(~tab[f"{i}_x"].isnull())&(tab[f"{i}_y"].isnull())]):
-        #         tab.loc[(~tab[f"{i}_x"].isnull())&(tab[f"{i}_y"].isnull()), f"{i}_y"] = tab[f"{i}_x"]
-
-        #     part = part.merge(tab[['project_id', 'contact', f"{i}_x"]].drop_duplicates(), how='left', on=['project_id', 'contact'])
-        #     part.loc[part[i].isnull(), i] = part.loc[part[i].isnull(), f"{i}_x"]
-        #     part.drop(columns=f"{i}_x", inplace=True)
-        #     app = app.merge(tab[['project_id', 'contact', f"{i}_y"]].drop_duplicates(), how='left', on=['project_id', 'contact'])
-        #     app.loc[app[i].isnull(), i] = app.loc[app[i].isnull(), f"{i}_y"]
-        #     app.drop(columns=f"{i}_y", inplace=True)
-        
         p = personsG['Gender_by_first_name'][['first_name', 'gender', 'drop_name']].drop_duplicates()
         
         def update_gender(df):
             df = pd.merge(df, p, how='left', on='first_name', suffixes=('', '_y'))
             df['gender'] = df['gender'].fillna(df['gender_y'])
             df.drop(columns='gender_y', inplace=True)
-            return df
+            return df 
         
         # Applique la fonction au DataFrame
-        part = update_gender(part)
-        app = update_gender(app)
+        pp = update_gender(pp)
 
-        l=list(set(list(part.loc[(part.gender.isnull())&(part.drop_name.isnull())].first_name.unique())+list(app.loc[(app.gender.isnull())&(app.drop_name.isnull())].first_name.unique())))
+        l=list(set(list(pp.loc[(pp.gender.isnull())&(pp.drop_name.isnull())].first_name.unique())))
         # l=part.loc[(part.country_code=='FRA')&(part.gender.isnull())].first_name.unique()
         print(f"- size first_name list: {len(l)}")
         res=gender_by_first_name(l)
@@ -389,31 +382,295 @@ def persons_preparation(csv_date):
             print(f"- ATTENTION ! check {len(res)} first names in gender_part dataset in grist -> reload personsG and execute again persons script" )
             add_records_to_grist(res, grist_url, 'pcri', 'persons', 'gender_by_first_name')
             
-        return part, app
+        return pp
 
-    perso_part, perso_app = gender_title_missing(perso_part, perso_app)
+    pp = gender_missing(pp)
+
+    #################
+    def detect_nan_value_by_group(df, group_by_cols: list, var: str):
+        return df.groupby(group_by_cols, dropna=False)[var].transform(
+            lambda x: x.isna().any()
+            )
+
+    def nan_var_fill_by_group(df, group_by_cols: list, var: str):
+        return df.groupby(group_by_cols, dropna=False)[var].transform(
+            lambda x: x.ffill().bfill()
+            )
+
+    def most_common_value(df, group_by_cols: list, var: str):
+        return df.groupby(group_by_cols, dropna=False)[var].transform(
+            lambda x: x.mode().iloc[0] if not x.mode().empty else np.nan
+            )
 
 
-    def researchers_keeped(df):
-        df['is_pi_or_fellow'] = df['role'].isin(['principal investigator', 'fellow'])
-        result = df.groupby('project_id')['is_pi_or_fellow'].any().reset_index()
+    def fill_var_by_group(df, var: str, cols_list: list):
+        df['nb']=df.groupby(cols_list, dropna=False)[var].transform('nunique')
+        value_nan = detect_nan_value_by_group(df, cols_list, var)
+        value_common = most_common_value(df, cols_list, var)
 
-        tmp=perso_part.loc[perso_part.project_id.isin(result.loc[result.is_pi_or_fellow==True])&(perso_part.role!='main_contact')]
+        # 2. process for orcid_id number > 2 -> just one case 
+        mask = (df['nb'] > 2) & value_nan
+        df.loc[mask, var] = value_common[mask]
+        df['nb']=df.groupby(cols_list, dropna=False)[var].transform('nunique')
+        value_nan = detect_nan_value_by_group(df, cols_list, var)
+
+        # 3. ++ rows by group with nan value and not nan ; using not nan to fill
+        mask = value_nan
+        df.loc[mask, var] = value_common[mask]
+        df['nb']=df.groupby(cols_list, dropna=False)[var].transform('nunique')
+        return df
 
 
+    def fill_all_by_group(df):
+        print("### var fillna")
+        # fill orcid_id
+        cols_list=['project_id', 'contact']
+        df = fill_var_by_group(df, 'orcid_id', cols_list)
 
+        cols_list=['generalPic', 'contact']
+        df = fill_var_by_group(df, 'orcid_id', cols_list)
+
+        # # fill title_clean
+        # cols_list=['project_id', 'contact']
+        # df = fill_var_by_group(df, 'title_clean', cols_list)
+
+        # cols_list=['generalPic', 'contact']
+        # df = fill_var_by_group(df, 'title_clean', cols_list)
+
+        print(df.gender.value_counts(dropna=False))
+
+
+        return df.drop(columns='nb')
+    
+    pp = fill_all_by_group(pp)
+    print(f"- size pp after cleansing {len(pp)}")
+
+    pp = pp.loc[pp['drop_name']!=True]
+    cols_to_drop = ['drop_name', 'fill_nat', 'pic'] + [col for col in pp.columns if col.startswith('nb_')]
+    pp = pp.drop(columns=cols_to_drop).drop_duplicates()
+
+    pp = (pd.merge(pp, 
+                   project[['project_id', 'stage']], 
+                   how='inner', 
+                   on=['project_id', 'stage'], 
+                   indicator=True)
+                   .query('_merge=="both"')
+                   .drop(columns='_merge')
+                   .drop_duplicates()
+    )
+    print(f"- size pp in project {len(pp)}")
+
+
+    def check(df):
+            
+        required = {"project_id", "role", "stage"}
+        missing = required - set(df.columns)
+        if missing:
+            raise ValueError(f"Colonnes manquantes dans le CSV : {missing}")
+    
+        has_contact = "contact" in df.columns
+    
+        results = []
+        contact_checks = []
+    
+        for project_id, group in df.groupby("project_id"):
+            roles = set(group["role"])
+            stages = set(group["stage"])
+    
+            for stage in stages:
+                if stage == "evaluated":
+                    ok = "fellow" in roles
+                    expected_role = "fellow"
+                elif stage == "successful":
+                    ok = "principal investigator" in roles
+                    expected_role = "principal investigator"
+                else:
+                    # stage inconnu : on ne vérifie rien mais on le signale
+                    ok = None
+                    expected_role = None
+    
+                results.append(
+                    {
+                        "project_id": project_id,
+                        "stage": stage,
+                        "expected_role": expected_role,
+                        "roles_found": sorted(roles),
+                        "ok": ok,
+                    }
+                )
+    
+            # --- Règle complémentaire : cas "evaluated" avec seulement main_contact ---
+            if has_contact:
+                evaluated_rows = group[group["stage"] == "evaluated"]
+                evaluated_roles = set(evaluated_rows["role"])
+    
+                only_main_contact = (
+                    not evaluated_rows.empty
+                    and "main_contact" in evaluated_roles
+                    and "fellow" not in evaluated_roles
+                )
+    
+                if only_main_contact:
+                    main_contact_names = set(
+                        evaluated_rows.loc[
+                            evaluated_rows["role"] == "main_contact", "contact"
+                        ]
+                    )
+    
+                    pi_rows = group[
+                        (group["stage"] == "successful")
+                        & (group["role"] == "principal investigator")
+                    ]
+                    pi_contact_names = set(pi_rows["contact"])
+    
+                    if not pi_rows.empty:
+                        match = main_contact_names == pi_contact_names
+                    else:
+                        match = None  # pas de ligne successful/PI à comparer
+    
+                    contact_checks.append(
+                        {
+                            "project_id": project_id,
+                            "evaluated_main_contact": sorted(main_contact_names),
+                            "successful_pi_contact": sorted(pi_contact_names),
+                            "contact_match": match,
+                        }
+                    )
+    
+        result_df = pd.DataFrame(results)
+        contact_df = pd.DataFrame(contact_checks)
+        return result_df, contact_df
+    
+    
+    def build_filtered_df(df: pd.DataFrame, contact_col: str = None) -> pd.DataFrame:
+        """
+        Retourne le dataframe complet (toutes les lignes conservées) avec deux
+        colonnes ajoutées :
+    
+        - 'keep' (bool)   : True si la ligne est jugée pertinente, False sinon
+        - 'reason' (str)  : explication du tag
+    
+        Règles :
+        - role in {'fellow', 'principal investigator'}  -> keep=True ('role_valide')
+        - role == 'main_contact' avec stage == 'evaluated' et pas de fellow
+        pour le projet -> keep=True ('evaluated_main_contact_seul')
+        - role == 'main_contact' avec un fellow du même projet et même contact
+        (entities_id par défaut, ou colonne 'contact' si présente)
+        -> keep=True ('main_contact_associe_a_fellow')
+        - sinon -> keep=False ('main_contact_non_justifie')
+    
+        contact_col: nom de la colonne à utiliser comme identifiant de contact.
+                    Si None, utilise 'contact' si elle existe, sinon 'entities_id'.
+        """
+        if contact_col is None:
+            contact_col = "contact" if "contact" in df.columns else "entities_id"
+    
+        df = df.copy()
+        keep_mask = df["role"].isin(["fellow", "principal investigator"])
+        reason = pd.Series("role_valide", index=df.index)
+        reason[~keep_mask] = "main_contact_non_justifie"
+    
+        for project_id, group in df.groupby("project_id"):
+            has_fellow = (group["role"] == "fellow").any()
+            fellow_contacts = set(group.loc[group["role"] == "fellow", contact_col])
+    
+            main_contact_rows = group[group["role"] == "main_contact"]
+            for idx, row in main_contact_rows.iterrows():
+                # Cas 1 : evaluated + main_contact seul (pas de fellow du tout)
+                if row["stage"] == "evaluated" and not has_fellow:
+                    keep_mask.loc[idx] = True
+                    reason.loc[idx] = "evaluated_main_contact_seul"
+                # Cas 2 : main_contact + fellow, même contact -> on garde aussi
+                elif has_fellow and row[contact_col] in fellow_contacts:
+                    keep_mask.loc[idx] = True
+                    reason.loc[idx] = "main_contact_associe_a_fellow"
+    
+        df["keep"] = keep_mask
+        df["reason"] = reason
+        return df.sort_values(["project_id", "stage", "role"]).reset_index(drop=True)
+    
+    
+    def check_role_by_project(df):
+        result_df, contact_df = check(df)
+ 
+        # Lignes problématiques uniquement (ok == False)
+        problems = result_df[result_df["ok"] == False]
+    
+        print(f"Total de (project_id, stage) vérifiés : {len(result_df)}")
+        print(f"Nombre de cas non conformes (role manquant) : {len(problems)}")
+    
+        if not problems.empty:
+            print("\n--- Cas non conformes (role manquant) ---")
+            print(problems.to_string(index=False))
+        else:
+            print("\nAucune anomalie de role trouvée.")
+    
+        # Sauvegarde du détail complet et des anomalies
+        result_df.to_csv("check_results_full.csv", index=False)
+        problems.to_csv("check_results_problems.csv", index=False)
+        print("\nRésultats complets   -> check_results_full.csv")
+        print("Anomalies uniquement -> check_results_problems.csv")
+    
+        # --- Vérification des contacts (evaluated/main_contact vs successful/PI) ---
+        if not contact_df.empty:
+            contact_problems = contact_df[contact_df["contact_match"] == False]
+            no_reference = contact_df[contact_df["contact_match"].isna()]
+    
+            print(f"\nProjets 'evaluated' avec seulement main_contact : {len(contact_df)}")
+            print(f"  - contacts qui ne correspondent PAS : {len(contact_problems)}")
+            print(f"  - aucune ligne successful/PI de référence : {len(no_reference)}")
+    
+            if not contact_problems.empty:
+                print("\n--- Contacts non concordants ---")
+                print(contact_problems.to_string(index=False))
+    
+            contact_df.to_csv("check_results_contacts.csv", index=False)
+            print("\nDétail des vérifications de contact -> check_results_contacts.csv")
+        else:
+            print(
+                "\n(Pas de colonne 'contact' dans le fichier, ou aucun cas "
+                "'evaluated + main_contact seul' à vérifier.)"
+            )
+    
+        # --- Construction du dataframe final taggué (toutes les lignes conservées) ---
+        
+        tagged_df = build_filtered_df(df)
+        
+        print(f"\nLignes d'origine       : {len(df)}")
+        print(f"Lignes tagguées keep=True  : {tagged_df['keep'].sum()}")
+        print(f"Lignes tagguées keep=False : {(~tagged_df['keep']).sum()}")
+        print("\nRépartition par 'reason' :")
+        print(tagged_df["reason"].value_counts().to_string())
+        print("\nDataframe complet (taggué) -> erc_filtered.csv")
+        return tagged_df
+
+    erc = pp.loc[(pp.action_code=='ERC')&(erc.country_code=='FRA')].drop_duplicates()
+    res = check_role_by_project(erc)
+    res = res[['project_id', 'entities_id', 'entities_name', 
+               'role', 'first_name', 'last_name',  
+               'stage', 'contact',
+                'country_code', 'numero_national_de_structure', 'institution_shift',
+                'call_year', 'thema_code', 'action_code', 'destination_code',
+                'panel_code', 'panel_regroupement_code', 
+                'operateur_num', 'operateur_name', 'country_code_source',
+                    'orcid_id', 'gender',
+                'keep', 'reason']].drop_duplicates()
+
+########################################################################
 
     print(f"\n### EXPORT final datasets")
     cols=['project_id', 'generalPic', 'role', 'first_name', 'last_name', 'contact', 'nationality_country_code',
-          'title_clean', 'gender', 'tel_clean', 'email', 'domaine_email', 'orcid_id',
-          'stage', 'country_code2', 'country_code', 
-          'institution_shift', 'entities_id', 'entities_name', 'operateur_num', 'operateur_name', 'numero_national_de_structure', 'country_code_source']
+          'gender', 'tel_clean', 'email', 'domaine_email', 'orcid_id',
+          'birth_country_code', 'host_country_code', 'sending_country_code',
+          'stage', 'country_code2', 'country_code', 'country_code_source',
+          'institution_shift', 'entities_id', 'entities_name', 'operateur_num', 'operateur_name', 'numero_national_de_structure']
 
-    (perso_part[cols + ['birth_country_code', 'host_country_code', 'sending_country_code']]
+    (pp.loc[pp['stage']=='successful', cols]
+        .drop(columns=['researcher_id', 'google_scholar_id', 'scopus_author_id'])
         .drop_duplicates()
-        .to_pickle(f"{PATH_CLEAN}persons_participants.pkl"))
+        .to_pickle(f"{PATH_CLEAN}persons_part.pkl"))
 
-    (perso_app[cols + ['researcher_id', 'google_scholar_id', 'scopus_author_id']]
+    (pp[cols]
         .drop_duplicates()
-        .to_pickle(f"{PATH_CLEAN}persons_applicants.pkl"))
+        .to_pickle(f"{PATH_CLEAN}persons_all.pkl"))
 

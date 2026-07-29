@@ -21,7 +21,7 @@ def participants_calcul(part_step, part, proj):
     subv_pt.drop(['propNlien'], axis=1, inplace=True)
 
     if len(subv_pt)!=len(part):
-        print(f"1- ATTENTION ! participations perdues entre {len(part)} de part1 et {len(subv_pt)} de subv_pt")
+        print(f"1- ⚠️ ! participations perdues entre {len(part)} de part1 et {len(subv_pt)} de subv_pt")
 
     part_step_first_len=len(part_step)
 
@@ -39,17 +39,17 @@ def participants_calcul(part_step, part, proj):
     part_proj.loc[part_proj.project_id.isin(proj.project_id.unique()), 'calculated_fund'] = part_proj.loc[part_proj.project_id.isin(proj.project_id.unique())].beneficiary_fund
 
     if part_step_first_len != len(part_step):
-        print(f"2- ATTENTION ! pas le même nbre de lignes-> part_step: {len(part_step)}, first_part_step: {part_step_first_len}")    
+        print(f"2- ⚠️ ! pas le même nbre de lignes-> part_step: {len(part_step)}, first_part_step: {part_step_first_len}")    
 
     if '{:,.1f}'.format(part_proj['beneficiary_fund'].sum())=='{:,.1f}'.format(part['euContribution'].sum()):
         print("3- Etape part_step/part1 -> beneficiary_fund OK")
     else:
-        print(f"4- ATTENTION ! Revoir le calcul de beneficiary_fund:{'{:,.1f}'.format(part_proj['beneficiary_fund'].sum())}, euContribution:{'{:,.1f}'.format(part['euContribution'].sum())}")
+        print(f"4- ⚠️ ! Revoir le calcul de beneficiary_fund:{'{:,.1f}'.format(part_proj['beneficiary_fund'].sum())}, euContribution:{'{:,.1f}'.format(part['euContribution'].sum())}")
         
     if '{:,.1f}'.format(part_proj['calculated_fund'].sum())=='{:,.1f}'.format(part['netEuContribution'].sum()):
         print("5- Etape part_step/part1 -> calculated_fund OK")
     else:
-        print(f"-- ATTENTION ! Revoir le calcul de calculated_other_subv:{'{:,.1f}'.format(part_proj['calculated_fund'].sum())}, netEuContribution:{'{:,.1f}'.format(part['netEuContribution'].sum())}")
+        print(f"-- ⚠️ ! Revoir le calcul de calculated_other_subv:{'{:,.1f}'.format(part_proj['calculated_fund'].sum())}, netEuContribution:{'{:,.1f}'.format(part['netEuContribution'].sum())}")
 
     print(f"- size part_prop: {len(part_proj)}")
     return part_proj

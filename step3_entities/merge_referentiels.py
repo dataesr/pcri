@@ -41,11 +41,11 @@ def merge_paysage(entities_tmp, paysage, cat_filter):
     print(f"-2 size entities_merge+paysage: {len(entities_tmp[entities_tmp['source_id']=='paysage'])}")
 
     if any(entities_tmp['paysage_category_id'].isnull()):
-        print(f"-3 ATTENTION, missing entities_tmp category: {entities_tmp.loc[entities_tmp['paysage_category_id'].isnull(), ['entities_id', 'cj_code']].drop_duplicates()}")
+        print(f"-3 ⚠️, missing entities_tmp category: {entities_tmp.loc[entities_tmp['paysage_category_id'].isnull(), ['entities_id', 'cj_code']].drop_duplicates()}")
 
     if ('legalName' in entities_tmp.columns) & ('country_code' in entities_tmp.columns):
             if (len(entities_tmp.groupby(['generalPic', 'country_code', 'country_code_source', 'id_extend']).size().reset_index(name='nb').query('nb>1'))>0):
-                print(f"-4 ATTENTION ! fix entities_tmp rows duplicated: {entities_tmp.groupby(['generalPic', 'id_extend', 'legalName', 'country_code', 'country_code_source']).size().reset_index(name='nb').query('nb>1')}")
+                print(f"-4 ⚠️ ! fix entities_tmp rows duplicated: {entities_tmp.groupby(['generalPic', 'id_extend', 'legalName', 'country_code', 'country_code_source']).size().reset_index(name='nb').query('nb>1')}")
 
     if ('legalName' in entities_tmp.columns) & (any(entities_tmp.groupby(['generalPic', 'country_code_source'])['generalPic'].transform('count')>1)):
         print(f"-5 PIC duplicated\n{entities_tmp[entities_tmp.groupby(['generalPic', 'country_code_source'])['generalPic'].transform('count')>1][['generalPic', 'legalName','country_code_source', 'id_first']].drop_duplicates()}")

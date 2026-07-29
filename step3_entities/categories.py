@@ -31,7 +31,7 @@ def category_paysage_ref():
     pc = categoriesG['Cat_paysage']
     miss_x = cat.loc[~cat.category_id.isin(pc.category_id.unique())]
     if len(miss_x)>0:
-        print(f" ATTENTION - new category into cat_paysage -> check if you keep it or not\n{miss_x} in temp/new_cat")
+        print(f" ⚠️ - new category into cat_paysage -> check if you keep it or not\n{miss_x} in temp/new_cat")
         add_records_to_grist(miss_x, grist_url, 'pcri', 'categories', 'cat_paysage')
         update_doc_grist(categoriesG, 'categories')
 
@@ -172,7 +172,7 @@ def category_woven(df):
     
     mask = (df['paysage_category_id'].isnull())
     if any(mask):
-        print(f"ATTENTION : entities without paysage_category_id: try to fix it with cj_code")
+        print(f"- ⚠️ : entities without paysage_category_id: try to fix it with cj_code")
         mapping=json.load(open(f"data_files/cj_code_to_paysage.json", encoding='utf-8'))
         df.loc[mask, 'paysage_category_id'] = df.loc[mask, 'cj_code'].map(mapping)
     
@@ -184,7 +184,7 @@ def category_woven(df):
 
     mask = (df['category_woven'].isnull())
     if any(mask):
-        print(f"ATTENTION : entities without category_woven: try to fix it with cj_code")
+        print(f"- ⚠️ : entities without category_woven: try to fix it with cj_code")
         df = cj_to_cat('cj_code_to_lib', df, 'cj_code', 'category_name', mask)
         df = cj_to_cat('cat_cj_lib', df, 'category_name', 'category_woven', mask)
         mask = (df['category_woven'].isnull())

@@ -1,86 +1,326 @@
 [
     {
         "stage_process": "_loading",
-        "project_size": 23595
+        "project_size": 27171
     },
     {
         "stage_process": "process1",
-        "project_size": 23595
+        "project_size": 27171
     },
     {
         "stage_process": "_loading",
-        "proposal_size": 137136
+        "proposal_size": 165297
     },
     {
         "stage_process": "process1",
-        "proposal_size": 137136
+        "proposal_size": 165297
     },
     {
         "stage_process": "_loading",
-        "participant_size": 140788
+        "participant_size": 153033
     },
     {
         "stage_process": "process2_status",
-        "participant_size": 137407
+        "participant_size": 149200
     },
     {
         "stage_process": "process1",
-        "participant_size": 137407
+        "participant_size": 149200
     },
     {
         "stage_process": "_loading",
-        "applicant_size": 694906
+        "applicant_size": 804468
     },
     {
         "stage_process": "process1",
-        "applicant_size": 694906
+        "applicant_size": 804468
     },
     {
         "stage_process": "process2_status",
-        "proposal_size": 130322
+        "proposal_size": 157856
     },
     {
         "stage_process": "process3_add_miss_proj",
-        "proposal_size": 131093
+        "proposal_size": 157986
     },
     {
         "stage_process": "process2_status",
-        "project_size": 21855
+        "project_size": 25380
     },
     {
         "stage_process": "process4_merge",
-        "merded_size": 152948
+        "merded_size": 183366
     },
     {
         "stage_process": "process5_date_clean",
-        "merged_size": 152948
+        "merged_size": 183366
     },
     {
         "stage_process": "process6_panels",
-        "merged_size": 152948
+        "merged_size": 183366
     },
     {
         "stage_process": "process7_topics",
-        "merged_size": 152948
+        "merged_size": 183366
     },
     {
         "stage_process": "process8_actions",
-        "merged_size": 152948
+        "merged_size": 183366
     },
     {
         "stage_process": "process9_europs",
-        "merged_size": 152948
+        "merged_size": 183366
     },
     {
         "stage_process": "process10_projects_all",
-        "merged_size": 152948
+        "merged_size": 183366
     },
     {
         "stage_process": "process10_projects_all",
-        "project_size": 21855
+        "project_size": 25380
     },
     {
         "stage_process": "process10_projects_all",
-        "proposal_size": 131093
+        "proposal_size": 157986
+    },
+    {
+        "stage_process": "process3_keep_withProj",
+        "applicant_size": 788799
+    },
+    {
+        "stage_process": "process3_add_miss_proj",
+        "applicant_size": 788944
+    },
+    {
+        "stage_process": "process4_eic",
+        "applicant_size": 788944
+    },
+    {
+        "stage_process": "process5_role_erc",
+        "applicant_size": 788944
+    },
+    {
+        "stage_process": "process5_role_erc",
+        "participant_size": 149200
+    },
+    {
+        "stage_process": "_loading",
+        "entities_size": 353111
+    },
+    {
+        "stage_process": "process1",
+        "entities_size": 353111
+    },
+    {
+        "stage_process": "process2_PicAppPart",
+        "entities_size": 113544
+    },
+    {
+        "stage_process": "process4_mergeEntities",
+        "entities_size": 113544
+    },
+    {
+        "stage_process": "process3_entitiesAll",
+        "entities_size": 113544
+    },
+    {
+        "stage_process": "process4_entitiesWithCC",
+        "entities_size": 113544
+    },
+    {
+        "stage_process": "process4_entitiesWithCC",
+        "applicant_size": 788944
+    },
+    {
+        "stage_process": "process4_entitiesWithCC",
+        "participant_size": 149200
+    },
+    {
+        "stage_process": "process2_PicAppPart",
+        "lien_size": 801152
+    },
+    {
+        "stage_process": "process2_wthNuts",
+        "lien_size": 801152
+    },
+    {
+        "stage_process": "process5_status",
+        "entites_size": 111254
+    },
+    {
+        "stage_process": "process3_keep_withProj",
+        "applicant_size": 788799
+    },
+    {
+        "stage_process": "process3_add_miss_proj",
+        "applicant_size": 788944
+    },
+    {
+        "stage_process": "process4_eic",
+        "applicant_size": 788944
+    },
+    {
+        "stage_process": "process5_role_erc",
+        "applicant_size": 788944
+    },
+    {
+        "stage_process": "process5_role_erc",
+        "participant_size": 149200
+    },
+    {
+        "stage_process": "_loading",
+        "entities_size": 353111
+    },
+    {
+        "stage_process": "process1",
+        "entities_size": 353111
+    },
+    {
+        "stage_process": "process2_PicAppPart",
+        "entities_size": 113502
+    },
+    {
+        "stage_process": "process4_mergeEntities",
+        "entities_size": 113502
+    },
+    {
+        "stage_process": "process3_entitiesAll",
+        "entities_size": 113502
+    },
+    {
+        "stage_process": "process4_entitiesWithCC",
+        "entities_size": 113502
+    },
+    {
+        "stage_process": "process4_entitiesWithCC",
+        "applicant_size": 788944
+    },
+    {
+        "stage_process": "process4_entitiesWithCC",
+        "participant_size": 149200
+    },
+    {
+        "stage_process": "process2_PicAppPart",
+        "lien_size": 801152
+    },
+    {
+        "stage_process": "process2_wthNuts",
+        "lien_size": 801152
+    },
+    {
+        "stage_process": "process5_status",
+        "entites_size": 111260
+    },
+    {
+        "stage_process": "process3_keep_withProj",
+        "applicant_size": 788799
+    },
+    {
+        "stage_process": "process3_add_miss_proj",
+        "applicant_size": 788944
+    },
+    {
+        "stage_process": "process4_eic",
+        "applicant_size": 788944
+    },
+    {
+        "stage_process": "process5_role_erc",
+        "applicant_size": 788944
+    },
+    {
+        "stage_process": "process5_role_erc",
+        "participant_size": 149200
+    },
+    {
+        "stage_process": "process2_PicAppPart",
+        "entities_size": 113500
+    },
+    {
+        "stage_process": "process4_mergeEntities",
+        "entities_size": 113500
+    },
+    {
+        "stage_process": "process3_entitiesAll",
+        "entities_size": 113500
+    },
+    {
+        "stage_process": "process4_entitiesWithCC",
+        "entities_size": 113500
+    },
+    {
+        "stage_process": "process4_entitiesWithCC",
+        "applicant_size": 788944
+    },
+    {
+        "stage_process": "process4_entitiesWithCC",
+        "participant_size": 149200
+    },
+    {
+        "stage_process": "process2_PicAppPart",
+        "lien_size": 801152
+    },
+    {
+        "stage_process": "process2_wthNuts",
+        "lien_size": 801152
+    },
+    {
+        "stage_process": "process5_status",
+        "entites_size": 111258
+    },
+    {
+        "stage_process": "process3_keep_withProj",
+        "applicant_size": 788799
+    },
+    {
+        "stage_process": "process3_add_miss_proj",
+        "applicant_size": 788944
+    },
+    {
+        "stage_process": "process4_eic",
+        "applicant_size": 788944
+    },
+    {
+        "stage_process": "process5_role_erc",
+        "applicant_size": 788944
+    },
+    {
+        "stage_process": "process5_role_erc",
+        "participant_size": 149200
+    },
+    {
+        "stage_process": "process2_PicAppPart",
+        "entities_size": 113500
+    },
+    {
+        "stage_process": "process4_mergeEntities",
+        "entities_size": 113500
+    },
+    {
+        "stage_process": "process3_entitiesAll",
+        "entities_size": 113500
+    },
+    {
+        "stage_process": "process4_entitiesWithCC",
+        "entities_size": 113500
+    },
+    {
+        "stage_process": "process4_entitiesWithCC",
+        "applicant_size": 788944
+    },
+    {
+        "stage_process": "process4_entitiesWithCC",
+        "participant_size": 149200
+    },
+    {
+        "stage_process": "process2_PicAppPart",
+        "lien_size": 801152
+    },
+    {
+        "stage_process": "process2_wthNuts",
+        "lien_size": 801152
+    },
+    {
+        "stage_process": "process5_status",
+        "entites_size": 111258
     }
 ]
