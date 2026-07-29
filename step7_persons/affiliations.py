@@ -1,7 +1,9 @@
 def get_only_new_persons(df, PATH_PERSONS):
     from functions_shared import last_file_into_folder_by_pat
+    from paths import PATH_HARVEST
     import re, pandas as pd
 
+    PATH_PERSONS=f"{PATH_HARVEST}persons/"
     pat = re.compile(r'^persons_\d+')
     path_file=last_file_into_folder_by_pat(PATH_PERSONS, pat, 'pkl')
 
@@ -126,3 +128,14 @@ def persons_results_clean(df):
 
     print(f"-3 size df cleaned: {len(df)}")
     return df
+
+def affiliations_persons(df):
+    import pandas as pd
+    from paths import PATH_CLEAN
+
+    participation = pd.read_pickle(f"{PATH_CLEAN}participation_current.pkl")
+    entities = pd.read_pickle(f"{PATH_CLEAN}entities_info_current2.pkl")
+    project = pd.read_pickle(f"{PATH_CLEAN}projects_current.pkl")
+
+    pp = pd.merge(pp, project[['project_id', 'destination_code', 'thema_code']], how='left', on=['project_id'])
+    
