@@ -550,7 +550,7 @@ def IDpaysage_category():
     load categories for each iDS from paysage
     """
     print("## IDpaysage category")
-    # pc = pd.read_csv("data_files/cat_paysage.csv", sep=';')
+        # pc = pd.read_csv("data_files/cat_paysage.csv", sep=';')
     pc = pd.DataFrame(categoriesG['Cat_paysage'])
     cat_liste = list(pc.loc[pc['keep']==True, 'category_id'])
     print(f"- size CAT id à importer:{len(cat_liste)}")
