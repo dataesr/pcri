@@ -32,6 +32,29 @@ def unzip_zip(source, data, encode):
             return pd.read_csv(z.open(data), low_memory=False, dtype='str')
 
 
+# Détecte les valeurs nulles (NaN, None) OU vides (chaîne vide, espaces)
+def check_missing(df, cols: list):
+    alerts = []
+    for col in cols:
+        # masque : null OU (string vide/espaces après strip)
+        mask = df[col].isna() | (df[col].astype(str).str.strip() == '')
+        n_missing = mask.sum()
+        if n_missing > 0:
+            alerts.append({
+                'colonne': col,
+                'nb_lignes_vides': n_missing,
+                'index_lignes': df[mask].index.tolist()
+            })
+
+    if alerts:
+        print("⚠️ ALERTE : valeurs manquantes détectées !")
+        for a in alerts:
+            print(f"  - {a['colonne']}: {a['nb_lignes_vides']} valeur(s) manquante(s) "
+                f"(lignes: {a['index_lignes'][:10]}{'...' if len(a['index_lignes'])>10 else ''})")
+    else:
+        print("✅ Aucune valeur manquante dans les colonnes vérifiées.")
+
+
 #convert column of lists in strings column
 def del_list_in_col(df, var_old:str, var_new:str):
     df[var_new] = None
@@ -83,10 +106,10 @@ def columns_comparison(df, source):
 def gps_col(df):
     import re
     print("#FCT gps_col")
-    df=df.assign(gps_loc=None)
+    df=df.assign(gps_source=None)
     for i,row in df.iterrows():
         if row.loc['location'].get('latitude') is not None:
-            df.at[i, 'gps_loc'] = re.search(r"^-?\d+\.?\d{,5}", str(row.loc['location'].get('latitude')))[0]+ "," +re.search(r"^-?\d+\.?\d{,5}", str(row.loc['location'].get('longitude')))[0]
+            df.at[i, 'gps_source'] = re.search(r"^-?\d+\.?\d{,5}", str(row.loc['location'].get('latitude')))[0]+ "," +re.search(r"^-?\d+\.?\d{,5}", str(row.loc['location'].get('longitude')))[0]
     return df.drop('location', axis=1).drop_duplicates()  
 
 def num_to_string(var):
@@ -108,6 +131,20 @@ def bugs_excel(df, chemin, name_sheet):
     else:
         with pd.ExcelWriter(chemin, mode='a', if_sheet_exists='replace') as writer:
             df.to_excel(writer, sheet_name=name_sheet)
+
+
+def entities_choose_status(df, cols: list):
+    import pandas as pd
+
+    gen_state=['VALIDATED', 'DECLARED', 'SLEEPING', 'SUSPENDED', 'BLOCKED', 'DEPRECATED', 'Undefined']
+
+    if len(df.generalState.dropna().unique()) > len(gen_state):
+        print(f"2 - ⚠️ ! un generalState nouveau dans entities -> {set(df.generalState.unique())-set(gen_state)}")
+    else:
+        df = df.groupby(cols).apply(lambda x: x.sort_values('generalState', key=lambda col: pd.Categorical(col, categories=gen_state, ordered=True)), include_groups=True).reset_index(drop=True)
+        df = df.groupby(cols).head(1)
+        print(f"3 - size entities after cleaning: {len(df)}")
+    return df
 
 
 def cols_select(FP, xl_sheetname):
@@ -290,13 +327,13 @@ def country_iso_shift(df, var, iso2_to3=True):
         df.loc[~df.iso3.isnull(), var] = df.loc[~df.iso3.isnull(), 'iso3']
         df.drop(columns=['iso2', 'iso3'], inplace=True)
         if any(df[var].str.len()<3):
-            print(f"ATTENTION ! un {var} non reconnu dans df {df.loc[df[var].str.len()<3, [var]]}")
+            print(f"- ⚠️ ! un {var} non reconnu dans df {df.loc[df[var].str.len()<3, [var]]}")
     else:
         df = df.merge(countries[['iso3', 'iso2']].drop_duplicates(), how='left', left_on=var, right_on='iso3')
         df.loc[~df.iso2.isnull(), var] = df.loc[~df.iso2.isnull(), 'iso2']
         df.drop(columns=['iso2', 'iso3'], inplace=True)
         if any(df[var].str.len()>2):
-            print(f"ATTENTION ! un {var} non reconnu dans df {df.loc[df[var].str.len()>2, [var]]}")
+            print(f"- ⚠️ ! un {var} non reconnu dans df {df.loc[df[var].str.len()>2, [var]]}")
     return df
 
 def my_country_code():
@@ -635,7 +672,7 @@ def create_archive_zip(path_folder, archive_name=None, extension_file=".pkl"):
     fichiers_pkl = [f for f in os.listdir(path_folder) if f.endswith(".pkl")]
 
     if fichiers_pkl:
-        print(f"ATTENTION ! create_archive_zip() will archive all files with the extension '{extension_file}' in the folder '{path_folder}' and then delete them after archiving.")
+        print(f"- ⚠️ ! create_archive_zip() will archive all files with the extension '{extension_file}' in the folder '{path_folder}' and then delete them after archiving.")
         # Nom de l'archive avec la date du jour
         date_du_jour = date.today().strftime("%Y%m%d")
         nom_archive = f"{archive_name}_{date_du_jour}.zip"
@@ -656,3 +693,140 @@ def create_archive_zip(path_folder, archive_name=None, extension_file=".pkl"):
         print(f"{len(fichiers_pkl)} file(s) .pkl deleted.")
     else:
         print("No files with the extension '.pkl' found in the folder. No archive created.")
+
+
+import pandas as pd
+
+def check_dataframe(
+    df: pd.DataFrame,
+    required_columns: list[str] | None = None,
+    show_dtypes: bool = True,
+    check_duplicates: bool = True,
+    show_duplicate_rows: bool = True,
+    duplicate_subset: list[str] | None = None,
+    max_duplicate_rows_shown: int = 20,
+) -> pd.DataFrame:
+    """
+    Script générique de vérification de qualité d'un DataFrame pandas.
+    
+    Fonctionnalités :
+    - Résumé par variable : nombre de lignes remplies / nulles (sans le détail des valeurs)
+    - Signalement des colonnes obligatoires (non-nullables) qui contiennent des nulls
+    - Détection des colonnes 100% vides, des doublons, et des types de données
+    - Utilisable avec n'importe quel DataFrame et n'importe quelle liste de colonnes obligatoires
+    
+    Usage :
+        from check_dataframe import check_dataframe
+        summary, duplicate_rows = check_dataframe(df, required_columns=["id", "nom", "date"])
+    
+    Paramètres
+    ----------
+    df : pd.DataFrame
+        Le DataFrame à analyser.
+    required_columns : list[str], optionnel
+        Liste des colonnes qui ne doivent JAMAIS contenir de valeurs nulles.
+        Si l'une d'elles contient des nulls, une alerte est affichée.
+    show_dtypes : bool
+        Affiche le type de données de chaque colonne.
+    check_duplicates : bool
+        Vérifie la présence de lignes dupliquées.
+    show_duplicate_rows : bool
+        Si True, affiche le détail des lignes dupliquées (pas seulement le compte).
+    duplicate_subset : list[str], optionnel
+        Sous-ensemble de colonnes à utiliser pour détecter les doublons
+        (par défaut : toutes les colonnes).
+    max_duplicate_rows_shown : int
+        Nombre maximum de lignes dupliquées affichées (pour éviter un flood console).
+ 
+    Retour
+    ------
+    tuple[pd.DataFrame, pd.DataFrame | None]
+        - summary : tableau récapitulatif (rempli / nul / % nul / obligatoire / dtype)
+        - duplicate_rows : DataFrame contenant toutes les occurrences des lignes
+          dupliquées (None si pas de doublons ou check_duplicates=False)
+    """
+    required_columns = required_columns or []
+    n_rows = len(df)
+ 
+    print("=" * 70)
+    print(f"RAPPORT DE QUALITÉ DES DONNÉES — {n_rows} lignes, {df.shape[1]} colonnes")
+    print("=" * 70)
+ 
+    summary_rows = []
+    alerts = []
+ 
+    for col in df.columns:
+        n_null = df[col].isna().sum()
+        n_filled = n_rows - n_null
+        pct_null = round(100 * n_null / n_rows, 2) if n_rows else 0.0
+        is_required = col in required_columns
+ 
+        summary_rows.append(
+            {
+                "colonne": col,
+                "remplies": n_filled,
+                "nulles": n_null,
+                "% nul": pct_null,
+                "obligatoire": is_required,
+                "dtype": str(df[col].dtype) if show_dtypes else None,
+            }
+        )
+ 
+        if is_required and n_null > 0:
+            alerts.append(
+                f"⚠️  '{col}' est déclarée OBLIGATOIRE mais contient {n_null} valeur(s) nulle(s) "
+                f"({pct_null}%)."
+            )
+ 
+        if n_null == n_rows and n_rows > 0:
+            alerts.append(f"⚠️  '{col}' est entièrement vide (100% de nulls).")
+ 
+    summary = pd.DataFrame(summary_rows)
+    if not show_dtypes:
+        summary = summary.drop(columns=["dtype"])
+ 
+    # Affichage du résumé par variable (remplies / nulles, sans détail des valeurs)
+    print("\n--- Résumé par variable ---")
+    print(summary.to_string(index=False))
+ 
+    # Vérification des colonnes manquantes dans le DataFrame
+    missing_cols = [c for c in required_columns if c not in df.columns]
+    if missing_cols:
+        alerts.append(f"⚠️  Colonnes obligatoires absentes du DataFrame : {missing_cols}")
+ 
+    # Vérification des doublons
+    duplicate_rows = None
+    if check_duplicates:
+        dup_mask = df.duplicated(subset=duplicate_subset, keep=False)
+        n_dup = df.duplicated(subset=duplicate_subset).sum()  # nb de doublons "en trop"
+ 
+        if n_dup > 0:
+            subset_msg = f" (sur {duplicate_subset})" if duplicate_subset else ""
+            alerts.append(f"⚠️  {n_dup} ligne(s) dupliquée(s) détectée(s){subset_msg}.")
+ 
+            # Toutes les occurrences des lignes dupliquées (originales + doublons)
+            duplicate_rows = df[dup_mask].sort_values(
+                by=duplicate_subset if duplicate_subset else list(df.columns)
+            )
+ 
+            if show_duplicate_rows:
+                print(f"\n--- Détail des lignes dupliquées{subset_msg} ---")
+                n_shown = min(len(duplicate_rows), max_duplicate_rows_shown)
+                print(duplicate_rows.head(max_duplicate_rows_shown).to_string())
+                if len(duplicate_rows) > max_duplicate_rows_shown:
+                    print(
+                        f"... ({len(duplicate_rows) - n_shown} ligne(s) supplémentaire(s) "
+                        f"non affichée(s), voir la valeur de retour 'duplicate_rows')"
+                    )
+ 
+    # Affichage des alertes
+    print("\n--- Alertes ---")
+    if alerts:
+        for a in alerts:
+            print(a)
+    else:
+        print("✅ Aucune anomalie détectée.")
+ 
+    print("=" * 70)
+ 
+    return summary, duplicate_rows
