@@ -40,10 +40,11 @@ def topics_portal_clean():
         bo = row["budgetOverview"]
         if isinstance(bo, str):
             bo = json.loads(bo)
-        topic_action_map = bo.get("budgetTopicActionMap", {})
-        all_actions = [a for actions in topic_action_map.values() for a in actions]
-        matching = [a for a in all_actions if a.get("action", "").split(" - ")[0] == row["identifier"]]
-        return matching if matching else all_actions
+            topic_action_map = bo.get("budgetTopicActionMap", {})
+            all_actions = [a for actions in topic_action_map.values() for a in actions]
+            matching = [a for a in all_actions if a.get("action", "").split(" - ")[0] == row["identifier"]]
+            return matching if matching else all_actions
+        
     
     # Filtrage + explosion : une ligne par action
     df["_rows"] = df.apply(filter_and_extract, axis=1)
@@ -84,7 +85,7 @@ def topics_portal_clean():
         fix_year = json.load(open('data_files/topics_year.json'))
         df.loc[df['identifier'].isin(fix_year.keys()), 'call_year'] = df.loc[df['identifier'].isin(fix_year.keys()), 'identifier'].map(fix_year)
         if any(df['call_year'].isnull()):
-            print(f"- ATTENTION ! missing call_year for {list(df[df['call_year'].isnull()].call_id)}")
+            print(f"- ⚠️ ! missing call_year for {list(df[df['call_year'].isnull()].call_id)}")
 
 
     df['call_open_date'] = pd.to_datetime(df['startDate'])
@@ -220,7 +221,7 @@ def topics_divisions(topics, top_div):
     for k,v in cl.items():
         CLUSTER.loc[(CLUSTER.destination_code.isnull())&(CLUSTER.topicCode.str.contains(k)), 'destination_code'] = v
     if any(pd.isna(CLUSTER.destination_code.unique())):
-        print('CLUSTER : attention encore destination_code à null après traitement')
+        print('CLUSTER : ⚠️ encore destination_code à null après traitement')
 
     CLUSTER['temp']=CLUSTER.topicCode.str.split('-').str.get(1)
     l_cluster=pd.DataFrame.from_dict({'HLTH':'CLUSTER 1', 'CL2':'CLUSTER 2', 'CL3':'CLUSTER 3', 'CL4':'CLUSTER 4','CL5':'CLUSTER 5', 'CL6':'CLUSTER 6'}, orient='index', columns=['thema_code']).reset_index()
@@ -429,7 +430,7 @@ def topics_divisions(topics, top_div):
     tab.loc[(tab.thema_name_fr.isnull()), 'thema_name_fr'] = tab['programme_name_fr']
 
     if not tab.columns[tab.isnull().any()].empty:
-        print(f"- attention des cellules sont vides dans tab: {tab.columns[tab.isnull().any()]}")
+        print(f"- ⚠️ des cellules sont vides dans tab: {tab.columns[tab.isnull().any()]}")
 
 
     for i in tab.columns:
@@ -480,7 +481,7 @@ def merged_topics(source, df):
 
 
     if len(df[df['programme_code'].isnull()])>0:
-        print(f"ATTENTION ! programme_code manquant")
+        print(f"- ⚠️ ! programme_code manquant")
     topics.to_csv(f"{PATH_CLEAN}topics_current.csv", index=False, encoding="UTF-8", sep=";", na_rep='')
 
     return df
