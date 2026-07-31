@@ -224,7 +224,7 @@ if UPDATE_PARTICIPATION == True:
 
     # if countryCode missing in country list, add to function my_country_code and reload
     if any(countryCode_err):
-        print(f"- ⚠️ fix country_code missing {countryCode_err}")
+        print(f"🚨 - fix country_code missing {countryCode_err}")
 
     cc_code = countries[['countryCode', 'countryCode_iso3']].drop_duplicates().rename(columns={'countryCode_iso3':'country_code_source'})
     app1 = app1.merge(cc_code, how='left', on='countryCode', indicator=True)
@@ -380,12 +380,8 @@ entities_tmp = entities_categories(entities_tmp)
 
 entities_info = entities_finalize(entities_tmp, countries, framework=None)
 
-
-#check entities with pic_id
-# print("### check enties fr avec id commençant par pic")
-# pd.set_option("display.max_rows", None, "display.max_columns", None)
-# print(entities_info[(entities_info.country_code=='FRA')&(entities_info.entities_id.str.contains('pic'))][['entities_id', 'entities_name']])
-# reporting.append({'stage_process':'process_entities_info', 'entities_size':len(entities_info)})
+# check entities_info and its vars 
+summary, duplicate_rows=check_dataframe(entities_info, ['generalPic', 'country_code', 'entities_name'])
 
 file_name = f"{PATH_CLEAN}entities_info_current2.pkl"
 with open(file_name, 'wb') as file:
