@@ -176,15 +176,21 @@ def entities_collab(entities_participation, tab=True):
 def entities_mongo(FP, df, cols_select_xls, tab_mongo):
     from functions_shared import cols_select_mongo
     from remote_process.mongo import mongo_delete_all, mongo_bulk_insert_df
+    from concurrent.futures import ThreadPoolExecutor
 
-    if FP=='horizon':
-        filter_FP='Horizon Europe'
-    elif FP=='h20':
-        filter_FP='Horizon 2020'
+    if FP == 'horizon':
+        filter_FP = 'Horizon Europe'
+    elif FP == 'h20':
+        filter_FP = 'Horizon 2020'
 
-    l=cols_select_mongo(FP, cols_select_xls)
-    tmp=df[l].loc[(df.framework==filter_FP)]
+    l = cols_select_mongo(FP, cols_select_xls)
+    tmp = df[l].loc[(df.framework == filter_FP)]
 
     cm = f"european-projects_{tab_mongo}"
     mongo_delete_all(cm)
-    mongo_bulk_insert_df(tmp, cm)
+
+    executor = ThreadPoolExecutor(max_workers=1)
+    future = executor.submit(mongo_bulk_insert_df, tmp, cm)
+    executor.shutdown(wait=False)  # ← n'attend pas la fin de l'insertion
+
+    return future  # optionnel — permet de vérifier l'état plus tard
