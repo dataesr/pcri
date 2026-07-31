@@ -7,7 +7,7 @@ from main_library import *
 # 1 - si nouvelle actualisation utiliser MAIN_FIRST_PROCESS
 #################
 
-NEW_UPDATE=True
+NEW_UPDATE=False
 
 #################################
 # si traitement déjà effectués
@@ -54,16 +54,24 @@ msca_collab(collaboration)
 
 # provisoire
 h20 = h20.rename(columns={'insee_cat_code':'cat_entreprise_code', 'insee_cat_name':'cat_entreprise_name' })
-'country_name_mapping'
+
 entities_participation = entities_preparation(entities_part, h20)
-entities_participation.drop(columns=[ 'city_clean', 'com_code', 'countryCode', 'geo_global_code', 
-                'geo_global_latlng', 'geo_global_name', 'dep_code', 'postalCode_source',
-                'geo_global_parent', 'geo_parent_latlng', 'geo_parent_name', 'entities_num',
-                'in_project','merge_entitiesLien', 'n_state'], inplace=True)
-
-
 entities_participation.to_pickle(f"{PATH_CLEAN}entities_participation_current.pkl")
 
+# entities_participation.drop(columns=['city_clean', 'com_code', 'countryCode', 'erc_evaluation_step', 
+#                                      'in_project','merge_entitiesLien', 'nutsCode', 'participation_nuts',
+#                                      'region_1_name', 'region_2_name', 'regional_unit_name','siren_all', 'stage_call'],
+#                                       inplace=True)
+
+
+"""
+entities_mongo(FP, df, cols_select_xls, tab_mongo) -> 
+framework, df, columns selected in xls, collection mongo
+"""
+entities_mongo('horizon', entities_participation, 'proj_entities', 'projects-entities')
+# --- Usage ---
+# mongo_delete_all("european-projects_projects-entities")
+# mongo_bulk_insert_df(df, "european-projects_projects-entities")
 # mongo_bulk_insert_df(entities_participation[entities_participation['framework']=='Horizon Europe'], batch_size=10_000)
 
 print(f"size entities_participation: {len(entities_participation)}")
@@ -71,14 +79,15 @@ entities_ods('h20', entities_participation)
 entities_ods('horizon', entities_participation)
 
 # entities_participation = entreprise_group_cleaning(entities_participation)
-(entities_participation.drop(columns=['ecorda_date','action_code2','action_name2', 'status_evaluation',
+(entities_participation
+ .drop(columns=['ecorda_date','action_code2','action_name2', 'status_evaluation',
                 'free_keywords', 'abstract', 'acronym', 'call_deadline', 'topic_name','topic_code',
                 'category_id', 'entities_name_source', 'entities_acronym_source',  'generalPic',
-                'numero_national_de_structure', 'nutsCode', 'participation_nuts', 'participation_linked',
-                'paysage_category', 'paysage_category_id', 'ror_category', 'siren_all',
-                'source_id', 'numero_national_de_structure', 'structure_name', 'erc_evaluation_step',
-                'regional_unit_name', 'region_2_name', 'region_1_name',
-                'stage_call'])
+                'numero_national_de_structure','participation_linked', 'dep_code', 'reg_code',
+                'paysage_category', 'paysage_category_id', 'ror_category', 
+                'source_id', 'numero_national_de_structure', 'structure_name','geo_2_code',
+                'geo_2_latlng', 'geo_2_name', 'geo_3_code', 'geo_3_latlng',  'geo_3_name', 'geo_unit_code',
+                'geo_unit_latlng', 'geo_unit_name',])
     .to_csv(f"{PATH_CONNECT}entities_participation_current.csv", sep=";", 
             index=False, encoding='UTF-8', na_rep='', decimal='.'))
 
