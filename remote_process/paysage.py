@@ -32,7 +32,7 @@ def get_paysage_struct_fromODS():
     base_url = "https://data.enseignementsup-recherche.gouv.fr/api/explore/v2.1/catalog/datasets/structures-de-paysage-v2/exports/json"
 
     params = {
-            "select": "id,usualname,shortname,acronymfr,acronymen,acronymlocal,legalcategory_inseecode,"
+            "select": "id,usualname,shortname,acronymfr,nameen,acronymen,acronymlocal,legalcategory_inseecode,"
             "legalcategory_longnamefr,legalcategory_sector,category_id,category_usualnamefr,cityid"
 
         }
@@ -186,26 +186,20 @@ def IDpaysage_successor():
     # traitement des successeurs
     print("## IDpaysage successors")
     # #successor      
-    try:
-        url_base=f'https://api.paysage.dataesr.ovh/relations?filters[relationTag]=structure-predecesseur'
-        rinit = requests.get(url_base, headers=paysage_headers, verify=False)
-        nb_tot=rinit.json()['totalCount']
-        rinit = requests.get(url_base, params={'limit':nb_tot}, headers=paysage_headers, verify=False)
-        r=rinit.json()['data']
-        paysage_successor=[]
-        for i in r:
-            paysage_successor.append({'id':i.get('relatedObjectId'),
-                                    'id_s0': i.get('resourceId'),
-                                    'active':i.get('resource').get('structureStatus'),
-                                    'start_date':i.get('resource').get('startDate'),
-                                    'end_date':i.get('resource').get('endDate')})
 
-    except requests.exceptions.HTTPError as http_err:
-        print(f"\n{i} -> HTTP error occurred: {http_err}")
-    except requests.exceptions.RequestException as err:
-        print(f"\n{i} -> Error occurred: {err}")
-    except Exception as e:
-        print(f"\n{i} -> An unexpected error occurred: {e}")
+    url_base=f'https://api.paysage.dataesr.ovh/relations?filters[relationTag]=structure-predecesseur'
+    rinit = requests.get(url_base, headers=paysage_headers, verify=False)
+    nb_tot=rinit.json()['totalCount']
+    rinit = requests.get(url_base, params={'limit':nb_tot}, headers=paysage_headers, verify=False)
+    r=rinit.json()['data']
+    paysage_successor=[]
+    for i in r:
+        paysage_successor.append({'id':i.get('relatedObjectId'),
+                                'id_s0': i.get('resourceId'),
+                                'active':i.get('resource').get('structureStatus'),
+                                'start_date':i.get('resource').get('startDate'),
+                                'end_date':i.get('resource').get('endDate')})
+
 
     file_name = f"{PATH_HARVEST}paysage_successor.pkl"
     with open(file_name, 'wb') as file:
@@ -230,7 +224,7 @@ def IDpaysage_successor():
         paysage_successor = paysage_successor[['id', 'id_succ']].drop_duplicates()
         paysage_successor['nb'] = paysage_successor.groupby('id')['id_succ'].transform('count')
         if any(paysage_successor.nb>1):
-            print(f"\n- ATTENTION, several successors for one id check\n{paysage_successor[paysage_successor.nb>1]}")   
+            print(f"\n- ⚠️, several successors for one id check\n{paysage_successor[paysage_successor.nb>1]}")   
     # if len(paysage_successor)>0:    
     #     paysage = df.loc[df['source_id']=='paysage'].merge(paysage_successor[['id_paysage', 'id_clean']].drop_duplicates(), how='left', left_on='id_extend', right_on='id_paysage')
     #     paysage.loc[paysage['id_clean'].isnull(), 'id_clean'] = paysage['id_extend']
@@ -246,30 +240,58 @@ def IDpaysage_successor():
 def IDpaysage_parent():
     print("## IDpaysage parent")
     # ## Parent
-    try:
-        url_base=f'https://api.paysage.dataesr.ovh/relations?filters[relationTag]=structure-interne'
-        rinit = requests.get(url_base, headers=paysage_headers, verify=False)
-        nb_tot=rinit.json()['totalCount']
-        rinit = requests.get(url_base, params={'limit':nb_tot}, headers=paysage_headers, verify=False)
-        r = rinit.json()['data']
+
+    url_base = 'https://api.paysage.dataesr.ovh/relations?filters[relationTag]=structure-interne'
+
+    # 1. Première requête pour obtenir le nombre total d'éléments
+    rinit = requests.get(url_base, headers=paysage_headers, verify=False)
+    nb_tot = rinit.json()['totalCount']
+
+    # 2. Configuration de la pagination
+    limit_par_page = 100  # Taille de paquet raisonnable pour le serveur
+    all_data = []
+    skip = 0
+
+    # 3. Boucle de récupération par paquets
+    while skip < nb_tot:
+        params = {
+            'limit': limit_par_page,
+            'skip': skip
+        }
+        
+        response = requests.get(url_base, params=params, headers=paysage_headers, verify=False)
+        
+        # Sécurité : on arrête si la requête échoue
+        if response.status_code != 200:
+            print(f"Erreur d'API au skip {skip} : {response.status_code}")
+            break
+            
+        data_page = response.json().get('data', [])
+        
+        # Si la page est vide (sécurité), on stoppe la boucle
+        if not data_page:
+            break
+            
+        all_data.extend(data_page)
+        
+        # On avance le curseur pour la page suivante
+        skip += limit_par_page
+
+    print(f"Total récupéré : {len(all_data)} / {nb_tot}")
+
+    if all_data:
         paysage_relation = []
-        if r:
-            for i in r:
-                res = i.get('relatedObject', {}).get('identifiers', [])
-                rnsr = next((j.get('type') for j in res if j.get('type') == 'rnsr'), None)
-                paysage_relation.append({'id':i.get('relatedObjectId'),
-                                        'id_source_status':i.get('relatedObject').get('structureStatus'),
-                                        'rnsr': rnsr,
-                                        'id_p0': i.get('resourceId'),
-                                        'id_p_status':i.get('resource').get('structureStatus'),
-                                        'end_date':i.get('endDate')})    
+        for i in all_data:
+            res = i.get('relatedObject', {}).get('identifiers', [])
+            rnsr = next((j.get('type') for j in res if j.get('type') == 'rnsr'), None)
+            paysage_relation.append({'id':i.get('relatedObjectId'),
+                                    'id_source_status':i.get('relatedObject').get('structureStatus'),
+                                    'rnsr': rnsr,
+                                    'id_p0': i.get('resourceId'),
+                                    'id_p_status':i.get('resource').get('structureStatus'),
+                                    'end_date':i.get('endDate')})    
                                     
-    except requests.exceptions.HTTPError as http_err:
-        print(f"\n{i} -> HTTP error occurred: {http_err}")
-    except requests.exceptions.RequestException as err:
-        print(f"\n{i} -> Error occurred: {err}")
-    except Exception as e:
-        print(f"\n{i} -> An unexpected error occurred: {e}")
+
 
     file_name = f"{PATH_HARVEST}paysage_parent.pkl"
     with open(file_name, 'wb') as file:
@@ -281,35 +303,20 @@ def IDpaysage_parent():
         print(f"\n- size de resultat paysage relation {len(paysage_relation)}")
         paysage_relation = paysage_relation[paysage_relation['rnsr'].isnull()].drop(columns='rnsr')
 
-        # paysage_relation = pd.DataFrame(paysage_relation).drop_duplicates()
-        # paysage_relation['nb'] = paysage_relation.groupby('id_source')['id_p0'].transform('count')
+        # À insérer juste après la création du DataFrame :
+        paysage_relation['end_date'] = pd.to_datetime(paysage_relation['end_date'], errors='coerce')
 
-        # p1 = paysage_relation[paysage_relation['nb']<2]
-        # p2 = (paysage_relation[paysage_relation['nb']>1]
-        #       .sort_values(['id_source', 'id_p_status'], ascending=[True, True]))
-
-        # if not p2.empty:
-        #     print(f"- list several parents for one id_source:\n{p2}")
-        #     mask = (
-        #         (p2['id_p_status'] == 'inactive') &
-        #         (p2.groupby('id_source')['id_p_status'].transform(lambda x: 'active' in x.values))
-        #     )
-        #     p2 = p2[~mask].drop(columns='nb')
-        #     p2['nb'] = p2.groupby('id_source')['id_p0'].transform('count')
-            
-        #     paysage_relation = pd.concat([p1, p2], ignore_index=True)
+        # Remplacement de la ligne problématique :
+        year_now = time.localtime().tm_year
+        tb = paysage_relation[(paysage_relation.id_source_status == 'active') & 
+                            (paysage_relation.end_date.dt.year == year_now)]
         
+        if any(tb):
+            print(f"-⚠️ check parent link closed in {year_now}:\n{tb} ")
 
-        # Build parent map {child: parent}
+        paysage_relation = paysage_relation[~((paysage_relation.id_source_status=='active')&(paysage_relation.end_date.notna()))]
+
         parent = dict(zip(paysage_relation.id, paysage_relation.id_p0))
-
-        # def find_root(child, parent_map):
-        #     seen=set()
-        #     current=child
-        #     while current in parent_map and pd.notna(parent_map[current]) and parent_map[current] not in seen:
-        #         seen.add(current)
-        #         current = parent_map[current]
-        #     return current
 
         paysage_relation['id_parent'] = paysage_relation['id'].apply(lambda x: trace_chain(x, parent))
 
@@ -320,7 +327,7 @@ def IDpaysage_parent():
 
         paysage_relation['nb'] = paysage_relation.groupby('id')['id_parent'].transform('count')
         if any(paysage_relation.nb>1):
-            print(f"- ATTENTION, several parents for one id check\n{paysage_relation[paysage_relation.nb>1]}")
+            print(f"- ⚠️, several parents for one id check\n{paysage_relation[paysage_relation.nb>1]}")
         
 
     # if len(paysage_relation)>0:
@@ -375,17 +382,6 @@ def IDpaysage_info():
                      .rename(columns={'name':'name_clean','acronym':'acronym_clean'})
                      .drop_duplicates()
     )
-    # paysage_infos['nb'] = paysage_infos.groupby('id_parent')['name'].transform('count')
-    # if any(paysage_infos['nb']>1):
-    #     print(f"\n- ATTENTION doublon de id_clean\n{paysage_infos[paysage_infos['nb']>1]}")
-
-    # paysage = (paysage.merge(paysage_infos, how='left',left_on='id_clean',right_on='id_parent')
-    #         .drop(['id_parent', 'nb'], axis=1)
-    #         .rename(columns={'name':'name_clean','acronym':'acronym_clean'})
-    #         .drop_duplicates())
-    
-
-
 
     if any(paysage_infos.name_clean.isnull()):
         print(paysage_infos[paysage_infos.name_clean.isnull()])
@@ -501,47 +497,6 @@ def paysage_getRefInfo():
     file_name = f"{PATH_HARVEST}paysage_df.pkl"
     with open(file_name, 'wb') as file:
         pd.to_pickle(paysage, file)
-
-################################################################################
-
-
-
-# def get_paysage_cat_entreprise(paysage_siret):
-#     from remote_process.sirene import get_cat_entreprise
-#     print("### CAT entreprise pour paysage")
-
-#     cat_siren = pd.read_pickle(f"{PATH_HARVEST}cat_entreprise.pkl")
-#     cat_siren=cat_siren[~cat_siren['siren'].astype(str).str.startswith(('1', '2'))]
-#     paysage_siret['siren'] = paysage_siret['siren'].str.split(';')
-#     paysage_siret = paysage_siret.explode('siren')
-    
-#     tmp = list(set(list(paysage_siret['siren']) + list(paysage_siret['siren_main'])))
-#     tmp = [x for x in tmp if x[0] not in ('1', '2')]
-#     print(f"- search cat entreprise for siren: {len(tmp)}")
-
-#     new = [i for i in tmp if i not in list(cat_siren['siren'])]
-#     print(f"- new siren to get cat_entreprise: {len(new)}")
-
-#     if new:
-#         res = get_cat_entreprise(new)
-#         res = pd.DataFrame(res)
-#         print(f"- size de cat import: {len(res)}")
-#         res['nb'] = res.groupby('siren')['cat'].transform('count')
-#         if any(res['nb']>1):
-#             print(f"- ATTENTION, several cat for a same siren, verify date_end: \n{res[res['nb']>1]}")
-#             res = (res
-#                 .sort_values(['siren', 'cat_an'], ascending=[True, False])
-#                 .groupby('siren')
-#                 .first()
-#                 .reset_index()
-#             )
-
-    
-#         cat_siren = pd.concat([cat_siren, res], ignore_index=True).drop(columns='nb')
-#         print(f"- final size cat entreprise: {len(res)}")
-#         cat_siren.to_pickle(f"{PATH_HARVEST}cat_entreprise.pkl")      
-
-
 
 ######################################################
 
