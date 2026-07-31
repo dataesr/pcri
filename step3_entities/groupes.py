@@ -54,7 +54,7 @@ def groupe_treatment(df, output):
     if gr[gr.siren.isnull()].empty:
         pass
     else:
-        print(f"2 - Attention des siren sont null\n{gr.loc[gr.siren.isnull(), ['Raison sociale', 'groupe_acronym', 'ordre']]}")
+        print(f"2 - 🚨 des siren sont null\n{gr.loc[gr.siren.isnull(), ['Raison sociale', 'groupe_acronym', 'ordre']]}")
         gr=gr.loc[~gr.siren.isnull()]
 
     # # contrôle de la longueur des siren ; ajout de 0 devant si < 9
@@ -117,7 +117,7 @@ def merge_groupe(entities_tmp, groupe):
     })
 
     if any(tmp['groupe_id'].str.contains(';', na=False)):
-        print("ATTENTION siren dans plusieurs groupes -> à vérifier date de fin \n", tmp.loc[tmp['groupe_id'].str.contains(';', na=False)])
+        print("🚨 siren dans plusieurs groupes -> à vérifier date de fin \n", tmp.loc[tmp['groupe_id'].str.contains(';', na=False)])
 
     print(f"size entities_tmp befor merge groupe {len(entities_tmp)}")
     entities_tmp = entities_tmp.merge(tmp, how='left', on=['siren_main', 'siren_all'])

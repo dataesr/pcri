@@ -91,7 +91,7 @@ def nuts_lien(source, app1, part, lien):
     #                 .agg(lambda x: ';'.join(x))
     #                 .reset_index())
     if len(nuts_a) != l:
-            print("1- ATTENTION ! pp_app avec doublon -> revoir le code groupby")
+            print("1- 🚨 ! pp_app avec doublon -> revoir le code groupby")
     
     l=len(nuts_p)
     nuts_p = nuts_p.merge(pp_part, how='left', on=['project_id', 'generalPic', 'calculated_pic'])
@@ -123,7 +123,7 @@ def nuts_lien(source, app1, part, lien):
     #                 .agg(lambda x: ';'.join(x))
     #                 .reset_index())
     if len(nuts_p) != l:
-            print("2- ATTENTION ! pp_part avec doublon -> revoir le code groupby")
+            print("2- 🚨 ! pp_part avec doublon -> revoir le code groupby")
 
     # lien = lien.reset_index()
     lien = (lien.merge(nuts_p, how='left', on=['project_id', 'orderNumber', 'generalPic', 'calculated_pic'])
