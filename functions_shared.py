@@ -146,6 +146,13 @@ def entities_choose_status(df, cols: list):
         print(f"3 - size entities after cleaning: {len(df)}")
     return df
 
+def cols_select_mongo(FP, xl_sheetname):
+    import pandas as pd
+    from paths import PATH_ODS
+    xl_path = f"{PATH_ODS}colonnes_ordres_par_jeux_ods.xlsx"
+    df = pd.read_excel(xl_path, sheet_name=xl_sheetname)
+    col_name_list = df.loc[df['mongo'] == 'x', FP].values.flatten()
+    return sorted({str(x) for x in col_name_list if pd.notna(x)}, key=str.lower)
 
 def cols_select(FP, xl_sheetname):
     import pandas as pd
