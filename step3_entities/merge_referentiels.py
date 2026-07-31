@@ -21,12 +21,14 @@ def merge_paysage(entities_tmp, paysage, cat_filter):
                             'id_clean':'entities_id', 
                             'name_clean':'entities_name', 
                             'acronym_clean':'entities_acronym',
+                            'nameen':'entities_name_en',
+                            'acronymEn':'entities_acronym_en',
                             'category_name':'catname'
                             })
             .assign(link_to_ref=True)
             .drop_duplicates()
             .merge(cat_filter, how='left', left_on='entities_id', right_on='pid')
-            .drop(columns=['pid', 'acronymEn', 'acronymLocal', 'cityid']))
+            .drop(columns=['pid', 'acronymLocal', 'cityid']))
     print(f"-1 size paysage to merge: {len(paysage)}")
 
     if any(paysage['paysage_category_id'].isnull()):
@@ -45,7 +47,7 @@ def merge_paysage(entities_tmp, paysage, cat_filter):
 
     if ('legalName' in entities_tmp.columns) & ('country_code' in entities_tmp.columns):
             if (len(entities_tmp.groupby(['generalPic', 'country_code', 'country_code_source', 'id_extend']).size().reset_index(name='nb').query('nb>1'))>0):
-                print(f"-4 ⚠️ ! fix entities_tmp rows duplicated: {entities_tmp.groupby(['generalPic', 'id_extend', 'legalName', 'country_code', 'country_code_source']).size().reset_index(name='nb').query('nb>1')}")
+                print(f"-4 🚨 ! fix entities_tmp rows duplicated: {entities_tmp.groupby(['generalPic', 'id_extend', 'legalName', 'country_code', 'country_code_source']).size().reset_index(name='nb').query('nb>1')}")
 
     if ('legalName' in entities_tmp.columns) & (any(entities_tmp.groupby(['generalPic', 'country_code_source'])['generalPic'].transform('count')>1)):
         print(f"-5 PIC duplicated\n{entities_tmp[entities_tmp.groupby(['generalPic', 'country_code_source'])['generalPic'].transform('count')>1][['generalPic', 'legalName','country_code_source', 'id_first']].drop_duplicates()}")
