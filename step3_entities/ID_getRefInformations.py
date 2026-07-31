@@ -8,7 +8,6 @@ def paysage_getRefInfo():
 
     print("### PAYSAGE HARVEST")
     
-
     paysage_successor = IDpaysage_successor()
     paysage_relation = IDpaysage_parent()
     # paysage=IDpaysage_cj(paysage)

@@ -403,5 +403,5 @@ def add_countries_info(df, countries, framework=None):
         df = df.merge(cc, how='left', on='country_code')
 
 
-    print(f"- longueur entities_info après ajout calculated_country : {len(df)}\n{df.columns}\n- columns with Nan\n {df.columns[df.isnull().any()]}")
+    print(f"- longueur entities_info après ajout calculated_country : {len(df)}\n{df.columns}\n- 🔶 columns with Nan\n {df.columns[df.isnull().any()]}")
     return df

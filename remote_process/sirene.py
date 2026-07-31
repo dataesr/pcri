@@ -269,7 +269,7 @@ def get_sirene(id_source, id_var: str):
         x=set([i['id'] for i in sirene_dict if i['source_id']==s])
         y=set(sirene.loc[sirene[s].isin(x), s])
         if len(x)!=len(y):
-            print(f"- ATTENTION, missing {len(x-y)} {s}\n{x-y}")
+            print(f"- 🚨, missing {len(x-y)} {s}\n{x-y}")
 
 
     sirene = clean_anomaly(sirene)
