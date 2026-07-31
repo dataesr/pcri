@@ -55,8 +55,8 @@ def source_ID_new_and_check(df, var_id, fix_bug=False):
     df = get_source_ID(df, var_id)
     if any(df['source_id_source']!=df['source_id']):
         mask = (df['source_id']!='paysage')&(df['source_id_source'].notnull())&(df['source_id_source']!=df['source_id'])    
-        print(f"### ATTENTION source_id different après merge ref_source\n{df.loc[mask, ['legalName', 'id_extend', 'source_id_source', 'source_id']]}")
+        print(f"### 🔶 source_id different après merge ref_source\n{df.loc[mask, ['legalName', 'id_extend', 'source_id_source', 'source_id']]}")
         if fix_bug==True:
-            print("### ATTENTION the diffenrence are fixed by taking the old source_id")
+            print("### 🔶 the diffenrence are fixed by taking the old source_id")
             df.loc[mask, 'source_id'] = df.loc[mask, 'source_id_source']
     return df
