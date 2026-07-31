@@ -61,7 +61,7 @@ def category_paysage_by_struct(df, paysage_mires, cat):
 
     def aggregate_group(df):
         # Trie le DataFrame du groupe selon 'paysage_category_priority'
-        df_sorted = df.sort_values('paysage_category_priority')
+        df_sorted = df.sort_values(['paysage_category_priority', 'operateur_num'])
 
         # Retourne une Series avec les colonnes souhaitées
         return pd.Series({
