@@ -17,6 +17,12 @@ def entities_preparation(entities_part, h20):
     entities_part = pd.concat([entities_part, h20], ignore_index=True)
     entities_part = entities_part.reindex(sorted(entities_part.columns), axis=1)
 
+
+    act_liste = ['RIA', 'MSCA', 'IA', 'CSA', 'ERC', 'EIC']
+    entities_part = entities_part.assign(action_group_code=entities_part.action_code, action_group_name=entities_part.action_name)
+    entities_part.loc[~entities_part.action_code.isin(act_liste), 'action_group_code'] = 'ACT-OTHER'
+    entities_part.loc[~entities_part.action_code.isin(act_liste), 'action_group_name'] = 'Others actions'
+
     entities_part.loc[entities_part.source_id=='ror', 'entities_id'] = entities_part.loc[entities_part.source_id=='ror', 'entities_id'].str.replace("^R", "", regex=True)
     entities_part.loc[entities_part.source_id=='pic', 'source_id'] = 'ecorda pic'
     entities_part.loc[entities_part.source_id=='identifiantAssociationUniteLegale', 'source_id'] = 'rna'
@@ -44,10 +50,6 @@ def entities_ods(FP, entities_participation):
     tmp.loc[~tmp.action_id.isin(act_liste), 'action_group_code'] = 'ACT-OTHER'
     tmp.loc[~tmp.action_id.isin(act_liste), 'action_group_name'] = 'Others actions'
 
-    # for i in ['abstract', 'free_keywords']:
-    #     tmp[i] = tmp[i].str.replace('\\n|\\t|\\r|\\s+|^\\"', ' ', regex=True).str.strip()
-
-    # tmp['free_keywords'] = tmp['free_keywords'].str.lower()
 
     tmp.loc[(tmp.stage=='successful')&(tmp.status_code=='UNDER_PREPARATION'), 'abstract'] = np.nan
 
@@ -56,7 +58,8 @@ def entities_ods(FP, entities_participation):
     
     # for h in tmp.framework.unique():
     x = (tmp[(tmp.stage=='successful')]
-            .drop(columns=['panel_regroupement_code', 'panel_code', 'erc_role', 'fund_ent_erc']))
+            .drop(columns=['panel_regroupement_code', 'panel_code', 'erc_role', 'fund_ent_erc', 
+                           'status_evaluation', 'dep_code', 'reg_code']))
     # x.loc[x.thema_code.isin(['ERC','MSCA']), ['destination_code', 'destination_name_en']] = np.nan
     # x = entreprise_cat_cleaning(x)
     chunk_size = int(math.ceil((x.shape[0] / 2)))
@@ -68,7 +71,10 @@ def entities_ods(FP, entities_participation):
             FP='h2020'
         zipfile_ods(df_subset, f"fr-esr-{FP}-projects-entities{i}")
  
-    tmp1 = tmp.loc[(tmp.stage=='evaluated')].rename(columns={ 'number_involved':'numberofapplicants'})
+    tmp1 = (tmp.loc[(tmp.stage=='evaluated')]
+            .rename(columns={ 'number_involved':'numberofapplicants'})
+            .drop(columns=['status_code', 'dep_code', 'reg_code'])
+    )
 
     l=['country_name_source', 'country_association_name_en', 'country_name_en', 
             'country_code_source', 
@@ -90,7 +96,6 @@ def entities_ods(FP, entities_participation):
         df_subset = x.iloc[start:start+chunk_size]
         i=i+1
         zipfile_ods(df_subset, f"fr-esr-{FP}-projects-entities-evaluated{i}")
-
 
 
 def entities_operateur(df):
@@ -166,3 +171,20 @@ def entities_collab(entities_participation, tab=True):
     
     else:
         return collab_ent
+
+
+def entities_mongo(FP, df, cols_select_xls, tab_mongo):
+    from functions_shared import cols_select_mongo
+    from remote_process.mongo import mongo_delete_all, mongo_bulk_insert_df
+
+    if FP=='horizon':
+        filter_FP='Horizon Europe'
+    elif FP=='h20':
+        filter_FP='Horizon 2020'
+
+    l=cols_select_mongo(FP, cols_select_xls)
+    tmp=df[l].loc[(df.framework==filter_FP)]
+
+    cm = f"european-projects_{tab_mongo}"
+    mongo_delete_all(cm)
+    mongo_bulk_insert_df(tmp, cm)
