@@ -133,18 +133,35 @@ def bugs_excel(df, chemin, name_sheet):
             df.to_excel(writer, sheet_name=name_sheet)
 
 
-def entities_choose_status(df, cols: list):
-    import pandas as pd
+def entities_choose_status(df: pd.DataFrame, cols: list) -> pd.DataFrame:
+    """Trie et filtre les entités selon l'ordre de priorité de generalState."""
+    gen_state = [
+        "VALIDATED",
+        "DECLARED",
+        "SLEEPING",
+        "SUSPENDED",
+        "BLOCKED",
+        "DEPRECATED",
+        "Undefined",
+    ]
 
-    gen_state=['VALIDATED', 'DECLARED', 'SLEEPING', 'SUSPENDED', 'BLOCKED', 'DEPRECATED', 'Undefined']
+    unique_states = set(df["generalState"].unique())
+    diff_states = unique_states - set(gen_state)
 
-    if len(df.generalState.dropna().unique()) > len(gen_state):
-        print(f"2 - ⚠️ ! un generalState nouveau dans entities -> {set(df.generalState.unique())-set(gen_state)}")
+    if len(df["generalState"].dropna().unique()) > len(gen_state):
+        print(f"⚠️ ! new generalState in entities -> {diff_states}")
     else:
-        df = df.groupby(cols).apply(lambda x: x.sort_values('generalState', key=lambda col: pd.Categorical(col, categories=gen_state, ordered=True)), include_groups=True).reset_index(drop=True)
+
+        df["generalState"] = pd.Categorical(
+            df["generalState"], categories=gen_state, ordered=True
+        )
+        df = df.sort_values(cols + ["generalState"]).reset_index(drop=True)
         df = df.groupby(cols).head(1)
+
         print(f"3 - size entities after cleaning: {len(df)}")
+
     return df
+
 
 def cols_select_mongo(FP, xl_sheetname):
     import pandas as pd
@@ -219,26 +236,35 @@ def tokenization(text):
 
 def prep_str_col(df, cols):
     from unidecode import unidecode
-    from functions_shared import tokenization
 
-    punct=r"'|–|,|\\.|:|;|\\!|`|=|\\*|\\+|\\-|‑|\\^|_|~|\\[|\\]|\\{|\\}|\\(|\\)|<|>|@|#|\\$"
-    
-    ## caracteres speciaux
-    for i in cols:
-        if i in df.columns:
-            df.loc[~df[i].isnull(), i] = df.loc[~df[i].isnull(), i].str.lower()
-            df.loc[~df[i].isnull(), i] = df.loc[~df[i].isnull(), i].astype('str').apply(unidecode)
-            df.loc[~df[i].isnull(), i] = df.loc[~df[i].isnull(), i].str.replace('&', 'and')
-            df.loc[~df[i].isnull(), i] = df.loc[~df[i].isnull(), i].apply(lambda x: tokenization(x)).apply(lambda x: [s.replace('.','') for s in x]).apply(lambda x: ' '.join(x))
-        
+    punct = r"'|–|,|\.|:|;|!|`|=|\*|\+|\-|-|\^|_|~|\[|\]|\{|\}|\(|\)|<|>|@|#|\$"
 
-            df[i] = df[i].str.replace(punct, ' ', regex=True)
-            df[i] = df[i].str.replace(r"\n|\t|\r|\xc2|\xa9|\s+", ' ', regex=True).str.strip()
-            df[i] = df[i].str.lower().replace('n/a|ndeg', ' ', regex=True).str.strip()
-            df[i] = df[i].str.replace('/', ' ', regex=True).str.strip()
-            df[i] = df[i].str.replace(r"\\", ' ', regex=True).str.strip()
-            df[i] = df[i].str.replace('"', ' ').str.strip()
-            df[i] = df[i].str.replace(r"\s+", ' ', regex=True).str.strip()
+    for col in cols:
+
+        if col not in df.columns:
+            continue
+
+        s = df[col].astype('string').str.lower()
+
+        s = s.map(
+            lambda x: unidecode(x) if pd.notna(x) else x
+        )
+
+        s = s.str.replace('&', 'and', regex=False)
+        s = s.str.replace(r'\.', '', regex=True)
+        s = s.str.replace(punct, ' ', regex=True)
+        s = s.str.replace(r'[/\\]', ' ', regex=True)
+        s = s.str.replace('"', ' ', regex=False)
+        s = s.str.replace(
+            r'\n|\t|\r|\xc2|\xa9|\s+',
+            ' ',
+            regex=True
+        )
+        s = s.str.replace(r'n/a|ndeg', ' ', regex=True)
+        s = s.str.strip()
+        s = s.str.replace(r'\s+', ' ', regex=True)
+
+        df[col] = s
 
     return df
 
@@ -268,36 +294,143 @@ def stop_word(df, cc_iso3 ,cols_list):
             df= df.merge(tmp, how='left', left_index=True, right_index=True)
     return df
 
+
 def adr_tag(df, cols_list):
-    import json, re, pandas as pd
+    import json
+    import re
+    import pandas as pd
     from text_to_num import alpha2digit
-    
-    adr = json.load(open('data_files/ad.json'))
+
+    # ------------------------------------------------------------
+    # Chargement des abréviations d'adresse
+    # ad.json = {"av": "avenue", "bd": "boulevard", ...}
+    # ------------------------------------------------------------
+    with open("data_files/ad.json", encoding="utf-8") as f:
+        adr = json.load(f)
+
+    # Vérification simple du format
+    if not isinstance(adr, dict):
+        raise ValueError(
+            "data_files/ad.json doit être un dictionnaire "
+            "{'abbreviation': 'replacement'}"
+        )
 
     for col_ref in cols_list:
-        tmp = df.loc[~df[col_ref].isnull(), [col_ref]]
-        for i in adr :
-            for (k,v) in i.items():
-                tmp[col_ref] = tmp[col_ref].apply(lambda x: [re.sub('^'+k+'$', v, s) for s in x])
-                tmp[col_ref] = tmp[col_ref].apply(lambda x: list(filter(None, x)))
 
-        df = pd.concat([df.drop(columns=[col_ref]), tmp], axis=1) 
+        if col_ref not in df.columns:
+            continue
 
-        tmp[f'{col_ref}_tag'] = df.loc[~df[col_ref].isnull()][col_ref].apply(lambda x: ' '.join(x))
-        with open("data_files/adresse_pattern.txt", "r") as pats:
-             for n, line in enumerate(pats, start=1):       
+        # --------------------------------------------------------
+        # On ne travaille que sur les valeurs non nulles
+        # --------------------------------------------------------
+        mask = df[col_ref].notna()
+
+        if not mask.any():
+            continue
+
+        tmp = df.loc[mask, [col_ref]].copy()
+
+        # --------------------------------------------------------
+        # IMPORTANT :
+        # adr_tag attend des listes de mots.
+        #
+        # Si street contient déjà des listes -> on les conserve.
+        # Si street contient une chaîne -> on la transforme en liste.
+        # --------------------------------------------------------
+        tmp[col_ref] = tmp[col_ref].apply(
+            lambda x: (
+                x
+                if isinstance(x, list)
+                else str(x).split()
+            )
+        )
+
+        # --------------------------------------------------------
+        # Remplacement des abréviations
+        # --------------------------------------------------------
+        for k, v in adr.items():
+
+            pattern = rf"^{re.escape(k)}$"
+
+            tmp[col_ref] = tmp[col_ref].apply(
+                lambda words: [
+                    re.sub(pattern, v, word)
+                    for word in words
+                ]
+            )
+
+        # --------------------------------------------------------
+        # Création du tag adresse
+        # --------------------------------------------------------
+        tmp[f'{col_ref}_tag'] = tmp[col_ref].apply(
+            lambda x: ' '.join(x)
+        )
+
+        # --------------------------------------------------------
+        # Suppression des éléments définis dans
+        # adresse_pattern.txt
+        # --------------------------------------------------------
+        with open(
+            "data_files/adresse_pattern.txt",
+            encoding="utf-8"
+        ) as pats:
+
+            for line in pats:
                 pat = line.rstrip('\n')
-                tmp[f'{col_ref}_tag'] = tmp[f'{col_ref}_tag'].str.replace(pat,'', regex=True)
 
-        tmp[f'{col_ref}_tag'] = tmp[f'{col_ref}_tag'].apply(lambda x: alpha2digit(x, 'fr'))
-        tmp[f'{col_ref}_tag'] = tmp[f'{col_ref}_tag'].str.replace('[0-9]+','', regex=True)
-        tmp[f'{col_ref}_tag'] = tmp[f'{col_ref}_tag'].str.strip()
-        
-        df = pd.concat([df.drop(columns=[col_ref]), tmp], axis=1)
+                if pat:
+                    tmp[f'{col_ref}_tag'] = (
+                        tmp[f'{col_ref}_tag']
+                        .str.replace(
+                            pat,
+                            '',
+                            regex=True
+                        )
+                    )
 
-        df.loc[(df.country_code!='FRA')&(~df[f'{col_ref}_tag'].isnull()), f'{col_ref}_tag'] = df.loc[(df.country_code!='FRA')&(~df[f'{col_ref}_tag'].isnull())][f'{col_ref}_tag'].str.split(' ').apply(lambda x: ' '.join([w for w in x if len(w) > 2]))
+        # --------------------------------------------------------
+        # Conversion des nombres en mots
+        # puis suppression des nombres
+        # --------------------------------------------------------
+        tmp[f'{col_ref}_tag'] = (
+            tmp[f'{col_ref}_tag']
+            .apply(lambda x: alpha2digit(x, 'fr'))
+            .str.replace(r'[0-9]+', '', regex=True)
+            .str.replace(r'\s+', ' ', regex=True)
+            .str.strip()
+        )
+
+        # --------------------------------------------------------
+        # Pour les pays hors France :
+        # suppression des mots trop courts
+        # --------------------------------------------------------
+        mask_foreign = (
+            df.loc[mask, 'country_code'].ne('FRA')
+            & tmp[f'{col_ref}_tag'].notna()
+        )
+
+        tmp.loc[mask_foreign, f'{col_ref}_tag'] = (
+            tmp.loc[
+                mask_foreign,
+                f'{col_ref}_tag'
+            ]
+            .str.split()
+            .apply(
+                lambda words: ' '.join(
+                    w for w in words
+                    if len(w) > 2
+                )
+            )
+        )
+
+        # --------------------------------------------------------
+        # Réintégration dans le dataframe
+        # --------------------------------------------------------
+        df.loc[mask, col_ref] = tmp[col_ref]
+        df.loc[mask, f'{col_ref}_tag'] = tmp[f'{col_ref}_tag']
 
     return df
+
 
 def chunkify(df, chunk_size: int):
     print(f"size df: {df.shape}")
@@ -384,13 +517,14 @@ def prop_string(tab, cols):
         tab.loc[~tab[i].isnull(), i] = tab.loc[~tab[i].isnull(), i].apply(unidecode)
     return tab
 
-def com_iso3():
-    import pandas as pd
-    url='https://docs.google.com/spreadsheet/ccc?key=1FwPq5Qw7Gbgj_sBD6Za4dfDDk6ydozQ99TyRjLkW5d8&output=xls'
-    com_iso = pd.read_excel(url, sheet_name='LES_COMMUNES', dtype=str, na_filter=False)
-    com_iso=com_iso[['COM_CODE', 'ISO_3']].drop_duplicates()
-    com_iso.columns=com_iso.columns.str.lower()
-    return com_iso
+# def com_iso3():
+#     import pandas as pd
+#     from remote_process.grist import communesG
+#     url='https://docs.google.com/spreadsheet/ccc?key=1FwPq5Qw7Gbgj_sBD6Za4dfDDk6ydozQ99TyRjLkW5d8&output=xls'
+#     com_iso = pd.read_excel(url, sheet_name='LES_COMMUNES', dtype=str, na_filter=False)
+#     com_iso=com_iso[['COM_CODE', 'ISO_3']].drop_duplicates()
+#     com_iso.columns=com_iso.columns.str.lower()
+#     return com_iso
 
 def load_last_file_csv(path_folder, file_prefix, sep):
     import os, pandas as pd
@@ -481,19 +615,33 @@ def length_code_geo(var):
     else:
         return str(var)
     
-def get_gs(sheet_name: str, vars_list: list=None):
-    import pandas as pd, os, json
-    url=f"https://docs.google.com/spreadsheet/ccc?key={os.environ.get('GOOGLE_KEY')}&output=xls"
-    df_c = pd.read_excel(url, sheet_name=sheet_name, dtype=str, na_filter=False)
+def get_gs(sheet_name: str, vars_list: list = None) -> pd.DataFrame:
+    """Récupère une feuille Google Sheet et exporte en JSON si nécessaire."""
+    google_key = os.environ.get("GOOGLE_KEY")
+    url = f"https://docs.google.com/spreadsheet/ccc?key={google_key}&output=xls"
 
-    names=[('G_PAYS', 'country_gs_insee')]
+    df_c = pd.read_excel(
+        url, sheet_name=sheet_name, dtype=str, na_filter=False
+    )
+
+    names = [("G_PAYS", "country_gs_insee")]
     for name_old, name_new in names:
         if sheet_name == name_old:
-            json.dump(df_c[vars_list].to_dict('records'), open(f'data_files/{name_new}.json', 'w', encoding='utf-8'), ensure_ascii=False, indent=4)
-    if vars_list == None:
+            # PEP 8 : Utiliser le context manager 'with' pour ouvrir un fichier
+            file_path = f"data_files/{name_new}.json"
+            with open(file_path, "w", encoding="utf-8") as f:
+                json.dump(
+                    df_c[vars_list].to_dict(orient="records"),
+                    f,
+                    ensure_ascii=False,
+                    indent=4,
+                )
+
+    # PEP 8 : Utiliser 'is' pour la comparaison avec None
+    if vars_list is None:
         return df_c
-    else:
-        return df_c[vars_list]
+
+    return df_c[vars_list]
 
 
 def convert_lambert_to_gps(x_col, y_col):
@@ -837,3 +985,424 @@ def check_dataframe(
     print("=" * 70)
  
     return summary, duplicate_rows
+
+
+def convert_to_paris_date(column):
+    return (
+        pd.to_datetime(column, utc=True, errors="coerce")
+        .dt.tz_convert("Europe/Paris")
+    )
+
+
+def rnsr_address_split(df):
+    # -*- coding: utf-8 -*-
+    """
+    rnsr_address_split(df) : prend un DataFrame contenant une colonne 'adresse_full'
+    (et optionnellement 'code_postal' / 'ville') et retourne un NOUVEAU DataFrame
+    avec les colonnes ajoutées :
+        - nom          : nom d'organisme / service détecté avant l'adresse (s'il y en a un)
+        - adresse      : numéro + voie (rue, avenue, campus, bâtiment...)
+        - code_postal  : code postal (FR en priorité, sinon meilleur repérage possible)
+        - ville
+        - pays         : uniquement s'il est explicitement mentionné dans le texte
+        - a_verifier   : indique les lignes qu'il vaut mieux relire à la main
+
+    Les données sources sont un texte libre très hétérogène (adresses françaises et
+    étrangères, formats variés, doublons de segments...). La fonction applique donc des
+    règles heuristiques et NON une analyse garantie à 100%.
+
+    Utilisation :
+        rnsr = rnsr_address_split(rnsr)
+    """
+    from paths import PATH_WORK
+    import re
+    import os
+    import json
+    import unicodedata
+    import pandas as pd
+
+    # --- Dictionnaire d'abréviations d'adresse (ad.json) ---------------------------
+    # cherche ad.json à côté du script, puis dans PATH_WORK ; à défaut utilise une
+    # copie intégrée (le fichier reste éditable indépendamment du script).
+    _AD_JSON_FALLBACK = {
+        "chem": "chemin", "che": "chemin", "av": "avenue", "adj": "adjudant",
+        "bat": "batiment", "bd": "boulevard", "bld": "boulevard", "bvd": "boulevard",
+        "blvd": "boulevard", "bloulevard": "boulevard", "cdt": "commandant",
+        "all": "allee", "al": "allee", "imp": "impasse", "dr": "docteur",
+        "g": "general", "gal": "general", "gl": "general", "prof": "professeur",
+        "rgt": "regiment", "rte": "route", "st": "saint", "pl": "place",
+        "ld": "lieudit", "lieu": "lieudit", "ltd": "lieutenant",
+        "zi": "zoneindustrielle", "fbg": "faubourg", "za": "zoneactivite",
+    }
+
+    def _load_ad_dict():
+        candidats = []
+        try:
+            script_dir = os.path.dirname(os.path.abspath(__file__))
+            candidats.append(os.path.join(script_dir, "data_files", "ad.json"))
+            candidats.append(os.path.join(script_dir, "ad.json"))
+        except NameError:
+            pass
+        candidats.append(os.path.join(PATH_WORK, "data_files", "ad.json"))
+        candidats.append(os.path.join(PATH_WORK, "ad.json"))
+        candidats.append(os.path.join("data_files", "ad.json"))
+        candidats.append("ad.json")
+        for chemin in candidats:
+            try:
+                with open(chemin, encoding="utf-8") as f:
+                    return json.load(f)
+            except (FileNotFoundError, OSError):
+                continue
+        return _AD_JSON_FALLBACK
+
+    AD_DICT = _load_ad_dict()
+    # une regex par abréviation : mot entier, point final optionnel, insensible à la casse
+    AD_PATTERNS = [
+        (re.compile(r"\b" + re.escape(k) + r"\.?\b", re.IGNORECASE), v)
+        for k, v in AD_DICT.items()
+    ]
+
+    def _expand_abbreviations(text: str) -> str:
+        """Remplace les abréviations d'adresse (ad.json) par leur forme complète
+        (ex: 'bd' -> 'boulevard', 'st' -> 'saint')."""
+        if not text:
+            return text
+        for pattern, full in AD_PATTERNS:
+            text = pattern.sub(full, text)
+        return text
+
+    # supprime le numéro de voie (+ bis/ter/quater) : ne garde que la voie et son nom,
+    # à partir du premier mot-clé de type de voie rencontré
+    NUMERO_STRIP_RE = re.compile(
+        r"^.*?\b(rue|avenue|boulevard|impasse|chemin|all[ée]e|place|route|cours|quai|esplanade|parvis)\b\s*",
+        re.IGNORECASE,
+    )
+
+    # --- Référentiels heuristiques -------------------------------------------------
+
+    # mots-clés "forts" : types de voie non ambigus, où l'on peut tolérer un tiret
+    # comme séparateur avant le numéro (ex: '118 - route de Narbonne')
+    STREET_WORDS_STRONG = (
+        r"rue|avenue|av\.?|bd\.?|boulevard|chemin|route|place|all[ée]e|impasse|quai|"
+        r"cours|esplanade|espl\.?|rond[- ]point|faubourg|voie|square|passage|"
+        r"promenade|drive|road|street|blvd|parvis"
+    )
+    # mots-clés "faibles" : descriptifs de site, ambigus avec un numéro d'université/UFR
+    # (ex: 'UNIVERSITE LYON 2 - Campus...') -> seule la virgule est tolérée comme séparateur
+    STREET_WORDS_WEAK = (
+        r"domaine|campus|faubourg|zone|residence|r[ée]sidence|lotissement|hameau|"
+        r"lieu[- ]dit|parc"
+    )
+    STREET_WORDS = STREET_WORDS_STRONG + "|" + STREET_WORDS_WEAK
+
+    STREET_KEYWORDS = re.compile(r"\b(" + STREET_WORDS + r")\b", re.IGNORECASE)
+
+    # motif "numéro (éventuellement en plage type '9 - 11') + voie" : tiret ou virgule
+    # tolérés comme séparateur, réservé aux types de voie non ambigus
+    NUMERO_VOIE = re.compile(
+        r"\b\d{1,4}(?:\s*-\s*\d{1,4})?(?:\s*(?:bis|ter|quater))?\s*(?:,|-)?\s*(?:"
+        + STREET_WORDS_STRONG
+        + r")\b",
+        re.IGNORECASE,
+    )
+    # même motif, mots-clés faibles : uniquement une virgule (ou rien) comme séparateur,
+    # pour éviter de confondre 'LYON 2 - Campus' avec un numéro de voie
+    NUMERO_VOIE_WEAK = re.compile(
+        r"\b\d{1,4}(?:\s*-\s*\d{1,4})?(?:\s*(?:bis|ter|quater))?\s*,?\s*(?:"
+        + STREET_WORDS_WEAK
+        + r")\b",
+        re.IGNORECASE,
+    )
+
+    # organismes fréquents -> indique probablement un "nom" plutôt qu'une "adresse"
+    ORG_KEYWORDS = re.compile(
+        r"\b("
+        r"cnrs|inserm|inra|inrae|chu|chr|aphm|aphp|universit[ée]|institut|facult[ée]|"
+        r"laboratoire|hopital|h[ôo]pital|centre|ecole|[ée]cole|umr|ur\d|upr|dgos|"
+        r"association|fondation|groupement|hospices|clinique|ufr|umr\d|service|technopole|"
+        r"technop[ôo]le"
+        r")\b",
+        re.IGNORECASE,
+    )
+
+    COUNTRIES = [
+        "france", "allemagne", "etats-unis", "états-unis", "usa", "canada", "japon",
+        "japan", "chine", "singapour", "singapore", "australie", "royaume-uni",
+        "pays-bas", "chili", "mexique", "bresil", "brésil", "senegal", "sénégal",
+        "koweit", "koweït", "liban", "russie", "italie", "suisse", "belgique",
+        "espagne", "autriche", "inde", "thailande", "thaïlande", "hong-kong",
+        "hong kong", "coree du sud", "corée du sud", "coree", "corée",
+        "nouvelle-zelande", "nouvelle-zélande", "argentine", "perou", "pérou",
+        "polynesie francaise", "polynésie française",
+    ]
+
+    def _strip_accents(s: str) -> str:
+        return "".join(
+            c for c in unicodedata.normalize("NFKD", s) if not unicodedata.combining(c)
+        )
+
+    def _extract_pays(text: str):
+        """Cherche un nom de pays explicite en fin de chaîne ou dans un segment isolé."""
+        segments = re.split(r",| - ", text)
+        for seg in reversed(segments):
+            seg_clean = _strip_accents(seg).strip(" .-").lower()
+            for token in re.split(r"\s*-\s*", seg_clean):
+                token = token.strip()
+                if token in COUNTRIES:
+                    pays_original = seg.strip(" .-")
+                    for sub in re.split(r"(\s*-\s*)", seg):
+                        if _strip_accents(sub).strip(" .-").lower() == token:
+                            pays_original = sub.strip(" .-")
+                    new_text = text.replace(seg, "", 1)
+                    return pays_original.title(), new_text
+        return "", text
+
+    BATIMENT_TOKEN = re.compile(r"^b[âa]t(?:iment)?\.?\s", re.IGNORECASE)
+    IMMEUBLE_TOKEN = re.compile(r"^immeuble\.?\s", re.IGNORECASE)
+
+    # 'bat'/'bâtiment'/'batiment' suivi d'un code contenant un chiffre (ex: 'Bat 3R1 B2',
+    # 'Bâtiment 3'), même accolé au milieu d'un segment sans virgule/tiret ('...Sabatier Bat 3R1')
+    BAT_DIGIT_INLINE = re.compile(
+        r"\bb[âa]t(?:iment)?\.?\s*(?:[A-Za-z]*\d[A-Za-z0-9]*)(?:\s+[A-Za-z]*\d[A-Za-z0-9]*)*",
+        re.IGNORECASE,
+    )
+
+    # 'immeuble' + nom propre qui suit (ex: 'Immeuble Deurbroucq'), même collé sans
+    # espace après un tiret ('Ouest-Immeuble Deurbroucq')
+    IMMEUBLE_INLINE = re.compile(
+        r"\bimmeuble\.?\s*(?:[A-ZÀ-Ÿ][A-Za-zÀ-ÿ'\-]*)(?:\s+[A-ZÀ-Ÿ][A-Za-zÀ-ÿ'\-]*)*",
+        re.IGNORECASE,
+    )
+
+    # étage : 'X étage', '3ème étage', 'RDC'... suivi ou non d'un numéro
+    ETAGE_INLINE = re.compile(
+        r"\b\d+\s*(?:er|ère|re|nd|eme|ème|e)?\s*(?:etage|étage)\b|\bau\s+\d+\s*(?:er|ère|re|nd|eme|ème|e)?\s*(?:etage|étage)\b",
+        re.IGNORECASE,
+    )
+
+    # 'case' + numéro (ex: 'case 925', 'case postale 12') — pas un numéro de rue
+    CASE_INLINE = re.compile(
+        r"\bcase(?:\s+postale)?\.?\s*n?°?\s*\d+\b", re.IGNORECASE
+    )
+
+    # boîtes/services postaux : BP (boîte postale), CS (courrier suivi / case postale),
+    # TSA (tri sélectif de l'acheminement), CE (case entreprise) — toujours suivis d'un
+    # numéro de service, ex: 'B.P. 53', 'CS 90032', 'TSA 51274', 'CE 1455'.
+    # Ce ne sont pas des numéros de voie.
+    POSTAL_BOX_TOKEN = re.compile(
+        r"^(?:b\.?\s?p\.?|c\.?\s?s\.?|t\.?\s?s\.?\s?a\.?|c\.?\s?e\.?)\s*n?°?\s*\d",
+        re.IGNORECASE,
+    )
+    POSTAL_BOX_INLINE = re.compile(
+        r"\b(?:b\.?\s?p\.?|c\.?\s?s\.?|t\.?\s?s\.?\s?a\.?|c\.?\s?e\.?)\s*n?°?\s*\d[\d\s]*\b",
+        re.IGNORECASE,
+    )
+
+    def _strip_noise_tokens(before: str) -> str:
+        """Retire les mentions parasites qui ne font pas partie du numéro de voie :
+        - bâtiment (avec ou sans numéro), immeuble (+ nom propre) ;
+        - boîte/service postal : BP, CS, TSA, CE + numéro ;
+        - étage (ex: '3ème étage') ;
+        - case / case postale + numéro.
+        Traite aussi bien les segments entiers que les mentions accolées sans
+        ponctuation à l'intérieur d'un segment."""
+        before = BAT_DIGIT_INLINE.sub("", before)
+        before = IMMEUBLE_INLINE.sub("", before)
+        before = ETAGE_INLINE.sub("", before)
+        before = CASE_INLINE.sub("", before)
+        before = POSTAL_BOX_INLINE.sub("", before)
+        before = re.sub(r"\s{2,}", " ", before)
+        tokens = [t.strip() for t in re.split(r",| - ", before) if t.strip()]
+        tokens = [
+            t for t in tokens
+            if not BATIMENT_TOKEN.match(t + " ")
+            and not IMMEUBLE_TOKEN.match(t + " ")
+            and not POSTAL_BOX_TOKEN.match(t)
+        ]
+        return " - ".join(tokens)
+
+    def _dedupe_tokens(tokens):
+        """Supprime les segments dupliqués/quasi dupliqués consécutifs
+        (ex: '20 rue X, rue X')."""
+        cleaned = []
+        for t in tokens:
+            t_norm = _strip_accents(t).lower().strip()
+            if cleaned:
+                prev_norm = _strip_accents(cleaned[-1]).lower().strip()
+                if t_norm and (t_norm in prev_norm or prev_norm in t_norm):
+                    if len(t) > len(cleaned[-1]):
+                        cleaned[-1] = t
+                    continue
+            cleaned.append(t)
+        return cleaned
+
+    def _split_nom_adresse(before: str):
+        """Sépare (nom d'organisme, adresse numéro+voie) à partir du texte
+        précédant le code postal / la ville.
+
+        La coupure est cherchée directement sur le texte (pas seulement au
+        début d'un segment séparé par une virgule), pour gérer les cas où
+        le nom d'organisme et le numéro de voie sont accolés sans ponctuation
+        (ex : "Laboratoire de Ploufragan-Plouzané-Niort 41 rue de Beaucemaine").
+        """
+        before = _strip_noise_tokens(before)
+        tokens = [t.strip() for t in re.split(r",| - ", before) if t.strip()]
+        tokens = _dedupe_tokens(tokens)
+        clean_before = " - ".join(tokens).strip(" -,")
+
+        if not clean_before:
+            return "", ""
+
+        # 1) motif "numéro + voie" (types de voie non ambigus : rue, avenue...)
+        m = NUMERO_VOIE.search(clean_before)
+        # 1bis) motif "numéro + voie" faible (campus, domaine...) : virgule seulement,
+        # pour ne pas confondre avec un numéro d'université/UFR suivi d'un tiret
+        if not m:
+            m = NUMERO_VOIE_WEAK.search(clean_before)
+        if m and m.start() > 0:
+            nom = clean_before[: m.start()].strip(" -,.")
+            adresse = clean_before[m.start():].strip(" -,.")
+            return nom, adresse
+        if m and m.start() == 0:
+            # l'adresse commence dès le début, pas de nom devant
+            return "", clean_before.strip(" -,.")
+
+        # 2) pas de numéro trouvé : mot-clé de voie seul (ex: "Place du Maréchal...")
+        m2 = STREET_KEYWORDS.search(clean_before)
+        if m2 and m2.start() > 0:
+            nom = clean_before[: m2.start()].strip(" -,.")
+            adresse = clean_before[m2.start():].strip(" -,.")
+            return nom, adresse
+        if m2 and m2.start() == 0:
+            return "", clean_before.strip(" -,.")
+
+        # 3) aucun repère de voie : si le début ressemble à un organisme connu,
+        # on le met en 'nom' et on laisse le reste en 'adresse' (sans certitude)
+        if tokens and ORG_KEYWORDS.search(tokens[0]):
+            nom = tokens[0]
+            adresse = " - ".join(tokens[1:]).strip(" -,.")
+        else:
+            nom = ""
+            adresse = clean_before
+
+        return nom, adresse
+
+    def _parse_adresse(raw: str):
+        result = {
+            "nom": "",
+            "adresse": "",
+            "code_postal": "",
+            "ville": "",
+            "pays": "",
+            "a_verifier": "",
+        }
+        text = (raw or "").strip()
+        if not text:
+            result["a_verifier"] = "oui (adresse_full vide)"
+            return result
+
+        # retire les parenthèses et leur contenu (ex: '(contact : ... email@...)')
+        text = re.sub(r"\([^)]*\)", "", text).strip()
+        text = re.sub(r"\s{2,}", " ", text)
+
+        pays, text = _extract_pays(text)
+        result["pays"] = pays
+        text = re.sub(r"\s*,\s*,", ",", text)
+        text = text.strip(" ,-")
+
+        # Cas standard : "..., CODE_POSTAL, VILLE" en fin de chaîne
+        m = re.search(r",\s*(\d{5})\s*,\s*([^,]+?)\s*$", text)
+        if m:
+            before = text[: m.start()]
+            result["code_postal"] = m.group(1)
+            result["ville"] = m.group(2).strip(" .-")
+            nom, adresse = _split_nom_adresse(before)
+            result["nom"], result["adresse"] = nom, adresse
+            return result
+
+        # Cas "CODE_POSTAL, VILLE" seul (pas de partie avant)
+        m = re.search(r"^(\d{5})\s*,\s*([^,]+)$", text)
+        if m:
+            result["code_postal"] = m.group(1)
+            result["ville"] = m.group(2).strip(" .-")
+            return result
+
+        # Cas "CODE_POSTAL VILLE" collés en fin de chaîne (pas de virgule)
+        m = re.search(r"(?:^|[,\-\s])(\d{5})\s+([A-ZÀ-Ÿ][A-Za-zÀ-ÿ' \-]{2,})$", text)
+        if m:
+            before = text[: m.start(1)]
+            result["code_postal"] = m.group(1)
+            ville_brute = m.group(2).strip(" .-")
+            # la ville et le pays peuvent être accolés sans virgule (ex: "Avignon France")
+            mots = ville_brute.split()
+            if len(mots) > 1:
+                for k in range(len(mots) - 1, 0, -1):
+                    candidat = " ".join(mots[k:])
+                    if _strip_accents(candidat).strip(" .-").lower() in COUNTRIES:
+                        if not result["pays"]:
+                            result["pays"] = candidat.title()
+                        ville_brute = " ".join(mots[:k])
+                        break
+            result["ville"] = ville_brute.strip(" .-")
+            nom, adresse = _split_nom_adresse(before)
+            result["nom"], result["adresse"] = nom, adresse
+            result["a_verifier"] = "oui (format cp/ville atypique)"
+            return result
+
+        # Aucun code postal identifié : on tente au moins nom/adresse,
+        # et on marque la ligne à vérifier manuellement.
+        nom, adresse = _split_nom_adresse(text)
+        result["nom"], result["adresse"] = nom, adresse
+        result["a_verifier"] = "oui (pas de code postal identifié)"
+        return result
+
+    def _safe_str(value):
+        """Convertit une valeur de cellule (potentiellement NaN) en chaîne propre."""
+        if value is None:
+            return ""
+        try:
+            if pd.isna(value):
+                return ""
+        except (TypeError, ValueError):
+            pass
+        return str(value).strip()
+
+    def _normaliser(text: str) -> str:
+        """Passe en minuscule et retire la ponctuation (garde lettres/chiffres/accents
+        et espaces), en conservant un seul espace entre les mots."""
+        if not text:
+            return text
+        text = re.sub(r"[^\w\s]", " ", text, flags=re.UNICODE)
+        text = re.sub(r"\s{2,}", " ", text)
+        return text.strip().lower()
+
+    nom_col, adresse_col, cp_col, ville_col, pays_col, verif_col = [], [], [], [], [], []
+
+    for _, row in df.iterrows():
+        parsed = _parse_adresse(_safe_str(row.get("adresse_full", "")))
+        code_postal = parsed["code_postal"] or _safe_str(row.get("code_postal", ""))
+        ville = parsed["ville"] or _safe_str(row.get("ville", ""))
+
+        nom_col.append(_normaliser(parsed["nom"]))
+        adresse_expansee = _expand_abbreviations(parsed["adresse"])
+        adresse_sans_numero = NUMERO_STRIP_RE.sub(r"\1 ", adresse_expansee)
+        adresse_col.append(_normaliser(adresse_sans_numero))
+        cp_col.append(code_postal)
+        ville_col.append(_normaliser(ville))
+        pays_col.append(_normaliser(parsed["pays"]))
+        verif_col.append(parsed["a_verifier"])
+
+    out = df.copy()
+    out["nom"] = nom_col
+    out["adresse"] = adresse_col
+    out["code_postal"] = cp_col
+    out["ville"] = ville_col
+    out["pays"] = pays_col
+    out["a_verifier"] = verif_col
+
+    n_verif = sum(1 for v in verif_col if v)
+    print(f"{len(out)} lignes traitées, {n_verif} marquées 'a_verifier'")
+
+    out.to_csv(f"{PATH_WORK}rnsr_address_splite.csv")
+
+    return out
