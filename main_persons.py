@@ -17,7 +17,7 @@ perso_app = pd.read_pickle(f"{PATH_CLEAN}persons_applicants.pkl")
 pp = pd.concat([perso_part.drop_duplicates(), perso_app.drop_duplicates()], ignore_index=True)
 pp['contact2']=pp.contact.str.replace('-', ' ')
 pp = pp.rename(columns={'country_code2':'iso2'})
-pp = pd.merge(pp, project[['project_id', 'destination_code', 'thema_code']], how='left', on=['project_id'])
+pp = pd.merge(pp, project[['project_id', 'action_code', 'thema_code']], how='left', on=['project_id'])
 ####################################################################
 # requests openalex
 #PREPRATION data for request openalex
