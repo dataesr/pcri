@@ -65,10 +65,12 @@ def del_list_in_col(df, var_old:str, var_new:str):
             df.at[i, var_new] = "|".join(str(e) for e in row[var_old] if e is not None)
     return df.drop(var_old, axis=1)
 
+
 def work_csv(df, file_csv_name):
     from paths import PATH_WORK
     name = file_csv_name
     return df.to_csv(f"{PATH_WORK}{name}.csv", sep=';', na_rep='', encoding='utf-8', index=False)
+
 
 def clean_keyword(keyword):
     import re
@@ -85,6 +87,7 @@ def website_to_clean(web_var: str):
     y= re.search(pat, str(web_var))
     if y is not None:
         return y.group()
+
     
 def columns_comparison(df, source):
     path = "data_files/cols_by_table.json"
@@ -105,6 +108,7 @@ def columns_comparison(df, source):
     else:
         print("- no new columns")
 
+
 def gps_col(df):
     import re
     print("#FCT gps_col")
@@ -114,12 +118,14 @@ def gps_col(df):
             df.at[i, 'gps_source'] = re.search(r"^-?\d+\.?\d{,5}", str(row.loc['location'].get('latitude')))[0]+ "," +re.search(r"^-?\d+\.?\d{,5}", str(row.loc['location'].get('longitude')))[0]
     return df.drop('location', axis=1).drop_duplicates()  
 
+
 def num_to_string(var):
     try:
         float(var)
         return var.astype(int, errors='ignore').astype(str).replace('.0', '')
     except:
         return str(var).replace('.0', '')
+
 
 def bugs_excel(df, chemin, name_sheet):
     """
@@ -174,12 +180,14 @@ def cols_select_mongo(FP, xl_sheetname):
     col_name_list = df.loc[df['mongo'] == 'x', FP].values.flatten()
     return sorted({str(x) for x in col_name_list if pd.notna(x)}, key=str.lower)
 
+
 def cols_select(FP, xl_sheetname):
     import pandas as pd
     from paths import PATH_ODS
     xl_path = f"{PATH_ODS}colonnes_ordres_par_jeux_ods.xlsx"
     df = pd.read_excel(xl_path, sheet_name=xl_sheetname, dtype={'order':int})
     return df[['vars', FP, 'order']]
+
 
 def cols_order(df, xl_sheetname):
     import pandas as pd
@@ -190,15 +198,18 @@ def cols_order(df, xl_sheetname):
     colorder=colorder.vars.unique()
     return df.reindex(columns=colorder)
 
+
 def select_cols_FP(FP, file_ods):   
     cols_h=cols_select(FP, file_ods)
     select=cols_h.loc[cols_h[FP].notna(), FP].unique()
     return select
 
+
 def rename_cols_FP(FP, file_ods):   
     cols_h=cols_select(FP, file_ods)
     rename_map=cols_h[cols_h[FP].notna()].set_index(FP)['vars'].to_dict()
     return rename_map
+
 
 def df_order_cols_FP(FP, file_ods, df):   
     cols_h=cols_select(FP, file_ods)
@@ -209,6 +220,7 @@ def df_order_cols_FP(FP, file_ods, df):
         if i in df.columns:
             l.append(i)
     return df.reindex(columns=l)
+
 
 def zipfile_ods(df, file_export):
     import zipfile
@@ -232,10 +244,12 @@ def entreprise_group_cleaning(df):
             df = df.drop(columns=i)
     return df
 
+
 def tokenization(text):
     if isinstance(text, str):
         tokens = text.split()
         return tokens
+
 
 def prep_str_col(df, cols):
     from unidecode import unidecode
@@ -459,6 +473,7 @@ def chunkify(df, chunk_size: int):
     if start < length:
         yield df[start:]
 
+
 def country_iso_shift(df, var, iso2_to3=True):
     import warnings
     warnings.filterwarnings("ignore", "This pattern is interpreted as a regular expression, and has match groups")
@@ -478,6 +493,7 @@ def country_iso_shift(df, var, iso2_to3=True):
         if any(df[var].str.len()>2):
             print(f"- ⚠️ ! un {var} non reconnu dans df {df.loc[df[var].str.len()>2, [var]]}")
     return df
+
 
 def my_country_code():
     import pycountry, pandas as pd, json, numpy as np
@@ -510,6 +526,7 @@ def my_country_code():
 
     print(f"- def(my_country_code) size df: {len(df)}")
     return df
+
 
 def prop_string(tab, cols):
     from unidecode import unidecode
@@ -599,6 +616,7 @@ def remove_file_by_pattern(path_folder, pat):
             except Exception as e:
                 print(f"Erreur lors de la suppression de {chemin_complet}: {e}")
 
+
 def last_file_into_folder_by_pat(path, pat, extension):
     import os
     files_list = [f for f in os.listdir(path) if pat.search(f) and f.endswith(f'.{extension}')]
@@ -610,6 +628,7 @@ def last_file_into_folder_by_pat(path, pat, extension):
     print(f"Le fichier {extension} le plus récent est : {os.path.join(path, latest_file)}")
     return os.path.join(path, latest_file)
 
+
 def length_code_geo(var):
     if var is None:
         return None
@@ -617,6 +636,7 @@ def length_code_geo(var):
         return '0' * (5 - len(str(var))) + str(var)
     else:
         return str(var)
+
     
 def get_gs(sheet_name: str, vars_list: list = None) -> pd.DataFrame:
     """Récupère une feuille Google Sheet et exporte en JSON si nécessaire."""
@@ -630,7 +650,6 @@ def get_gs(sheet_name: str, vars_list: list = None) -> pd.DataFrame:
     names = [("G_PAYS", "country_gs_insee")]
     for name_old, name_new in names:
         if sheet_name == name_old:
-            # PEP 8 : Utiliser le context manager 'with' pour ouvrir un fichier
             file_path = f"data_files/{name_new}.json"
             with open(file_path, "w", encoding="utf-8") as f:
                 json.dump(
@@ -640,23 +659,11 @@ def get_gs(sheet_name: str, vars_list: list = None) -> pd.DataFrame:
                     indent=4,
                 )
 
-    # PEP 8 : Utiliser 'is' pour la comparaison avec None
     if vars_list is None:
         return df_c
 
     return df_c[vars_list]
 
-
-def convert_lambert_to_gps(x_col, y_col):
-    """
-    Convertit les colonnes Lambert d'un DataFrame en coordonnées GPS (WGS84).
-
-    Args:
-        x_col (str): Nom de la colonne des abscisses (x) en Lambert.
-        y_col (str): Nom de la colonne des ordonnées (y) en Lambert.
-    Returns:
-        pd.DataFrame: DataFrame avec les colonnes 'gps' ajoutées.
-    """
 
 def convert_lambert_to_gps(x_col, y_col):
     """
@@ -693,12 +700,14 @@ def convert_lambert_to_gps(x_col, y_col):
     # Retourner sous forme de chaîne "longitude,latitude"
     return f"{latitude:.3f},{longitude:.3f}"
 
+
 def upper_word_in_text(word, text):
     words = text.split()
     for i, w in enumerate(words):
         if word in text:
             words[i] = w.capitalize()
     return ' '.join(words)
+
 
 def upper_word_in_text(text, words):
     text_split = text.split()
@@ -708,6 +717,7 @@ def upper_word_in_text(text, words):
     return ' '.join(text_split)
 
 import json
+
 
 def extract_json_from_file(file_path):
     with open(file_path, 'r', encoding='utf-8') as file:
@@ -728,6 +738,7 @@ def extract_json_from_file(file_path):
         return data
     except json.JSONDecodeError as e:
         raise ValueError(f"Erreur lors de la lecture du JSON : {e}")
+
     
 def clean_invisible_chars(s: str):
     if isinstance(s, str):
@@ -738,18 +749,22 @@ def clean_invisible_chars(s: str):
         return s
     return s
 
+
 def check_if_only_charact_special(s):
     import re
     return bool(re.fullmatch(r'[^a-zA-Z0-9]+', str(s)))
+
 
 def clean_quotation_marks(s):
     # Supprimer toutes les guillemets
     import re
     return re.sub(r"[^\w\s]", " ", str(s), flags=re.UNICODE)
 
+
 def clean_if_only_at_start(s):
     import re
     return re.sub(r'^[^a-zA-Z0-9]+', '', s)
+
 
 def trace_chain(child, mapping):
     import pandas as pd
@@ -759,6 +774,7 @@ def trace_chain(child, mapping):
         seen.add(current)
         current = mapping[current]
     return current
+
 
 def capitalize_if_all_upper(s):
     if isinstance(s, str) and s.isupper():
@@ -808,6 +824,7 @@ def clean_text(text: str) -> str:
     text = re.sub(r"\n{3,}", "\n\n", "\n".join(lines))
 
     return text.strip()
+
 
 def diagnose_column_int(df, col):
     print(f"\n📊 Colonne '{col}' — dtype: {df[col].dtype}")
