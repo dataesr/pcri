@@ -1,3 +1,5 @@
+import pandas as pd 
+
 def timing(st):
     import time
     return "[{:.2f}s]".format(time.time() - st)
@@ -134,6 +136,7 @@ def bugs_excel(df, chemin, name_sheet):
 
 
 def entities_choose_status(df: pd.DataFrame, cols: list) -> pd.DataFrame:
+    
     """Trie et filtre les entités selon l'ordre de priorité de generalState."""
     gen_state = [
         "VALIDATED",
