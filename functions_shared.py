@@ -496,35 +496,78 @@ def country_iso_shift(df, var, iso2_to3=True):
 
 
 def my_country_code():
-    import pycountry, pandas as pd, json, numpy as np
-    pycountry.countries.add_entry(alpha_2="XK", alpha_3="XKX", name="Kosovo")
-    pycountry.countries.add_entry(alpha_2="UK", alpha_3="GBR", name="United Kingdom")
-    pycountry.countries.add_entry(alpha_2="EL", alpha_3="GRC", name="Greece")
-    pycountry.countries.add_entry(alpha_2="AN", alpha_3="ANT", name="Netherlands Antilles (Disestablished 2011)")
-    pycountry.countries.add_entry(alpha_2="CP", alpha_3="CPT", name="Clipperton Island")
-    pycountry.countries.add_entry(alpha_2="AX", alpha_3="ALA", name="Åland Islands")
-    pycountry.countries.add_entry(alpha_2="MF", alpha_3="MAF", name="Saint Martin (French part)")
-    pycountry.countries.add_entry(alpha_2="ZZ", alpha_3="ZZZ", name="Not available")
-    pycountry.countries.add_entry(alpha_2="YU", alpha_3="YUG", name="Serbia and Montenegro")
-    pycountry.countries.add_entry(alpha_2="EU", alpha_3="ZOE", name="European organisations area")
-    dict1 = [c.__dict__['_fields'] for c in list(pycountry.countries)]
-    df = (pd.DataFrame(dict1)[['alpha_2', 'alpha_3', 'name']]
-                .rename(columns={'alpha_2':'iso2', 'alpha_3':'iso3', 'name':'country_name_en'})
-                .drop_duplicates()
-                .assign(parent_iso2=np.nan)
-        )
+    import pycountry
+    import pandas as pd
+    import json
 
-    list_var=['iso2']
-    ccode=json.load(open("data_files/countries_parent.json"))
-    for c in list_var:
-        for k,v in ccode.items():
-            df.loc[df[c]==k, 'parent_iso2'] = v
+    pycountry.countries.add_entry(
+        alpha_2="XK", alpha_3="XKX", name="Kosovo"
+    )
+    pycountry.countries.add_entry(
+        alpha_2="UK", alpha_3="GBR", name="United Kingdom"
+    )
+    pycountry.countries.add_entry(
+        alpha_2="EL", alpha_3="GRC", name="Greece"
+    )
+    pycountry.countries.add_entry(
+        alpha_2="AN", alpha_3="ANT",
+        name="Netherlands Antilles (Disestablished 2011)"
+    )
+    pycountry.countries.add_entry(
+        alpha_2="CP", alpha_3="CPT", name="Clipperton Island"
+    )
+    pycountry.countries.add_entry(
+        alpha_2="AX", alpha_3="ALA", name="Åland Islands"
+    )
+    pycountry.countries.add_entry(
+        alpha_2="MF", alpha_3="MAF",
+        name="Saint Martin (French part)"
+    )
+    pycountry.countries.add_entry(
+        alpha_2="ZZ", alpha_3="ZZZ", name="Not available"
+    )
+    pycountry.countries.add_entry(
+        alpha_2="YU", alpha_3="YUG",
+        name="Serbia and Montenegro"
+    )
+    pycountry.countries.add_entry(
+        alpha_2="EU", alpha_3="ZOE",
+        name="European organisations area"
+    )
 
-    df.loc[df.parent_iso2.isnull(), 'parent_iso2'] = df.loc[df.parent_iso2.isnull(), 'iso2']
-    df=(df.merge(df[['iso2','iso3']].drop_duplicates().rename(columns={'iso2':'parent_iso2','iso3':'parent_iso3'}), 
-                    how='left', on='parent_iso2'))
+    dict1 = [c.__dict__["_fields"] for c in pycountry.countries]
+
+    df = (
+        pd.DataFrame(dict1)[["alpha_2", "alpha_3", "name"]]
+        .rename(columns={
+            "alpha_2": "iso2",
+            "alpha_3": "iso3",
+            "name": "country_name_en"
+        })
+        .drop_duplicates()
+        .assign(parent_iso2=pd.Series(pd.NA, dtype="string"))
+    )
+
+    ccode = json.load(open("data_files/countries_parent.json"))
+
+    for k, v in ccode.items():
+        df.loc[df["iso2"] == k, "parent_iso2"] = v
+
+    df["parent_iso2"] = df["parent_iso2"].fillna(df["iso2"])
+
+    df = df.merge(
+        df[["iso2", "iso3"]]
+        .drop_duplicates()
+        .rename(columns={
+            "iso2": "parent_iso2",
+            "iso3": "parent_iso3"
+        }),
+        how="left",
+        on="parent_iso2"
+    )
 
     print(f"- def(my_country_code) size df: {len(df)}")
+
     return df
 
 
