@@ -7,6 +7,7 @@ def persons_preparation(csv_date):
     from paths import PATH_SOURCE, PATH_CLEAN
     from config_url import grist_url
     from functions_shared import unzip_zip, my_country_code, country_iso_shift, prop_string
+    from step7_persons.gender_name import gender_by_first_name
     from remote_process.grist import personsG
 
     ###############################
@@ -19,25 +20,44 @@ def persons_preparation(csv_date):
     ######################
     print(f"\n### IMPORT datasets")
     perso_part = unzip_zip(f'{PATH_SOURCE}{FRAMEWORK}/he_grants_ecorda_pd_{csv_date}.zip', "participant_persons.csv", 'utf-8')
-    perso_part = (perso_part.loc[perso_part.FRAMEWORK=='HORIZON',
-            ['PROJECT_NBR', 'GENERAL_PIC', 'PARTICIPANT_PIC', 'ROLE', 'FIRST_NAME',
-            'LAST_NAME','GENDER', 'PHONE', 'EMAIL',
-            'BIRTH_COUNTRY_CODE', 'NATIONALITY_COUNTRY_CODE', 'HOST_COUNTRY_CODE', 'SENDING_COUNTRY_CODE']]
+
+    perso_part = (perso_part
+                  .loc[perso_part.FRAMEWORK=='HORIZON', 
+                       ['PROJECT_NBR', 'GENERAL_PIC', 'PARTICIPANT_PIC', 'ROLE', 'FIRST_NAME',
+                        'LAST_NAME','GENDER', 'PHONE', 'EMAIL',
+                        'BIRTH_COUNTRY_CODE', 'NATIONALITY_COUNTRY_CODE', 'HOST_COUNTRY_CODE', 
+                        'SENDING_COUNTRY_CODE']
+                        ]
                 .rename(columns=str.lower)
-                .rename(columns={'project_nbr':'project_id', 'general_pic':'generalPic', 'participant_pic':'pic'})
-                .assign(stage='successful'))
+                .rename(columns={
+                    'project_nbr':'project_id', 
+                    'general_pic':'generalPic', 
+                    'participant_pic':'pic'
+                    }
+                )
+                .assign(stage='successful')
+    )
     print(f"size perso_part import: {len(perso_part)}")
 
     ######################################
     perso_app = unzip_zip(f'{PATH_SOURCE}{FRAMEWORK}/he_proposals_ecorda_pd_{csv_date}.zip', "applicant_persons.csv", 'utf-8')
 
-    perso_app = (perso_app.loc[perso_app.FRAMEWORK=='HORIZON',
-        ['PROPOSAL_NBR', 'GENERAL_PIC', 'APPLICANT_PIC', 'ROLE', 'FIRST_NAME',
-        'FAMILY_NAME', 'GENDER', 'PHONE', 'EMAIL',
-        'RESEARCHER_ID', 'ORCID_ID', 'GOOGLE_SCHOLAR_ID','SCOPUS_AUTHOR_ID']]
+    perso_app = (perso_app
+                 .loc[perso_app.FRAMEWORK=='HORIZON', 
+                      ['PROPOSAL_NBR', 'GENERAL_PIC', 'APPLICANT_PIC', 'ROLE', 'FIRST_NAME',
+                        'FAMILY_NAME', 'GENDER', 'PHONE', 'EMAIL',
+                        'RESEARCHER_ID', 'ORCID_ID', 'GOOGLE_SCHOLAR_ID','SCOPUS_AUTHOR_ID']
+                        ]
                 .rename(columns=str.lower)
-                .rename(columns={'proposal_nbr':'project_id', 'general_pic':'generalPic', 'applicant_pic':'pic', 'family_name':'last_name'})
-                .assign(stage='evaluated'))
+                .rename(columns={
+                    'proposal_nbr':'project_id', 
+                    'general_pic':'generalPic', 
+                    'applicant_pic':'pic', 
+                    'family_name':'last_name'
+                    }
+                )
+                .assign(stage='evaluated')
+    )
     print(f"size perso_app import: {len(perso_app)}")
 
     ######################################
@@ -121,13 +141,18 @@ def persons_preparation(csv_date):
             print(f"1 - size rows with generelPic null for {stage}: {len(df[df.generalPic.isnull()])}")
 
             # gestion empty generalPic for principal investigator
-            x=df.loc[(df.generalPic.isnull())&(df.role=='principal investigator')].project_id.unique()
+            mask = (df.generalPic.isnull())&(df.role=='principal investigator')
+            x = df.loc[mask].project_id.unique()
+
             if x.size>0:
                 y=participation.loc[(participation.project_id.isin(x))&(participation.stage==stage), ['project_id', 'generalPic']]
                 df=df.merge(y, how='left', on=['project_id'], suffixes=('', '_y'))
-                df.loc[(df.generalPic.isnull())&(~df.generalPic_y.isnull()), 'generalPic'] = df.loc[(df.generalPic.isnull())&(~df.generalPic_y.isnull()), 'generalPic_y'] 
+
+                mask = (df.generalPic.isnull())&(~df.generalPic_y.isnull())
+                df.loc[mask, 'generalPic'] = df.loc[mask, 'generalPic_y'] 
                 df.drop(columns='generalPic_y', inplace=True)
                 print(f"2 - size rows with generelPic null for {stage}: {len(df[df.generalPic.isnull()])}")
+
         print(f"size df_{stage} after empty_pic: {len(df)}")
         return df
 
@@ -174,16 +199,38 @@ def persons_preparation(csv_date):
         for i in mask:
             x=df.loc[i]
             print(f"3 - size x before remove: {len(x)}")
-            x=x.groupby(['project_id','generalPic', 'last_name']).apply(lambda i: i.sort_values('role', key=lambda col: pd.Categorical(col, categories=keep_order, ordered=True)), include_groups=True).reset_index(drop=True)
+
+            x = (
+                x.groupby(["project_id", "generalPic", "last_name"])
+                .apply(
+                    lambda i: i.sort_values(
+                        "role",
+                        key=lambda col: pd.Categorical(
+                            col, categories=keep_order, ordered=True
+                        ),
+                    ),
+                    include_groups=True,
+                )
+                .reset_index(drop=True)
+            )
+
             for v in ['gender','phone','email','birth_country_code','nationality_country_code','host_country_code','sending_country_code']:
                 if v in x.columns:
                     x[v]=x.groupby(['project_id', 'generalPic', 'last_name'])[v].bfill()
+
             x=x.groupby(['project_id', 'generalPic', 'last_name']).head(1)
             print(f"3 - size x after remove: {len(x)}")
 
             tmp=pd.concat([tmp, x], ignore_index=True)
 
-        df=df.merge(tmp[['project_id', 'generalPic', 'last_name']].drop_duplicates(), how='outer', on=['project_id', 'generalPic', 'last_name'], indicator=True).query('_merge=="left_only"')
+        df = (df
+              .merge(
+                  tmp[['project_id', 'generalPic', 'last_name']].drop_duplicates(), 
+                  how='outer', 
+                  on=['project_id', 'generalPic', 'last_name'], indicator=True)
+                  .query('_merge=="left_only"')
+        )
+
         df=pd.concat([df, tmp], ignore_index=True)
 
         if len(df)==0:
@@ -204,7 +251,7 @@ def persons_preparation(csv_date):
     def PI_duplicated(df):
         if any(df.role=='principal investigator'):
             # select if same person and one PI in a single project 
-            mask=(df.nb_pic_by_contact_unique>1)&(df.role=='principal investigator')
+            mask=(df.nb_pic_by_contact_unique>1) & (df.role=='principal investigator')
             pi=df.loc[mask, ['project_id', 'contact']].drop_duplicates().merge(df, how='inner')
             pi['role'] = 'principal investigator'
             for v in ['gender','birth_country_code','nationality_country_code','sending_country_code']:
@@ -212,8 +259,15 @@ def persons_preparation(csv_date):
                     pi=pi.sort_values(v)
                     pi[v]=pi.groupby(['project_id', 'contact'])[v].ffill()
             
-            df=df.merge(pi[['project_id', 'generalPic', 'contact']].drop_duplicates(), how='outer', on=['project_id', 'generalPic', 'contact'], indicator=True).query('_merge=="left_only"')
-            df=pd.concat([df, pi], ignore_index=True)
+            df = df.merge(
+                pi[["project_id", "generalPic", "contact"]].drop_duplicates(),
+                how="outer",
+                on=["project_id", "generalPic", "contact"],
+                indicator=True,
+            ).query('_merge == "left_only"')
+
+
+            df = pd.concat([df, pi], ignore_index=True)
             print(f"-size df after cleaning pi_duplicated: {len(df)}")
             return df.drop(columns=['_merge'])
         
@@ -222,22 +276,69 @@ def persons_preparation(csv_date):
     #######################
     print(f"\n### PARTICIPATION+PERSO")
     def perso_participation(df, participation, project, entities, stage):
-        
+
+        #l link with participation ; remove rows only in participation
         df=df.loc[df.project_id.isin(participation[participation.stage==stage].project_id.unique())]
-        df=df.merge(participation.loc[participation.stage==stage, ['project_id', 'generalPic', 'country_code', 'numero_national_de_structure']], how='outer', on=['project_id', 'generalPic'], indicator=True).query('_merge!="right_only"')
+        df = (
+            df.merge(
+                participation.loc[
+                    participation.stage == stage,
+                    [
+                        "project_id",
+                        "generalPic",
+                        "country_code",
+                        "numero_national_de_structure"
+                    ],
+                ],
+                how="outer",
+                on=["project_id", "generalPic"],
+                indicator=True,
+            ).query('_merge != "right_only"')
+        )
+
+        # tag rows that are not in participation
         df.loc[df._merge=='left_only', 'institution_shift'] = 'ended'
 
         if stage=='successful':
-            df.loc[(df._merge=='both')&(df.host_country_code.isnull()), 'host_country_code'] = df.loc[(df._merge=='both')&(df.host_country_code.isnull()), 'country_code']
+            mask = df._merge == "both"
+            df.loc[mask, "host_country_code"] = df.loc[mask, "host_country_code"].combine_first(
+                df.loc[mask, "country_code"]
+            )
 
-        df=df.merge(project.loc[project.stage==stage, ['project_id', 'call_year', 'thema_code', 'action_code', 'destination_code', 'panel_code', 'panel_regroupement_code']], how='inner', on=['project_id'])
+        df = df.merge(
+            project.loc[
+                project.stage == stage,
+                [
+                    "project_id",
+                    "call_year",
+                    'start_date',
+                    'duration',
+                    "thema_code",
+                    "action_code",
+                    "destination_code",
+                    "panel_code",
+                    "panel_regroupement_code",
+                ],
+            ],
+            how="inner",
+            on=["project_id"],
+        )
+
         print(f"- size df after merge participation+project: {len(df)}")
 
-        x=entities[['entities_id', 'entities_name', 'operateur_num', 'operateur_name', 'generalPic', 'country_code', 'country_code_source']].drop_duplicates()
-        temp=df[~df.country_code.isnull()].merge(x, how='left', on=['generalPic', 'country_code'])
+        x = (
+            entities[
+                ['entities_id', 'entities_name', 'operateur_num', 'operateur_name', 'generalPic', 
+                 'country_code', 'country_code_source']
+                    ]
+                    .drop_duplicates()
+        )
+
+        temp = df[~df.country_code.isnull()].merge(x, how='left', on=['generalPic', 'country_code'])
+
         if any(df.country_code.isnull()):
-            temp2=df[df.country_code.isnull()].drop(columns='country_code').merge(x, how='left', on='generalPic')
-            temp=pd.concat([temp, temp2], ignore_index=True)
+            temp2 = df[df.country_code.isnull()].drop(columns='country_code').merge(x, how='left', on='generalPic')
+            temp = pd.concat([temp, temp2], ignore_index=True)
             print(f"- size temp after merge entities with country_na: {len(temp)}")
         else:
             print(f"- size temp after merge entities: {len(temp)}")
@@ -253,13 +354,21 @@ def persons_preparation(csv_date):
     perso_app = perso_participation(perso_app, participation, project, entities, 'evaluated')
 
     def iso2_add(df):
-        df = (df.merge(my_countries[['iso2', 'iso3']].drop_duplicates(), how='left', left_on='country_code', right_on='iso3')
-                .drop(columns='iso3')
-                .rename(columns={'iso2':'country_code2'})
+        df = (df
+              .merge(my_countries[['parent_iso2', 'parent_iso3']].drop_duplicates(), 
+                     how='left', 
+                     left_on='country_code', 
+                     right_on='parent_iso3')
+            .drop(columns='parent_iso3')
+            .rename(columns={
+                'parent_iso2':'iso2'}
+                )
         )
-        if any(df.country_code2.isnull()):
-            print(f"country country_code2 missing for iso3 -> {df[df.country_code2.isnull()].country_code.unique()}")
+
+        if any(df.iso2.isnull()):
+            print(f"country iso2 missing for iso3 -> {df[df.iso2.isnull()].country_code.unique()}")
         return df
+    
     perso_part = iso2_add(perso_part)
     perso_app = iso2_add(perso_app)
 
@@ -343,8 +452,6 @@ def persons_preparation(csv_date):
     def gender_missing(pp):
         from step7_persons.gender_name import gender_by_first_name
         from remote_process.grist import add_records_to_grist
-        # from remote_process.gender_determine import gender_by_first_name
-        # from functions_shared import work_csv
 
 
         combined = pp[['project_id', 'contact', 'gender']].drop_duplicates()
@@ -361,9 +468,13 @@ def persons_preparation(csv_date):
         )
         print(f"- size pp after merge gender clean: {len(pp)}")
 
-        p = personsG['Gender_by_first_name'][['first_name', 'gender', 'drop_name']].drop_duplicates()
         
         def update_gender(df):
+            p = (personsG['Gender_by_first_name'][
+                ['first_name', 'gender', 'drop_name']
+                ]
+                 .drop_duplicates()
+            )
             df = pd.merge(df, p, how='left', on='first_name', suffixes=('', '_y'))
             df['gender'] = df['gender'].fillna(df['gender_y'])
             df.drop(columns='gender_y', inplace=True)
@@ -606,8 +717,8 @@ def persons_preparation(csv_date):
             print("\nAucune anomalie de role trouvée.")
     
         # Sauvegarde du détail complet et des anomalies
-        result_df.to_csv("check_results_full.csv", index=False)
-        problems.to_csv("check_results_problems.csv", index=False)
+        result_df.to_csv("temp/check_results_full.csv", index=False)
+        problems.to_csv("temp/check_results_problems.csv", index=False)
         print("\nRésultats complets   -> check_results_full.csv")
         print("Anomalies uniquement -> check_results_problems.csv")
     
@@ -624,7 +735,7 @@ def persons_preparation(csv_date):
                 print("\n--- Contacts non concordants ---")
                 print(contact_problems.to_string(index=False))
     
-            contact_df.to_csv("check_results_contacts.csv", index=False)
+            contact_df.to_csv("temp/check_results_contacts.csv", index=False)
             print("\nDétail des vérifications de contact -> check_results_contacts.csv")
         else:
             print(
@@ -641,36 +752,47 @@ def persons_preparation(csv_date):
         print(f"Lignes tagguées keep=False : {(~tagged_df['keep']).sum()}")
         print("\nRépartition par 'reason' :")
         print(tagged_df["reason"].value_counts().to_string())
-        print("\nDataframe complet (taggué) -> erc_filtered.csv")
+        print("\nDataframe complet (taggué)")
         return tagged_df
 
-    erc = pp.loc[(pp.action_code=='ERC')&(erc.country_code=='FRA')].drop_duplicates()
-    res = check_role_by_project(erc)
-    res = res[['project_id', 'entities_id', 'entities_name', 
-               'role', 'first_name', 'last_name',  
-               'stage', 'contact',
-                'country_code', 'numero_national_de_structure', 'institution_shift',
-                'call_year', 'thema_code', 'action_code', 'destination_code',
-                'panel_code', 'panel_regroupement_code', 
-                'operateur_num', 'operateur_name', 'country_code_source',
-                    'orcid_id', 'gender',
-                'keep', 'reason']].drop_duplicates()
-
+    # tab = pp.loc[(pp.action_code=='ERC')].drop_duplicates()
+    pp = check_role_by_project(pp)
+    # perso = (pp.loc[
+    #     pp['reason'] != "main_contact_non_justifie", 
+    #     [   'action_code',
+    #         'contact',
+    #         'country_code',
+    #         'entities_id',
+    #         'entities_name',
+    #         'first_name',
+    #         'gender',
+    #         'institution_shift',
+    #         'keep',
+    #         'last_name',
+    #         'numero_national_de_structure',
+    #         'orcid_id',
+    #         'project_id',
+    #         'reason',
+    #         'role',
+    #         'stage']
+    #     ]
+    #     .drop_duplicates()
+    # )
+    # print(f"- size file for mongo: {len(perso)}")
 ########################################################################
 
     print(f"\n### EXPORT final datasets")
-    cols=['project_id', 'generalPic', 'role', 'first_name', 'last_name', 'contact', 'nationality_country_code',
-          'gender', 'tel_clean', 'email', 'domaine_email', 'orcid_id',
-          'birth_country_code', 'host_country_code', 'sending_country_code',
-          'stage', 'country_code2', 'country_code', 'country_code_source',
-          'institution_shift', 'entities_id', 'entities_name', 'operateur_num', 'operateur_name', 'numero_national_de_structure']
-
-    (pp.loc[pp['stage']=='successful', cols]
-        .drop(columns=['researcher_id', 'google_scholar_id', 'scopus_author_id'])
-        .drop_duplicates()
-        .to_pickle(f"{PATH_CLEAN}persons_part.pkl"))
+    cols=[
+        'project_id', 'call_year', 'start_date', 'duration', 'thema_code', 'action_code', 'destination_code',
+        'generalPic', 'role', 'first_name', 'last_name', 'contact', 'nationality_country_code',
+        'gender', 'tel_clean', 'email', 'domaine_email', 'orcid_id',
+        'researcher_id', 'google_scholar_id', 'scopus_author_id',
+        'birth_country_code', 'host_country_code', 'sending_country_code',
+        'stage', 'country_code', 'iso2', 'country_code_source', 
+        'institution_shift', 'entities_id', 'entities_name', 'operateur_num', "numero_national_de_structure",
+        'operateur_name', 'reason', 'keep'
+          ]
 
     (pp[cols]
         .drop_duplicates()
         .to_pickle(f"{PATH_CLEAN}persons_all.pkl"))
-

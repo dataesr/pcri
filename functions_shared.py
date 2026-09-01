@@ -1469,3 +1469,50 @@ def rnsr_address_split(df):
     out.to_csv(f"{PATH_WORK}rnsr_address_splite.csv")
 
     return out
+
+
+def estimate_row_bytes(df):
+    import numpy as np
+
+    str_df = df.astype(str)
+    lengths = np.zeros(len(df), dtype=np.int64)
+    for col in str_df.columns:
+        lengths += str_df[col].str.len().fillna(0).astype(np.int64).values
+    n_seps = df.shape[1] - 1
+    return lengths + n_seps + 1  # separateurs + saut de ligne
+
+
+def split_dataframe_by_size(df, max_size_mb=240, safety_margin=0.92):
+    import numpy as np
+    """
+    Decoupe df en un nombre minimal de sous-DataFrames dont la taille CSV
+    estimee reste sous max_size_mb * safety_margin.
+
+    Bin-packing par cumul (cumsum + searchsorted) : O(n log n), rapide meme
+    sur de gros DataFrames, et robuste a l'heterogeneite des tailles de
+    lignes (colonnes comme 'abstract' tres variables en longueur).
+    """
+    if df.empty:
+        return [df]
+
+    max_bytes = max_size_mb * 1024 * 1024 * safety_margin
+    header_bytes = sum(len(str(c)) for c in df.columns) + (len(df.columns) - 1) + 1
+
+    row_bytes = estimate_row_bytes(df)
+    n = len(df)
+    cumsum = np.cumsum(row_bytes)
+
+    chunks = []
+    start = 0
+    offset = 0  # cumsum au debut du chunk courant
+    while start < n:
+        budget = max_bytes - header_bytes
+        target = offset + budget
+        end = int(np.searchsorted(cumsum, target, side='right'))
+        end = max(end, start + 1)   # au moins 1 ligne (meme si elle depasse seule)
+        end = min(end, n)
+        chunks.append(df.iloc[start:end])
+        offset = cumsum[end - 1]
+        start = end
+
+    return chunks

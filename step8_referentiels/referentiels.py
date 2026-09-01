@@ -1,12 +1,9 @@
 def referentiels_load(snaf, ror_load=False, rnsr_load=False, sirene_load=False, sirene_subset=False):
-    from step8_referentiels.ror import ror_import
+
     from step8_referentiels.sirene import sirene_import, sirene_concat
     from step8_referentiels.rnsr import rnsr_import
     from paths import PATH, PATH_MATCH
     DUMP_PATH=f'{PATH}referentiel/'
-
-    if ror_load==True:
-        ror_import(DUMP_PATH)
 
     if sirene_load==True:
         naf_list=snaf[~snaf.naf_et.isnull()].naf_et.unique()
@@ -19,7 +16,7 @@ def referentiels_load(snaf, ror_load=False, rnsr_load=False, sirene_load=False, 
         rnsr_import(DUMP_PATH)
 
 
-def ref_externe_preparation(snaf, rnsr_adr_corr=False ):
+def ref_externe_preparation(snaf):
     import pandas as pd, re, json, numpy as np, os, time
     from text_to_num import alpha2digit
 
@@ -28,7 +25,8 @@ def ref_externe_preparation(snaf, rnsr_adr_corr=False ):
     from paths import PATH, PATH_MATCH
 
     # from step7_referentiels.countries import ref_countries
-    from functions_shared import work_csv, prep_str_col, stop_word, my_country_code, com_iso3, timing
+    from functions_shared import work_csv, prep_str_col, stop_word, my_country_code, timing
+    from remote_process.grist import communesG
     from step8_referentiels.ror import ror_prep
     from step8_referentiels.sirene import sirene_prep
     from step8_referentiels.rnsr import rnsr_prep
@@ -38,21 +36,20 @@ def ref_externe_preparation(snaf, rnsr_adr_corr=False ):
     print(time.strftime("%H:%M:%S"))
     start_time=time.time()
 
-    my_countries=my_country_code()
-    com_iso=com_iso3()
+    my_countries = my_country_code()
+    com_iso = communesG['Commune'][['COM_CODE', 'ISO_3']].drop_duplicates()
+    com_iso.columns=com_iso.columns.str.lower()
     print(len(my_countries))
 
     ######
     # paysage
-    paysage = paysage_prep(DUMP_PATH, my_countries, com_iso)
+    paysage = paysage_prep(DUMP_PATH, com_iso)
     check_time = timing(start_time)
     print(f"prep paysage: {check_time}")
     step_time=time.time()
 
-
-    ror_zipname = ''.join([i for i in os.listdir(DUMP_PATH) if re.search('ror', i)]) 
-    ror = ror_prep(DUMP_PATH, ror_zipname, my_countries)
-    rnsr = rnsr_prep(DUMP_PATH, my_countries, com_iso, rnsr_adr_corr)
+    ror = ror_prep(my_countries)
+    rnsr = rnsr_prep(DUMP_PATH, my_countries, load_dump=False)
 
     check_time = timing(step_time)
     print(f"prep ror rnsr: {check_time}")
@@ -67,13 +64,24 @@ def ref_externe_preparation(snaf, rnsr_adr_corr=False ):
     
 
     ######
+    rnsr.name = "rnsr"
+    paysage.name = "paysage"
+    ror.name = "ror"
+    sirene.name = "sirene"
+
     df_list = [rnsr, paysage, ror, sirene]
+    # df_list = [rnsr]
     ref_all=pd.DataFrame()
 
+
     for tab in df_list:
+
+        print(f"🔶 process on {tab.name}")
+
         if 'label_num_ro_rnsr' in tab.columns:
             print("## label_num_ro_rnsr cleaning")
-            tab.loc[~tab.label_num_ro_rnsr.isnull(), 'label_num_ro_rnsr'] = tab.loc[~tab.label_num_ro_rnsr.isnull()].label_num_ro_rnsr.str.lower().replace(';', ' ')
+            mask = ~tab.label_num_ro_rnsr.isnull()
+            tab.loc[mask, 'label_num_ro_rnsr'] = tab.loc[mask].label_num_ro_rnsr.str.lower().str.replace(';', ' ')
 
         print("## string cleaning")
         #lowercase / exochar / unicode / punct
@@ -163,15 +171,40 @@ def ref_externe_preparation(snaf, rnsr_adr_corr=False ):
         print(f"adresse clean: {check_time}")
         step_time=time.time()
 
+        # country
+        tab = tab.merge(
+            my_countries[['iso3', 'parent_iso3']].drop_duplicates(),
+                how = 'left',
+                left_on = 'country_code_map',
+                right_on = 'iso3'
+            )
+
+        tab = tab.drop(columns = 'iso3'
+                ).rename(
+                    columns = {
+                        'parent_iso3': 'country_code'
+                    }
+            )
+
+        tab = tab.merge(
+            my_countries[['iso3', 'country_name_en']].drop_duplicates(),
+                how = 'left',
+                left_on = 'country_code',
+                right_on = 'iso3'
+            )
+
+        tab = tab.drop(columns = 'iso3')
 
         print("## city")  
         # nettoyage de ville
         cedex="cedax|cedrex|cdexe|cdex|credex|cedex|cedx|cede|ceddex|cdx|cex|cexex|edex"
         tab['ville'] = tab.ville.str.replace('\\d+', ' ', regex=True).str.strip()
-        tab.loc[(tab.country_code=='FRA'), 'ville'] = tab.loc[tab.country_code=='FRA', 'ville'].str.replace(cedex, ' ', regex=True).str.strip()
-        tab.loc[(tab.country_code=='FRA'), 'ville'] = tab.loc[tab.country_code=='FRA', 'ville'].str.replace('^france$', '', regex=True).str.strip()
-        tab.loc[(tab.country_code=='FRA'), 'ville'] = tab.loc[tab.country_code=='FRA', 'ville'].str.replace(r"\bst\b", 'saint', regex=True).str.strip()
-        tab.loc[(tab.country_code=='FRA'), 'ville'] = tab.loc[tab.country_code=='FRA', 'ville'].str.replace(r"\bste\b", 'sainte', regex=True).str.strip()
+
+        mask = (tab.country_code=='FRA')
+        tab.loc[mask, 'ville'] = tab.loc[mask, 'ville'].str.replace(cedex, ' ', regex=True).str.strip()
+        tab.loc[mask, 'ville'] = tab.loc[mask, 'ville'].str.replace('^france$', '', regex=True).str.strip()
+        tab.loc[mask, 'ville'] = tab.loc[mask, 'ville'].str.replace(r"\bst\b", 'saint', regex=True).str.strip()
+        tab.loc[mask, 'ville'] = tab.loc[mask, 'ville'].str.replace(r"\bste\b", 'sainte', regex=True).str.strip()
         tab['ville_tag'] = tab['ville'].str.strip().str.replace(r'\s+', '-', regex=True)
 
         if 'code_postal' in tab.columns:
@@ -180,7 +213,8 @@ def ref_externe_preparation(snaf, rnsr_adr_corr=False ):
             mask=(tab.country_code=='FRA')&(~tab.code_postal.isnull())&(tab.code_postal.str.len()!=5)
             if len(tab.loc[mask])>0:
                 print(f"probleme avec le cp à corriger si possible à la source: {tab.loc[mask].code_postal.unique()}")
-                print(f"structure avec cp mais à corriger: {tab.loc[mask&(tab.code_postal.str.contains(r"\d+")), ['ref','code_postal', 'ville']]}")
+                sub = tab.loc[mask & (tab.code_postal.str.contains(r'\d+')), ['ref', 'code_postal', 'ville']]
+                print(f"structure avec cp mais à corriger: {sub}")
 
             tab.loc[(tab.country_code=='FRA')&(~tab.code_postal.isnull()), 'code_postal'] = tab.loc[(tab.country_code=='FRA')&(~tab.code_postal.isnull()), 'code_postal'].str.replace(r"\D+", '', regex=True)
             tab.loc[~tab.code_postal.isnull(), 'dep_code'] = tab.code_postal.str[0:2]

@@ -1,9 +1,169 @@
 # table topics'''
 
-from constant_vars import FRAMEWORK
 from paths import PATH_SOURCE, PATH_CLEAN, PATH_WP
-from functions_shared import unzip_zip, clean_text
-import pandas as pd, numpy as np, json, re
+from functions_shared import unzip_zip, clean_text, convert_to_paris_date
+import pandas as pd, numpy as np, json, ast, re
+from dateutil import parser as dateparser
+from zoneinfo import ZoneInfo
+
+
+def safe_extract(value):
+    if isinstance(value, list):
+        return value[0] if len(value) > 0 else None
+    return value
+
+def explode_budget_overview(df, debug=False):
+    rows = []
+    unmatched = []
+
+    for idx, row in df.iterrows():
+        identifier = safe_extract(row['identifier'])
+        types_of_action = safe_extract(row['typesOfAction'])
+        call_identifier = safe_extract(row['callIdentifier'])
+        budget_raw = safe_extract(row['budgetOverview'])
+
+        if budget_raw is None or (isinstance(budget_raw, float) and math.isnan(budget_raw)):
+            continue
+
+        if isinstance(budget_raw, dict):
+            budget = budget_raw
+        elif isinstance(budget_raw, str):
+            try:
+                budget = json.loads(budget_raw)
+            except json.JSONDecodeError:
+                continue
+        else:
+            continue
+
+        topic_map = budget.get('budgetTopicActionMap', {})
+
+        # Nombre total d'entrées dans toute la map (tous topics confondus)
+        total_entries = sum(len(v) for v in topic_map.values())
+
+        matched_any = False
+
+        for topic_id, entries in topic_map.items():
+            for entry in entries:
+                action_str = entry.get('action', '')
+
+                if ' - ' in action_str:
+                    action_id_part, action_type_part = action_str.split(' - ', 1)
+                else:
+                    action_id_part, action_type_part = None, action_str
+
+                match = False
+
+                # Cas 1 : identifiant présent dans l'action
+                if action_id_part and identifier and (
+                    action_id_part == identifier or identifier.startswith(action_id_part)
+                ):
+                    match = True
+                # Cas 2 : correspondance via typesOfAction
+                elif types_of_action and action_type_part.strip() == types_of_action.strip():
+                    match = True
+                # Cas 3 (fallback) : un seul topic/une seule entrée dans TOUTE la map
+                # -> ne peut appartenir qu'à cette ligne, pas d'ambiguïté possible
+                elif total_entries == 1:
+                    match = True
+
+                if match:
+                    matched_any = True
+                    rows.append({
+                        'identifier': identifier,
+                        'callIdentifier': call_identifier,
+                        'typesOfAction': types_of_action,
+                        'topicId': topic_id,
+                        'action': action_str,
+                        'expectedGrants': entry.get('expectedGrants'),
+                        'minContribution': entry.get('minContribution'),
+                        'maxContribution': entry.get('maxContribution'),
+                        'plannedOpeningDate': entry.get('plannedOpeningDate'),
+                        'deadlineModel': entry.get('deadlineModel'),
+                        'deadlineDates': entry.get('deadlineDates'),
+                        **{f'budget_{y}': v for y, v in entry.get('budgetYearMap', {}).items()}
+                    })
+
+        if not matched_any:
+            unmatched.append({'index': idx, 'identifier': identifier, 'typesOfAction': types_of_action})
+
+    if debug and unmatched:
+        print(f"{len(unmatched)} lignes sans correspondance :")
+        for u in unmatched:
+            print(u)
+
+    return pd.DataFrame(rows)
+
+
+def action_clean(info):
+    """
+    action -> types_of_action
+    
+    """
+    # mapping "phrase complète" -> code, utilisé seulement en dernier recours
+    act_map = {
+        'HORIZON Research and Innovation Actions': 'RIA',
+        'HORIZON Coordination and Support Actions': 'CSA',
+        'HORIZON Innovation Actions': 'IA',
+        'HORIZON EIC Grants': 'EIC',
+        'HORIZON Recognition Prize': 'RPR',
+        'HORIZON Inducement Prize': 'IPR',
+        'HORIZON ERC Grants': 'ERC',
+    }
+
+    # codes "officiels" qu'on cherche comme token dans action_tmp
+    action_codes = ['RIA', 'IA', 'CSA', 'MSCA', 'COFUND', 'PCP', 'PPI', 'FPA', 'EIC', 'RPR', 'ERC', 'IPR', 'KICS']
+
+    def normalize(s):
+        if pd.isna(s):
+            return s
+        return re.sub(r'\s+', ' ', str(s).strip())
+
+    act_map_norm = {normalize(k): v for k, v in act_map.items()}
+
+    def extract_action_code(types_of_action, action_tmp, topic_code=None):
+        toa_norm = normalize(types_of_action)
+
+        # 1. EIT -> KICS
+        if isinstance(toa_norm, str) and 'EIT' in toa_norm.upper():
+            return 'KICS'
+
+        # 2. token dans action_tmp (ou typesOfAction si action_tmp est vide)
+        text = action_tmp if pd.notna(action_tmp) else types_of_action
+        if pd.notna(text):
+            tokens = re.split(r'[-\s]+', str(text).upper())
+            for code in action_codes:
+                if code in tokens:
+                    return code
+
+        # 3. correspondance exacte typesOfAction -> act_map
+        if toa_norm in act_map_norm:
+            return act_map_norm[toa_norm]
+
+        # 4. fallback topicCode : UNIQUEMENT si typesOfAction est NaN
+        if pd.isna(types_of_action):
+            tc_norm = normalize(topic_code)
+            if tc_norm in act_map_norm:
+                return act_map_norm[tc_norm]
+
+        return np.nan
+
+    info['action_code'] = info.apply(
+        lambda r: extract_action_code(r['typesOfAction'], r['action_tmp'], r.get('topicCode')),
+        axis=1
+    )
+
+    # nettoyage topicCode si besoin (comme dans ta version originale)
+    info.loc[info['topicCode'].isin(act_map.keys()), 'topicCode'] = np.nan
+
+    print(f"- size info after action process: {len(info)}")
+
+    return info
+
+
+def check_topic_in_call():
+
+    return
+
 
 
 def topics_portal_clean():
@@ -19,48 +179,41 @@ def topics_portal_clean():
     """
     top = json.load(open(f"{PATH_WP}topic_info_harvest.json"))
     top=pd.DataFrame(top)
-    
-    cols = ['identifier', 'title', 'type', 'call_id', 'call_lib', 'budgetOverview', 'startDate', 'deadlineDate']
+    top['budgeted'] = np.where(top['budgetOverview'].notna(), True, False)
+    print(f"- size top base: {len(top)}")
 
+
+    result = explode_budget_overview(top, debug=True)
+
+
+    cols = ['identifier', 'title', 'type', 'typesOfAction', 'callIdentifier', 'callTitle', 'startDate', 'deadlineDate']
     # Explode each column (if lists)
-    df = top[cols]
     for col in cols:
-        df = df.explode(col)
-        df[col] = df[col].str.strip()
+        tmp = tmp.explode(col)
+        tmp[col] = tmp[col].str.strip()
+    check=tmp.loc[(~tmp['identifier'].isin(result['identifier'].unique()))&(tmp['type']!='8')]
+    print(f"🔶 type calls with budget info \n{tmp[tmp['_rows'].notna()].type.value_counts()}")
 
-    df = df.loc[df['type']=='1']
-    print(f"- size tops type 1: {len(df)}\n- multi topics: {df['identifier'].value_counts()}")
 
-    def filter_and_extract(row):
-        """
-        Filtre les actions de budgetTopicActionMap dont le 1er élément
-        de 'action' (avant ' - ') correspond au topicCode.
-        Si aucune correspondance, conserve toutes les actions.
-        """
-        bo = row["budgetOverview"]
-        if isinstance(bo, str):
-            bo = json.loads(bo)
-            topic_action_map = bo.get("budgetTopicActionMap", {})
-            all_actions = [a for actions in topic_action_map.values() for a in actions]
-            matching = [a for a in all_actions if a.get("action", "").split(" - ")[0] == row["identifier"]]
-            return matching if matching else all_actions
-        
+    info['topicCode'] = (
+            info["action"].str.split(" - ").str[0]
+            .str.replace('\xa0', ' ', regex=False)
+            .str.strip()
+            .str.replace(r'\s+', ' ', regex=True)
+        )
+    info['action_tmp'] = (
+            info["action"].str.split(" - ").str[1]
+            .str.replace('\xa0', ' ', regex=False)
+            .str.strip()
+            .str.replace(r'\s+', ' ', regex=True)
+        )
+
+    info = action_clean(info)
+
+    # info.loc[(info['callIdentifier'].str.startswith('ERC-'))&(~info['topicCode'].str.startswith('ERC-')), 'topicCode'] = info.loc[(info['callIdentifier'].str.startswith('ERC-'))&(~info['topicCode'].str.startswith('ERC-')), 'callIdentifier']
+
     
-    # Filtrage + explosion : une ligne par action
-    df["_rows"] = df.apply(filter_and_extract, axis=1)
-    df = df.drop(columns=["budgetOverview"])
-    df = df.explode("_rows").reset_index(drop=True)
-    
-    # Assigner chaque clé du dict directement en colonne (pas de concat ni df_exp)
-    for key in ["action", "expectedGrants", "minContribution", "maxContribution",
-                "budgetYearMap", "deadlineModel"]:
-        df[key] = df["_rows"].apply(lambda x, k=key: x.get(k) if isinstance(x, dict) else None)
-    
-    df = df.drop(columns=["_rows", "budgetTopicActionMap"], errors="ignore")
-    df = df.rename(columns={"deadlineModel": "deadline_model"})
-    
-    # topicCode = 1er élément avant ' - ' dans action ; action supprimée
-    df = df.drop(columns=["action"])
+    info = info.drop(columns=["_rows", "budgetTopicActionMap", "action", 'action_tmp', 'typesOfAction'], errors="ignore")
     
     # Explosion de budgetYearMap : gère str ET dict
     def parse_budget_year_map(x):
@@ -70,45 +223,168 @@ def topics_portal_clean():
             return [{"budget_year_map_year": k, "budget_year_map_budget": v} for k, v in x.items()]
         return [{}]
     
-    df["budgetYearMap"] = df["budgetYearMap"].apply(parse_budget_year_map)
-    df = df.explode("budgetYearMap").reset_index(drop=True)
+    info["budgetYearMap"] = info["budgetYearMap"].apply(parse_budget_year_map)
+    info = info.explode("budgetYearMap").reset_index(drop=True)
     
-    df["budget_year_map_year"]   = df["budgetYearMap"].apply(lambda x: x.get("budget_year_map_year")   if isinstance(x, dict) else None)
-    df["budget_year_map_budget"] = df["budgetYearMap"].apply(lambda x: x.get("budget_year_map_budget") if isinstance(x, dict) else None)
+    info["budget_year_map_year"]   = info["budgetYearMap"].apply(lambda x: x.get("budget_year_map_year")   if isinstance(x, dict) else None)
+    info["budget_year_map_budget"] = info["budgetYearMap"].apply(lambda x: x.get("budget_year_map_budget") if isinstance(x, dict) else None)
+    info["budget_year_map_budget"] = pd.to_numeric(info["budget_year_map_budget"], errors="coerce") 
+
+    info = info.drop(columns=["budgetYearMap"])
+
+    def parse_date_list(raw):
+
+        PARIS = ZoneInfo("Europe/Paris")
+        # gère le cas où raw est déjà une liste/array (pas un scalaire)
+        if isinstance(raw, (list, tuple)):
+            items = raw
+        else:
+            if pd.isna(raw):
+                return raw
+            if str(raw).strip().lower() == "none":
+                return None
+            try:
+                items = ast.literal_eval(raw)
+            except (ValueError, SyntaxError, TypeError):
+                items = [raw]
+
+        if items is None:
+            return None
+        if not isinstance(items, (list, tuple)):
+            items = [items]
+
+        harmonized = []
+        for item in items:
+            if item is None:
+                continue
+            item = str(item).strip()
+            if not item or item.lower() == "none":
+                continue
+            try:
+                dt = dateparser.parse(item, dayfirst=False, yearfirst=True)
+            except (ValueError, OverflowError):
+                continue
+            dt = dt.replace(tzinfo=PARIS) if dt.tzinfo is None else dt.astimezone(PARIS)
+            harmonized.append(dt.strftime("%Y-%m-%d"))
+
+        return harmonized if harmonized else None
+
+    info['deadlineDates'] = info['deadlineDates'].apply(parse_date_list)
+    info['deadlineDates'] = info['deadlineDates'].apply(lambda x: ';'.join(x) if isinstance(x, list) else x)
+
     
-    df = df.drop(columns=["budgetYearMap"])
-
-    df['call_year'] = df['call_id'].str.extract('(\\d{4})')
-    df['call_year_wp'] = df['call_lib'].str.extract(r"\(WP (\d{4})\)")
-   
-    if any(df['call_year'].isnull()):
-        fix_year = json.load(open('data_files/topics_year.json'))
-        df.loc[df['identifier'].isin(fix_year.keys()), 'call_year'] = df.loc[df['identifier'].isin(fix_year.keys()), 'identifier'].map(fix_year)
-        if any(df['call_year'].isnull()):
-            print(f"- ⚠️ ! missing call_year for {list(df[df['call_year'].isnull()].call_id)}")
-
-
-    df['call_open_date'] = pd.to_datetime(df['startDate'])
-    df['call_deadline'] = pd.to_datetime(df['deadlineDate'])
-    df['end_date'] = df['call_deadline'].dt.strftime('%Y-%m')
-    # for i in ['call_open_date', 'call_deadline']:
-    #     df[i] = df[i].dt.strftime('%Y-%m-%d')
-
-
-    df = (df.rename(columns={'identifier':'topicCode'})
-          .drop(columns=['title', 'type'])
-          .drop_duplicates()
+    cols = [c for c in info.columns if c != 'budget_year_map_budget' and c != 'budget_year_map_year']
+    info = (info.groupby(cols, dropna=False)['budget_year_map_budget'].sum()
+          .reset_index()
     )
 
-    cols = [c for c in df.columns if c != 'budget_year_map_budget']
-    df = df.groupby(cols, dropna=False)['budget_year_map_budget'].sum().reset_index()
+    check_dup = info[info.duplicated(subset=['topicCode', 'callIdentifier', 'action_code'], keep=False)]
+    if not check_dup.empty:
+        print(f"- ⚠️ ! duplicate topicCode/callIdentifier/action_code in info: {check_dup[['topicCode', 'callIdentifier', 'action_code']]}")
 
-    print(f"- size tops type 1: {len(df)}\n- multi topics: {df['topicCode'].value_counts(dropna=False)}")
-    if len(df.groupby('topicCode')['call_year'].nunique().reset_index(name='nb').query('nb>1'))>1:
-        print(f"- number of year by topicCode if multi it's a prob: {df.groupby('topicCode')['call_year'].nunique().reset_index(name='nb').query('nb>1')}")
     
-    df.to_pickle(f"{PATH_CLEAN}topic_call_info.pkl")
-    return df
+
+    check_dup = info[info.duplicated(subset=['topicCode', 'callIdentifier', 'action_code', 'destination_code'], keep=False)]
+    if not check_dup.empty:
+        print(f"- ⚠️ ! duplicate topicCode/callIdentifier/action_code in info: {check_dup[['topicCode', 'callIdentifier', 'action_code']]}")
+        cols_to_group = [c for c in check_dup.columns if c != 'budget_year_map_budget']
+        check_dup = check_dup.groupby(cols_to_group, dropna=False).agg({'budget_year_map_budget':'sum'}).reset_index()
+
+    info = info.merge(check_dup[['topicCode', 'action_code', 'destination_code']].drop_duplicates(), 
+                      on=['topicCode', 'action_code', 'destination_code'], 
+                      how='left', 
+                      indicator=True)
+    info = info[info['_merge'] == 'left_only'].drop(columns=['_merge'])
+    info = pd.concat([info, check_dup], ignore_index=True)
+    print(f"- size info after sum dup: {len(info)}")
+
+    # tous calls type=1,8 add call_year from callIdentifier and callTitle
+    tmp['call_year'] = tmp['callIdentifier'].str.extract(r'(\d{4})')
+    tmp['call_year_wp'] = tmp['callTitle'].str.extract(r"\(WP (\d{4})\)")
+
+    tmp.loc[tmp['type']=='8', 'call_year'] = tmp.loc[tmp['type']=='8', 'identifier'].str.extract(r'(\d{4})', expand=False)
+
+    if any(tmp['call_year'].isnull()):
+        fix_year = json.load(open('data_files/topics_year.json'))
+        tmp.loc[tmp['identifier'].isin(fix_year.keys()), 'call_year'] = tmp.loc[tmp['identifier'].isin(fix_year.keys()), 'identifier'].map(fix_year)
+        if any(tmp['call_year'].isnull()):
+            print(f"- ⚠️ ! missing call_year by type projects for: {tmp[tmp['call_year'].isnull()].type.value_counts()}")
+
+
+    for d in ['startDate', 'deadlineDate']:
+        tmp[d] = convert_to_paris_date(tmp[d])
+        
+    tmp['call_open_date'] = tmp['startDate'].dt.normalize()
+    tmp['call_deadline'] = tmp['deadlineDate'].dt.normalize()
+    tmp['call_deadline_ma'] = tmp['call_deadline'].dt.strftime('%Y-%m')
+
+    cols_call = ['identifier', 'type', 'callIdentifier', 'callTitle', 'call_open_date', 'call_deadline', 'call_year', 'call_year_wp', 'call_deadline_ma', 'link']
+    df = tmp[cols_call].drop_duplicates()
+
+    cols_to_fill = [c for c in df.columns if c != 'callIdentifier']
+    df[cols_to_fill] = (
+        df.groupby('callIdentifier')[cols_to_fill]
+        .transform(lambda s: s.ffill().bfill())
+    )
+
+    df = df.drop_duplicates().reset_index(drop=True)
+    print(f"size df == 1 : {len(df)}")
+
+    # inner join between info and df
+    call_i = info.groupby(['callIdentifier', 'deadlineModel'])['deadlineDates'].nunique().reset_index(name='nb')
+    df_i = df.merge(call_i, how='inner', on=['callIdentifier'])
+    df_i['nb_rows'] = df_i.groupby(['callIdentifier', 'identifier'])['call_deadline'].transform('size')
+
+    # masque des lignes concernées par la règle
+    mask_multi = (df_i['nb'] == 1) & (df_i['nb_rows'] > 1)
+
+    # lignes non concernées : on les garde telles quelles
+    df_keep_as_is = df_i[~mask_multi]
+
+    # lignes concernées : pour chaque callIdentifier, ne garder que la deadline la plus tardive
+    df_multi_resolved = (
+        df_i[mask_multi]
+        .sort_values(['call_deadline', 'identifier'])
+        .groupby(['callIdentifier', 'identifier'], as_index=False)
+        .tail(1)
+    )
+
+    # recombiner
+    df_i = pd.concat([df_keep_as_is, df_multi_resolved], ignore_index=True)
+
+    df_i = (df_i.drop(columns=['nb', 'nb_rows', 'deadlineModel'], errors='ignore')
+            .merge(info, how='outer', 
+                        left_on=['callIdentifier', 'identifier'],
+                        right_on=['callIdentifier', 'topicCode'],
+                        indicator=True)
+    )
+
+    print(f"- size df_i after merge with info: {len(df_i)}\n- check topic or call alone: {df_i._merge.value_counts()}")
+
+    df_i.loc[df_i['_merge']=='left_only', 'topicCode'] = df_i.loc[df_i['_merge']=='left_only', 'identifier'] 
+    df_i.drop(columns=['identifier'], inplace=True)
+
+    cols_to_fill = [x for x in cols_call if x not in ('identifier', 'callIdentifier')]
+    df_i[cols_to_fill] = (
+        df_i.groupby('callIdentifier')[cols_to_fill]
+        .transform(lambda s: s.ffill().bfill())
+    )
+    print(f"- size df_i after merge with info: {len(df_i)}\n- check topic or call alone: {df_i._merge.value_counts()}")
+
+
+    df_i = df_i.assign(type_call = 'Direct call').drop(columns=['link', '_merge'])
+
+    # casc = tmp[tmp.type=='8']
+
+    # df.loc[df['type']=='1', 'type_funding'] = 'Direct call'
+    # df.loc[df['type']=='8', 'type_funding'] = 'Cascading funding'
+
+    # print(f"- size tops type 1: {len(df)}\n- multi topics: {df['topicCode'].value_counts(dropna=False)}")
+    # if len(df.groupby('topicCode')['call_year'].nunique().reset_index(name='nb').query('nb>1'))>1:
+    #     print(f"- number of year by topicCode if multi it's a prob: {df.groupby('topicCode')['call_year'].nunique().reset_index(name='nb').query('nb>1')}")
+    
+    df_i.to_pickle(f"{PATH_CLEAN}topic_call_info.pkl")
+    return df_i
 
 
 def top_div_load(source):

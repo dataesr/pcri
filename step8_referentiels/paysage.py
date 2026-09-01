@@ -1,21 +1,21 @@
-def paysage_import(dataset):
-    import pandas as pd, requests
-    from config_api import ods_headers
+# def paysage_import(dataset):
+#     import pandas as pd, requests
+#     from config_api import ods_headers
     
-    url = f"https://data.enseignementsup-recherche.gouv.fr/api/explore/v2.1/catalog/datasets/{dataset}/exports/json"
-    response = requests.get(url, headers=ods_headers)
-    result=response.json()
-    return pd.DataFrame(result)
+#     url = f"https://data.enseignementsup-recherche.gouv.fr/api/explore/v2.1/catalog/datasets/{dataset}/exports/json"
+#     response = requests.get(url, headers=ods_headers)
+#     result=response.json()
+#     return pd.DataFrame(result)
 
-def paysage_prep(DUMP_PATH, countries, com_iso):
+def paysage_prep(DUMP_PATH, com_iso):
     import pandas as pd, numpy as np
-    # from functions_shared import com_iso3
+    from remote_process.paysage import get_paysageODS
     from urllib.parse import urlparse
     # traitement PAYSAGE
 
     print("## paysage load")
     dataset='structures-de-paysage-v2'
-    df = paysage_import(dataset)
+    df = get_paysageODS(dataset)
 
     paysage = df.mask(df=='')
 
@@ -37,22 +37,22 @@ def paysage_prep(DUMP_PATH, countries, com_iso):
             )[['nom_long','numero_paysage','an_fermeture','sigle','adresse','code_postal','ville', 'iso3', 'com_code','ref']]
 
     print("## country cleaning")
-    # com_iso=com_iso3()
     paysage = paysage.merge(com_iso, how='left', on='com_code')
-    paysage.loc[~paysage.iso_3.isnull(), 'iso3'] = paysage.loc[~paysage.iso_3.isnull(), 'iso_3']
+    mask = ~paysage.iso_3.isnull()
+    paysage.loc[mask, 'iso3'] = paysage.loc[mask, 'iso_3']
+    paysage = (paysage
+               .rename(columns = {
+                   'iso3': 'country_code_map'
+                   }
+                ).drop(columns = 'iso_3'))
 
-    paysage=paysage.merge(countries[['iso3', 'parent_iso3']].drop_duplicates(), how='left', on='iso3')
-    paysage=paysage.rename(columns={'iso3':'country_code_map', 'parent_iso3':'country_code'}).drop(columns='iso_3')
-    paysage.loc[paysage.country_code.isnull(), 'country_code'] = 'FRA'
-    paysage=paysage.merge(countries[['iso3', 'country_name_en']].drop_duplicates(), left_on='country_code', right_on='iso3')
-    
     paysage.loc[~paysage.an_fermeture.isnull(), 'an_fermeture'] = paysage.loc[~paysage.an_fermeture.isnull()].an_fermeture.astype(int)
     paysage = paysage[(paysage.an_fermeture.isnull())|(paysage.an_fermeture > 2019)]
 
     print("## add others ID's")
     # identifiants
     dataset='fr-esr-paysage_structures_identifiants'
-    ident = paysage_import(dataset)
+    ident = get_paysageODS(dataset)
 
     ident['id_value'] = ident.id_value.astype(str)
     ident.loc[ident.id_type=='ror', 'id_value'] = 'R'+ident.id_value
@@ -83,7 +83,7 @@ def paysage_prep(DUMP_PATH, countries, com_iso):
     print("## website add")
     # site web
     dataset='fr-esr-paysage_structures_websites'
-    result = paysage_import(dataset)
+    result = get_paysageODS(dataset)
 
     web = pd.DataFrame(result).loc[result.type=='website', ['id_structure_paysage','url','language']].drop_duplicates().sort_values('id_structure_paysage')
     web.language = web.language.str.lower()

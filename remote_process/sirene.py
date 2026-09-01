@@ -65,6 +65,7 @@ def replace_nd_in_string(cell):
         return cell.replace('[ND]', 'None')  # ou np.nan si tu préfères
     return cell
 
+
 def clean_anomaly(df):
     for col in df.columns:
         # Remplacer '[ND]' dans les listes
@@ -84,6 +85,7 @@ def concat_value_unique(row, var_list: list):
             var_values.append(value)
     return ', '.join(var_values) if var_values else None
 
+
 def names_sirene(df):
     # Application de la fonction pour créer une nouvelle colonne
     df['ens'] = df.apply(lambda x: concat_value_unique(x, ['denom_us','ens1', 'ens2', 'ens3']), axis=1)
@@ -93,6 +95,7 @@ def names_sirene(df):
     df.loc[df['nom'].isnull(), 'nom'] = df['nom_perso']
     df['nom'] = df['nom'].str.capitalize()
     return df.drop(columns=['ens1', 'ens2', 'ens3', 'denom_us', 'nom_pp', 'prenom', 'nom_ul'])
+
 
 def adress_sirene(df):
     '''CP et COM_CODE gestion des 0 manquants'''        
@@ -128,6 +131,7 @@ def adress_sirene(df):
     df['address'] = df['address'].str.strip(', ').replace('', None)
     df['ville'] = df['ville'].str.title()
     return df
+
 
 def country_sirene(df):
     p=[('99109', 'DEU'), ('99134', 'ESP'), ('99140', 'CHE'), ('99132', 'GBR'), ('99101', 'DNK'), ('99127', 'ITA'), 

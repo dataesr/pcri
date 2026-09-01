@@ -189,9 +189,8 @@ def ent(participation, entities_info, projects):
 
     part=(participation[
         ['stage', 'project_id','generalPic', 'role', 'participates_as', 'erc_role', 
-        'with_coord', 'is_ejo', 'country_code', 'participation_nuts', 'country_code_mapping',
-        'region_1_name', 'region_2_name', 'regional_unit_name','participation_linked', 
-        'numero_national_de_structure', 'structure_name',
+        'with_coord', 'is_ejo', 'country_code', 'participation_nuts', 'country_code_source',
+        'participation_linked', 'numero_national_de_structure', 'structure_name',
         'coordination_number', 'calculated_fund', 'beneficiary_fund', 'fund_ent_erc']]
         .assign(number_involved=1))
 
@@ -200,8 +199,8 @@ def ent(participation, entities_info, projects):
     def ent_stage(df, stage_value:str):
         import numpy as np
         df=(df[df.stage==stage_value]
-            .merge(entities_info.drop(columns='country_code'), 
-                   how='left', on=['generalPic','country_code_mapping']))
+            .merge(entities_info.drop(columns=['country_code']), 
+                   how='left', on=['generalPic','country_code_source']))
         
         print(f"- subv {stage_value}={'{:,.1f}'.format(df.loc[(df.country_code=='FRA')&(df.stage==stage_value), 'calculated_fund'].sum())}")
 
@@ -237,7 +236,7 @@ def ent(participation, entities_info, projects):
                 .drop(columns=
                 ['generalState', 'street', 'postalCode', 'postalCode_source', 'postalBox', 'cj_code', 'cj_name', 
                 'webPage','naceCode','gps_source', 'city', 'isNonProfit', 'id_first', 'id_secondaire',
-                'isPublicBody', 'isInternationalOrganisation', 'isResearchOrganisation', 
+                'isPublicBody', 'isInternationalOrganisation', 'isResearchOrganisation', 'country_code_source', 'country_name_source',
                 'isHigherEducation','legalType', 'naceCode', 'gps_source', 'entities_num', 'n_state'])
                 )
     print(f"4 - entities_part subv drop columns={'{:,.1f}'.format(entities_part.loc[(entities_part.country_code=='FRA')&(entities_part.stage=='successful'), 'calculated_fund'].sum())}")

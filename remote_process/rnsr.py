@@ -102,7 +102,6 @@ def rnsr_dump_load():
             for ad in elem['addresses']:
                 if ad.get("status") == 'main':
                     elem['city'] = ad.get("city")
-                    elem['com_code'] = ad.get("city_code")
                     elem['country_code'] = ad.get("country_code")
                     elem['cp'] = ad.get("post_code")
                     elem['street_num'] = ad.get('housenumber')
@@ -139,33 +138,17 @@ def rnsr_dump_load():
         
     return rnsr
 
-def get_rnsr_dump():
-    # traitement RNSR
-    df = rnsr_dump_load()
-    rnsr = pd.json_normalize(df)
+# def get_rnsr_dump():
+#     # traitement RNSR
+#     df = rnsr_dump_load()
+#     rnsr = pd.json_normalize(df)
 
-    rnsr.loc[~rnsr.date_end.isnull(), 'date_end'] = rnsr.loc[~rnsr.date_end.isnull()].date_end.astype(int)
-    print(len(rnsr))
-    print(rnsr.date_end.unique())
-    rnsr = (rnsr.loc[(rnsr.date_end.isnull())|(rnsr.date_end>2019)]
-            .assign(adresse=rnsr.street_num+' '+rnsr.street, ref='rnsr')
-        .rename(columns={'rnsr':'num_nat_struct',
-                        'name':'nom_long',
-                        'acronym':'sigle',
-                        'date_end':'an_fermeture',
-                        'sigles_rnsr':'label_num_ro_rnsr',
-                        'tutelle_name':'etabs_rnsr',
-                        'city':'ville',
-                        'cp' : 'code_postal'})
-                            
-        )[['num_nat_struct', 'an_fermeture', 'nom_long',  'sigle', 'label_num_ro_rnsr', 
-            'etabs_rnsr', 'ville', 'com_code', 'adresse', 'code_postal', 
-            'adresse_full', 'tel', 'email', 'ref']]
 
-    rnsr = rnsr.assign(country_code_map = 'FRA')
+#     rnsr = rnsr.assign(country_code_map = 'FRA')
 
-    rnsr.mask(rnsr=='', inplace=True)
-    return rnsr
+#     rnsr.mask(rnsr=='', inplace=True)
+
+#     return rnsr
 
 def get_rnsr_by_id(liste_id: list):
     from config_api import scanr_headers

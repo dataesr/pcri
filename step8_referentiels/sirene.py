@@ -109,17 +109,9 @@ def sirene_prep(DUMP_PATH, snaf, countries, com_iso):
     
     sirene = df.loc[(df.siren.isin(snaf.entities_id.unique()))|(df.siret.isin(snaf.entities_id.unique()))|(df['uniteLegale.identifiantAssociationUniteLegale'].isin(snaf.entities_id.unique()))]
     
-    # delete=["01","02","03",	"05","06","07","08","09","10","11", "12", "13","14","15","16","17","18","19","20.4","25.7","27.5","28.2","31","32","33",	
-    #         "41.1","43.2", "43.32","43.34Z", "43.99","45","46", "47","49.3","49.4",	"50.1",	"50.3","51",	"53",	"55",	"56",	"60","64"	,"65", "66.22", "68","69","74.10Z","75", "77",	"78",	
-    #         "79",	"80",	"81", "84","85","86.2","86.9",	"87","88","90",	"92", "93", "94","95",	"96",  "97",  "98", "99"]
-    
-    # df = df[df['uniteLegale.categorieJuridiqueUniteLegale']!='1000']
-    # df = df[(~df['activitePrincipaleEtablissement'].str.startswith(tuple(delete)))|(~df['uniteLegale.activitePrincipaleUniteLegale'].str.startswith(tuple(delete)))]
-    # df = df[df['statutDiffusionEtablissement']!='P']
-    # print(len(df))
-    
     # sirene = pd.concat([sirene,df], ignore_index=True).drop_duplicates()
     sirene = sirene[sirene['statutDiffusionEtablissement']!='P']
+    print(f" - size sirene after filtering naf: {len(sirene)}")
 
     check_time = timing(start_time)
     print(f"load file and deleting script: {check_time}")
@@ -131,35 +123,45 @@ def sirene_prep(DUMP_PATH, snaf, countries, com_iso):
                         .str.strip())
             )
 
-    sirene = (sirene.assign(nom_perso=sirene[['uniteLegale.nomUniteLegale', 'uniteLegale.prenom1UniteLegale']]
-                            .fillna('')
-                            .agg(' '.join, axis=1)
-                            .str.strip())
+    sirene = (sirene
+            .assign(nom_perso=
+                    sirene[
+                        ['uniteLegale.nomUniteLegale', 
+                        'uniteLegale.prenom1UniteLegale']
+            ].fillna('')
+            .agg(' '.join, axis=1)
+            .str.strip())
             )
 
     check_time = timing(start_time)
     print(f"concat name string: {check_time}")
     start_time=time.time()
 
-    for i in ['denominationUsuelleEtablissement', 'ens', 'nom_perso']:
-        sirene.loc[sirene['uniteLegale.denominationUniteLegale'].isnull(), 'uniteLegale.denominationUniteLegale'] = sirene[i]
+    mask_uldul = sirene['uniteLegale.denominationUniteLegale'].isnull()
 
-    sirene.loc[~sirene['nom_perso'].isnull(), 'uniteLegale.denominationUniteLegale'] = sirene['uniteLegale.denominationUniteLegale']+' '+sirene['nom_perso']
+    for i in ['denominationUsuelleEtablissement', 'ens', 'nom_perso']:
+        sirene.loc[mask_uldul, 'uniteLegale.denominationUniteLegale'] = sirene[i]
+
+    mask = ~sirene['nom_perso'].isnull()
+    sirene.loc[mask, 'uniteLegale.denominationUniteLegale'] = sirene['uniteLegale.denominationUniteLegale']+' '+sirene['nom_perso']
         
-    if len(sirene.loc[sirene['uniteLegale.denominationUniteLegale'].isnull()])>0:
-        print(f"siren without denomination_UL: {sirene.loc[sirene['uniteLegale.denominationUniteLegale'].isnull()]}")
+    if len(sirene.loc[mask_uldul])>0:
+        print(f"siren without denomination_UL: {sirene.loc[mask_uldul]}")
     # sirene['nom_long'] = [x1 if x2 in x1 else x1+' '+x2 for x1, x2 in zip(tmp['uniteLegale.denominationUniteLegale'], tmp['entities_acronym_source_dup'])]
 
     check_time = timing(start_time)
     print(f"end name cleaning add persons name: {check_time}")
     start_time=time.time()
 
-    sirene = sirene.assign(adresse=sirene[['adresseEtablissement.numeroVoieEtablissement', 
-                                        'adresseEtablissement.typeVoieEtablissement',
-                                        'adresseEtablissement.libelleVoieEtablissement']]
-                            .fillna('')
-                            .agg(' '.join, axis=1)
-                            .str.strip())
+    sirene = sirene.assign(adresse = sirene[
+                            ['adresseEtablissement.numeroVoieEtablissement', 
+                            'adresseEtablissement.typeVoieEtablissement',
+                            'adresseEtablissement.libelleVoieEtablissement']
+                        ]
+                    .fillna('')
+                    .agg(' '.join, axis=1)
+                    .str.strip()
+                    )
 
     sirene.loc[sirene['adresseEtablissement.libelleCommuneEtablissement'].isnull(), 'adresseEtablissement.libelleCommuneEtablissement'] = sirene['adresseEtablissement.libelleCommuneEtrangerEtablissement']
 
@@ -202,22 +204,24 @@ def sirene_prep(DUMP_PATH, snaf, countries, com_iso):
     sirene = sirene.merge(country_s, how='left', on='COG').rename(columns={'CODEISO2':'iso2'})
 
     sirene = sirene.merge(countries[['iso2', 'iso3']], how='left', on='iso2')
-    # com_iso=com_iso3()
     sirene = sirene.merge(com_iso, how='left', on='com_code')
     sirene.loc[~sirene.iso_3.isnull(), 'iso3'] = sirene.loc[~sirene.iso_3.isnull(), 'iso_3'] 
     sirene.loc[sirene.iso3.isnull(), 'iso3'] = 'FRA'
 
-    sirene = sirene.merge(countries[['iso3','parent_iso3']], how='left', on='iso3')
-    sirene = sirene.rename(columns={'iso3':'country_code_map', 'parent_iso3':'country_code'})        
-    sirene = sirene.merge(countries[['iso3', 'country_name_en']].drop_duplicates(), how='left', left_on='country_code', right_on='iso3')
+    sirene = sirene.rename(
+                    columns={
+                    'iso3':'country_code_map'
+                    }
+                )        
 
-    if len(sirene[(~sirene.COG.isnull())&((sirene.iso2.isnull())|(sirene.country_code_map.isnull()))])>0:
-        print(f"siren without country_code_map: {sirene[(~sirene.COG.isnull())&((sirene.iso2.isnull())|(sirene.country_code_map.isnull()))].siren.unique()}")
+    mask = (~sirene.COG.isnull()) & ((sirene.iso2.isnull()) | (sirene.country_code_map.isnull()))
+    if len(sirene[mask])>0:
+        print(f"siren without country_code_map: {sirene[mask].siren.unique()}")
 
     check_time = timing(start_time)
     print(f"country cleaning: {check_time}")
     start_time=time.time()
-    sirene.drop(columns=['iso_3', 'iso3', 'iso2','COG','Lieudit_BP'], inplace=True)
+    sirene.drop(columns=['iso_3', 'iso2','COG','Lieudit_BP'], inplace=True)
 
     sirene.mask(sirene=='', inplace=True)
 

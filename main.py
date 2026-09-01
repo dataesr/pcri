@@ -21,8 +21,8 @@ calls = pd.read_csv(f"{PATH_CONNECT}calls.csv", sep=";", parse_dates=['call_dead
 
 ##############################################################
 # provioire renommage country_source en mapping pour l'instant
-for i in [ participation, entities_info]:
-    i.rename(columns={'country_code_source':'country_code_mapping', 'country_name_source':'country_name_mapping'}, inplace=True)
+# for i in [ participation, entities_info]:
+#     i.rename(columns={'country_code_source':'country_code_mapping', 'country_name_source':'country_name_mapping'}, inplace=True)
 
 
 # step4
@@ -33,10 +33,10 @@ collaboration = collab(participation, projects, countries)
 h20, FP7, FP6, h20_p, FP7_p, FP6_p = framework_load()
 h20 = h20.reindex(sorted(h20.columns), axis=1)
 
-# for i in [h20, FP7, FP6, h20_p, FP7_p, FP6_p]:
-#     if 'country_code_mapping' in i.columns:
-#         (i.rename(columns={'country_code_mapping':'country_code_source',
-#                           'country_name_mapping':'country_name_source'}, inplace=True))
+for i in [h20, FP7, FP6, h20_p, FP7_p, FP6_p]:
+    if 'country_code_mapping' in i.columns:
+        (i.drop(columns=['country_code_mapping',
+                          'country_name_mapping'], inplace=True))
 
 if NEW_UPDATE==True:
     project_list = list(set(h20_p.project_id))+list(set(FP7_p.project_id))+list(set(FP6_p.project_id))+list(set(projects.loc[projects.stage=='successful'].project_id))
@@ -58,26 +58,25 @@ h20 = h20.rename(columns={'insee_cat_code':'cat_entreprise_code', 'insee_cat_nam
 entities_participation = entities_preparation(entities_part, h20)
 entities_participation.to_pickle(f"{PATH_CLEAN}entities_participation_current.pkl")
 
-# entities_participation.drop(columns=['city_clean', 'com_code', 'countryCode', 'erc_evaluation_step', 
-#                                      'in_project','merge_entitiesLien', 'nutsCode', 'participation_nuts',
-#                                      'region_1_name', 'region_2_name', 'regional_unit_name','siren_all', 'stage_call'],
-#                                       inplace=True)
-
-
 """
 entities_mongo(FP, df, cols_select_xls, tab_mongo) -> 
 framework, df, columns selected in xls, collection mongo
 """
-entities_mongo('horizon', entities_participation, 'proj_entities', 'projects-entities')
-# --- Usage ---
-# mongo_delete_all("european-projects_projects-entities")
-# mongo_bulk_insert_df(df, "european-projects_projects-entities")
-# mongo_bulk_insert_df(entities_participation[entities_participation['framework']=='Horizon Europe'], batch_size=10_000)
+mongo_start('horizon', entities_participation.loc[(entities_participation.framework == 'Horizon Europe')], 'proj_entities', 'projects-entities')
+mongo_start('horizon', collaboration, 'proj_collab', 'collaborations')
 
+
+
+"""
+process for ODS
+"""
 print(f"size entities_participation: {len(entities_participation)}")
 entities_ods('h20', entities_participation)
-entities_ods('horizon', entities_participation)
+entities_ods('horizon', entities_participation, 240)
 
+"""
+export for tableau
+"""
 # entities_participation = entreprise_group_cleaning(entities_participation)
 (entities_participation
  .drop(columns=['ecorda_date','action_code2','action_name2', 'status_evaluation',
@@ -91,6 +90,7 @@ entities_ods('horizon', entities_participation)
     .to_csv(f"{PATH_CONNECT}entities_participation_current.csv", sep=";", 
             index=False, encoding='UTF-8', na_rep='', decimal='.'))
 
+# pour indicateurs lolf
 entities_operateur(entities_participation)
 
 
@@ -142,14 +142,21 @@ synthese(projects_current)
 resume(projects_current)
 
 pc = evol_preparation(FP6, FP7, h20, projects_current)
-evolution_FP(pc, countries)
+ev = evolution_FP(pc, countries)
 evolution_type(FP6, FP7, h20, projects_current)
+
+mongo_start(None, ev, None, 'evolution')
 
 calls_current(projects_current, calls)
 calls_all = calls_all(projects)
 
 msca_erc = msca_erc_projects(FP6, FP7, h20, projects, part)
 msca_erc = msca_erc.loc[~((msca_erc.framework=='FP7')&(msca_erc.thema_code=='ERC'))]
+
+mongo_start('horizon', msca_erc[msca_erc['action_code']=='MSCA'], 'msca_synthese', 'msca-projects-synthese')
+mongo_start('horizon', msca_erc[msca_erc['action_code']=='ERC'], 'erc_synthese', 'erc-projects-synthese')
+
+
 msca_ods(msca_erc)
 erc_ods(msca_erc)
 me_resume = msca_erc_resume(msca_erc)

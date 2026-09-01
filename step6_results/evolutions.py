@@ -135,10 +135,10 @@ def evolution_FP(pc, countries):
             lambda row: row[col_name] / all_values[col_name][(row['call_year'], row['stage'])], axis=1
         )
 
-    zipfile_ods(tmp.drop(columns='project_id').sort_values(['funding'], ascending=False), "fr-esr-countries-evolution-pcri")
+    tmp = tmp.drop(columns='project_id').sort_values(['funding'], ascending=False)
+    zipfile_ods(tmp, "fr-esr-countries-evolution-pcri")
 
-        # if extract=='_topten':
-    # for tableau
+    ##### for tableau
     country = list(set(country))
     _pc = _pc[_pc['country_code'].isin(country)]
 
@@ -151,7 +151,9 @@ def evolution_FP(pc, countries):
     _pc['mixte_periode_HE']=np.where(_pc['framework'].isin(['FP6', 'FP7', 'Horizon 2020']), _pc['framework'], _pc['call_year'])
 
     _pc.to_csv(PATH_CONNECT+"all_FW_resume.csv", index=False, encoding="UTF-8", sep=";", na_rep='', decimal=".")
-
+    #######
+    
+    return tmp
 
 def evolution_type(FP6, FP7, h20, projects_current):
     _FP6_type=(FP6

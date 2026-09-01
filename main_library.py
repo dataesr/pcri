@@ -1,4 +1,3 @@
-from remote_process.mongo import *
 from remote_process.ID_checkingRefExist import *
 from remote_process.erc_wp_panel import *
 from remote_process.topic_info_portal import *
@@ -6,7 +5,9 @@ from remote_process.sirene import *
 from remote_process.ror import *
 from remote_process.paysage import *
 from remote_process.excel_export import *
-from remote_process.Background_runner import * 
+from remote_process.Background_runner import *
+from remote_process.mongo_runner import *
+from remote_process.orcid_runner import *
 from functions_shared import *
 from step1_mainData.data_load import *
 from step1_mainData.data_analysis import *
@@ -59,4 +60,5 @@ from step6_results.msca import *
 from step6_results.erc import *
 from step6_results.evolutions import *
 from step7_persons.prep_persons import *
+from step7_persons.affiliations import *
 from step10_inHouse_unit.inHouse_prepare import *

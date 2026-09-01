@@ -6,14 +6,10 @@ def projects_ods(projects, participation, calls, countries, h20_p, FP6_p, FP7_p)
     ###projects info for ODS
     cc = countries[['countryCode_iso3', 'country_name_en', 'country_name_fr']].drop_duplicates()
     part= (participation.loc[participation.stage=='successful', 
-                ['project_id', 'country_code', 'country_code_mapping', 
-                #  'participation_nuts', 'region_1_name', 'region_2_name', 'regional_unit_name'
-                 ]].drop_duplicates()
-    .merge(cc[['countryCode_iso3','country_name_fr']]
-           .rename(columns={'countryCode_iso3':'country_code'}), how='left', on='country_code')
-    .merge(cc[['countryCode_iso3', 'country_name_en']]
-           .rename(columns={'countryCode_iso3':'country_code_mapping', 'country_name_en':'country_name_mapping'}), 
-           how='left', on='country_code_mapping')
+                ['project_id', 'country_code']].drop_duplicates()
+            .merge(cc[['countryCode_iso3','country_name_fr']]
+           .rename(columns={'countryCode_iso3':'country_code'}), 
+           how='left', on='country_code') 
     .groupby(['project_id'], as_index = False).agg(lambda x: ';'.join(map(str, filter(None, x)))))
 
     #recuperation des données proposals à afficher

@@ -15,13 +15,21 @@ def strip_ror(x):
     return x
 ########################################
 
+# searching address of the last ror zip file 
 def get_last_ror_dump_url():
+
     ROR_URL = "https://zenodo.org/api/communities/ror-data/records?q=&sort=newest"
-    response = requests.get(url=ROR_URL).json()
-    ror_dump_url = response['hits']['hits'][0]['files'][-1]['links']['self']
+    response = requests.get(url=ROR_URL)
+    response.raise_for_status()
+
+    files = response.json()['hits']['hits'][0]['files']
+    ror_file = next(f for f in files if f['key'].endswith('.zip'))
+    ror_dump_url = ror_file['links']['self']
     print(f'Last ROR dump url found: {ror_dump_url}')
     return ror_dump_url
 
+
+# loading the last dump in local
 def ror_load():
     ror_downloaded_file=f'{PATH}referentiel/ror_data_dump.zip'
     ror_unzipped_folder = mkdtemp()
@@ -35,16 +43,19 @@ def ror_load():
     shutil.rmtree(path=ror_unzipped_folder)
     return data   
 
+
 def ror_load_url():
     ror_downloaded_file=f'{PATH}referentiel/ror_data_dump.zip'
     url_site = get_last_ror_dump_url()
     response = requests.get(url_site, stream=True)
+    response.raise_for_status()
 
-    CHUNK_SIZE=128
-    with open(file=ror_downloaded_file, mode='wb') as file:
-        for chunk in response.iter_content(chunk_size=CHUNK_SIZE):
-            file.write(chunk)
+    with open(ror_downloaded_file, 'wb') as file:
+        for chunk in response.iter_content(chunk_size=64 * 1024):
+            if chunk:
+                file.write(chunk)
     return ror_load()
+
 
 #######################
 
@@ -395,6 +406,12 @@ def get_ror(id_source, id_var, countries, load_url=True):
         r = ror_load()
     
     ri = ror_info(r)
+
+    file_name = f"{PATH_REF}ror_all.pkl"
+    with open(file_name, 'wb') as file:
+        pd.to_pickle(ri, file)
+
+
     ri_rid = {
         i['id']: i['iso2']
         for i in ri

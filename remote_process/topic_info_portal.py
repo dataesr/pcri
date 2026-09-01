@@ -49,6 +49,7 @@ def get_topic_from_eu_portal():
 
         total = first["totalResults"]
         total_pages = math.ceil(total / page_size)
+        print(f"- tot + tot_pages: {total} {total_pages}")
 
 
         # ⚠️ Adjust this key if needed (check your response structure once)
@@ -65,15 +66,15 @@ def get_topic_from_eu_portal():
                 "startDate": item.get("metadata").get("startDate"),
                 "deadlineDate": item.get("metadata").get("deadlineDate"),
                 "status": item.get("metadata").get("status"),
-                "call_id": item.get("metadata").get("callIdentifier"),
-                "call_lib": item.get("metadata").get("callTitle"),
+                "callIdentifier": item.get("metadata").get("callIdentifier"),
+                "callTitle": item.get("metadata").get("callTitle"),
                 "budgetOverview": item.get("metadata").get("budgetOverview"),
                 "topicConditions": item.get("metadata").get("topicConditions")
             }
 
         all_metadata.extend(extract(i) for i in items)
 
-        for page in range(2, total_pages + 1):
+        for page in range(1, total_pages + 1):
             data = fetch_page(BASE_URL, HEADERS, FILES, page, page_size)
             page_items = data["results"]
             all_metadata.extend(extract(i) for i in page_items)
