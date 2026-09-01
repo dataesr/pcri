@@ -10,6 +10,10 @@ temp/
 .log
 .pid
 remote_process/output/
+remote_process/mongo_insert
+remote_process/orcid_payload
+.pkl
+
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
