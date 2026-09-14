@@ -27,6 +27,14 @@ calls = pd.read_csv(f"{PATH_CONNECT}calls.csv", sep=";", parse_dates=['call_dead
 
 # step4
 entities_part = ent(participation, entities_info, projects)
+print(f"- size entities_part: {len(entities_part)}")
+
+entities_part = prepare_activity_loc(entities_part, participation)
+
+entities_part = add_geo_subdivision(entities_part)
+
+
+
 collaboration = collab(participation, projects, countries)
 
 # step5 - si nouvelle actualisation ou changement dans nomenclatures
@@ -37,6 +45,9 @@ for i in [h20, FP7, FP6, h20_p, FP7_p, FP6_p]:
     if 'country_code_mapping' in i.columns:
         (i.drop(columns=['country_code_mapping',
                           'country_name_mapping'], inplace=True))
+    if 'is_ejo' in i.columns:
+        i.loc[i['is_ejo']=='Sans', 'is_ejo'] = False
+        i.loc[i['is_ejo']=='Avec', 'is_ejo'] = True
 
 if NEW_UPDATE==True:
     project_list = list(set(h20_p.project_id))+list(set(FP7_p.project_id))+list(set(FP6_p.project_id))+list(set(projects.loc[projects.stage=='successful'].project_id))
@@ -72,22 +83,47 @@ process for ODS
 """
 print(f"size entities_participation: {len(entities_participation)}")
 entities_ods('h20', entities_participation)
-entities_ods('horizon', entities_participation, 240)
+entities_ods('horizon', entities_participation)
 
 """
 export for tableau
 """
 # entities_participation = entreprise_group_cleaning(entities_participation)
-(entities_participation
- .drop(columns=['ecorda_date','action_code2','action_name2', 'status_evaluation',
+cols_to_remove = ['ecorda_date','action_code2','action_name2', 'status_evaluation', 'startup_fr_flag',
                 'free_keywords', 'abstract', 'acronym', 'call_deadline', 'topic_name','topic_code',
                 'category_id', 'entities_name_source', 'entities_acronym_source',  'generalPic',
-                'numero_national_de_structure','participation_linked', 'dep_code', 'reg_code',
-                'paysage_category', 'paysage_category_id', 'ror_category', 
-                'source_id', 'numero_national_de_structure', 'structure_name','geo_2_code',
-                'geo_2_latlng', 'geo_2_name', 'geo_3_code', 'geo_3_latlng',  'geo_3_name', 'geo_unit_code',
-                'geo_unit_latlng', 'geo_unit_name',])
-    .to_csv(f"{PATH_CONNECT}entities_participation_current.csv", sep=";", 
+                'entities_acronym_en', 'entities_name_en', 'erc_evaluation_step', 'in_project',
+                'numero_national_de_structure','participation_linked', 'dep_code', 'reg_code', 'com_code',
+                'paysage_category', 'paysage_category_id', 'ror_category', 'siren_main', 'siren_all',
+                'source_id', 'numero_national_de_structure', 'structure_name', 'city_clean',
+                'merge_entitiesLien',
+                'title',
+                'status_code',
+                'stage_call',
+                'topic_name',
+                'entities_geo_unit_code',
+                'entities_geo_top_code',
+                'entities_geo_top_name',
+                'entities_geo_top_type',
+                'entities_geo_top_latlng',
+                'entities_geo_unit_name',
+                'entities_geo_unit_type',
+                'entities_geo_unit_latlng',
+                'activity_geo_unit_code',
+                'activity_geo_top_code',
+                'activity_geo_top_name',
+                'activity_geo_top_type',
+                'activity_geo_top_latlng',
+                'activity_geo_unit_name',
+                'activity_geo_unit_type',
+                'activity_geo_unit_latlng']
+
+ep = copy.deepcopy(entities_participation)
+for c in cols_to_remove:
+    if c in ep:
+        ep.drop(columns=c, inplace=True)
+
+(ep.to_csv(f"{PATH_CONNECT}entities_participation_current.csv", sep=";", 
             index=False, encoding='UTF-8', na_rep='', decimal='.'))
 
 # pour indicateurs lolf
@@ -159,6 +195,7 @@ mongo_start('horizon', msca_erc[msca_erc['action_code']=='ERC'], 'erc_synthese',
 
 msca_ods(msca_erc)
 erc_ods(msca_erc)
+
 me_resume = msca_erc_resume(msca_erc)
 msca_evol_ods(me_resume)
 erc_evol_ods(me_resume)

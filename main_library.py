@@ -5,9 +5,9 @@ from remote_process.sirene import *
 from remote_process.ror import *
 from remote_process.paysage import *
 from remote_process.excel_export import *
-from remote_process.Background_runner import *
 from remote_process.mongo_runner import *
 from remote_process.orcid_runner import *
+from remote_process.scanr import *
 from functions_shared import *
 from step1_mainData.data_load import *
 from step1_mainData.data_analysis import *
@@ -41,6 +41,7 @@ from step3_entities.ID_pic_group import *
 from step3_entities.entities_cleaning import *
 from step3_entities.categories import *
 from step3_entities.entities_repository import *
+from step4_calculations.localisation import *
 from step4_calculations.participations import *
 from step4_calculations.applicants import *
 from step4_calculations.participants import *
@@ -61,4 +62,7 @@ from step6_results.erc import *
 from step6_results.evolutions import *
 from step7_persons.prep_persons import *
 from step7_persons.affiliations import *
+from step7_persons.scanr import *
+from step7_persons.idref import *
+from step7_persons.identifiers_compare import *
 from step10_inHouse_unit.inHouse_prepare import *

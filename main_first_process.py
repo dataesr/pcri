@@ -1,40 +1,51 @@
 from main_library import *
 from remote_process.grist import *
+from remote_process import orcid_runner
 from remote_process.provinces_runner import *
-import copy
+
+import copy, datetime
 pd.options.mode.copy_on_write = True
 
 # If new update change constant_vars.py
-FETCH_GEO_DATA = False
+FETCH_PERSO_SCANR = False
+FETCH_GEO_DATA = False # last extraction carried out between 2026-07 and 2026-09
 FETCH_WEB_DATA = False  # True -> to fetch data from tenders portal and save in data_wp
 LOAD_DATA = False  # True -> to load data from json, False -> to fetch data from json and save in json
 UPDATE_PROJECT = False  # True -> to update projects and proposals, False -> to load last version of projects and proposals
 UPDATE_PARTICIPATION = False  # True -> to update participants and applicants, False -> to load last version of participants and applicants
 UPDATE_ENTITIES = False  # True -> to update entities, False -> to load last version of entities
+CHECK_NEW_ENTITIES = False  # True -> to check new entities and update ref_source, False -> to load last version of ref_source
 CHECK_ID_BY_API = False
 UPDATE_REF_AND_PAYSAGE = False  # After finding new ids and fixing some, load new ror, sirene and update paysage app
 UPDATE_GR = False
-UPDATE_PERSONS = True
+UPDATE_PERSONS = False
 UPDATE_FP = False  # True -> to update FP6, FP7, H2020 data, False -> to load last version of FP6, FP7, H2020 data
 
+JOUR = datetime.date.today().isoformat()
 ZIPNAME = last_data_zip(PATH_SOURCE, FRAMEWORK, "json")
 SOURCE_JSON = f"{PATH_SOURCE}{FRAMEWORK}/{ZIPNAME}"
 extractDate = date_load(SOURCE_JSON)
 CSV_PERSONS = "20260616"
 
+
 #======================================================
-# extracting info on WP
+# extracting info on WP, geo, scanr persons
+
+if FETCH_PERSO_SCANR == True:
+
+    download_with_resume(
+    "https://scanr-data.s3.gra.io.cloud.ovh.net/production/persons_denormalized.jsonl.gz",
+    f"{PATH}referentiel/persons_denormalized.jsonl.gz"
+    )
+
 
 if FETCH_GEO_DATA==True:
     """
     -> Lancé en arrière-plan
     charge les fichiers zip de geoname par pays
     prépare un dataset complet avec tous les niveaux de geoloc
-
     """
-    
     start()
-
 
 
 if FETCH_WEB_DATA==True:
@@ -184,8 +195,8 @@ else:
     reporting = json.load(open('reporting.json', 'r', encoding='utf-8'))
 
 
-#############################################################
-##### PARTICIPATIONS
+#==============================================================================================================
+# PARTICIPATIONS
 if UPDATE_PARTICIPATION == True:
 
     #### APPLICANTS
@@ -225,7 +236,7 @@ if UPDATE_PARTICIPATION == True:
     part = check_multiP_by_proj(part)
     app1 = check_multiA_by_proj(app1)
 
-    ########################################
+    #=============================================
     ### STEP2
     # ENTITIES
     entities, rep = entities_merge_partApp(entities, app1, part)
@@ -285,7 +296,6 @@ if UPDATE_PARTICIPATION == True:
     reporting.append({'stage_process':'process2_wthNuts', 'lien_size':len(lien)})
     lien.to_pickle(f"{PATH_CLEAN}lien.pkl")
 
-    #########################################################################
     """
     select one record par pic by filtering on generalStatus -> def entities_single_create
     """
@@ -299,199 +309,323 @@ else:
     reporting = json.load(open('reporting.json', 'r', encoding='utf-8'))
 
 
+#======================================================================
 """
-Creation base entities
-"""
-entities_info = entities_info_create(entities_single, lien)
-entities_info = entities_add_country(entities_info, countries)
-entities_info = entities_clean_name(entities_info)
+step3
 
-reporting.append({'stage_process':'process5_status', 'entities_size':len(entities_single)})
-
-### step3
-
-# ##################################
-"""
 process to affiliate an entity to an repository's ID like SIRENE ROR... 
 and check if ID exist in paysage or not, 
 if not check in source API, then update ref_source with new ID 
 if verified and update paysage with new ID if verified and not in paysage
-
 """
-# list identifiers in paysage
-sl = ['siret', 'ror', 'rnsr', 'rna']
-paysage_identifiers = paysage_id_extract(sl)
-paysage_identifiers = paysage_id_extract_prepare(paysage_identifiers)
 
 if UPDATE_ENTITIES==True:
-    # UPDATE ; only needs to be run once
-    ref_source = ref_source_load('ref')
-    # fix ROR ID with 'R0' at the beginning ; old method
-    ref_source.loc[ref_source['id'].str.startswith('R0', na=False), 'id'] = ref_source.loc[ref_source['id'].str.startswith('R0', na=False), 'id'].str[1:]
-    entities_tmp = entities_first_preparation(ref_source, entities_info) # ref_source_1ere_select
-    check_id_df, identification = identification_update(SOURCE_JSON, entities_tmp) # list ID to check and all records tabe
-    
-    # identifiant in paysage or not -> inPayseg True/False
-    paysage_res = check_id_in_paysage(check_id_df, 'check_id', paysage_identifiers)
-    
-    # id missing into paysage -> check in source api
-    sid_df = paysage_res.loc[(paysage_res['in_paysage']==False)&(paysage_res['source_id'].notnull()), ['check_id', 'source_id']].sort_values(['source_id', 'check_id'], ascending=False).drop_duplicates()
-    print(f"## {len(sid_df)} identifiers no paysage to ckeck")
 
-    # check existing ID
-    if CHECK_ID_BY_API==True:
-        print(time.strftime("%H:%M:%S"))  
-        res=[]
-        for sl in sid_df['source_id'].unique().tolist():
-            id_list = list(sid_df.loc[sid_df['source_id']==sl, 'check_id'].unique())
-            result = check_id_by_source(sl, id_list)
-            res.extend(result)
-        print(time.strftime("%H:%M:%S"))
+    """
+    Creation base entities
+    """
+    entities_info = entities_info_create(entities_single, lien)
+    entities_info = entities_add_country(entities_info, countries)
+    entities_info = entities_clean_name(entities_info)
+    entities_info = entities_clean_address(entities_info)
 
-    ###########
-        IDchecking_results(res, paysage_res, identification)
-        # vérifier dans excel les nouveaux ID PATH_WORK/_check_id_result.xlsx
-        # fix errors, confirm ID from link or vat
+    reporting.append({'stage_process':'process5_status', 'entities_size':len(entities_single)})
 
-    ##################################################################
-    id_verified = ID_resultChecked(paysage_identifiers)
-    new_ref_source(id_verified, ref_source, extractDate, lien, entities_single, countries)
-    # add data_work/ref_extarct_date.csv into data_ref/_pic_id_entites.xlsx
-    # try to find ID for new foreign (universities, public organizations, european or international orga)
 
-    
-# ########################################################################################################
+    # list identifiers in paysage
+    sl = ['siret', 'ror', 'rnsr', 'rna']
+    paysage_identifiers = paysage_id_extract(sl)
+    paysage_identifiers = paysage_id_extract_prepare(paysage_identifiers)
 
-# chargement du nouveau ref_source
-# ref_source = ref_source_load('ref')
 
-# if NEW UPDATE maj paysage with struct successful UPTADE_PAYSAGE, load_url to update ror
-if UPDATE_REF_AND_PAYSAGE==True:
-    frameworks = ['HE', 'H20']
-    ref_id, genPic_to_new = entities_repository_select_maj(frameworks, countries, load_url=False, UPDATE_PAYSAGE=False)
+    if CHECK_NEW_ENTITIES==True:    
+        # UPDATE ; only needs to be run once
+        ref_source = ref_source_load('ref')
+        # fix ROR ID with 'R0' at the beginning ; old method
+        ref_source.loc[ref_source['id'].str.startswith('R0', na=False), 'id'] = ref_source.loc[ref_source['id'].str.startswith('R0', na=False), 'id'].str[1:]
+        entities_tmp = entities_first_preparation(ref_source, entities_info) # ref_source_1ere_select
+        check_id_df, identification = identification_update(SOURCE_JSON, entities_tmp) # list ID to check and all records tabe
+        
+        # identifiant in paysage or not -> inPayseg True/False
+        paysage_res = check_id_in_paysage(check_id_df, 'check_id', paysage_identifiers)
+        
+        # id missing into paysage -> check in source api
+        sid_df = paysage_res.loc[(paysage_res['in_paysage']==False)&(paysage_res['source_id'].notnull()), ['check_id', 'source_id']].sort_values(['source_id', 'check_id'], ascending=False).drop_duplicates()
+        print(f"## {len(sid_df)} identifiers no paysage to ckeck")
+
+        # check existing ID
+        if CHECK_ID_BY_API==True:
+            print(time.strftime("%H:%M:%S"))  
+            res=[]
+            for sl in sid_df['source_id'].unique().tolist():
+                id_list = list(sid_df.loc[sid_df['source_id']==sl, 'check_id'].unique())
+                result = check_id_by_source(sl, id_list)
+                res.extend(result)
+            print(time.strftime("%H:%M:%S"))
+
+            #======================================================================
+            IDchecking_results(res, paysage_res, identification)
+            # vérifier dans excel les nouveaux ID PATH_WORK/_check_id_result.xlsx
+            # fix errors, confirm ID from link or vat
+            #======================================================================
+
+        id_verified = ID_resultChecked(paysage_identifiers)
+        new_ref_source(id_verified, ref_source, extractDate, lien, entities_single, countries)
+        # add data_work/ref_extarct_date.csv into data_ref/_pic_id_entites.xlsx
+        # try to find ID for new foreign (universities, public organizations, european or international orga)
+
+
+    """
+        chargement du nouveau ref_source
+        ref_source = ref_source_load('ref')
+    """
+
+    # if NEW UPDATE maj paysage with struct successful UPTADE_PAYSAGE, load_url to update ror
+    if UPDATE_REF_AND_PAYSAGE==True:
+        frameworks = ['HE', 'H20']
+        ref_id, genPic_to_new = entities_repository_select_maj(frameworks, countries, load_url=False, UPDATE_PAYSAGE=False)
+    else:
+        ref_id = idsG['From_pic_to_id']
+        genPic_to_new = idsG['From_oldpic_to_new']
+
+    pic = maj_ref_by_pic(entities_info, countries, genPic_to_new, ref_id)
+
+
+    """
+    reload link between from_id_to_ref and paysage IDs after updating paysage app
+    add paysage_id to ref_id
+    """
+    ref_with_paysage = merge_id_to_ref(ref_id, 'from_id_to_ref')
+
+    ###  CREATE ENTITIES_TMP
+    entities_tmp, rep = entities_tmp_create(entities_info, ref_with_paysage)
+    entities_tmp = entities_for_merge(entities_tmp)
+
+    # new source_id and check bugs between siren and ror if need to fix -> fix_bug=True
+    entities_tmp = source_ID_new_and_check(entities_tmp, 'id_extend', fix_bug=True)
+
+
+    # if NEW UPDATE -> PAYSAGE_GET_INFO=TRUE -> reload paysage IDs with new entities
+    paysage_cj, cat, cat_filter = paysage_repository(PAYSAGE_GET_INFO=False)
+
+
+    entities_tmp = merge_repositories(entities_tmp, paysage_cj, cat, cat_filter)
+
+
+    entities_tmp = entities_info_add(entities_tmp, entities_info)
+
+    # PIC
+    entities_tmp = merge_pic(entities_tmp, pic, cat, paysage_cj)
+
+    #======================================================
+    ### groupe entreprises
+
+    if UPDATE_GR==True:
+        groupe = groupe_treatment('groupe_prov', 'groupe')
+    ### si besoin de charger groupe
+    #======================================================
+
+    entities_tmp = entities_groupe(entities_tmp, framework=None)
+
+    entities_tmp = entities_categories(entities_tmp)
+
+    entities_info = entities_finalize(entities_tmp, countries, framework=None)
+
+    # check entities_info and its vars 
+    summary, duplicate_rows = check_dataframe(entities_info, ['generalPic', 'country_code', 'entities_name'])
+
+    file_name = f"{PATH_CLEAN}entities_info_current2.pkl"
+    with open(file_name, 'wb') as file:
+        pd.to_pickle(entities_info, file)
+
 else:
-    ref_id = idsG['From_pic_to_id']
-    genPic_to_new = idsG['From_oldpic_to_new']
+    entities_info = pd.read_pickle(f"{PATH_CLEAN}entities_info_current2.pkl")
+    countries = pd.read_pickle(f"{PATH_CLEAN}country_current.pkl")
+    lien = pd.read_pickle(f"{PATH_CLEAN}lien.pkl")
+    reporting = json.load(open('reporting.json', 'r', encoding='utf-8'))
 
-pic = maj_ref_by_pic(entities_info, countries, genPic_to_new, ref_id)
-
-# add paysage_id to ref_id
-ref_with_paysage = merge_id_to_ref(ref_id, 'from_id_to_ref')
-
-###  CREATE ENTITIES_TMP
-entities_tmp, rep = entities_tmp_create(entities_info, ref_with_paysage)
-entities_tmp = entities_for_merge(entities_tmp)
-
-# new source_id and check bugs between siren and ror if need to fix -> fix_bug=True
-entities_tmp = source_ID_new_and_check(entities_tmp, 'id_extend', fix_bug=True)
-
-
-# if NEW UPDATE -> PAYSAGE_GET_INFO=TRUE -> reload paysage IDs with new entities
-paysage_cj, cat, cat_filter = paysage_repository(PAYSAGE_GET_INFO=False)
-
-
-entities_tmp = merge_repositories(entities_tmp, paysage_cj, cat, cat_filter)
-
-
-entities_tmp = entities_info_add(entities_tmp, entities_info)
-
-# PIC
-entities_tmp = merge_pic(entities_tmp, pic, cat, paysage_cj)
-
-###################################################################
-
-### groupe entreprises
-if UPDATE_GR==True:
-    groupe = groupe_treatment('groupe_prov', 'groupe')
-### si besoin de charger groupe
-#################################################################
-entities_tmp = entities_groupe(entities_tmp, framework=None)
-
-entities_tmp = entities_categories(entities_tmp)
-
-entities_info = entities_finalize(entities_tmp, countries, framework=None)
-
-# check entities_info and its vars 
-summary, duplicate_rows = check_dataframe(entities_info, ['generalPic', 'country_code', 'entities_name'])
-
-file_name = f"{PATH_CLEAN}entities_info_current2.pkl"
-with open(file_name, 'wb') as file:
-    pd.to_pickle(entities_info, file)
-
-entities_info = pd.read_pickle(f"{PATH_CLEAN}entities_info_current2.pkl")
-
-# STEP4 - INDICATEURS
+#================================================================
+"""
+    STEP4 - INDICATEURS
+"""
 proj_erc = (projects.loc[projects['action_code']=='ERC', ['project_id', 'destination_code']]
             .drop_duplicates())
 part_step = participations_calc(lien, proj_erc, entities_info)
-proj_no_coord = proj_no_coord(projects)
+proj_no_coord = dom_without_coord(projects)
 
-participation = participations_finalize(part_step, proj_no_coord)
 
+"""
+    clean coordination for projects without coord
+    create isejo for entities ZOE or ZOI
+    add RNSR from gilberinette
+    add rnsr detected from source_id
+"""
+participation = participations_isejo_coord(part_step, proj_no_coord)
+
+participation =  rnsr_add(participation)
+
+
+    # 1. Construire le dictionnaire generalPic -> liste d'id_secondaire valides (pattern RNSR, dédupliqués, sans NaN)
+nns_map = (
+        entities_info.dropna(subset=['id_secondaire'])
+        .loc[entities_info['id_secondaire'].apply(is_valid_rnsr)]
+        .groupby('generalPic')['id_secondaire']
+        .apply(lambda x: list(dict.fromkeys(x)))
+        .to_dict()
+    )
+
+participation['numero_national_de_structure'] = participation.apply(
+    maj_nns, axis=1, mapping=nns_map
+)
+
+
+del part_step
+
+
+#======================================================================
 """
 step7 - persons script 
 """
 if UPDATE_PERSONS==True:
-    from remote_process import orcid_runner
 
     persons_preparation(CSV_PERSONS)  
 
-    # ⚠️ search on ORCID
-    lab_em = ['ERC', 'MSCA']
-    df = persons_choose(lab_em)
-    df = (
-        df[
-            ["last_name", "first_name", "orcid_id", "country_code"]
-        ]
-        .sort_values(
-            ["country_code", "orcid_id"],
-            ascending=False
-        )
-        .drop_duplicates()
-        .reset_index(drop=True)
+    # 1. Liste complète en un seul appel
+    df = persons_choose()
+
+    # 2. scanR en premier (un seul passage sur le dump local)
+    scanr_res = scanr_lookup(df, dump_path=f"{PATH}referentiel/persons_denormalized.jsonl.gz")
+    resolved_scanr, remaining = split_scanr_resolved(df, scanr_res)
+
+    # 3. Démarre le job ORCID en arrière-plan (non bloquant)
+    orcid_runner.start(remaining, label='all')
+
+    # 3. Pendant que ORCID tourne, IdRef s'exécute en synchrone (parallélisme gratuit)
+    idref_res = idref_runner(
+        remaining[["last_name", "first_name", "orcid_id"]].drop_duplicates(),
+        label="all", orcid_col="orcid_id",
     )
-    orcid_runner.start(df, label='ERC')
+
+    # 4. Attendre que le job ORCID en arrière-plan soit VRAIMENT terminé
+    #    avant de lire son checkpoint (sinon résultat partiel)
+    while orcid_runner.is_running(label='all'):
+        print("Job ORCID toujours en cours...")
+        time.sleep(30)
+
+    orcid_runner.status(label='all')  # bilan final
+
+    # 5. Une fois les deux terminés : agrégation + fusion
+    perso_orcid_full = affiliation_orcid()
+    remaining_keys = set(
+        remaining["last_name"].str.strip().str.lower() + "||" +
+        remaining["first_name"].str.strip().str.lower()
+    )
+    perso_orcid_full["_key"] = (
+        perso_orcid_full["last_name"].str.strip().str.lower() + "||" +
+        perso_orcid_full["first_name"].str.strip().str.lower()
+    )
+    perso_orcid_remaining = perso_orcid_full[perso_orcid_full["_key"].isin(remaining_keys)].drop(columns="_key")
 
 
-    action_choose = [x for x in list(set(projects['action_code'])) if x not in ['ERC', 'MSCA']]
-    df = persons_choose(action_choose)
-    orcid_runner.start(df, label='OTH')
+    # 6. Fusion ORCID+IdRef pour les "remaining", puis ajout des scanR-résolus
+    merged_remaining = merge_orcid_idref(perso_orcid_remaining, idref_res)
+    perso_complete = pd.concat([resolved_scanr, merged_remaining], ignore_index=True)
+    perso_complete.to_pickle(f"{PATH_HARVEST}persons/perso_complete_{JOUR}.pkl")
 
-    # teste les noms/prénoms inversés
-    orcid_file = "oth_orcid_checkpoint.csv"
-    path = f"{PATH_HARVEST}persons/checkpoint/{orcid_file}"
-    df = pd.read_csv(path)
-    mask = df["orcid_source"] == "non_trouve"
-    print(f"{mask.sum()} lignes 'non_trouve' vont être réinitialisées")
+    print(f"\nBilan final : {len(resolved_scanr)} résolus par scanR, "
+        f"{len(merged_remaining)} traités via ORCID/IdRef, "
+        f"{len(perso_complete)} au total.")
 
-    cols = ["orcid_id_final", "orcid_source", "nb_candidats", "candidats_detail", "employers", "org_ids", "employments_detail"]
-    df.loc[mask, cols] = pd.NA
-    df.to_csv(path, index=False)
-    orcid_runner.start(df, label="OTH")
-
-    # oRCID response
-    perso_temp = affiliation_orcid()
-    perso_temp.to_pickle(f"{PATH_WORK}perso_temp.pkl")
-
+    
 """
 step9 - entities_affiliations 
 prepare files for moulinnette
 """
+
 entities_preparation(SOURCE_JSON)
 
 
 """
 Finalisation de participation 
-- add RNSR
-- add landscape 
-entities_info = entities_clean_address(entities_info)
-"""
- 
 #### add rnsr
 ## si besoin actualisation lancer entities_in_house.py
+ - script pour ajouter les nouveaux rnsr à participation
+- add RNSR
+- add landscape
+
+"""
+rnsr, other = inHouse_unit(rnsr_exist=True)
+
+nns = (participation
+        .loc[
+        participation['numero_national_de_structure'].notna(), 
+        ['numero_national_de_structure']]
+        .drop_duplicates()
+)
 
 
-del part_step
+nns['num_nat_struct'] = nns['numero_national_de_structure'].str.split(';')
+nns = nns.explode('num_nat_struct')
+nns['num_nat_struct'] = nns['num_nat_struct'].str.strip()
+
+
+# faire script pour intégrer les nouveax nns apres gilberinette
+update_doc_grist(geoG, 'geo')
+r_fix = geoG['Rnsr_address_fix']
+r_fix = r_fix.mask(r_fix == '')
+
+r = r_fix[['num_nat_struct', 'adresse', 'code_postal', 'ville',
+       'pays']]
+
+r = (rnsr.merge(r, 
+        how='left', 
+        left_on='numero_national_de_structure', 
+        right_on='num_nat_struct', 
+        suffixes=('', '_clean')
+    ).drop(columns=['numero_national_de_structure'])
+)
+
+nns = nns.merge(r, 
+        how='left', 
+        on='num_nat_struct'
+    )
+
+mask = nns['code_postal_clean'].isnull() | nns['ville'].isnull()
+
+if not nns[mask].empty:
+    print(f"🚨missing address in rnsr_address_fix grist:  {nns.loc[mask, ['num_nat_struct', 'code_postal', 'commune', 'code_postal_clean', 'ville']].drop_duplicates()}")
+
+nns = (nns
+       .assign(country_code_source = nns['pays'])
+       .rename(columns={
+                'adresse_clean': 'street',
+                'code_postal_clean': 'postalCode',
+                'ville': 'city',
+                'pays': 'countryCode'})
+        .drop_duplicates()
+    )
+
+nns = country_iso_shift(nns, 'country_code_source', True)
+nns = entities_add_country(nns, countries)
+nns = entities_clean_address(nns)
+
+cols = ['geo_unit_code']
+nns = (nns
+        .groupby('numero_national_de_structure', dropna=False)[cols]
+        .agg(lambda x: '; '.join(x.dropna().astype(str).unique()))
+        .reset_index()
+)
+print(len(nns))
+
+participation = participation.merge(nns, 
+                how='left', 
+                on='numero_national_de_structure')
+
+file_name = f"{PATH_CLEAN}participation_current.pkl"
+with open(file_name, 'wb') as file:
+    pd.to_pickle(participation, file)
+
+
 
 
 # controle des variables - null non null, valeur dupliquée

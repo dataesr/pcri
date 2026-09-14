@@ -1,4 +1,4 @@
-import pandas as pd, numpy as np, json
+import pandas as pd, numpy as np, copy
 from paths import PATH_CONNECT
 from functions_shared import entreprise_group_cleaning, FP_suivi
 
@@ -63,7 +63,7 @@ def msca_erc_projects(FP6, FP7, h20, projects, part):
     me7.reset_index(drop=True, inplace=True)
     me6.reset_index(drop=True, inplace=True)
     msca_erc = pd.concat([msca_erc, me20, me7, me6], ignore_index=True, axis=0, join='outer')
-    msca_erc = msca_erc.assign(is_ejo=np.where(msca_erc.extra_joint_organization.isnull(), 'Sans', 'Avec'))
+    msca_erc = msca_erc.assign(is_ejo=np.where(msca_erc.extra_joint_organization.isnull(), False, True))
 
     msca_erc['panel_lib'] = (
                     msca_erc['panel_code'].fillna('')
@@ -112,16 +112,56 @@ def msca_erc_ent(entities_participation):
                 .str.strip(' -')
             )
 
-
     print(f"size msca_entities: {len(me_entities)}")
 
-    me = (me_entities
-                   .drop(columns=['ecorda_date', 'panel_lib', 'free_keywords', 'abstract', 'numero_national_de_structure', 'structure_name'])
-    )
-    # me_entities = entreprise_group_cleaning(me_entities)
+    cols_to_remove = [
+        'acronym',
+        'call_deadline',
+        'ecorda_date', 
+        'panel_lib', 
+        'free_keywords', 
+        'abstract', 
+        'numero_national_de_structure', 
+        'structure_name',
+        'startup_fr_flag',
+        'city_clean',
+        'erc_evaluation_step',
+        'in_project',
+        'action_group_code',
+        'action_group_name',
+        'entities_acronym_en', 'entities_name_en',
+        'dep_code', 'reg_code', 'com_code',
+        'merge_entitiesLien',
+        'siren_all',
+        'siren_main',
+        'status_evaluation',
+        'status_code',
+        'title',
+        'stage_call',
+        'topic_name',
+        'entities_geo_top_code',
+        'entities_geo_top_name',
+        'entities_geo_top_type',
+        'entities_geo_top_latlng',
+        'entities_geo_unit_code',
+        'entities_geo_unit_name',
+        'entities_geo_unit_type',
+        'entities_geo_unit_latlng',
+        'activity_geo_unit_code',
+        'activity_geo_top_code',
+        'activity_geo_top_name',
+        'activity_geo_top_type',
+        'activity_geo_top_latlng',
+        'activity_geo_unit_name',
+        'activity_geo_unit_type',
+        'activity_geo_unit_latlng',
+        ]
 
-
+    me = copy.deepcopy(me_entities)
+    for c in cols_to_remove:
+        if c in me.columns:
+            me.drop(columns=c, inplace=True)
+            
     me.to_csv(PATH_CONNECT+"msca_entities.csv", index=False, encoding="UTF-8", sep=";", na_rep='', decimal=".")
-
-    
+ 
     return me_entities

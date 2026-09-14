@@ -1,5 +1,5 @@
 import pandas as pd, numpy as np
-from functions_shared import split_dataframe_by_size, zipfile_ods, select_cols_FP, rename_cols_FP, df_order_cols_FP, FP_suivi
+from functions_shared import split_dataframe_by_size, zipfile_ods, export_ftp, select_cols_FP, rename_cols_FP, df_order_cols_FP, FP_suivi
 from paths import PATH_CONNECT
 
 
@@ -35,15 +35,15 @@ def entities_preparation(entities_part, h20):
     return entities_part
 
 
-def export_chunks(df, base_name, max_size_mb=240):
-    """Decoupe (si necessaire) et exporte df via zipfile_ods, avec suffixe numerique."""
-    chunks = split_dataframe_by_size(df, max_size_mb=max_size_mb)
-    for i, chunk in enumerate(chunks, start=1):
-        zipfile_ods(chunk, f"{base_name}{i}")
-    return len(chunks)
+# def export_chunks(df, base_name, max_size_mb=240):
+#     """Decoupe (si necessaire) et exporte df via zipfile_ods, avec suffixe numerique."""
+#     chunks = split_dataframe_by_size(df, max_size_mb=max_size_mb)
+#     for i, chunk in enumerate(chunks, start=1):
+#         zipfile_ods(chunk, f"{base_name}{i}")
+#     return len(chunks)
 
 
-def entities_ods(FP, entities_participation, max_size_mb=240):
+def entities_ods(FP, entities_participation):
     if FP == 'horizon':
         filter_FP = 'Horizon Europe'
         fp_label = 'horizon'
@@ -71,9 +71,9 @@ def entities_ods(FP, entities_participation, max_size_mb=240):
 
     # --- successful ---
     x = tmp[tmp.stage == 'successful'].drop(
-        columns=['panel_regroupement_code', 'panel_code', 'erc_role', 'fund_ent_erc']
+        columns=['fund_ent_erc']
     )
-    n1 = export_chunks(x, f"fr-esr-{fp_label}-projects-entities", max_size_mb=max_size_mb)
+    n1 = export_ftp(x, f"fr-esr-{fp_label}-projects-entities")
     print(f"[{fp_label}] successful -> {n1} fichier(s)")
 
     # --- evaluated ---
@@ -89,7 +89,7 @@ def entities_ods(FP, entities_participation, max_size_mb=240):
     tmp1 = tmp1.drop(columns=[c for c in cols_to_drop if c in tmp1.columns])
 
     x = tmp1[tmp1.country_code == 'FRA'] if FP == 'h20' else tmp1
-    n2 = export_chunks(x, f"fr-esr-{fp_label}-projects-entities-evaluated", max_size_mb=max_size_mb)
+    n2 = export_ftp(x, f"fr-esr-{fp_label}-projects-entities-evaluated")
     print(f"[{fp_label}] evaluated -> {n2} fichier(s)")
 
 

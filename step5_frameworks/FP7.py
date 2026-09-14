@@ -387,7 +387,7 @@ def FP7_process():
                             'number_involved', 'signature_date', 'start_date', 'submission_date'])
             .merge(part1, how='inner', on=['project_id', 'stage']))
         
-        t = (t.assign(is_ejo=np.where(t.ZONAGE.isnull(), 'Sans', 'Avec'))
+        t = (t.assign(is_ejo=np.where(t.ZONAGE.isnull(), False, True))
             .rename(columns={'funding':'calculated_fund', 'ZONAGE':'extra_joint_organization'})
         )
 

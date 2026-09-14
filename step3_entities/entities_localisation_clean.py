@@ -1,4 +1,4 @@
-import geonamescache, pgeocode, pandas as pd, re, ast
+import geonamescache, pgeocode, pandas as pd, re, ast, numpy as np
 from unidecode import unidecode
 from thefuzz import fuzz
 from functions_shared import work_csv
@@ -358,7 +358,6 @@ def geoloc_foreign_back():
     geo2 = pd.concat([geo2.drop(columns=["postalCodes"]), pc_cols], axis=1)
 
     if 'loc_placeName' in geo2.columns:
-
         geo2 = geo2.drop(columns=['location','loc_lng', 'loc_postalCode']).drop_duplicates()
         geo2['loc_placeName'] = geo2['loc_placeName'].apply(lambda x: re.sub(r"\s{2,}", " ", unidecode(x)).strip().casefold() if isinstance(x, str) else x)
             
@@ -380,9 +379,14 @@ def geoloc_foreign_back():
 
         # Création de la colonne concaténée uniquement si match, sinon NaN
         geo2['geo_admin_new'] = None
-        geo2.loc[mask, 'geo_admin_new'] = (
-            geo2.loc[mask, 'ISO_3166_2'].astype(str) + '-' + geo2.loc[mask, 'loc_ISO3166-2'].astype(str)
-        )
+
+        if 'loc_ISO3166-2' in geo2.columns:
+            geo2.loc[mask, 'geo_admin_new'] = (
+                geo2.loc[mask, 'ISO_3166_2'].astype(str) + '-' + geo2.loc[mask, 'loc_ISO3166-2'].astype(str)
+            )
+
+        if 'loc_adminName1' not in geo2.columns:
+            geo2['loc_adminName1'] = None
 
         geo2 = (geo2[['ISO_3166_2', 'postalCode', 'city_clean_lower', 'loc_adminName1', 'geo_admin_new']]
                 .drop_duplicates()
@@ -405,16 +409,3 @@ def geoloc_foreign_back():
         add_records_to_grist(geo2, grist_url, 'pcri', 'geo', 'Fpptg_tmp')
     else:
         print("- No new records to add to Grist for foreign localisation")
-
-
-def geo_subdivision():
-    from iso3166_2 import Subdivisions
-    iso = Subdivisions()
-    rows = []
-    for country_code, subdivisions in iso.all.items():
-        for subdiv_code, details in subdivisions.items():
-            row = {'countryCode': country_code, 'subdivCode': subdiv_code}
-            row.update(details)
-            rows.append(row)
-
-    return pd.DataFrame(rows).drop(columns=['flag'])

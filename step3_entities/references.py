@@ -51,7 +51,6 @@ def ref_source_2d_select(ref_source, FP_SELECT:list):
     returns:
         ref selected 
         gen_pic_new
-    
     """
 
     print("## 2d - REF_SOURCE -> REF")
@@ -117,10 +116,13 @@ def paysage_id_extract_prepare(id_df):
     prepare paysage extract to have a dataframe with all identifiers and their resourceId, active and endDate,
     convert siret into siren (9) and keep only one line per identifier with the most recent active one if several exist
     """
-    tmp = id_df[id_df['type']=='siret'].assign(check_id=id_df['value'].str[:9]).drop(columns=['value'])
+    tmp = (id_df[id_df['type']=='siret']
+           .assign(check_id=id_df['value'].str[:9],
+                   type='siren')
+           .drop(columns=['value']))
     id_df = id_df.rename(columns={"value": "check_id"})  
     id_df = pd.concat([id_df, tmp], ignore_index=True)
-    id_df = (id_df[['check_id', 'resourceId', 'active', 'endDate']]
+    id_df = (id_df[['type', 'check_id', 'resourceId', 'active', 'endDate']]
              .drop_duplicates()
              .sort_values(by=['check_id', 'active', 'endDate'], ascending=[True, False, False])
         )

@@ -126,6 +126,16 @@ def cat_entreprise(df):
     print(f"- size entities_tmp after add cat_entreprise: {len(df)}")
     return df
 
+def startup_category(df):
+    print("### CATEGORY startup")
+    df.loc[
+        df['category_name'].str.lower().str.contains(r'start-up|startup', regex=True, na=False),
+        'startup_fr_flag'
+            ] = True
+    df.loc[df['startup_fr_flag'].isnull(), 'startup_fr_flag'] = False
+    print(f"- size entities_tmp with startup_fr_flag: {len(df[df['startup_fr_flag']==True])}")
+
+    return df
 
 
 def naf_etab_sirene(df):

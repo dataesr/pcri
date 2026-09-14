@@ -6,7 +6,7 @@ def evol_preparation(FP6, FP7, h20, projects_current):
     print("### preparation EVOL")
     rFP6=(FP6
         .loc[FP6.pilier_name_en!='Euratom']
-        .assign(is_ejo='Avec')
+        .assign(is_ejo=True)
         .groupby(['framework', 'stage', 'project_id', 'call_year', 'with_coord', 'country_code', 'country_group_association_code','is_ejo'])
         .agg({'coordination_number':'sum', 'number_involved':'sum', 'calculated_fund':'sum'})
         .reset_index()
@@ -44,6 +44,7 @@ def evol_preparation(FP6, FP7, h20, projects_current):
     pc = pd.concat([_temp, rh20, rFP6, rFP7], ignore_index=True)
     return pc
 
+
 def evolution_FP(pc, countries):
     print("### evolution TAB")
 
@@ -55,12 +56,12 @@ def evolution_FP(pc, countries):
             .agg({'funding':'sum', 'project_id': 'nunique', 'coordination_number':'sum', 'number_involved':'sum'})
             .reset_index()
             .rename(columns={'project_id':'project_number'})
-            .assign(country_code='ALL', rank_evaluated=99, rank_successful=99)
+            .assign(country_code='ALL', rank_evaluated=99, rank_successful=99, is_ejo=True)
             )
 
     # without ejo
     _pc_ue=(pc
-            .loc[(pc.is_ejo=='Sans')&(pc.country_group_association_code=='MEMBER-ASSOCIATED')]
+            .loc[(pc.is_ejo==False)&(pc.country_group_association_code=='MEMBER-ASSOCIATED')]
             .groupby(['framework', 'call_year', 'stage', 'project_id', 'is_ejo', 'with_coord'], dropna=False)
             .agg({'number_involved':'sum',  'coordination_number':'sum', 'funding':'sum'})
             .reset_index()
@@ -71,11 +72,11 @@ def evolution_FP(pc, countries):
             .groupby(['framework', 'call_year', 'stage', 'project_id', 'with_coord'], dropna=False)
             .agg({'number_involved':'sum', 'coordination_number':'sum', 'funding':'sum'})
             .reset_index()
-            .assign(country_code='UE', rank_evaluated=99, rank_successful=99, is_ejo='Avec')
+            .assign(country_code='UE', rank_evaluated=99, rank_successful=99, is_ejo=True)
             )
 
     _pc=(pc
-            .loc[pc.is_ejo=='Sans']
+            .loc[pc.is_ejo==False]
             .groupby(['framework', 'call_year', 'stage', 'country_code', 'project_id', 'is_ejo', 'with_coord'], dropna=False)
             .agg({'number_involved':'sum', 'coordination_number':'sum', 'funding':'sum'})
             .reset_index()
@@ -84,7 +85,7 @@ def evolution_FP(pc, countries):
     _pc1=(pc.groupby(['framework', 'call_year', 'stage', 'country_code', 'project_id', 'with_coord'], dropna=False)
             .agg({'number_involved':'sum', 'coordination_number':'sum', 'funding':'sum'})
             .reset_index()
-            .assign(is_ejo='Avec')
+            .assign(is_ejo=True)
             )
     _pc =pd.concat([_pc, _pc1], ignore_index=True)
 
@@ -109,7 +110,7 @@ def evolution_FP(pc, countries):
     # for extract in ['member', '_topten']:
     #     if extract=='member':
     ### for ODS
-    tmp=_pc.loc[_pc.is_ejo=='Avec'].merge(cc[cc.asso=='MEMBER-ASSOCIATED'], how='inner', on='country_code')
+    tmp=_pc.loc[_pc.is_ejo==True].merge(cc[cc.asso=='MEMBER-ASSOCIATED'], how='inner', on='country_code')
     tmp = pd.concat([tmp, total, _pc1_ue], ignore_index=True)
     tmp.loc[tmp.country_code=='UE', 'country_name_fr'] = 'Etats membres & associés'
     tmp.loc[tmp.country_code=='ALL', 'country_name_fr'] = 'Tous pays'
@@ -151,9 +152,9 @@ def evolution_FP(pc, countries):
     _pc['mixte_periode_HE']=np.where(_pc['framework'].isin(['FP6', 'FP7', 'Horizon 2020']), _pc['framework'], _pc['call_year'])
 
     _pc.to_csv(PATH_CONNECT+"all_FW_resume.csv", index=False, encoding="UTF-8", sep=";", na_rep='', decimal=".")
-    #######
-    
+
     return tmp
+
 
 def evolution_type(FP6, FP7, h20, projects_current):
     _FP6_type=(FP6
@@ -163,7 +164,7 @@ def evolution_type(FP6, FP7, h20, projects_current):
         .agg({'coordination_number':'sum', 'number_involved':'sum', 'calculated_fund':'sum'})
         .reset_index()
         .rename(columns={'calculated_fund':'funding'})
-        .assign(framework='FP6')
+        .assign(framework='FP6', is_ejo=True)
         )
 
     print(f"subv FP6 FR : {'{:,.1f}'.format(_FP6_type[(_FP6_type['country_code']=='FRA') & (_FP6_type['stage']=='successful')]['funding'].sum())}")
@@ -219,10 +220,10 @@ def evolution_type(FP6, FP7, h20, projects_current):
             .groupby(['framework', 'call_year', 'stage', 'country_code', 'country_name_fr', 'project_id', 'cordis_type_entity_code', 'with_coord'], dropna=False)
             .agg({'number_involved':'sum', 'coordination_number':'sum', 'funding':'sum'})
             .reset_index()
-            .assign(is_ejo='Avec')
+            .assign(is_ejo=True)
             )
 
-    _pc_type2 = (_pc_type.loc[_pc_type.is_ejo=='Sans']
+    _pc_type2 = (_pc_type.loc[_pc_type.is_ejo==False]
             .groupby(['framework', 'call_year', 'stage', 'country_code', 'country_name_fr', 'project_id', 'cordis_type_entity_code', 'with_coord', 'is_ejo'], dropna=False)
             .agg({'number_involved':'sum', 'coordination_number':'sum', 'funding':'sum'})
             .reset_index()
@@ -261,5 +262,7 @@ def evolution_type(FP6, FP7, h20, projects_current):
     type_entity = json.load(open('data_files/legalEntityType.json', 'r', encoding='UTF-8'))
     type_entity = pd.DataFrame(type_entity)
     _pc_type = _pc_type.merge(type_entity, how='left', on='cordis_type_entity_code')
+
+    _pc_type.loc[_pc_type['is_ejo'].isnull(), 'is_ejo'] = True
 
     _pc_type.sort_values(['country_code'], ascending=False).to_csv(f"{PATH_CONNECT}all_FW_type_resume.csv", index=False, encoding="UTF-8", sep=";", na_rep='', decimal=".")

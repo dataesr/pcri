@@ -1,6 +1,6 @@
-import numpy as np, pandas as pd
+import numpy as np, pandas as pd, re
 from paths import PATH_CLEAN, PATH_REF
-from functions_shared import capitalize_if_all_upper
+from functions_shared import capitalize_if_all_upper, country_iso_shift
 # from step2_participations.nuts import *
 
 
@@ -40,7 +40,7 @@ def entities_with_lien(entities_info, df):
 
 
     ent_tmp = (entities_info[
-            ['generalPic', 'entreprise_flag',
+            ['generalPic', 'entreprise_flag', 'id_secondaire',
             'cordis_is_sme', 'cordis_type_entity_code', 'cordis_type_entity_name_fr', 
             'cordis_type_entity_name_en', 'cordis_type_entity_acro', 'nutsCode',
             'country_code', 'country_code_source', 'extra_joint_organization']]
@@ -63,8 +63,10 @@ def entities_with_lien(entities_info, df):
         print(f"2- lien={len(df)}, part_step={len(part_step)}")
     return part_step
 
-def proj_no_coord(projects):
-    return projects[(projects.thema_code.isin(['ACCELERATOR']))|(projects.destination_code.isin(['PF','COST']))|((projects.action_code.isin(['ERC', 'RPR'])))].project_id.to_list()
+def dom_without_coord(projects):
+    return projects[(projects.thema_code.isin(['ACCELERATOR']))|(
+        projects.destination_code.isin(['PF','COST']))|(
+        (projects.action_code.isin(['ERC', 'RPR'])))].project_id.to_list()
 
 
 def participations_calc(lien, proj, entities_info):
@@ -133,12 +135,15 @@ def participations_calc(lien, proj, entities_info):
     return part_step
 
 
-
 def rnsr_add(df):
         
     rnsr = pd.read_pickle(f"{PATH_REF}rnsr_in_project.pkl")
 
-    add_rnsr = rnsr.groupby('p_key_id')[['numero_national_de_structure', 'libelle']].agg(lambda x: ';'.join(x)).reset_index()
+    add_rnsr = (rnsr.groupby('p_key_id')[
+        ['numero_national_de_structure', 'libelle']
+        ].agg(lambda x: ';'.join(x)).reset_index()
+    )
+
     add_rnsr['structure_name'] = add_rnsr['libelle'].apply(capitalize_if_all_upper)
     add_rnsr[['part1', 'part2', 'generalPic_from_pkey']] = add_rnsr['p_key_id'].str.split('-', expand=True)
     add_rnsr['participation_linked'] = add_rnsr['part1'] + '-' + add_rnsr['part2']
@@ -148,35 +153,53 @@ def rnsr_add(df):
     return df.merge(add_rnsr, how='left', on=['participation_linked', 'generalPic']).drop(columns='libelle')
 
 
-def participations_finalize(part_step, proj_no_coord):
+def is_valid_rnsr(code):
+    RNSR_PATTERN = re.compile(
+    r'^[0-9]{9}[A-Z]$',
+    flags=re.IGNORECASE
+    )
+    return bool(RNSR_PATTERN.match(str(code).strip()))
+
+
+def maj_nns(row, mapping):
+    existant = row['numero_national_de_structure']
+    liste = [] if pd.isna(existant) else [x.strip() for x in existant.split(';')]
+    
+    nouveaux = mapping.get(row['generalPic'], [])
+    for code in nouveaux:
+        code = code.strip()
+        if code not in liste:
+            liste.append(code)
+    
+    return ';'.join(sorted(liste)) if liste else pd.NA
+
+
+
+def participations_isejo_coord(part_step, proj_no_coord):
 
     print("### PARTICIPATIONS final")
     # participation = pd.concat([part_prop, part_proj], ignore_index=True)
 
     print(f"- control role: {part_step.role.unique()}")
     # part_step['coordination_number']=np.where(part_step['role'].str.lower()=='coordinator', 1, 0)
-    part_step.loc[part_step.project_id.isin(proj_no_coord), 'coordination_number'] = 0
-    part_step.loc[~part_step.project_id.isin(proj_no_coord), 'coordination_number'] = 1
+    part_step.loc[part_step.project_id.isin(proj_no_coord), 'with_coord'] = False
+    part_step.loc[~part_step.project_id.isin(proj_no_coord), 'with_coord'] = True
     # part_step = part_step.assign(with_coord=True)
-    part_step[ 'with_coord'] = np.where(part_step['coordination_number']==1, True, False)
+    part_step.loc[(part_step['with_coord']==True) & (part_step['role']=='coordinator') , 'coordination_number'] = 1
+    part_step.loc[part_step['coordination_number'] != 1, 'coordination_number'] = 0
 
     part_step.loc[part_step.role.isin(['co-pi', 'pi']), 'role'] = part_step.loc[part_step.role.isin(['co-pi', 'pi'])].role.str.upper()
     part_step.loc[part_step.role.isin(['coordinator', 'partner']), 'role'] = part_step.loc[part_step.role.isin(['coordinator', 'partner'])].role.str.capitalize()
     part_step.loc[part_step.erc_role.isin(['pi']), 'erc_role'] = part_step.loc[part_step.erc_role.isin(['pi'])].erc_role.str.upper()
 
     part_step = (part_step
-            .assign(is_ejo=np.where(part_step.extra_joint_organization.isnull(), 'Sans', 'Avec')))
+            .assign(is_ejo=np.where(part_step.extra_joint_organization.isnull(), False, True)))
  
     part_step.rename(columns={'partnerType':'participates_as'}, inplace=True)
     part_step['participation_linked'] = part_step['project_id']+"-"+part_step['orderNumber']
     
-    part_step =  rnsr_add(part_step)
-    
     print(f"- size participation: {len(part_step)}")
 
-    file_name = f"{PATH_CLEAN}participation_current.pkl"
-    with open(file_name, 'wb') as file:
-        pd.to_pickle(part_step, file)
     return part_step
     
 
@@ -218,25 +241,18 @@ def ent(participation, entities_info, projects):
 
     entities_part = pd.concat([entities_eval, entities_signed], ignore_index=True)
 
-    mask = (
-        entities_part['id_secondaire'].notna() &
-        (
-            entities_part['numero_national_de_structure'].isna() |
-            ~entities_part.apply(lambda x: str(x['id_secondaire']) in str(x['numero_national_de_structure']).split(';'), axis=1)
-        )
-        )
-
-    entities_part.loc[mask & entities_part['numero_national_de_structure'].notna(), 'numero_national_de_structure'] = (
-        entities_part['numero_national_de_structure'] + ';' + entities_part['id_secondaire']
-    )
-
-    entities_part.loc[mask & entities_part['numero_national_de_structure'].isna(), 'numero_national_de_structure'] = entities_part['id_secondaire']
-
+    
+    entities_part = country_iso_shift(entities_part, 'country_code_source', iso2_to3=False)
+    mask = entities_part['geo_unit_code'].isnull()
+    entities_part.loc[mask, 'geo_unit_code'] = entities_part.loc[mask, 'country_code_source']
+    
     entities_part=(entities_part
+                .rename(columns={'geo_unit_code': 'entities_geo_unit_code'})
                 .drop(columns=
                 ['generalState', 'street', 'postalCode', 'postalCode_source', 'postalBox', 'cj_code', 'cj_name', 
-                'webPage','naceCode','gps_source', 'city', 'isNonProfit', 'id_first', 'id_secondaire',
-                'isPublicBody', 'isInternationalOrganisation', 'isResearchOrganisation', 'country_code_source', 'country_name_source',
+                'webPage','naceCode','gps_source', 'city', 'isNonProfit', 'id_first', 'id_secondaire', 'city_clean',
+                'isPublicBody', 'isInternationalOrganisation', 'isResearchOrganisation', 'country_code_source', 
+                'country_name_source', 'com_code', 'dep_code', 'reg_code',
                 'isHigherEducation','legalType', 'naceCode', 'gps_source', 'entities_num', 'n_state'])
                 )
     print(f"4 - entities_part subv drop columns={'{:,.1f}'.format(entities_part.loc[(entities_part.country_code=='FRA')&(entities_part.stage=='successful'), 'calculated_fund'].sum())}")
@@ -264,7 +280,7 @@ def ent(participation, entities_info, projects):
                         'end_date', 'eu_reqrec_grant', 'isSeo', 'lastUpdateDate',
                         'nationalContribution', 'number_involved', 'otherContribution',
                         'panel_description', 'project_webpage', 'signature_date', 'start_date',
-                        'submission_date', 'title', 'totalGrant', 'total_cost',
+                        'submission_date', 'totalGrant', 'total_cost',
                         'typeOfActionCode', 'url'])
         .drop_duplicates()
         )
@@ -277,3 +293,4 @@ def ent(participation, entities_info, projects):
     temp = temp.reindex(sorted(temp.columns), axis=1)
     print(f"-size de entities_participation : {len(temp)}\n- merge inner ; ⚠️ perte de participations baisse des subv: {temp.loc[(temp.country_code=='FRA')&(temp.stage=='successful'), 'calculated_fund'].sum()}")
     return temp
+

@@ -720,7 +720,7 @@ def H2020_process(source_HE):
     part_tmp.rename(columns={'ZONAGE':'extra_joint_organization'}, inplace=True)
     part_tmp = part_tmp.map(lambda x: x.strip() if isinstance(x, str) else x)
 
-    part_tmp = part_tmp.assign(is_ejo=np.where(part_tmp.extra_joint_organization.isnull(), 'Sans', 'Avec'))
+    part_tmp = part_tmp.assign(is_ejo=np.where(part_tmp.extra_joint_organization.isnull(), False, True))
 
     # # merge cordis type
     # part_tmp.loc[part_tmp.legalEntityTypeCode.isnull(), 'legalEntityTypeCode'] = np.nan

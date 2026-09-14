@@ -1,4 +1,3 @@
-
 from paths import PATH_CLEAN
 from config_url import grist_url
 from remote_process.grist import load_to_grist
@@ -17,7 +16,7 @@ from step3_entities.merge_referentiels import merge_id_to_ref, merge_paysage, me
 from step3_entities.groupes import *
 from step3_entities.ID_pic_group import *
 from step3_entities.entities_cleaning import add_countries_info, entities_check_null
-from step3_entities.categories import legal_category, category_paysage_ref, category_paysage_by_struct, naf_etab_sirene, cat_entreprise, category_woven, category_agreg, cordis_type
+from step3_entities.categories import legal_category, category_paysage_ref, category_paysage_by_struct, naf_etab_sirene, cat_entreprise, category_woven, category_agreg, cordis_type, startup_category
 
 
 
@@ -200,6 +199,7 @@ def entities_categories(df):
     # catégorie entreprise
     print("### CAT ENTREPRISE")
     df = cat_entreprise(df)
+    df = startup_category(df)
 
     # # traitement catégorie
     df = cordis_type(df)
@@ -219,8 +219,7 @@ def entities_finalize(df, countries,  framework:str=None):
                     'category_name', 'vat',
                     'legalRegNumber',
                     'link_to_ref', 'id_extend',
-                    'paysage_category_priority',
-                    'siren_main'])
+                    'paysage_category_priority',])
                 .drop_duplicates()
             .rename(columns={'businessName':'entities_acronym_source',
                              'legalName':'entities_name_source'})
