@@ -1,20 +1,22 @@
 .vscode
 config_local.py
 config_url.py
-test.py
+test*
 TEST2.py
 test3.py
 demandes.py
 test_search.py
 tok/
-temp/
+temp/*
 *.log
 *.pid
 remote_process/output/
 remote_process/mongo_insert
 remote_process/orcid_payload
+remote_process/*.json
 *.pkl
-
+*.ipynb
+*.jsonl
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
