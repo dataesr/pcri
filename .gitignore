@@ -5,6 +5,7 @@ test.py
 TEST2.py
 test3.py
 demandes.py
+test_search.py
 tok/
 temp/
 .log
