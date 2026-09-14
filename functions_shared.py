@@ -478,8 +478,10 @@ def country_iso_shift(df, var, iso2_to3=True):
     import warnings
     warnings.filterwarnings("ignore", "This pattern is interpreted as a regular expression, and has match groups")
     from functions_shared import my_country_code
-    countries = my_country_code()
     
+    countries = my_country_code()
+    countries = countries[['iso3', 'iso2']].drop_duplicates(subset='iso3', keep='first')
+
     if iso2_to3:
         df = df.merge(countries[['iso3', 'iso2']].drop_duplicates(), how='left', left_on=var, right_on='iso2')
         df.loc[~df.iso3.isnull(), var] = df.loc[~df.iso3.isnull(), 'iso3']
@@ -683,6 +685,8 @@ def length_code_geo(var):
     
 def get_gs(sheet_name: str, vars_list: list = None) -> pd.DataFrame:
     """Récupère une feuille Google Sheet et exporte en JSON si nécessaire."""
+    import os
+
     google_key = os.environ.get("GOOGLE_KEY")
     url = f"https://docs.google.com/spreadsheet/ccc?key={google_key}&output=xls"
 
@@ -1516,3 +1520,253 @@ def split_dataframe_by_size(df, max_size_mb=240, safety_margin=0.92):
         start = end
 
     return chunks
+
+
+def export_ftp(df, base_name, max_size_mb=240):
+    import ftplib, os, zipfile
+    from config_url import ftp_url
+    from paths import PATH_ODS
+
+    ftp_USERNAME = os.environ.get("FTP_USERNAME")
+    ftp_PASSWORD = os.environ.get("FTP_PASSWORD")
+
+    chunks = split_dataframe_by_size(df, max_size_mb=max_size_mb)
+
+    # 1) Génère TOUS les fichiers zip d'abord, sans connexion FTP ouverte
+    fichiers_a_envoyer = []
+    for i, chunk in enumerate(chunks, start=1):
+        file_export = f"{base_name}{i}"
+        filename_out = f"{file_export}.zip"
+
+        with zipfile.ZipFile(f'{PATH_ODS}{filename_out}', 'w', compression=zipfile.ZIP_DEFLATED) as z:
+            with z.open(f'{file_export}.csv', 'w', force_zip64=True) as f:
+                chunk.to_csv(f, sep=';', encoding='utf-8', index=False, na_rep='', decimal=".")
+
+        fichiers_a_envoyer.append(filename_out)
+
+    # 2) Connexion FTP juste avant l'envoi, avec reconnexion si besoin
+    def connecter():
+        ftp = ftplib.FTP(ftp_url, ftp_USERNAME, ftp_PASSWORD, timeout=60)
+        return ftp
+
+    ftp_server = connecter()
+
+    try:
+        for filename_out in fichiers_a_envoyer:
+            for tentative in range(2):  # 1 essai + 1 retry si connexion coupée
+                try:
+                    with open(f'{PATH_ODS}{filename_out}', "rb") as file:
+                        ftp_server.storbinary(f"STOR {filename_out}", file)
+                    print(f"✔ {filename_out} envoyé")
+                    break
+                except (ftplib.error_temp, OSError, AttributeError):
+                    print(f"⚠ Connexion perdue, reconnexion pour {filename_out}...")
+                    try:
+                        ftp_server.quit()
+                    except Exception:
+                        pass
+                    ftp_server = connecter()
+
+        print(ftp_server.dir())
+
+    finally:
+        ftp_server.quit()
+
+    return len(chunks)
+
+
+def extraire_coords(valeur):
+    import ast, numpy as np
+
+    # 1. Gestion sécurisée des valeurs manquantes/nulles (scalaires, listes ou arrays)
+    if isinstance(valeur, (list, tuple, np.ndarray)):
+        if len(valeur) == 2:
+            return valeur[0], valeur[1]
+        return None, None
+
+    if pd.isna(valeur) or str(valeur).strip() in ("", "nan", "None"):
+        return None, None
+
+    # 2. Si c'est une chaîne de caractères (ex: "[38.3657, -0.7486]"), on la parse
+    try:
+        coords = ast.literal_eval(str(valeur))
+        if isinstance(coords, (list, tuple)) and len(coords) == 2:
+            return coords[0], coords[1]
+    except (ValueError, SyntaxError):
+        pass
+
+    return None, None
+
+
+def loc_subdision(df_row):
+    from remote_process.grist import geoG
+
+    """Prend le DataFrame brut des subdivisions, construit la hiérarchie
+
+    dynamique de geo_top vers geo_unit, applique la cascade pour les cases
+    vides, et recrée les colonnes coord_gps finalisées.
+    """
+    # 1. Création des dictionnaires pour pouvoir faire des recherches rapides par code
+    parent_map = df_row.set_index("subdivCode")["parentCode"].to_dict()
+    name_map = df_row.set_index("subdivCode")["name"].to_dict()
+    type_map = df_row.set_index("subdivCode")["type"].to_dict()
+    latlng_map = df_row.set_index("subdivCode")["latLng"].to_dict()
+
+    # 2. Identification des "Feuilles" (les entités tout en bas qui n'ont pas d'enfants)
+    tous_les_parents = set(df_row["parentCode"].dropna().unique())
+    feuilles = df_row[~df_row["subdivCode"].isin(tous_les_parents)]
+
+    lignes_finales = []
+    max_niveaux = 0
+
+    # 3. Parcours de l'arbre pour chaque feuille
+    for _, ligne in feuilles.iterrows():
+        chemin = []
+        courant = ligne["subdivCode"]
+
+        # On remonte du bas vers le haut (Enfant -> Parent -> Grand-Parent...)
+        while pd.notna(courant) and courant in parent_map:
+            chemin.append(courant)
+            courant = parent_map[courant]
+
+        # On garde en mémoire la profondeur maximale trouvée dans tout le fichier
+        max_niveaux = max(max_niveaux, len(chemin))
+
+        # Initialisation de notre ligne finale avec le code pays
+        donnees_ligne = {"countryCode": ligne["countryCode"]}
+
+        # IMPORTANT : On inverse le chemin pour aller du haut vers le bas (Parent -> Enfant)
+        chemin_inverse = list(reversed(chemin))
+        total_elements = len(chemin_inverse)
+
+        # Remplissage des colonnes avec nos nouveaux noms : geo_top et geo_unit
+        for index, code_subdiv in enumerate(chemin_inverse):
+            position = index + 1
+
+            # --- CORRECTION DE LA LOGIQUE DE NOMMAGE ---
+            if total_elements == 1:
+                # Si le pays n'a qu'un seul niveau, cet élément est À LA FOIS le top et l'unité
+                # On le met en geo_top, la cascade s'occupera de créer geo_unit plus tard
+                prefix = "geo_top"
+            elif position == 1:
+                prefix = "geo_top"  # Le sommet de la pyramide
+            elif position == total_elements:
+                prefix = "geo_unit"  # La feuille tout en bas
+            else:
+                prefix = f"geo_L{position}"  # Niveaux intermédiaires (ex: geo_L2)
+
+            # Assignation des valeurs pour ce niveau
+            donnees_ligne[f"{prefix}_code"] = code_subdiv
+            donnees_ligne[f"{prefix}_name"] = name_map.get(code_subdiv, "")
+            donnees_ligne[f"{prefix}_type"] = type_map.get(code_subdiv, "")
+
+            # Extraction temporaire de la latitude et longitude
+            lat, lng = extraire_coords(latlng_map.get(code_subdiv, ""))
+            donnees_ligne[f"{prefix}_latitude"] = lat
+            donnees_ligne[f"{prefix}_longitude"] = lng
+
+        lignes_finales.append(donnees_ligne)
+
+    # --- 3. B. INTÉGRATION DE SUBDIV_ADD ---
+    df_add = geoG["Subdiv_add"]
+
+    # On s'assure que max_niveaux vaut au moins 2 pour forcer la création de geo_top ET geo_unit
+    if max_niveaux < 2:
+        max_niveaux = 2
+
+    for _, ligne in df_add.iterrows():
+        # Extraction des coordonnées (Vérification de la casse de la colonne latLng)
+        col_coords = "latLng" if "latLng" in ligne else "latlng"
+        lat, lng = extraire_coords(ligne[col_coords])
+
+        donnees_add = {
+            "countryCode": ligne["countryCode"],
+            "geo_top_code": ligne["subdivCode"],
+            "geo_top_name": ligne["name"],
+            "geo_top_type": ligne["type"],
+            "geo_top_latitude": lat,
+            "geo_top_longitude": lng,
+        }
+        lignes_finales.append(donnees_add)
+
+    # Conversion de notre liste de dictionnaires en DataFrame Pandas
+    df_final = pd.DataFrame(lignes_finales)
+
+    # 4. Génération de la liste ordonnée des préfixes pour appliquer la cascade
+    ordre_prefixes = ["geo_top"]
+    for n in range(2, max_niveaux):
+        ordre_prefixes.append(f"geo_L{n}")
+    if max_niveaux > 1:
+        ordre_prefixes.append("geo_unit")
+
+    # --- CORRECTION : Forcer l'existence des colonnes geo_unit pour éviter les trous ---
+    suffixes_cascade = ["_code", "_name", "_type", "_latitude", "_longitude"]
+    for pref in ordre_prefixes:
+        for suff in suffixes_cascade:
+            if f"{pref}{suff}" not in df_final.columns:
+                df_final[f"{pref}{suff}"] = None
+
+    # 5. Application de la règle de cascade (Remplissage des cellules vides de gauche à droite)
+    for i in range(1, len(ordre_prefixes)):
+        pref_precedent = ordre_prefixes[i - 1]
+        pref_actuel = ordre_prefixes[i]
+
+        for suff in suffixes_cascade:
+            col_actuelle = f"{pref_actuel}{suff}"
+            col_precedente = f"{pref_precedent}{suff}"
+
+            df_final[col_actuelle] = df_final[col_actuelle].fillna(
+                df_final[col_precedente]
+            )
+
+    # 6. Re-fusion finale de la latitude et de la longitude en coord_gps
+    for prefix in ordre_prefixes:
+        lat_col = f"{prefix}_latitude"
+        lng_col = f"{prefix}_longitude"
+        gps_col = f"{prefix}_latlng"
+
+        if lat_col in df_final.columns and lng_col in df_final.columns:
+            df_final[gps_col] = df_final.apply(
+                lambda row: (
+                    f"{row[lat_col]:.4f},{row[lng_col]:.4f}"
+                    if pd.notna(row[lat_col]) and pd.notna(row[lng_col])
+                    else None
+                ),
+                axis=1,
+            )
+            # On supprime les colonnes de travail devenues inutiles
+            df_final = df_final.drop(columns=[lat_col, lng_col])
+
+    return df_final
+
+
+def fetch_geo_subdivision():
+    from iso3166_2 import Subdivisions
+    iso = Subdivisions()
+    rows = []
+    for country_code, subdivisions in iso.all.items():
+        for subdiv_code, details in subdivisions.items():
+            row = {'countryCode': country_code, 'subdivCode': subdiv_code}
+            row.update(details)
+            rows.append(row)
+
+    df_row = pd.DataFrame(rows).drop(columns=['flag'])
+
+    df_row['latlng'] = df_row['latLng'].apply(lambda x: ','.join(f"{v:.4f}" for v in x))
+    df_final = loc_subdision(df_row)
+
+    return df_final
+
+
+def build_geo_subdivision():
+    print("\n### geo_subdivision with level in columns")
+    ########
+    # ajout des noms des subdivisions
+    sub_div = fetch_geo_subdivision()
+
+    sub_div = sub_div[
+        ['countryCode', 'geo_top_code', 'geo_top_name', 'geo_top_type', 'geo_top_latlng',
+       'geo_unit_code', 'geo_unit_name', 'geo_unit_type', 'geo_unit_latlng']
+       ].drop_duplicates()
+        
+    return sub_div
