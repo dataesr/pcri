@@ -20,7 +20,7 @@ Résultat : DataFrame enrichi avec les colonnes
   dicts, pour usage ultérieur)
 """
 
-import time, requests, os, json, unicodedata
+import time, requests, os, json, unicodedata, re
 import pandas as pd
 
 CLIENT_ID = os.environ.get('ORCID_CLIENT')
@@ -127,30 +127,52 @@ def _name_score(candidate, given, family):
     return score
 
 
-# ---------------------------------------------------------------------
-# Recherche par nom (expanded-search : renvoie aussi les noms)
-# ---------------------------------------------------------------------
+def _lucene_quote(value: str) -> str:
+    """
+    Encadre une valeur de guillemets pour Lucene, afin qu'elle soit
+    traitee comme UNE SEULE phrase sur le champ cible plutot que comme
+    plusieurs termes separes des lors qu'elle contient un espace.
+ 
+    Bug corrige : pour un nom de famille avec particule comme
+    "de Reynies", la requete NON guillemetee family-name:de Reynies
+    est interpretee par Lucene comme deux termes distincts -- "de"
+    contraint sur le champ family-name, et "Reynies" comme terme LIBRE
+    non rattache a aucun champ -> la recherche s'elargit enormement et
+    peut remonter des candidats sans rapport (ex: "de Boisanger" au
+    lieu de "de Reynies", simplement parce que "de" matche).
+    Avec guillemets, family-name:"de Reynies" est traite comme une
+    phrase exacte sur le champ family-name.
+    """
+    escaped = str(value).replace('"', '\\"')
+    return f'"{escaped}"'
+ 
+ 
 def search_orcid_by_name(token, given, family, retries=3):
     """
     Retourne une liste de dicts :
       {"orcid_id": ..., "given_names": ..., "family_names": ..., "credit_name": ...}
-    via l'endpoint /expanded-search/, qui contrairement à /search/ renvoie
-    directement les noms des candidats (utile pour désambiguïser sans
-    requête supplémentaire par candidat).
+    via l'endpoint /expanded-search/, qui contrairement a /search/ renvoie
+    directement les noms des candidats (utile pour desambiguiser sans
+    requete supplementaire par candidat).
+ 
+    PATCH : les valeurs sont desormais entourees de guillemets Lucene
+    (cf. _lucene_quote) pour eviter qu'un nom de famille contenant un
+    espace (particule "de"/"van"/"von"...) ne soit coupe en deux termes
+    dont l'un devient un terme libre non filtre.
     """
     given = str(given).strip() if pd.notna(given) else ""
     family = str(family).strip() if pd.notna(family) else ""
-
+ 
     if not given and not family:
         return []
-
+ 
     if given and family:
-        query = f'given-names:{given} AND family-name:{family}'
+        query = f'given-names:{_lucene_quote(given)} AND family-name:{_lucene_quote(family)}'
     elif family:
-        query = f'family-name:{family}'
+        query = f'family-name:{_lucene_quote(family)}'
     else:
-        query = f'given-names:{given}'
-
+        query = f'given-names:{_lucene_quote(given)}'
+ 
     resp = _request_with_retry(
         "GET", f"{BASE_URL}/expanded-search/",
         retries=retries,
@@ -247,31 +269,107 @@ _DISAMBIGUATION_MIN_SCORE = 4
 _DISAMBIGUATION_MIN_GAP = 2
 
 
+
+ 
+def _hyphen_to_apostrophe_variant(last_name: str):
+    """
+    Ne remplace le tiret par une apostrophe QUE dans le cas precis d'une
+    elision francaise a une seule lettre en debut de nom (d'/l'), PAS
+    pour n'importe quel tiret :
+      "d-aleo"       -> "d'aleo"        (elision "d'", a corriger)
+      "l-hermitte"   -> "l'hermitte"    (elision "l'", a corriger)
+      "de-la-fontaine" -> INCHANGE      (nom compose legitime, "de" fait
+                                          2 lettres -> pas une elision)
+    Ne remplace que le PREMIER tiret rencontre, meme si le nom en
+    contient plusieurs par ailleurs.
+    Retourne None si le nom ne correspond pas au motif d'elision.
+    """
+    match = re.match(r"^([dlDL])-(.+)$", str(last_name).strip())
+    if not match:
+        return None
+    return f"{match.group(1)}'{match.group(2)}"
+ 
+ 
+def _any_exact_family_match(candidates, family) -> bool:
+    return any(_normalize(c.get("family_names")) == _normalize(family) for c in candidates)
+ 
+ 
 def _search_with_fallback(token, first_name, last_name):
     """
-    Cherche les candidats ORCID pour (first_name, last_name). Si aucun
-    résultat, retente avec prénom/nom permutés : certaines lignes
-    sources ont parfois first_name/last_name inversés (ex: colonne
-    "scopel eric" alors que la fiche ORCID réelle est
-    given-names="Eric" family-name="Scopel"), ce qui fait échouer la
-    recherche exacte sans ce filet de sécurité.
+    Cherche les candidats ORCID pour (first_name, last_name). Essaie,
+    dans l'ordre, et ne s'arrete a une etape que si elle produit une
+    correspondance EXACTE de nom de famille (sinon on continue les
+    tentatives suivantes, meme si l'etape precedente a deja renvoye un
+    candidat -- un candidat errone ne doit pas empecher d'essayer une
+    meilleure requete) :
+      1. (prenom, nom) tel quel
+      2. (nom, prenom) permutes -> certaines lignes sources ont
+         first_name/last_name inverses
+      3. nom avec tiret remplace par apostrophe -> motif frequent pour
+         les noms composes francais mal saisis a la source
+         (ex: "d-aleo" au lieu de "D'Aleo", "d-artagnan" au lieu de
+         "D'Artagnan") -> le tiret ne matche pas bien l'apostrophe cote
+         Solr, d'ou un candidat errone sans ce filet de securite.
+ 
+    Si AUCUNE tentative ne produit de correspondance exacte, retombe
+    sur le premier resultat non vide trouve (comportement d'origine)
+    pour laisser _process_row gerer via le score de similarite
+    (desambiguation multi-candidats) ou le flag "ambigu" -- on ne
+    perd jamais un vrai cas d'homonymie a departager manuellement.
+ 
     Retourne (candidates, given_effectif, family_effectif, permute_utilise).
     """
     candidates = search_orcid_by_name(token, first_name, last_name)
+    if candidates and _any_exact_family_match(candidates, last_name):
+        return candidates, first_name, last_name, False
+ 
+    swapped = search_orcid_by_name(token, last_name, first_name)
+    if swapped and _any_exact_family_match(swapped, first_name):
+        return swapped, last_name, first_name, True
+ 
+    via_apostrophe = []
+    last_name_apostrophe = last_name
+    apostrophe_variant = _hyphen_to_apostrophe_variant(last_name)
+    if apostrophe_variant is not None:
+        last_name_apostrophe = apostrophe_variant
+        via_apostrophe = search_orcid_by_name(token, first_name, last_name_apostrophe)
+        if via_apostrophe and _any_exact_family_match(via_apostrophe, last_name_apostrophe):
+            return via_apostrophe, first_name, last_name_apostrophe, False
+ 
+    # Aucune correspondance exacte nulle part -> on retombe sur le
+    # premier resultat non vide (ordre de priorite : normal > permute
+    # > apostrophe), pour laisser _process_row decider (desambiguation
+    # ou statut ambigu), comme avant ce patch.
     if candidates:
         return candidates, first_name, last_name, False
-
-    swapped = search_orcid_by_name(token, last_name, first_name)
     if swapped:
         return swapped, last_name, first_name, True
-
+    if via_apostrophe:
+        return via_apostrophe, first_name, last_name_apostrophe, False
     return [], first_name, last_name, False
 
 
-def _process_row(token, first_name, last_name, orcid):
-    """Traite une ligne : détermine l'ORCID final et récupère les employments."""
-    candidats_detail = ""
 
+# Seuil minimal de similarite pour les cas ou plusieurs candidats sont
+# a departager (inchange, cf. _DISAMBIGUATION_MIN_SCORE plus haut dans
+# le fichier).
+ 
+def _family_name_matches_exactly(candidate, family) -> bool:
+    """
+    Pour le cas 'un seul candidat', on exige une correspondance EXACTE
+    du nom de famille (normalise : accents/casse/espaces ignores) --
+    PAS le score composite _name_score(), qui peut etre gonfle a tort
+    par le seul prenom (ex: 'D' matche partiellement "d'Aleo" via un
+    test de sous-chaine ('d' in "d'aleo"), ce qui laissait passer un
+    candidat completement different des lors que le prenom concordait).
+    """
+    return _normalize(candidate.get("family_names")) == _normalize(family)
+ 
+ 
+def _process_row(token, first_name, last_name, orcid):
+    """Traite une ligne : determine l'ORCID final et recupere les employments."""
+    candidats_detail = ""
+ 
     if pd.notna(orcid) and str(orcid).strip():
         final_orcid = str(orcid).strip()
         source = "fourni"
@@ -281,55 +379,74 @@ def _process_row(token, first_name, last_name, orcid):
             token, first_name, last_name
         )
         nb_candidats = len(candidates)
-
+ 
         if nb_candidats == 0:
             final_orcid = None
             source = "non_trouve"
         elif nb_candidats == 1:
-            final_orcid = candidates[0]["orcid_id"]
-            source = "trouve_permute" if permute_utilise else "trouve"
+            # ---------------------------------------------------------
+            # PATCH : meme avec un seul candidat, on verifie qu'il
+            # ressemble reellement au nom cherche avant de l'accepter
+            # aveuglement. Un candidat unique issu d'une requete cassee
+            # (accents, apostrophes, tirets...) peut etre une personne
+            # totalement differente -> on exige une correspondance
+            # EXACTE du nom de famille (normalise), le prenom seul
+            # n'etant pas un signal suffisant (trop de personnes
+            # partagent un prenom courant).
+            # ---------------------------------------------------------
+            score = _name_score(candidates[0], eff_given, eff_family)
+            candidats_detail = (
+                f"{candidates[0].get('given_names') or ''} {candidates[0].get('family_names') or ''} "
+                f"({candidates[0].get('orcid_id')}, score={score})"
+            )
+            if _family_name_matches_exactly(candidates[0], eff_family):
+                final_orcid = candidates[0]["orcid_id"]
+                source = "trouve_permute" if permute_utilise else "trouve"
+            else:
+                # Nom de famille different -> candidat suspect (souvent
+                # du a une requete cassee par un caractere special dans
+                # le nom cherche), a verifier manuellement plutot que
+                # d'accepter automatiquement.
+                final_orcid = candidates[0]["orcid_id"]
+                source = "ambigu_nom_different_permute" if permute_utilise else "ambigu_nom_different"
         else:
             # Plusieurs homonymes : on score chaque candidat par
-            # similarité de nom avec le nom effectivement utilisé pour
-            # la recherche (l'ordre permuté si c'est celui qui a donné
-            # des résultats).
+            # similarite de nom avec le nom effectivement utilise pour
+            # la recherche (l'ordre permute si c'est celui qui a donne
+            # des resultats).
             scored = sorted(
                 (( _name_score(c, eff_given, eff_family), c) for c in candidates),
                 key=lambda x: x[0], reverse=True,
             )
             top_score, top_candidate = scored[0]
             second_score = scored[1][0] if len(scored) > 1 else -1
-
-            note_permute = " [recherche avec prénom/nom permutés]" if permute_utilise else ""
+ 
+            note_permute = " [recherche avec prenom/nom permutes]" if permute_utilise else ""
             candidats_detail = note_permute + " | ".join(
                 f"{c.get('given_names') or ''} {c.get('family_names') or ''} "
                 f"({c.get('orcid_id')}, score={s})"
                 for s, c in scored
             )
-
+ 
             if top_score >= _DISAMBIGUATION_MIN_SCORE and (top_score - second_score) >= _DISAMBIGUATION_MIN_GAP:
-                # Un candidat se détache nettement : on le retient
                 final_orcid = top_candidate["orcid_id"]
                 source = "trouve_desambiguise_permute" if permute_utilise else "trouve_desambiguise"
             else:
-                # Toujours ambigu : on garde le premier par défaut mais
-                # candidats_detail permet la vérification manuelle
                 final_orcid = top_candidate["orcid_id"]
                 source = "ambigu_permute" if permute_utilise else "ambigu"
-
+ 
     employments = []
     if final_orcid:
         employments = get_employments(token, final_orcid)
-
+ 
     employers_str = " | ".join(
         e["organisation"] for e in employments if e.get("organisation")
     )
-    # Ex: "ROR:https://ror.org/03dbr7087 | RINGGOLD:6429"
     org_ids_str = " | ".join(
         f"{e['org_id_source']}:{e['org_id']}"
         for e in employments if e.get("org_id")
     )
-
+ 
     return {
         "orcid_id_final": final_orcid,
         "orcid_source": source,
