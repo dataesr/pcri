@@ -19,7 +19,6 @@ def persons_choose(action_choose=None):
         (perso.reason != "main_contact_non_justifie")
         & ~(perso.last_name.isna() & perso.orcid_id.isna())
         & action_filter
-        & perso.numero_national_de_structure.isna()
         & (
             # ERC / MSCA
             (
