@@ -21,7 +21,6 @@ UPDATE_GR = False
 UPDATE_PERSONS = False
 UPDATE_FP = False  # True -> to update FP6, FP7, H2020 data, False -> to load last version of FP6, FP7, H2020 data
 
-JOUR = datetime.date.today().isoformat()
 ZIPNAME = last_data_zip(PATH_SOURCE, FRAMEWORK, "json")
 SOURCE_JSON = f"{PATH_SOURCE}{FRAMEWORK}/{ZIPNAME}"
 extractDate = date_load(SOURCE_JSON)
@@ -530,13 +529,16 @@ if UPDATE_PERSONS==True:
     # 6. Fusion ORCID+IdRef pour les "remaining", puis ajout des scanR-résolus
     merged_remaining = merge_orcid_idref(perso_orcid_remaining, idref_res)
     perso_complete = pd.concat([resolved_scanr, merged_remaining], ignore_index=True)
-    perso_complete.to_pickle(f"{PATH_HARVEST}persons/perso_complete_{JOUR}.pkl")
+    perso_complete.to_pickle(f"{PATH_HARVEST}persons/perso_complete_{datetime.date.today().isoformat()}.pkl")
 
     print(f"\nBilan final : {len(resolved_scanr)} résolus par scanR, "
         f"{len(merged_remaining)} traités via ORCID/IdRef, "
         f"{len(perso_complete)} au total.")
 
     
+    
+
+
 """
 step9 - entities_affiliations 
 prepare files for moulinnette
