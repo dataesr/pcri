@@ -663,13 +663,20 @@ def remove_file_by_pattern(path_folder, pat):
 
 
 def last_file_into_folder_by_pat(path, pat, extension):
-    import os
+    import os, re
+    
+    if isinstance(pat, str):
+        pat = re.compile(pat)
+
     files_list = [f for f in os.listdir(path) if pat.search(f) and f.endswith(f'.{extension}')]
 
-    # Trouver le fichier le plus récent
+    if not files_list:
+        raise FileNotFoundError(
+            f"Aucun fichier .{extension} correspondant au motif '{pat.pattern}' trouvé dans {path}"
+        )
+
     latest_file = max(files_list, key=lambda f: os.path.getmtime(os.path.join(path, f)))
 
-    # Chemin complet vers le fichier le plus récent
     print(f"Le fichier {extension} le plus récent est : {os.path.join(path, latest_file)}")
     return os.path.join(path, latest_file)
 
