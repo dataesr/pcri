@@ -30,7 +30,7 @@ CSV_PERSONS = "20260616"
 #======================================================
 # extracting info on WP, geo, scanr persons
 
-if FETCH_PERSO_SCANR == True:
+if FETCH_PERSO_SCANR is True:
 
     download_with_resume(
     "https://scanr-data.s3.gra.io.cloud.ovh.net/production/persons_denormalized.jsonl.gz",
@@ -38,7 +38,7 @@ if FETCH_PERSO_SCANR == True:
     )
 
 
-if FETCH_GEO_DATA==True:
+if FETCH_GEO_DATA is True:
     """
     -> Lancé en arrière-plan
     charge les fichiers zip de geoname par pays
@@ -47,8 +47,8 @@ if FETCH_GEO_DATA==True:
     start()
 
 
-if FETCH_WEB_DATA==True:
-    wp_year='2026'
+if FETCH_WEB_DATA is True:
+    wp_year = '2026'
     
     get_topic_from_eu_portal() #==> extract all topics closed/open/upcoming from eu poratl and save in data_wp/topic_info_harvest.json
     
@@ -60,7 +60,7 @@ if FETCH_WEB_DATA==True:
 #====================================================
 # loading source data 
 
-if LOAD_DATA==True:
+if LOAD_DATA is True:
     reporting = []
 
     proj, rep = projects_load(SOURCE_JSON)
@@ -83,41 +83,60 @@ if LOAD_DATA==True:
 #===========================================================
 # starting to clean
 
-if UPDATE_PROJECT==True:
-     ## step1 -> data load / adjustements*
+if UPDATE_PROJECT is True:
+    """
+    step1 -> data load / adjustements*
+    projects missing from proposals =>
+    list missing projects into excel file missing_proposals_{extractDate}.xlsx
 
-    # projects missing from proposals => list missing projects into excel file missing_proposals_{extractDate}.xlsx
-    # temp/proj_no_proposals.csv -> flag callId to integrate and exclude from calculations
-
+    temp/proj_no_proposals.csv ->
+    flag callId to integrate and exclude from calculations
+    """
     call_to_integrate, call_miss, proj_to_prop = data_analysis(prop, app, proj, part)
 
+    """
+    add cols from proposals to projects (panel, freekw) if missing in projects
+    """
+    proj = proj_add_cols(prop, proj)
 
-    # add cols from proposals to projects (panel, freekw) if missing in projects
+    """
+    proposals status : check status, remove ineligible, inadmissible,
+    duplicate, withdrawn, assign stage 'evaluated' to all proposals
+    """
+    stage_p = ['REJECTED',
+               'NO_MONEY',
+               'MAIN',
+               'RESERVE',
+               'INELIGIBLE',
+               'WITHDRAWN',
+               'INADMISSIBLE',
+               None]
+    
+    prop1, rep = proposals_status(prop, proj_id_signed, stage_p)
+    reporting.extend(rep)
 
-    proj = proj_add_cols(prop, proj) 
-
-    # proposals status : check status, remove ineligible, inadmissible, duplicate, withdrawn, assign stage 'evaluated' to all proposals
-
-    stage_p = ['REJECTED' ,'NO_MONEY' ,'MAIN', 'RESERVE', 'INELIGIBLE', 'WITHDRAWN', 'INADMISSIBLE', None]
-    prop1, rep = proposals_status(prop, proj_id_signed, stage_p) 
-    reporting.extend(rep) 
-
-
-    # update proposals with missing projects from projects table and flag callId to integrate in proposals table
+    """
+    update proposals with missing projects from projects table and
+    flag callId to integrate in proposals table
+    """
 
     proj1 = proj_id_miss_fixed(prop1, proj, call_to_integrate)
-    
+
     # create MERGED -> merge proj + prop
     print('### MERGED PROPOSALS/PROJECTS')
-    if len(proj1)==0:
-        df = pd.concat([proj, prop1], ignore_index= True)
+    if len(proj1) == 0:
+        df = pd.concat([proj, prop1], ignore_index=True)
     else:
-        df = pd.concat([prop1, proj1, proj], ignore_index = True)
+        df = pd.concat([prop1, proj1, proj], ignore_index=True)
 
-    # remove rejected projects with stage successful in projects
+    """
+    remove rejected projects with stage successful in projects
+    """
+    mask = ((df['status_code'] == 'REJECTED') & (df['stage'] == 'successful'))
+    df = df[df.loc[~mask]]
 
-    df = df.loc[~((df['status_code']=='REJECTED')&(df['stage']=='successful'))]
-    print(f"- result - merged all: {len(df)},\n{df[['stage','status_code']].value_counts()}")
+    print(f"- result - merged all: {len(df)},\n",
+          f"{df.value_counts(['stage','status_code'])}")
 
     reporting.extend(
         [
@@ -127,43 +146,42 @@ if UPDATE_PROJECT==True:
         ]
     )
 
-    top_call = topics_portal_clean() # info by topic (fix year of wp)
+    top_call = topics_portal_clean()  # info by topic (fix year of wp)
     merged = copy.deepcopy(df)
     merged = dates_year(merged, top_call)
-    reporting.append({'stage_process':'process5_date_clean', 'merged_size':len(merged)})
+    reporting.append({'stage_process': 'process5_date_clean', 'merged_size': len(merged)})
     merged = strings_v(merged)
-    merged = url_to_clean(merged) # clean url project website
+    merged = url_to_clean(merged)  # clean url project website
     merged.mask(merged=='', inplace=True)
-    merged = empty_str_to_none(merged)      
+    merged = empty_str_to_none(merged)
     merged.rename(columns={
-        'freekw':'free_keywords',
-        'callDeadlineDate':'call_deadline', 
-        'callId':'call_id', 
-        'submissionDate':'submission_date',
-        'startDate':'start_date',
-        'endDate':'end_date', 
-        'ecSignatureDate':'signature_date'}, inplace=True)
+        'freekw': 'free_keywords',
+        'callDeadlineDate': 'call_deadline',
+        'callId': 'call_id',
+        'submissionDate': 'submission_date',
+        'startDate': 'start_date',
+        'endDate': 'end_date',
+        'ecSignatureDate': 'signature_date'}, inplace=True)
 
-
-    # checking duplicated successful project
-
-    duplicate_counts = merged.loc[merged["stage"] == "successful", "project_id"].value_counts()
+    """
+    checking duplicated successful project
+    """
+    mask = merged["stage"] == "successful"
+    duplicate_counts = merged.loc[mask, "project_id"].value_counts()
     duplicates = duplicate_counts[duplicate_counts > 1]
 
     if not duplicates.empty:
         print(duplicates)
 
-    
     # add panels, topics, actions, tag euro partnerships
-    
     merged = merged_panels(merged)
-    reporting.append({'stage_process':'process6_panels', 'merged_size':len(merged)})
+    reporting.append({'stage_process':'process6_panels', 'merged_size': len(merged)})
     merged = merged_topics(SOURCE_JSON, merged)
-    reporting.append({'stage_process':'process7_topics', 'merged_size':len(merged)})
+    reporting.append({'stage_process':'process7_topics', 'merged_size': len(merged)})
     merged = merged_actions(SOURCE_JSON, merged)
-    reporting.append({'stage_process':'process8_actions', 'merged_size':len(merged)})
+    reporting.append({'stage_process':'process8_actions', 'merged_size': len(merged)})
     merged = euro_partnerships(merged)
-    reporting.append({'stage_process':'process9_europs', 'merged_size':len(merged)})
+    reporting.append({'stage_process':'process9_europs', 'merged_size': len(merged)})
 
 
     # calls list
@@ -171,8 +189,8 @@ if UPDATE_PROJECT==True:
 
     print("\n### CALLS+MERGED")
     # check if call_id in MERGED match with call in calls
-    if len(merged.loc[merged['call_id'].isnull()])>0:
-            print(f"1 - ⚠️ : manque des call_id: {merged.loc[merged['call_id'].isnull(), 'project_id']}")
+    if len(merged.loc[merged['call_id'].isnull()]) > 0:
+        print(f"1 - ⚠️ : manque des call_id: {merged.loc[merged['call_id'].isnull(), 'project_id']}")
     else:
         call_id = merged[['call_id', 'call_deadline']].drop_duplicates()
         print(f"2 - CALL_ID de merged -> nb call+deadline: {len(call_id)}, nb call unique: {call_id['call_id'].nunique()} ")
@@ -182,11 +200,15 @@ if UPDATE_PROJECT==True:
 
     # add script -> contrôler et remplir les variables null dans successful et pas dans proposals comme abstrcat
 
-    projects = projects_complete_cleaned(merged, extractDate) # create => data_clean/projects_current.pkl"
+    projects = projects_complete_cleaned(merged, extractDate)  # create => data_clean/projects_current.pkl"
 
-    reporting.extend([{'stage_process':'process10_projects_all', 'merged_size':len(projects)},
-    {'stage_process':'process10_projects_all', 'project_size':len(projects[projects['stage']=='successful'])},
-    {'stage_process':'process10_projects_all', 'proposal_size':len(projects[projects['stage']=='evaluated'])}])
+    reporting.extend(
+        [
+            {'stage_process': 'process10_projects_all', 'merged_size': len(projects)},
+            {'stage_process': 'process10_projects_all', 'project_size': len(projects[projects['stage'] == 'successful'])},
+            {'stage_process': 'process10_projects_all', 'proposal_size': len(projects[projects['stage'] == 'evaluated'])}
+        ]
+            )
     json.dump(reporting, open('reporting.json', 'w', encoding='utf-8'), indent=4)
 else:
     # if already cleansing, just load the last version of projects and reporting => if UPDATE_PROJECT==False
@@ -196,13 +218,15 @@ else:
 
 #==============================================================================================================
 # PARTICIPATIONS
-if UPDATE_PARTICIPATION == True:
+if UPDATE_PARTICIPATION is True:
+    """
+    APPLICANTS
+    """
 
-    #### APPLICANTS
     # keep only project_id in proposals and applicants
-    app1 = app.loc[app['project_id'].isin(projects['project_id'].unique())] 
+    app1 = app.loc[app['project_id'].isin(projects['project_id'].unique())]
     print(f"- size app1 hors proj exclus: {len(app1)}")
-    reporting.append({'stage_process':'process3_keep_withProj', 'applicant_size':len(app1)})
+    reporting.append({'stage_process': 'process3_keep_withProj', 'applicant_size': len(app1)})
 
     # get participant for project missed into poposals and add to applicants
     mask_missed = (projects["stage"] == "evaluated") & (~projects["project_id"].isin(app1["project_id"].unique()))
@@ -210,15 +234,15 @@ if UPDATE_PARTICIPATION == True:
 
     tmp = part[part['project_id'].isin(app_missing_pid)]
     app1 = part_miss_app(tmp, app1)
-    reporting.append({'stage_process':'process3_add_miss_proj', 'applicant_size':len(app1)})
+    reporting.append({'stage_process': 'process3_add_miss_proj', 'applicant_size': len(app1)})
 
-    #fix accelerator project (limit in k€)
+    # fix accelerator project (limit in k€)
     app1 = prop_accelerator_process(SOURCE_JSON, app1, projects, 150, 3000)
-    reporting.append({'stage_process':'process4_eic', 'applicant_size':len(app1)})
+    reporting.append({'stage_process': 'process4_eic', 'applicant_size': len(app1)})
 
     # Role, partnerType, erc_role
     app1 = app_role_type(app1, projects)
-    reporting.append({'stage_process':'process5_role_erc', 'applicant_size':len(app1)})
+    reporting.append({'stage_process': 'process5_role_erc', 'applicant_size': len(app1)})
 
     # part with generalPic null
     if any(part[part['generalPic'].isnull()]):
@@ -226,7 +250,7 @@ if UPDATE_PARTICIPATION == True:
 
     # Role, partnerType, erc_role
     part = part_role_type(part, projects)
-    reporting.append({'stage_process':'process5_role_erc', 'participant_size':len(part)})
+    reporting.append({'stage_process': 'process5_role_erc', 'participant_size': len(part)})
 
     del app
 
@@ -235,17 +259,19 @@ if UPDATE_PARTICIPATION == True:
     part = check_multiP_by_proj(part)
     app1 = check_multiA_by_proj(app1)
 
+
     #=============================================
-    ### STEP2
-    # ENTITIES
+    # STEP2
+    """
+    ENTITIES
+    """
     entities, rep = entities_merge_partApp(entities, app1, part)
     reporting.extend(rep)
 
-    # countries
-    """ 
+    """
+    COUNTRIES
     country_code_source : code source from entities, app1, part -> iso3
     countryCode : code source from entities, app1, part -> iso2
-        
     """
 
     # list all countryCode in entities, app1, part to check if missing in country list and add missing countryCode in country list if needed
@@ -278,28 +304,29 @@ if UPDATE_PARTICIPATION == True:
     )
 
     for i in [app1, part, entities]:
-        if any(i['_merge']=='left_only'):
-            print(i.loc[i['_merge']=='left_only', ['countryCode']].unique())
+        mask = i['_merge'] == 'left_only'
+        if any(mask):
+            print(i.loc[mask, ['countryCode']].unique())
         i.drop(columns='_merge', inplace=True)
 
-
-    # LIEN
     """
+    LIEN
+
     merge app1 + part -> lien
     add nuts code to lien
-        """
+    """
     lien = merged_partApp(app1, part)
     ambigus = lien[lien.base_only == 'AMBIGU_a_verifier']
-    reporting.append({'stage_process':'process2_PicAppPart', 'lien_size':len(lien)})
+    reporting.append({'stage_process': 'process2_PicAppPart', 'lien_size': len(lien)})
     lien = nuts_lien(SOURCE_JSON, app1, part, lien)
-    reporting.append({'stage_process':'process2_wthNuts', 'lien_size':len(lien)})
+    reporting.append({'stage_process': 'process2_wthNuts', 'lien_size': len(lien)})
     lien.to_pickle(f"{PATH_CLEAN}lien.pkl")
 
     """
     select one record par pic by filtering on generalStatus -> def entities_single_create
     """
     entities_single = entities_single_create(entities, lien)
-    reporting.append({'stage_process':'process5_status', 'entites_size':len(entities_single)})
+    reporting.append({'stage_process': 'process5_status', 'entites_size': len(entities_single)})
     json.dump(reporting, open('reporting.json', 'w', encoding='utf-8'), indent=4)
 else:
     entities_single = pd.read_pickle(f"{PATH_CLEAN}entities_single.pkl")
@@ -312,13 +339,13 @@ else:
 """
 step3
 
-process to affiliate an entity to an repository's ID like SIRENE ROR... 
-and check if ID exist in paysage or not, 
-if not check in source API, then update ref_source with new ID 
+process to affiliate an entity to an repository's ID like SIRENE ROR...
+and check if ID exist in paysage or not,
+if not check in source API, then update ref_source with new ID
 if verified and update paysage with new ID if verified and not in paysage
 """
 
-if UPDATE_ENTITIES==True:
+if UPDATE_ENTITIES is True:
 
     """
     Creation base entities
@@ -328,8 +355,7 @@ if UPDATE_ENTITIES==True:
     entities_info = entities_clean_name(entities_info)
     entities_info = entities_clean_address(entities_info)
 
-    reporting.append({'stage_process':'process5_status', 'entities_size':len(entities_single)})
-
+    reporting.append({'stage_process': 'process5_status', 'entities_size': len(entities_single)})
 
     # list identifiers in paysage
     sl = ['siret', 'ror', 'rnsr', 'rna']
@@ -337,29 +363,33 @@ if UPDATE_ENTITIES==True:
     paysage_identifiers = paysage_id_extract_prepare(paysage_identifiers)
 
 
-    if CHECK_NEW_ENTITIES==True:    
+    if CHECK_NEW_ENTITIES is True:
         # UPDATE ; only needs to be run once
         ref_source = ref_source_load('ref')
         # fix ROR ID with 'R0' at the beginning ; old method
         ref_source.loc[ref_source['id'].str.startswith('R0', na=False), 'id'] = ref_source.loc[ref_source['id'].str.startswith('R0', na=False), 'id'].str[1:]
-        entities_tmp = entities_first_preparation(ref_source, entities_info) # ref_source_1ere_select
+        entities_tmp = entities_first_preparation(ref_source, entities_info)  # ref_source_1ere_select
         check_id_df, identification = identification_update(SOURCE_JSON, entities_tmp) # list ID to check and all records tabe
         
         # identifiant in paysage or not -> inPayseg True/False
         paysage_res = check_id_in_paysage(check_id_df, 'check_id', paysage_identifiers)
         
         # id missing into paysage -> check in source api
-        sid_df = paysage_res.loc[(paysage_res['in_paysage']==False)&(paysage_res['source_id'].notnull()), ['check_id', 'source_id']].sort_values(['source_id', 'check_id'], ascending=False).drop_duplicates()
+        mask = (paysage_res['in_paysage'] is False) & paysage_res['source_id'].notnull()
+        sid_df = paysage_res.loc[mask, ['check_id', 'source_id']].sort_values(['source_id', 'check_id'], ascending=False).drop_duplicates()
         print(f"## {len(sid_df)} identifiers no paysage to ckeck")
 
         # check existing ID
-        if CHECK_ID_BY_API==True:
-            print(time.strftime("%H:%M:%S"))  
-            res=[]
+        if CHECK_ID_BY_API is True:
+            print(time.strftime("%H:%M:%S"))
+
+            res = []
+
             for sl in sid_df['source_id'].unique().tolist():
-                id_list = list(sid_df.loc[sid_df['source_id']==sl, 'check_id'].unique())
+                id_list = list(sid_df.loc[sid_df['source_id'] == sl, 'check_id'].unique())
                 result = check_id_by_source(sl, id_list)
                 res.extend(result)
+
             print(time.strftime("%H:%M:%S"))
 
             #======================================================================
@@ -373,14 +403,13 @@ if UPDATE_ENTITIES==True:
         # add data_work/ref_extarct_date.csv into data_ref/_pic_id_entites.xlsx
         # try to find ID for new foreign (universities, public organizations, european or international orga)
 
-
     """
         chargement du nouveau ref_source
         ref_source = ref_source_load('ref')
     """
 
     # if NEW UPDATE maj paysage with struct successful UPTADE_PAYSAGE, load_url to update ror
-    if UPDATE_REF_AND_PAYSAGE==True:
+    if UPDATE_REF_AND_PAYSAGE is True:
         frameworks = ['HE', 'H20']
         ref_id, genPic_to_new = entities_repository_select_maj(frameworks, countries, load_url=False, UPDATE_PAYSAGE=False)
     else:
@@ -389,14 +418,13 @@ if UPDATE_ENTITIES==True:
 
     pic = maj_ref_by_pic(entities_info, countries, genPic_to_new, ref_id)
 
-
     """
     reload link between from_id_to_ref and paysage IDs after updating paysage app
     add paysage_id to ref_id
     """
     ref_with_paysage = merge_id_to_ref(ref_id, 'from_id_to_ref')
 
-    ###  CREATE ENTITIES_TMP
+    #  CREATE ENTITIES_TMP
     entities_tmp, rep = entities_tmp_create(entities_info, ref_with_paysage)
     entities_tmp = entities_for_merge(entities_tmp)
 
@@ -417,11 +445,12 @@ if UPDATE_ENTITIES==True:
     entities_tmp = merge_pic(entities_tmp, pic, cat, paysage_cj)
 
     #======================================================
-    ### groupe entreprises
-
-    if UPDATE_GR==True:
+    """
+    groupe entreprises
+    si besoin de charger groupe
+    """
+    if UPDATE_GR is True:
         groupe = groupe_treatment('groupe_prov', 'groupe')
-    ### si besoin de charger groupe
     #======================================================
 
     entities_tmp = entities_groupe(entities_tmp, framework=None)
@@ -430,7 +459,7 @@ if UPDATE_ENTITIES==True:
 
     entities_info = entities_finalize(entities_tmp, countries, framework=None)
 
-    # check entities_info and its vars 
+    # check entities_info and its vars
     summary, duplicate_rows = check_dataframe(entities_info, ['generalPic', 'country_code', 'entities_name'])
 
     file_name = f"{PATH_CLEAN}entities_info_current2.pkl"
@@ -445,7 +474,7 @@ else:
 
 #================================================================
 """
-    STEP4 - INDICATEURS
+STEP4 - INDICATEURS
 """
 proj_erc = (projects.loc[projects['action_code']=='ERC', ['project_id', 'destination_code']]
             .drop_duplicates())
@@ -454,17 +483,17 @@ proj_no_coord = dom_without_coord(projects)
 
 
 """
-    clean coordination for projects without coord
-    create isejo for entities ZOE or ZOI
-    add RNSR from gilberinette
-    add rnsr detected from source_id
+clean coordination for projects without coord
+create isejo for entities ZOE or ZOI
+add RNSR from gilberinette
+add rnsr detected from source_id
 """
 participation = participations_isejo_coord(part_step, proj_no_coord)
 
-participation =  rnsr_add(participation)
+participation = rnsr_add(participation)
 
 
-    # 1. Construire le dictionnaire generalPic -> liste d'id_secondaire valides (pattern RNSR, dédupliqués, sans NaN)
+# 1. Construire le dictionnaire generalPic -> liste d'id_secondaire valides (pattern RNSR, dédupliqués, sans NaN)
 nns_map = (
         entities_info.dropna(subset=['id_secondaire'])
         .loc[entities_info['id_secondaire'].apply(is_valid_rnsr)]
@@ -483,11 +512,11 @@ del part_step
 
 #======================================================================
 """
-step7 - persons script 
+step7 - persons script
 """
-if UPDATE_PERSONS==True:
+if UPDATE_PERSONS is True:
 
-    persons_preparation(CSV_PERSONS)  
+    preparation_persons(CSV_PERSONS)
 
     # 1. Liste complète en un seul appel
     df = persons_choose()
@@ -579,18 +608,18 @@ r_fix = r_fix.mask(r_fix == '')
 r = r_fix[['num_nat_struct', 'adresse', 'code_postal', 'ville',
        'pays']]
 
-r = (rnsr.merge(r, 
-        how='left', 
-        left_on='numero_national_de_structure', 
-        right_on='num_nat_struct', 
-        suffixes=('', '_clean')
-    ).drop(columns=['numero_national_de_structure'])
+r = (rnsr.merge(r,
+                how='left',
+                left_on='numero_national_de_structure',
+                right_on='num_nat_struct',
+                suffixes=('', '_clean')
+                ).drop(columns=['numero_national_de_structure'])
 )
 
-nns = nns.merge(r, 
-        how='left', 
-        on='num_nat_struct'
-    )
+nns = nns.merge(r,
+                how='left',
+                on='num_nat_struct'
+)
 
 mask = nns['code_postal_clean'].isnull() | nns['ville'].isnull()
 
@@ -598,13 +627,13 @@ if not nns[mask].empty:
     print(f"🚨missing address in rnsr_address_fix grist:  {nns.loc[mask, ['num_nat_struct', 'code_postal', 'commune', 'code_postal_clean', 'ville']].drop_duplicates()}")
 
 nns = (nns
-       .assign(country_code_source = nns['pays'])
+       .assign(country_code_source=nns['pays'])
        .rename(columns={
                 'adresse_clean': 'street',
                 'code_postal_clean': 'postalCode',
                 'ville': 'city',
-                'pays': 'countryCode'})
-        .drop_duplicates()
+                'pays': 'countryCode'}
+        ).drop_duplicates()
     )
 
 nns = country_iso_shift(nns, 'country_code_source', True)
@@ -619,8 +648,8 @@ nns = (nns
 )
 print(len(nns))
 
-participation = participation.merge(nns, 
-                how='left', 
+participation = participation.merge(nns,
+                how='left',
                 on='numero_national_de_structure')
 
 file_name = f"{PATH_CLEAN}participation_current.pkl"
