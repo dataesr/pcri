@@ -17,6 +17,7 @@ remote_process/*.json
 *.pkl
 *.ipynb
 *.jsonl
+step3_entities\groupes.py
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
