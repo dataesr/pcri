@@ -60,9 +60,10 @@ from step6_results.msca_erc import *
 from step6_results.msca import *
 from step6_results.erc import *
 from step6_results.evolutions import *
-from step7_persons.prep_persons import *
+from step7_persons.clean_and_add_info import *
 from step7_persons.affiliations import *
 from step7_persons.scanr import *
 from step7_persons.idref import *
 from step7_persons.identifiers_compare import *
+from step7_persons.preparation_persons import *
 from step10_inHouse_unit.inHouse_prepare import *
