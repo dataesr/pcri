@@ -18,52 +18,52 @@ def persons_preparation(csv_date):
 
     print(f"size participation: {len(participation)}")
     ######################
-    print(f"\n### IMPORT datasets")
-    perso_part = unzip_zip(f'{PATH_SOURCE}{FRAMEWORK}/he_grants_ecorda_pd_{csv_date}.zip', "participant_persons.csv", 'utf-8')
+    # print(f"\n### IMPORT datasets")
+    # perso_part = unzip_zip(f'{PATH_SOURCE}{FRAMEWORK}/he_grants_ecorda_pd_{csv_date}.zip', "participant_persons.csv", 'utf-8')
 
-    perso_part = (perso_part
-                  .loc[perso_part.FRAMEWORK=='HORIZON', 
-                       ['PROJECT_NBR', 'GENERAL_PIC', 'PARTICIPANT_PIC', 'ROLE', 'FIRST_NAME',
-                        'LAST_NAME','GENDER', 'PHONE', 'EMAIL',
-                        'BIRTH_COUNTRY_CODE', 'NATIONALITY_COUNTRY_CODE', 'HOST_COUNTRY_CODE', 
-                        'SENDING_COUNTRY_CODE']
-                        ]
-                .rename(columns=str.lower)
-                .rename(columns={
-                    'project_nbr':'project_id', 
-                    'general_pic':'generalPic', 
-                    'participant_pic':'pic'
-                    }
-                )
-                .assign(stage='successful')
-    )
-    print(f"size perso_part import: {len(perso_part)}")
+    # perso_part = (perso_part
+    #               .loc[perso_part.FRAMEWORK=='HORIZON', 
+    #                    ['PROJECT_NBR', 'GENERAL_PIC', 'PARTICIPANT_PIC', 'ROLE', 'FIRST_NAME',
+    #                     'LAST_NAME','GENDER', 'PHONE', 'EMAIL',
+    #                     'BIRTH_COUNTRY_CODE', 'NATIONALITY_COUNTRY_CODE', 'HOST_COUNTRY_CODE', 
+    #                     'SENDING_COUNTRY_CODE']
+    #                     ]
+    #             .rename(columns=str.lower)
+    #             .rename(columns={
+    #                 'project_nbr':'project_id', 
+    #                 'general_pic':'generalPic', 
+    #                 'participant_pic':'pic'
+    #                 }
+    #             )
+    #             .assign(stage='successful')
+    # )
+    # print(f"size perso_part import: {len(perso_part)}")
+
+    # ######################################
+    # perso_app = unzip_zip(f'{PATH_SOURCE}{FRAMEWORK}/he_proposals_ecorda_pd_{csv_date}.zip', "applicant_persons.csv", 'utf-8')
+
+    # perso_app = (perso_app
+    #              .loc[perso_app.FRAMEWORK=='HORIZON', 
+    #                   ['PROPOSAL_NBR', 'GENERAL_PIC', 'APPLICANT_PIC', 'ROLE', 'FIRST_NAME',
+    #                     'FAMILY_NAME', 'GENDER', 'PHONE', 'EMAIL',
+    #                     'RESEARCHER_ID', 'ORCID_ID', 'GOOGLE_SCHOLAR_ID','SCOPUS_AUTHOR_ID']
+    #                     ]
+    #             .rename(columns=str.lower)
+    #             .rename(columns={
+    #                 'proposal_nbr':'project_id', 
+    #                 'general_pic':'generalPic', 
+    #                 'applicant_pic':'pic', 
+    #                 'family_name':'last_name'
+    #                 }
+    #             )
+    #             .assign(stage='evaluated')
+    # )
+    # print(f"size perso_app import: {len(perso_app)}")
 
     ######################################
-    perso_app = unzip_zip(f'{PATH_SOURCE}{FRAMEWORK}/he_proposals_ecorda_pd_{csv_date}.zip', "applicant_persons.csv", 'utf-8')
-
-    perso_app = (perso_app
-                 .loc[perso_app.FRAMEWORK=='HORIZON', 
-                      ['PROPOSAL_NBR', 'GENERAL_PIC', 'APPLICANT_PIC', 'ROLE', 'FIRST_NAME',
-                        'FAMILY_NAME', 'GENDER', 'PHONE', 'EMAIL',
-                        'RESEARCHER_ID', 'ORCID_ID', 'GOOGLE_SCHOLAR_ID','SCOPUS_AUTHOR_ID']
-                        ]
-                .rename(columns=str.lower)
-                .rename(columns={
-                    'proposal_nbr':'project_id', 
-                    'general_pic':'generalPic', 
-                    'applicant_pic':'pic', 
-                    'family_name':'last_name'
-                    }
-                )
-                .assign(stage='evaluated')
-    )
-    print(f"size perso_app import: {len(perso_app)}")
-
-    ######################################
-    print(f"\n### COUNTRY shift iso2 to iso3")
-    for el in ['birth_country_code','nationality_country_code','host_country_code','sending_country_code']:
-        perso_part = country_iso_shift(perso_part, el, iso2_to3=True)
+    # print(f"\n### COUNTRY shift iso2 to iso3")
+    # for el in ['birth_country_code','nationality_country_code','host_country_code','sending_country_code']:
+    #     perso_part = country_iso_shift(perso_part, el, iso2_to3=True)
 
     ####################################
     # print(f"\n### TITLE cleaning")
@@ -88,76 +88,76 @@ def persons_preparation(csv_date):
     # perso_part = title_clean(perso_part)
     # perso_app = title_clean(perso_app)
 
-    ###############################
-    print(f"\n### NAME fix encoding issues")
+    # ###############################
+    # print(f"\n### NAME fix encoding issues")
 
-    def fix_string(s):
-        import re
-        if not isinstance(s, str):
-            return s
+    # def fix_string(s):
+    #     import re
+    #     if not isinstance(s, str):
+    #         return s
         
-        prev = None
-        while prev != s:          # on répète tant que ça change encore
-            prev = s
-            s = s.replace('\\005C', '\\')
-            s = re.sub(r'\\([0-9A-Fa-f]{4})', lambda m: chr(int(m.group(1), 16)), s)
-        return s
+    #     prev = None
+    #     while prev != s:          # on répète tant que ça change encore
+    #         prev = s
+    #         s = s.replace('\\005C', '\\')
+    #         s = re.sub(r'\\([0-9A-Fa-f]{4})', lambda m: chr(int(m.group(1), 16)), s)
+    #     return s
 
-    cols = ['first_name', 'last_name']
-    for c in cols:
-        perso_part[c]=perso_part[c].apply(fix_string)
+    # cols = ['first_name', 'last_name']
+    # for c in cols:
+    #     perso_part[c]=perso_part[c].apply(fix_string)
 
 
     ####################################
-    print(f"\n### STRING cleaning")
-    cols = ['role', 'first_name', 'last_name', 'gender']
-    perso_part = prop_string(perso_part, cols)
-    perso_app = prop_string(perso_app, cols)
+    # print(f"\n### STRING cleaning")
+    # cols = ['role', 'first_name', 'last_name', 'gender']
+    # perso_part = prop_string(perso_part, cols)
+    # perso_app = prop_string(perso_app, cols)
 
-    ##########
-    print(f"\n### CONTACT create")
-    def contact_name(df):
-        for f in ['first_name', 'last_name']:
-            df[f] = df[f].fillna('')
-            df[f] = df[f].str.strip().str.replace(r"\s+", '-', regex=True)
-            df[f] = df[f].str.strip().str.replace(r"-{2,}", '-', regex=True)
+    # ##########
+    # print(f"\n### CONTACT create")
+    # def contact_name(df):
+    #     for f in ['first_name', 'last_name']:
+    #         df[f] = df[f].fillna('')
+    #         df[f] = df[f].str.strip().str.replace(r"\s+", '-', regex=True)
+    #         df[f] = df[f].str.strip().str.replace(r"-{2,}", '-', regex=True)
 
-        df['contact'] = df.first_name.astype(str).str.lower() + ' ' + df.last_name.astype(str).str.lower()
+    #     df['contact'] = df.first_name.astype(str).str.lower() + ' ' + df.last_name.astype(str).str.lower()
         
-        str_remove=['not applicable']
-        df['contact'] = df['contact'].str.strip().str.replace(r"\^s+$", '-', regex=True)
-        df = df.loc[~df.contact.isin(str_remove)]
-        return df
+    #     str_remove=['not applicable']
+    #     df['contact'] = df['contact'].str.strip().str.replace(r"\^s+$", '-', regex=True)
+    #     df = df.loc[~df.contact.isin(str_remove)]
+    #     return df
 
-    perso_app = contact_name(perso_app)
-    perso_part = contact_name(perso_part)
+    # perso_app = contact_name(perso_app)
+    # perso_part = contact_name(perso_part)
 
 
-    # ###########
-    print(f"\n### PIC empty fix")
-    # generalPic empty ; replace by pic or fill by generalPic participation
-    def empty_pic(df, participation, stage):
-        if any(df.generalPic.isnull()):
-            print(f"1 - size rows with generelPic null for {stage}: {len(df[df.generalPic.isnull()])}")
+    # # ###########
+    # print(f"\n### PIC empty fix")
+    # # generalPic empty ; replace by pic or fill by generalPic participation
+    # def empty_pic(df, participation, stage):
+    #     if any(df.generalPic.isnull()):
+    #         print(f"1 - size rows with generelPic null for {stage}: {len(df[df.generalPic.isnull()])}")
 
-            # gestion empty generalPic for principal investigator
-            mask = (df.generalPic.isnull())&(df.role=='principal investigator')
-            x = df.loc[mask].project_id.unique()
+    #         # gestion empty generalPic for principal investigator
+    #         mask = (df.generalPic.isnull())&(df.role=='principal investigator')
+    #         x = df.loc[mask].project_id.unique()
 
-            if x.size>0:
-                y=participation.loc[(participation.project_id.isin(x))&(participation.stage==stage), ['project_id', 'generalPic']]
-                df=df.merge(y, how='left', on=['project_id'], suffixes=('', '_y'))
+    #         if x.size>0:
+    #             y=participation.loc[(participation.project_id.isin(x))&(participation.stage==stage), ['project_id', 'generalPic']]
+    #             df=df.merge(y, how='left', on=['project_id'], suffixes=('', '_y'))
 
-                mask = (df.generalPic.isnull())&(~df.generalPic_y.isnull())
-                df.loc[mask, 'generalPic'] = df.loc[mask, 'generalPic_y'] 
-                df.drop(columns='generalPic_y', inplace=True)
-                print(f"2 - size rows with generelPic null for {stage}: {len(df[df.generalPic.isnull()])}")
+    #             mask = (df.generalPic.isnull())&(~df.generalPic_y.isnull())
+    #             df.loc[mask, 'generalPic'] = df.loc[mask, 'generalPic_y'] 
+    #             df.drop(columns='generalPic_y', inplace=True)
+    #             print(f"2 - size rows with generelPic null for {stage}: {len(df[df.generalPic.isnull()])}")
 
-        print(f"size df_{stage} after empty_pic: {len(df)}")
-        return df
+    #     print(f"size df_{stage} after empty_pic: {len(df)}")
+    #     return df
 
-    perso_part = empty_pic(perso_part, participation, 'successful')
-    perso_app = empty_pic(perso_app, participation, 'evaluated')
+    # perso_part = empty_pic(perso_part, participation, 'successful')
+    # perso_app = empty_pic(perso_app, participation, 'evaluated')
 
     ################
     print(f"\n### CALCULATION measures")
@@ -373,37 +373,37 @@ def persons_preparation(csv_date):
     perso_app = iso2_add(perso_app)
 
     # ##################
-    print(f"\n### PHONE cleaning")
-    def phone_clean(df):
-        y = df.loc[(df.country_code=='FRA')&(~df.phone.isnull()), ['phone']]
-        y['tel_clean']=y.phone.str.replace(r"(^\++[0-9]{1,3}\s+)", '', regex=True)
-        y['tel_clean']=y.tel_clean.str.replace(r"[^0-9]+", '', regex=True)
-        y['tel_clean']=y.tel_clean.str.replace(r"^(33|033|0033)", '', regex=True).str.rjust(10, '0')
-        y.loc[(y.tel_clean.str.len()>10)&(y.tel_clean.str[0:1]=='0'), 'tel_clean'] = y.tel_clean.str[0:10]
-        y['tel_clean']=y.tel_clean.str.replace(r"^0+$", '', regex=True)
-        # work_csv(y, 'tel_perso')
-        return pd.concat([df, y[['tel_clean']]], axis=1)
+    # print(f"\n### PHONE cleaning")
+    # def phone_clean(df):
+    #     y = df.loc[(df.country_code=='FRA')&(~df.phone.isnull()), ['phone']]
+    #     y['tel_clean']=y.phone.str.replace(r"(^\++[0-9]{1,3}\s+)", '', regex=True)
+    #     y['tel_clean']=y.tel_clean.str.replace(r"[^0-9]+", '', regex=True)
+    #     y['tel_clean']=y.tel_clean.str.replace(r"^(33|033|0033)", '', regex=True).str.rjust(10, '0')
+    #     y.loc[(y.tel_clean.str.len()>10)&(y.tel_clean.str[0:1]=='0'), 'tel_clean'] = y.tel_clean.str[0:10]
+    #     y['tel_clean']=y.tel_clean.str.replace(r"^0+$", '', regex=True)
+    #     # work_csv(y, 'tel_perso')
+    #     return pd.concat([df, y[['tel_clean']]], axis=1)
 
-    perso_part = phone_clean(perso_part)
-    perso_app = phone_clean(perso_app)
+    # perso_part = phone_clean(perso_part)
+    # perso_app = phone_clean(perso_app)
 
-    # #######################
-    print(f"\n### MAIL cleaning")
-    def mail_clean(df):
-        mail_del=["gmail", "yahoo", "hotmail", "wanadoo", "aol", "free", "skynet", "outlook", "icloud", "googlemail"]
+    # # #######################
+    # print(f"\n### MAIL cleaning")
+    # def mail_clean(df):
+    #     mail_del=["gmail", "yahoo", "hotmail", "wanadoo", "aol", "free", "skynet", "outlook", "icloud", "googlemail"]
 
-        df['domaine'] = df.email.str.split('@').str[1].str.split('.').str[:-1].fillna('').apply(' '.join)
-        tmp = df.loc[~df.domaine.isnull(), ['domaine']]
+    #     df['domaine'] = df.email.str.split('@').str[1].str.split('.').str[:-1].fillna('').apply(' '.join)
+    #     tmp = df.loc[~df.domaine.isnull(), ['domaine']]
 
-        for el in mail_del:
-            m = r"^"+el+r"($|\s)"
-            tmp.loc[tmp['domaine'].str.contains(m, case=True, flags=0, na=None, regex=True) == True, 'domaine_email'] = ''
-            tmp.loc[tmp['domaine_email'].isnull(), 'domaine_email'] = tmp['domaine']
+    #     for el in mail_del:
+    #         m = r"^"+el+r"($|\s)"
+    #         tmp.loc[tmp['domaine'].str.contains(m, case=True, flags=0, na=None, regex=True) == True, 'domaine_email'] = ''
+    #         tmp.loc[tmp['domaine_email'].isnull(), 'domaine_email'] = tmp['domaine']
 
-        return pd.concat([df, tmp], axis=1).drop(columns='domaine')
+    #     return pd.concat([df, tmp], axis=1).drop(columns='domaine')
 
-    perso_app = mail_clean(perso_app)
-    perso_part = mail_clean(perso_part)
+    # perso_app = mail_clean(perso_app)
+    # perso_part = mail_clean(perso_part)
     ##############
 
     def nationality_clean(df):
