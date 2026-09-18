@@ -475,25 +475,33 @@ def chunkify(df, chunk_size: int):
 
 
 def country_iso_shift(df, var, iso2_to3=True):
+    """
+    convert code country iso2 to code country iso3
+    create new var with suffix '_3'
+    or
+    convertcode country iso3 to iso2
+    """
+
     import warnings
     warnings.filterwarnings("ignore", "This pattern is interpreted as a regular expression, and has match groups")
     from functions_shared import my_country_code
     
     countries = my_country_code()
-    countries = countries[['iso3', 'iso2']].drop_duplicates(subset='iso3', keep='first')
 
     if iso2_to3:
-        df = df.merge(countries[['iso3', 'iso2']].drop_duplicates(), how='left', left_on=var, right_on='iso2')
-        df.loc[~df.iso3.isnull(), var] = df.loc[~df.iso3.isnull(), 'iso3']
-        df.drop(columns=['iso2', 'iso3'], inplace=True)
-        if any(df[var].str.len()<3):
-            print(f"- ⚠️ ! un {var} non reconnu dans df {df.loc[df[var].str.len()<3, [var]]}")
+        mapping = dict(zip(countries['iso2'], countries['iso3']))
+        df[f"{var}_3"] = df[var].map(mapping)
+        mask = df[var].notna() & ((df[f"{var}_3"].str.len() < 3) | df[f"{var}_3"].isnull())
+        if any(mask):
+            print(f"- ⚠️ ! un {var} non reconnu dans df {df.loc[mask, var]}")
     else:
-        df = df.merge(countries[['iso3', 'iso2']].drop_duplicates(), how='left', left_on=var, right_on='iso3')
-        df.loc[~df.iso2.isnull(), var] = df.loc[~df.iso2.isnull(), 'iso2']
-        df.drop(columns=['iso2', 'iso3'], inplace=True)
-        if any(df[var].str.len()>2):
-            print(f"- ⚠️ ! un {var} non reconnu dans df {df.loc[df[var].str.len()>2, [var]]}")
+        countries = countries[['iso3', 'iso2']].drop_duplicates(subset='iso3', keep='first')
+        mapping = dict(zip(countries['iso3'], countries['iso2']))
+        df[f"{var}_2"] = df[var].map(mapping)
+        mask = df[var].notna() & ((df[f"{var}_2"].str.len() > 2) | df[f"{var}_2"].isnull())
+        if any(mask):
+            print(f"- ⚠️ ! un {var} non reconnu dans df {df.loc[mask, var]}")
+
     return df
 
 
@@ -575,21 +583,20 @@ def my_country_code():
 
 def prop_string(tab, cols):
     from unidecode import unidecode
-    tab[cols] = tab[cols].map(lambda s:s.casefold() if type(s) == str else s)
-            
-    for i in cols:
-        tab.loc[~tab[i].isnull(), i] = tab.loc[~tab[i].isnull(), i].str.replace(r"[^\w\s]+", " ", regex=True)
-        tab.loc[~tab[i].isnull(), i] = tab.loc[~tab[i].isnull(), i].apply(unidecode)
+    for col in cols:
+        if col not in tab.columns:
+            continue
+
+        s = tab[col].astype(str)
+        s = s.str.casefold()
+        # replace all punctuations with spaces
+        s = s.str.replace(r"[^\w\s]+", " ", regex=True)
+        s = s.apply(lambda x: unidecode(x) if pd.notnull(x) else x)
+
+        tab[col] = s.where(tab[col].notnull(), tab[col])
+
     return tab
 
-# def com_iso3():
-#     import pandas as pd
-#     from remote_process.grist import communesG
-#     url='https://docs.google.com/spreadsheet/ccc?key=1FwPq5Qw7Gbgj_sBD6Za4dfDDk6ydozQ99TyRjLkW5d8&output=xls'
-#     com_iso = pd.read_excel(url, sheet_name='LES_COMMUNES', dtype=str, na_filter=False)
-#     com_iso=com_iso[['COM_CODE', 'ISO_3']].drop_duplicates()
-#     com_iso.columns=com_iso.columns.str.lower()
-#     return com_iso
 
 def load_last_file_csv(path_folder, file_prefix, sep):
     import os, pandas as pd
